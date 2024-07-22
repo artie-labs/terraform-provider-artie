@@ -23,4 +23,5 @@ provider "artie" {
 
 ### Optional
 
-- `endpoint` (String) Example provider attribute
+- `api_key` (String) Artie API key
+- `endpoint` (String) Artie API endpoint
