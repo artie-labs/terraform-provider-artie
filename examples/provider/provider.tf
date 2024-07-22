@@ -1,3 +1,3 @@
-provider "scaffolding" {
+provider "artie" {
   # example configuration here
 }
