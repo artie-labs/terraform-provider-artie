@@ -70,9 +70,9 @@ func (d *deploymentsDataSource) Configure(_ context.Context, req datasource.Conf
 	d.apiKey = providerData.APIKey
 }
 
-// Schema defines the schema for the data source.
 func (d *deploymentsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Artie Deployments Data Source",
 		Attributes: map[string]schema.Attribute{
 			"deployments": schema.ListNestedAttribute{
 				Computed: true,
