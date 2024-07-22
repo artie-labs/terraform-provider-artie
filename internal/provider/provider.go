@@ -76,6 +76,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 
 func (p *ArtieProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		NewExampleDataSource,
 		NewDeploymentsDataSource,
 	}
 }
