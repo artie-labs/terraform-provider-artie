@@ -1,3 +1,3 @@
-data "scaffolding_example" "example" {
+data "artie_example" "example" {
   configurable_attribute = "some-value"
 }
