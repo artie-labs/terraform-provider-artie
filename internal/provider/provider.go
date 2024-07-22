@@ -27,8 +27,8 @@ type ArtieProvider struct {
 	version string
 }
 
-// ScaffoldingProviderModel describes the provider data model.
-type ScaffoldingProviderModel struct {
+// ArtieProviderModel describes the provider data model.
+type ArtieProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 }
 
@@ -49,7 +49,7 @@ func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 }
 
 func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScaffoldingProviderModel
+	var data ArtieProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
