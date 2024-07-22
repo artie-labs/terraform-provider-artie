@@ -5,7 +5,6 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
@@ -30,6 +29,7 @@ type ArtieProvider struct {
 // ArtieProviderModel describes the provider data model.
 type ArtieProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
+	APIKey   types.String `tfsdk:"api_key"`
 }
 
 func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -41,7 +41,11 @@ func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Example provider attribute",
+				MarkdownDescription: "Artie API endpoint",
+				Optional:            true,
+			},
+			"api_key": schema.StringAttribute{
+				MarkdownDescription: "Artie API key",
 				Optional:            true,
 			},
 		},
@@ -60,10 +64,8 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	// Configuration values are now available.
 	// if data.Endpoint.IsNull() { /* ... */ }
 
-	// Example client configuration for data sources and resources
-	client := http.DefaultClient
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.DataSourceData = data
+	resp.ResourceData = data
 }
 
 func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resource {
@@ -75,6 +77,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 func (p *ArtieProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewExampleDataSource,
+		NewDeploymentsDataSource,
 	}
 }
 
