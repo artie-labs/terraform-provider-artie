@@ -15,29 +15,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure ArtieProvider satisfies various provider interfaces.
-var _ provider.Provider = &ArtieProvider{}
-var _ provider.ProviderWithFunctions = &ArtieProvider{}
+// Ensure ScaffoldingProvider satisfies various provider interfaces.
+var _ provider.Provider = &ScaffoldingProvider{}
+var _ provider.ProviderWithFunctions = &ScaffoldingProvider{}
 
-// ArtieProvider defines the provider implementation.
-type ArtieProvider struct {
+// ScaffoldingProvider defines the provider implementation.
+type ScaffoldingProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// ArtieProviderModel describes the provider data model.
-type ArtieProviderModel struct {
+// ScaffoldingProviderModel describes the provider data model.
+type ScaffoldingProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 }
 
-func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "artie"
+func (p *ScaffoldingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "scaffolding"
 	resp.Version = p.version
 }
 
-func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *ScaffoldingProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
@@ -48,8 +48,8 @@ func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 	}
 }
 
-func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ArtieProviderModel
+func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var data ScaffoldingProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -66,19 +66,19 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	resp.ResourceData = client
 }
 
-func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *ScaffoldingProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewExampleResource,
 	}
 }
 
-func (p *ArtieProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *ScaffoldingProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewExampleDataSource,
 	}
 }
 
-func (p *ArtieProvider) Functions(ctx context.Context) []func() function.Function {
+func (p *ScaffoldingProvider) Functions(ctx context.Context) []func() function.Function {
 	return []func() function.Function{
 		NewExampleFunction,
 	}
@@ -86,7 +86,7 @@ func (p *ArtieProvider) Functions(ctx context.Context) []func() function.Functio
 
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &ArtieProvider{
+		return &ScaffoldingProvider{
 			version: version,
 		}
 	}
