@@ -156,10 +156,6 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	ctx = tflog.SetField(ctx, "name", deploymentResp.Deployment.Name)
-	ctx = tflog.SetField(ctx, "status", deploymentResp.Deployment.Status)
-	tflog.Info(ctx, "deployment_resp")
-
 	data.Name = types.StringValue(deploymentResp.Deployment.Name)
 	data.Status = types.StringValue(deploymentResp.Deployment.Status)
 	data.LastUpdatedAt = types.StringValue(deploymentResp.Deployment.LastUpdatedAt)
