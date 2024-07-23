@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,12 +18,11 @@ func NewDeploymentResource() resource.Resource {
 	return &DeploymentResource{}
 }
 
-// DeploymentResource defines the resource implementation.
 type DeploymentResource struct {
-	client *http.Client
+	endpoint string
+	apiKey   string
 }
 
-// DeploymentResourceModel describes the resource data model.
 type DeploymentResourceModel struct {
 	UUID                 string `tfsdk:"uuid"`
 	Name                 string `tfsdk:"name"`
@@ -39,9 +37,7 @@ func (r *DeploymentResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Artie Deployment resource",
-
 		Attributes: map[string]schema.Attribute{
 			"uuid":                   schema.StringAttribute{Computed: true},
 			"name":                   schema.StringAttribute{Computed: true},
@@ -58,18 +54,18 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 		return
 	}
 
-	client, ok := req.ProviderData.(*http.Client)
-
+	providerData, ok := req.ProviderData.(ArtieProviderData)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected ArtieProviderData, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = client
+	r.endpoint = providerData.Endpoint
+	r.apiKey = providerData.APIKey
 }
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
