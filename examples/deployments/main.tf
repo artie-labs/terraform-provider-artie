@@ -16,7 +16,7 @@ import {
 }
 
 resource "artie_deployment" "example" {
-  name = "new name"
+  name = "MongoDB ➡️ BigQuery"
 }
 
 # data "artie_deployments" "example" {}
