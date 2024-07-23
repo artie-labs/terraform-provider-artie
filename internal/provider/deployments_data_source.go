@@ -24,8 +24,11 @@ func NewDeploymentsDataSource() datasource.DataSource {
 }
 
 type deploymentsModel struct {
-	UUID string `tfsdk:"uuid"`
-	Name string `tfsdk:"name"`
+	UUID                 string `tfsdk:"uuid"`
+	Name                 string `tfsdk:"name"`
+	Status               string `tfsdk:"status"`
+	LastUpdatedAt        string `tfsdk:"last_updated_at"`
+	HasUndeployedChanges bool   `tfsdk:"has_undeployed_changes"`
 }
 
 type deploymentsDataSourceModel struct {
@@ -77,12 +80,11 @@ func (d *deploymentsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"uuid": schema.StringAttribute{
-							Computed: true,
-						},
-						"name": schema.StringAttribute{
-							Computed: true,
-						},
+						"uuid":                   schema.StringAttribute{Computed: true},
+						"name":                   schema.StringAttribute{Computed: true},
+						"status":                 schema.StringAttribute{Computed: true},
+						"last_updated_at":        schema.StringAttribute{Computed: true},
+						"has_undeployed_changes": schema.BoolAttribute{Computed: true},
 					},
 				},
 			},
@@ -128,8 +130,11 @@ func (d *deploymentsDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	for _, deployment := range deploymentsResp.Deployments {
 		deploymentState := deploymentsModel{
-			UUID: deployment.UUID,
-			Name: deployment.Name,
+			UUID:                 deployment.UUID,
+			Name:                 deployment.Name,
+			Status:               deployment.Status,
+			LastUpdatedAt:        deployment.LastUpdatedAt,
+			HasUndeployedChanges: deployment.HasUndeployedChanges,
 		}
 		state.Deployments = append(state.Deployments, deploymentState)
 	}
