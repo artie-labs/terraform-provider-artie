@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
@@ -11,65 +8,51 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &ExampleResource{}
-var _ resource.ResourceWithImportState = &ExampleResource{}
+var _ resource.Resource = &DeploymentResource{}
+var _ resource.ResourceWithImportState = &DeploymentResource{}
 
-func NewExampleResource() resource.Resource {
-	return &ExampleResource{}
+func NewDeploymentResource() resource.Resource {
+	return &DeploymentResource{}
 }
 
-// ExampleResource defines the resource implementation.
-type ExampleResource struct {
+// DeploymentResource defines the resource implementation.
+type DeploymentResource struct {
 	client *http.Client
 }
 
-// ExampleResourceModel describes the resource data model.
-type ExampleResourceModel struct {
-	ConfigurableAttribute types.String `tfsdk:"configurable_attribute"`
-	Defaulted             types.String `tfsdk:"defaulted"`
-	Id                    types.String `tfsdk:"id"`
+// DeploymentResourceModel describes the resource data model.
+type DeploymentResourceModel struct {
+	UUID                 string `tfsdk:"uuid"`
+	Name                 string `tfsdk:"name"`
+	Status               string `tfsdk:"status"`
+	LastUpdatedAt        string `tfsdk:"last_updated_at"`
+	HasUndeployedChanges bool   `tfsdk:"has_undeployed_changes"`
 }
 
-func (r *ExampleResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_example"
+func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_deployment"
 }
 
-func (r *ExampleResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example resource",
+		MarkdownDescription: "Artie Deployment resource",
 
 		Attributes: map[string]schema.Attribute{
-			"configurable_attribute": schema.StringAttribute{
-				MarkdownDescription: "Example configurable attribute",
-				Optional:            true,
-			},
-			"defaulted": schema.StringAttribute{
-				MarkdownDescription: "Example configurable attribute with default value",
-				Optional:            true,
-				Computed:            true,
-				Default:             stringdefault.StaticString("example value when not configured"),
-			},
-			"id": schema.StringAttribute{
-				Computed:            true,
-				MarkdownDescription: "Example identifier",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"uuid":                   schema.StringAttribute{Computed: true},
+			"name":                   schema.StringAttribute{Computed: true},
+			"status":                 schema.StringAttribute{Computed: true},
+			"last_updated_at":        schema.StringAttribute{Computed: true},
+			"has_undeployed_changes": schema.BoolAttribute{Computed: true},
 		},
 	}
 }
 
-func (r *ExampleResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *DeploymentResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -89,8 +72,8 @@ func (r *ExampleResource) Configure(ctx context.Context, req resource.ConfigureR
 	r.client = client
 }
 
-func (r *ExampleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ExampleResourceModel
+func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data DeploymentResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -109,7 +92,7 @@ func (r *ExampleResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// For the purposes of this example code, hardcoding a response value to
 	// save into the Terraform state.
-	data.Id = types.StringValue("example-id")
+	// data.Id = types.StringValue("example-id")
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
@@ -119,8 +102,8 @@ func (r *ExampleResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ExampleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ExampleResourceModel
+func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data DeploymentResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -141,8 +124,8 @@ func (r *ExampleResource) Read(ctx context.Context, req resource.ReadRequest, re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ExampleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ExampleResourceModel
+func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data DeploymentResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -163,8 +146,8 @@ func (r *ExampleResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ExampleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ExampleResourceModel
+func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data DeploymentResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -182,6 +165,6 @@ func (r *ExampleResource) Delete(ctx context.Context, req resource.DeleteRequest
 	// }
 }
 
-func (r *ExampleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *DeploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
