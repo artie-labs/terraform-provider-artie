@@ -5,6 +5,7 @@ package provider
 
 import (
 	"context"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
@@ -30,6 +31,11 @@ type ArtieProvider struct {
 type ArtieProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	APIKey   types.String `tfsdk:"api_key"`
+}
+
+type ArtieProviderData struct {
+	Endpoint string
+	APIKey   string
 }
 
 func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -61,11 +67,24 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
+	// Default values to environment variables, but override
+	// with Terraform configuration value if set.
+	endpoint := os.Getenv("ARTIE_ENDPOINT")
+	if !data.Endpoint.IsNull() {
+		endpoint = data.Endpoint.ValueString()
+	}
+	apiKey := os.Getenv("ARTIE_API_KEY")
+	if !data.APIKey.IsNull() {
+		apiKey = data.APIKey.ValueString()
+	}
 
-	resp.DataSourceData = data
-	resp.ResourceData = data
+	providerData := ArtieProviderData{
+		Endpoint: endpoint,
+		APIKey:   apiKey,
+	}
+
+	resp.DataSourceData = providerData
+	resp.ResourceData = providerData
 }
 
 func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resource {
