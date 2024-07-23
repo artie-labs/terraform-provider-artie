@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -39,21 +38,17 @@ type deploymentsResponse struct {
 	Deployments []deploymentsModel `json:"items"`
 }
 
-// deploymentsDataSource is the data source implementation.
 type deploymentsDataSource struct {
 	endpoint string
 	apiKey   string
 }
 
-// Metadata returns the data source type name.
 func (d *deploymentsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_deployments"
 }
 
-// Configure adds the provider configured client to the data source.
 func (d *deploymentsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Add a nil check when handling ProviderData because Terraform
-	// sets that data after it calls the ConfigureProvider RPC.
+	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -94,7 +89,6 @@ func (d *deploymentsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 
 // Read refreshes the Terraform state with the latest data.
 func (d *deploymentsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	tflog.Info(ctx, fmt.Sprintf("Endpoint: %s", d.endpoint))
 	var state deploymentsDataSourceModel
 
 	apiReq, err := http.NewRequest("GET", fmt.Sprintf("%s/deployments", d.endpoint), nil)
@@ -139,10 +133,6 @@ func (d *deploymentsDataSource) Read(ctx context.Context, req datasource.ReadReq
 		state.Deployments = append(state.Deployments, deploymentState)
 	}
 
-	// Set state
-	diags := resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
