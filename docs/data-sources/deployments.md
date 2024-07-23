@@ -24,5 +24,8 @@ Artie Deployments Data Source
 
 Read-Only:
 
+- `has_undeployed_changes` (Boolean)
+- `last_updated_at` (String)
 - `name` (String)
+- `status` (String)
 - `uuid` (String)

@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -25,8 +24,11 @@ func NewDeploymentsDataSource() datasource.DataSource {
 }
 
 type deploymentsModel struct {
-	UUID string `tfsdk:"uuid"`
-	Name string `tfsdk:"name"`
+	UUID                 string `tfsdk:"uuid"`
+	Name                 string `tfsdk:"name"`
+	Status               string `tfsdk:"status"`
+	LastUpdatedAt        string `tfsdk:"last_updated_at"`
+	HasUndeployedChanges bool   `tfsdk:"has_undeployed_changes"`
 }
 
 type deploymentsDataSourceModel struct {
@@ -39,8 +41,8 @@ type deploymentsResponse struct {
 
 // deploymentsDataSource is the data source implementation.
 type deploymentsDataSource struct {
-	endpoint basetypes.StringValue
-	apiKey   basetypes.StringValue
+	endpoint string
+	apiKey   string
 }
 
 // Metadata returns the data source type name.
@@ -56,11 +58,11 @@ func (d *deploymentsDataSource) Configure(_ context.Context, req datasource.Conf
 		return
 	}
 
-	providerData, ok := req.ProviderData.(ArtieProviderModel)
+	providerData, ok := req.ProviderData.(ArtieProviderData)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected ArtieProviderData, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -78,12 +80,11 @@ func (d *deploymentsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"uuid": schema.StringAttribute{
-							Computed: true,
-						},
-						"name": schema.StringAttribute{
-							Computed: true,
-						},
+						"uuid":                   schema.StringAttribute{Computed: true},
+						"name":                   schema.StringAttribute{Computed: true},
+						"status":                 schema.StringAttribute{Computed: true},
+						"last_updated_at":        schema.StringAttribute{Computed: true},
+						"has_undeployed_changes": schema.BoolAttribute{Computed: true},
 					},
 				},
 			},
@@ -93,16 +94,16 @@ func (d *deploymentsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 
 // Read refreshes the Terraform state with the latest data.
 func (d *deploymentsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	tflog.Info(ctx, fmt.Sprintf("Endpoint: %s", d.endpoint.ValueString()))
+	tflog.Info(ctx, fmt.Sprintf("Endpoint: %s", d.endpoint))
 	var state deploymentsDataSourceModel
 
-	apiReq, err := http.NewRequest("GET", fmt.Sprintf("%s/deployments", d.endpoint.ValueString()), nil)
+	apiReq, err := http.NewRequest("GET", fmt.Sprintf("%s/deployments", d.endpoint), nil)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployments", err.Error())
 		return
 	}
 
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiKey.ValueString()))
+	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiKey))
 	apiResp, err := http.DefaultClient.Do(apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployments", err.Error())
@@ -129,8 +130,11 @@ func (d *deploymentsDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	for _, deployment := range deploymentsResp.Deployments {
 		deploymentState := deploymentsModel{
-			UUID: deployment.UUID,
-			Name: deployment.Name,
+			UUID:                 deployment.UUID,
+			Name:                 deployment.Name,
+			Status:               deployment.Status,
+			LastUpdatedAt:        deployment.LastUpdatedAt,
+			HasUndeployedChanges: deployment.HasUndeployedChanges,
 		}
 		state.Deployments = append(state.Deployments, deploymentState)
 	}
