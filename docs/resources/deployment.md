@@ -63,6 +63,7 @@ Required:
 
 Optional:
 
+- `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--source--tables--advanced_settings))
 - `enable_history_mode` (Boolean)
 - `individual_deployment` (Boolean)
 - `is_partitioned` (Boolean)
@@ -70,3 +71,14 @@ Optional:
 Read-Only:
 
 - `uuid` (String)
+
+<a id="nestedatt--source--tables--advanced_settings"></a>
+### Nested Schema for `source.tables.advanced_settings`
+
+Optional:
+
+- `alias` (String)
+- `buffer_rows` (Number)
+- `flush_interval_seconds` (Number)
+- `flush_size_kb` (Number)
+- `skip_delete` (Boolean)

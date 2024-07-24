@@ -51,16 +51,34 @@ type SourceConfigModel struct {
 	Port     types.Int64  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
 	Database types.String `tfsdk:"database"`
+	// Password
+	// DynamoDBConfig
+	// SnapshotHost
 }
 
 type TableModel struct {
-	UUID                 types.String `tfsdk:"uuid"`
-	Name                 types.String `tfsdk:"name"`
-	Schema               types.String `tfsdk:"schema"`
-	EnableHistoryMode    types.Bool   `tfsdk:"enable_history_mode"`
-	IndividualDeployment types.Bool   `tfsdk:"individual_deployment"`
-	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
-	// AdvancedSettings     types.Map    `tfsdk:"advanced_settings"`
+	UUID                 types.String               `tfsdk:"uuid"`
+	Name                 types.String               `tfsdk:"name"`
+	Schema               types.String               `tfsdk:"schema"`
+	EnableHistoryMode    types.Bool                 `tfsdk:"enable_history_mode"`
+	IndividualDeployment types.Bool                 `tfsdk:"individual_deployment"`
+	IsPartitioned        types.Bool                 `tfsdk:"is_partitioned"`
+	AdvancedSettings     TableAdvancedSettingsModel `tfsdk:"advanced_settings"`
+}
+
+type TableAdvancedSettingsModel struct {
+	Alias                types.String `tfsdk:"alias"`
+	SkipDelete           types.Bool   `tfsdk:"skip_delete"`
+	FlushIntervalSeconds types.Int64  `tfsdk:"flush_interval_seconds"`
+	BufferRows           types.Int64  `tfsdk:"buffer_rows"`
+	FlushSizeKB          types.Int64  `tfsdk:"flush_size_kb"`
+	// BigQueryPartitionSettings
+	// MergePredicates
+	// AutoscaleMaxReplicas
+	// AutoscaleTargetValue
+	// K8sRequestCPU
+	// K8sRequestMemoryMB
+	// ExcludeColumns
 }
 
 type DeploymentResponse struct {
@@ -93,13 +111,28 @@ type SourceConfigAPIModel struct {
 }
 
 type TableAPIModel struct {
-	UUID                 string `json:"uuid"`
-	Name                 string `json:"name"`
-	Schema               string `json:"schema"`
-	EnableHistoryMode    bool   `json:"enableHistoryMode"`
-	IndividualDeployment bool   `json:"individualDeployment"`
-	IsPartitioned        bool   `json:"isPartitioned"`
-	// AdvancedSettings     map[string]any `json:"advancedSettings"`
+	UUID                 string                        `json:"uuid"`
+	Name                 string                        `json:"name"`
+	Schema               string                        `json:"schema"`
+	EnableHistoryMode    bool                          `json:"enableHistoryMode"`
+	IndividualDeployment bool                          `json:"individualDeployment"`
+	IsPartitioned        bool                          `json:"isPartitioned"`
+	AdvancedSettings     TableAdvancedSettingsAPIModel `json:"advancedSettings"`
+}
+
+type TableAdvancedSettingsAPIModel struct {
+	Alias                string `json:"alias"`
+	SkipDelete           bool   `json:"skip_delete"`
+	FlushIntervalSeconds int64  `json:"flush_interval_seconds"`
+	BufferRows           int64  `json:"buffer_rows"`
+	FlushSizeKB          int64  `json:"flush_size_kb"`
+	// BigQueryPartitionSettings
+	// MergePredicates
+	// AutoscaleMaxReplicas
+	// AutoscaleTargetValue
+	// K8sRequestCPU
+	// K8sRequestMemoryMB
+	// ExcludeColumns
 }
 
 func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -139,10 +172,16 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"enable_history_mode":   schema.BoolAttribute{Optional: true},
 								"individual_deployment": schema.BoolAttribute{Optional: true},
 								"is_partitioned":        schema.BoolAttribute{Optional: true},
-								// "advanced_settings": schema.MapAttribute{
-								// 	Optional:    true,
-								// 	ElementType: types.StringType,
-								// },
+								"advanced_settings": schema.SingleNestedAttribute{
+									Optional: true,
+									Attributes: map[string]schema.Attribute{
+										"alias":                  schema.StringAttribute{Optional: true},
+										"skip_delete":            schema.BoolAttribute{Optional: true},
+										"flush_interval_seconds": schema.NumberAttribute{Optional: true},
+										"buffer_rows":            schema.NumberAttribute{Optional: true},
+										"flush_size_kb":          schema.NumberAttribute{Optional: true},
+									},
+								},
 							},
 						},
 					},
@@ -256,6 +295,25 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	data.LastUpdatedAt = types.StringValue(deploymentResp.Deployment.LastUpdatedAt)
 	data.HasUndeployedChanges = types.BoolValue(deploymentResp.Deployment.HasUndeployedChanges)
 	data.DestinationUUID = types.StringValue(deploymentResp.Deployment.DestinationUUID)
+
+	tables := []TableModel{}
+	for _, apiTable := range deploymentResp.Deployment.Source.Tables {
+		tables = append(tables, TableModel{
+			UUID:                 types.StringValue(apiTable.UUID),
+			Name:                 types.StringValue(apiTable.Name),
+			Schema:               types.StringValue(apiTable.Schema),
+			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
+			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
+			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
+			AdvancedSettings: TableAdvancedSettingsModel{
+				Alias:                types.StringValue(apiTable.AdvancedSettings.Alias),
+				SkipDelete:           types.BoolValue(apiTable.AdvancedSettings.SkipDelete),
+				FlushIntervalSeconds: types.Int64Value(apiTable.AdvancedSettings.FlushIntervalSeconds),
+				BufferRows:           types.Int64Value(apiTable.AdvancedSettings.BufferRows),
+				FlushSizeKB:          types.Int64Value(apiTable.AdvancedSettings.FlushSizeKB),
+			},
+		})
+	}
 	data.Source = &SourceModel{
 		Name: types.StringValue(deploymentResp.Deployment.Source.Name),
 		Config: SourceConfigModel{
@@ -264,7 +322,7 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 			User:     types.StringValue(deploymentResp.Deployment.Source.Config.User),
 			Database: types.StringValue(deploymentResp.Deployment.Source.Config.Database),
 		},
-		Tables: make([]TableModel, len(deploymentResp.Deployment.Source.Tables)),
+		Tables: tables,
 	}
 
 	// Save updated data into Terraform state

@@ -29,6 +29,9 @@ resource "artie_deployment" "example" {
       {
         name   = "customers"
         schema = ""
+        advanced_settings = {
+          skip_delete = false
+        }
       },
       {
         name   = "stock"
