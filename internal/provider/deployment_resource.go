@@ -66,6 +66,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 									"aws_secret_access_key": schema.StringAttribute{Optional: true},
 								},
 							},
+							// TODO Password
 						},
 					},
 					"tables": schema.ListNestedAttribute{
@@ -90,6 +91,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 										"autoscale_target_value": schema.Int64Attribute{Optional: true, Computed: true},
 										"k8s_request_cpu":        schema.Int64Attribute{Optional: true, Computed: true},
 										"k8s_request_memory_mb":  schema.Int64Attribute{Optional: true, Computed: true},
+										// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
 									},
 									Computed: true,
 								},
@@ -112,6 +114,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"publication_name_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 					"replication_slot_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 					"publication_auto_create_mode":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					// TODO PartitionRegex
 				},
 			},
 			"destination_config": schema.SingleNestedAttribute{

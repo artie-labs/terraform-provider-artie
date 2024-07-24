@@ -28,6 +28,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 				AutoscaleTargetValue: types.Int64Value(apiTable.AdvancedSettings.AutoscaleTargetValue),
 				K8sRequestCPU:        types.Int64Value(apiTable.AdvancedSettings.K8sRequestCPU),
 				K8sRequestMemoryMB:   types.Int64Value(apiTable.AdvancedSettings.K8sRequestMemoryMB),
+				// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
 			},
 		})
 	}
@@ -46,6 +47,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 				AwsAccessKeyID:     types.StringValue(apiModel.Source.Config.DynamoDB.AwsAccessKeyID),
 				AwsSecretAccessKey: types.StringValue(apiModel.Source.Config.DynamoDB.AwsSecretAccessKey),
 			},
+			// TODO Password
 		},
 		Tables: tables,
 	}
@@ -71,5 +73,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		PublicationNameOverride:        types.StringValue(apiModel.AdvancedSettings.PublicationNameOverride),
 		ReplicationSlotOverride:        types.StringValue(apiModel.AdvancedSettings.ReplicationSlotOverride),
 		PublicationAutoCreateMode:      types.StringValue(apiModel.AdvancedSettings.PublicationAutoCreateMode),
+		// TODO PartitionRegex
 	}
 }

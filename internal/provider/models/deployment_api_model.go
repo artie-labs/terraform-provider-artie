@@ -56,13 +56,11 @@ type TableAdvancedSettingsAPIModel struct {
 	FlushIntervalSeconds int64  `json:"flushIntervalSeconds"`
 	BufferRows           int64  `json:"bufferRows"`
 	FlushSizeKB          int64  `json:"flushSizeKb"`
-	// BigQueryPartitionSettings
-	// MergePredicates
-	AutoscaleMaxReplicas int64 `json:"autoscaleMaxReplicas"`
-	AutoscaleTargetValue int64 `json:"autoscaleTargetValue"`
-	K8sRequestCPU        int64 `json:"k8sRequestCPU"`
-	K8sRequestMemoryMB   int64 `json:"k8sRequestMemoryMB"`
-	// ExcludeColumns
+	AutoscaleMaxReplicas int64  `json:"autoscaleMaxReplicas"`
+	AutoscaleTargetValue int64  `json:"autoscaleTargetValue"`
+	K8sRequestCPU        int64  `json:"k8sRequestCPU"`
+	K8sRequestMemoryMB   int64  `json:"k8sRequestMemoryMB"`
+	// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
 }
 
 type DeploymentAdvancedSettingsAPIModel struct {

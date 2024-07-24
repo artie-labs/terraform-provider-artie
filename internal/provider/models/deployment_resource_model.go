@@ -54,13 +54,11 @@ type TableAdvancedSettingsModel struct {
 	FlushIntervalSeconds types.Int64  `tfsdk:"flush_interval_seconds"`
 	BufferRows           types.Int64  `tfsdk:"buffer_rows"`
 	FlushSizeKB          types.Int64  `tfsdk:"flush_size_kb"`
-	// BigQueryPartitionSettings
-	// MergePredicates
-	AutoscaleMaxReplicas types.Int64 `tfsdk:"autoscale_max_replicas"`
-	AutoscaleTargetValue types.Int64 `tfsdk:"autoscale_target_value"`
-	K8sRequestCPU        types.Int64 `tfsdk:"k8s_request_cpu"`
-	K8sRequestMemoryMB   types.Int64 `tfsdk:"k8s_request_memory_mb"`
-	// ExcludeColumns
+	AutoscaleMaxReplicas types.Int64  `tfsdk:"autoscale_max_replicas"`
+	AutoscaleTargetValue types.Int64  `tfsdk:"autoscale_target_value"`
+	K8sRequestCPU        types.Int64  `tfsdk:"k8s_request_cpu"`
+	K8sRequestMemoryMB   types.Int64  `tfsdk:"k8s_request_memory_mb"`
+	// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
 }
 
 type DeploymentAdvancedSettingsModel struct {
