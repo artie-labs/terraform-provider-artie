@@ -131,3 +131,6 @@ Optional:
 - `flush_size_kb` (Number)
 - `include_artie_updated_at_column` (Boolean)
 - `include_database_updated_at_column` (Boolean)
+- `publication_auto_create_mode` (String)
+- `publication_name_override` (String)
+- `replication_slot_override` (String)

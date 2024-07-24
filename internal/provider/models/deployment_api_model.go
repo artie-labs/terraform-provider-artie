@@ -66,18 +66,18 @@ type TableAdvancedSettingsAPIModel struct {
 }
 
 type DeploymentAdvancedSettingsAPIModel struct {
-	DropDeletedColumns             bool  `json:"drop_deleted_columns"`
-	IncludeArtieUpdatedAtColumn    bool  `json:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn bool  `json:"include_database_updated_at_column"`
-	EnableHeartbeats               bool  `json:"enable_heartbeats"`
-	EnableSoftDelete               bool  `json:"enable_soft_delete"`
-	FlushIntervalSeconds           int64 `json:"flush_interval_seconds"`
-	BufferRows                     int64 `json:"buffer_rows"`
-	FlushSizeKB                    int64 `json:"flush_size_kb"`
-	// PublicationNameOverride
-	// ReplicationSlotOverride
-	// PublicationAutoCreateMode
-	// PartitionRegex
+	DropDeletedColumns             bool   `json:"drop_deleted_columns"`
+	IncludeArtieUpdatedAtColumn    bool   `json:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn bool   `json:"include_database_updated_at_column"`
+	EnableHeartbeats               bool   `json:"enable_heartbeats"`
+	EnableSoftDelete               bool   `json:"enable_soft_delete"`
+	FlushIntervalSeconds           int64  `json:"flush_interval_seconds"`
+	BufferRows                     int64  `json:"buffer_rows"`
+	FlushSizeKB                    int64  `json:"flush_size_kb"`
+	PublicationNameOverride        string `json:"publicationNameOverride"`
+	ReplicationSlotOverride        string `json:"replicationSlotOverride"`
+	PublicationAutoCreateMode      string `json:"publicationAutoCreateMode"`
+	// TODO PartitionRegex
 }
 
 type DestinationConfigAPIModel struct {

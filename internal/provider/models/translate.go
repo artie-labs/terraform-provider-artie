@@ -64,5 +64,8 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		FlushIntervalSeconds:           types.Int64Value(apiModel.AdvancedSettings.FlushIntervalSeconds),
 		BufferRows:                     types.Int64Value(apiModel.AdvancedSettings.BufferRows),
 		FlushSizeKB:                    types.Int64Value(apiModel.AdvancedSettings.FlushSizeKB),
+		PublicationNameOverride:        types.StringValue(apiModel.AdvancedSettings.PublicationNameOverride),
+		ReplicationSlotOverride:        types.StringValue(apiModel.AdvancedSettings.ReplicationSlotOverride),
+		PublicationAutoCreateMode:      types.StringValue(apiModel.AdvancedSettings.PublicationAutoCreateMode),
 	}
 }

@@ -64,18 +64,18 @@ type TableAdvancedSettingsModel struct {
 }
 
 type DeploymentAdvancedSettingsModel struct {
-	DropDeletedColumns             types.Bool  `tfsdk:"drop_deleted_columns"`
-	IncludeArtieUpdatedAtColumn    types.Bool  `tfsdk:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn types.Bool  `tfsdk:"include_database_updated_at_column"`
-	EnableHeartbeats               types.Bool  `tfsdk:"enable_heartbeats"`
-	EnableSoftDelete               types.Bool  `tfsdk:"enable_soft_delete"`
-	FlushIntervalSeconds           types.Int64 `tfsdk:"flush_interval_seconds"`
-	BufferRows                     types.Int64 `tfsdk:"buffer_rows"`
-	FlushSizeKB                    types.Int64 `tfsdk:"flush_size_kb"`
-	// PublicationNameOverride
-	// ReplicationSlotOverride
-	// PublicationAutoCreateMode
-	// PartitionRegex
+	DropDeletedColumns             types.Bool   `tfsdk:"drop_deleted_columns"`
+	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
+	EnableHeartbeats               types.Bool   `tfsdk:"enable_heartbeats"`
+	EnableSoftDelete               types.Bool   `tfsdk:"enable_soft_delete"`
+	FlushIntervalSeconds           types.Int64  `tfsdk:"flush_interval_seconds"`
+	BufferRows                     types.Int64  `tfsdk:"buffer_rows"`
+	FlushSizeKB                    types.Int64  `tfsdk:"flush_size_kb"`
+	PublicationNameOverride        types.String `tfsdk:"publication_name_override"`
+	ReplicationSlotOverride        types.String `tfsdk:"replication_slot_override"`
+	PublicationAutoCreateMode      types.String `tfsdk:"publication_auto_create_mode"`
+	// TODO PartitionRegex
 }
 
 type DestinationConfigModel struct {

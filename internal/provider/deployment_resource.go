@@ -105,6 +105,9 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"flush_interval_seconds":             schema.Int64Attribute{Optional: true, Computed: true},
 					"buffer_rows":                        schema.Int64Attribute{Optional: true, Computed: true},
 					"flush_size_kb":                      schema.Int64Attribute{Optional: true, Computed: true},
+					"publication_name_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"replication_slot_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"publication_auto_create_mode":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 				},
 			},
 			"destination_config": schema.SingleNestedAttribute{
