@@ -43,7 +43,8 @@ resource "artie_deployment" "example" {
     dataset = "customers"
   }
   advanced_settings = {
-    enable_soft_delete = true
+    enable_soft_delete     = true
+    flush_interval_seconds = 60
   }
 }
 

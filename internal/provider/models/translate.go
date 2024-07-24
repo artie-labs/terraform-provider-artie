@@ -24,6 +24,10 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 				FlushIntervalSeconds: types.Int64Value(apiTable.AdvancedSettings.FlushIntervalSeconds),
 				BufferRows:           types.Int64Value(apiTable.AdvancedSettings.BufferRows),
 				FlushSizeKB:          types.Int64Value(apiTable.AdvancedSettings.FlushSizeKB),
+				AutoscaleMaxReplicas: types.Int64Value(apiTable.AdvancedSettings.AutoscaleMaxReplicas),
+				AutoscaleTargetValue: types.Int64Value(apiTable.AdvancedSettings.AutoscaleTargetValue),
+				K8sRequestCPU:        types.Int64Value(apiTable.AdvancedSettings.K8sRequestCPU),
+				K8sRequestMemoryMB:   types.Int64Value(apiTable.AdvancedSettings.K8sRequestMemoryMB),
 			},
 		})
 	}

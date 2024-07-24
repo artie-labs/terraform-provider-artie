@@ -52,28 +52,28 @@ type TableAPIModel struct {
 
 type TableAdvancedSettingsAPIModel struct {
 	Alias                string `json:"alias"`
-	SkipDelete           bool   `json:"skip_delete"`
-	FlushIntervalSeconds int64  `json:"flush_interval_seconds"`
-	BufferRows           int64  `json:"buffer_rows"`
-	FlushSizeKB          int64  `json:"flush_size_kb"`
+	SkipDelete           bool   `json:"skipDelete"`
+	FlushIntervalSeconds int64  `json:"flushIntervalSeconds"`
+	BufferRows           int64  `json:"bufferRows"`
+	FlushSizeKB          int64  `json:"flushSizeKb"`
 	// BigQueryPartitionSettings
 	// MergePredicates
-	// AutoscaleMaxReplicas
-	// AutoscaleTargetValue
-	// K8sRequestCPU
-	// K8sRequestMemoryMB
+	AutoscaleMaxReplicas int64 `json:"autoscaleMaxReplicas"`
+	AutoscaleTargetValue int64 `json:"autoscaleTargetValue"`
+	K8sRequestCPU        int64 `json:"k8sRequestCPU"`
+	K8sRequestMemoryMB   int64 `json:"k8sRequestMemoryMB"`
 	// ExcludeColumns
 }
 
 type DeploymentAdvancedSettingsAPIModel struct {
-	DropDeletedColumns             bool   `json:"drop_deleted_columns"`
-	IncludeArtieUpdatedAtColumn    bool   `json:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn bool   `json:"include_database_updated_at_column"`
-	EnableHeartbeats               bool   `json:"enable_heartbeats"`
-	EnableSoftDelete               bool   `json:"enable_soft_delete"`
-	FlushIntervalSeconds           int64  `json:"flush_interval_seconds"`
-	BufferRows                     int64  `json:"buffer_rows"`
-	FlushSizeKB                    int64  `json:"flush_size_kb"`
+	DropDeletedColumns             bool   `json:"dropDeletedColumns"`
+	IncludeArtieUpdatedAtColumn    bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn bool   `json:"includeDatabaseUpdatedAtColumn"`
+	EnableHeartbeats               bool   `json:"enableHeartbeats"`
+	EnableSoftDelete               bool   `json:"enableSoftDelete"`
+	FlushIntervalSeconds           int64  `json:"flushIntervalSeconds"`
+	BufferRows                     int64  `json:"bufferRows"`
+	FlushSizeKB                    int64  `json:"flushSizeKb"`
 	PublicationNameOverride        string `json:"publicationNameOverride"`
 	ReplicationSlotOverride        string `json:"replicationSlotOverride"`
 	PublicationAutoCreateMode      string `json:"publicationAutoCreateMode"`

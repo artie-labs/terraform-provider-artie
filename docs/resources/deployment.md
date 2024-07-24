@@ -110,9 +110,13 @@ Read-Only:
 Optional:
 
 - `alias` (String)
+- `autoscale_max_replicas` (Number)
+- `autoscale_target_value` (Number)
 - `buffer_rows` (Number)
 - `flush_interval_seconds` (Number)
 - `flush_size_kb` (Number)
+- `k8s_request_cpu` (Number)
+- `k8s_request_memory_mb` (Number)
 - `skip_delete` (Boolean)
 
 
