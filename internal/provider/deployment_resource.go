@@ -28,24 +28,80 @@ type DeploymentResource struct {
 	apiKey   string
 }
 
+// Resource model
 type DeploymentResourceModel struct {
 	UUID                 types.String `tfsdk:"uuid"`
 	Name                 types.String `tfsdk:"name"`
 	Status               types.String `tfsdk:"status"`
 	LastUpdatedAt        types.String `tfsdk:"last_updated_at"`
+	DestinationUUID      types.String `tfsdk:"destination_uuid"`
 	HasUndeployedChanges types.Bool   `tfsdk:"has_undeployed_changes"`
+	Source               *SourceModel `tfsdk:"source"`
+	AdvancedSettings     types.Map    `tfsdk:"advanced_settings"`
+	UniqueConfig         types.Map    `tfsdk:"unique_config"`
 }
 
+type SourceModel struct {
+	Name   types.String      `tfsdk:"name"`
+	Config SourceConfigModel `tfsdk:"config"`
+	Tables []TableModel      `tfsdk:"tables"`
+}
+
+type SourceConfigModel struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int64  `tfsdk:"port"`
+	User     types.String `tfsdk:"user"`
+	Database types.String `tfsdk:"database"`
+}
+
+type TableModel struct {
+	UUID                 types.String `tfsdk:"uuid"`
+	Name                 types.String `tfsdk:"name"`
+	Schema               types.String `tfsdk:"schema"`
+	EnableHistoryMode    types.Bool   `tfsdk:"enable_history_mode"`
+	IndividualDeployment types.Bool   `tfsdk:"individual_deployment"`
+	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
+	// AdvancedSettings     types.Map    `tfsdk:"advanced_settings"`
+}
+
+// API response model
 type DeploymentResponse struct {
 	Deployment DeploymentResourceAPIModel `json:"deploy"`
 }
 
 type DeploymentResourceAPIModel struct {
+	UUID                 string         `json:"uuid"`
+	Name                 string         `json:"name"`
+	Status               string         `json:"status"`
+	LastUpdatedAt        string         `json:"lastUpdatedAt"`
+	DestinationUUID      string         `json:"destinationUUID"`
+	HasUndeployedChanges bool           `json:"hasUndeployedChanges"`
+	Source               SourceAPIModel `json:"source"`
+	AdvancedSettings     map[string]any `json:"advancedSettings"`
+	UniqueConfig         map[string]any `json:"uniqueConfig"`
+}
+
+type SourceAPIModel struct {
+	Name   string               `json:"name"`
+	Config SourceConfigAPIModel `json:"config"`
+	Tables []TableAPIModel      `json:"tables"`
+}
+
+type SourceConfigAPIModel struct {
+	Host     string `json:"host"`
+	Port     int64  `json:"port"`
+	User     string `json:"user"`
+	Database string `json:"database"`
+}
+
+type TableAPIModel struct {
 	UUID                 string `json:"uuid"`
 	Name                 string `json:"name"`
-	Status               string `json:"status"`
-	LastUpdatedAt        string `json:"lastUpdatedAt"`
-	HasUndeployedChanges bool   `json:"hasUndeployedChanges"`
+	Schema               string `json:"schema"`
+	EnableHistoryMode    bool   `json:"enableHistoryMode"`
+	IndividualDeployment bool   `json:"individualDeployment"`
+	IsPartitioned        bool   `json:"isPartitioned"`
+	// AdvancedSettings     map[string]any `json:"advancedSettings"`
 }
 
 func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -60,7 +116,48 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"name":                   schema.StringAttribute{Required: true},
 			"status":                 schema.StringAttribute{Computed: true, Optional: true},
 			"last_updated_at":        schema.StringAttribute{Computed: true},
+			"destination_uuid":       schema.StringAttribute{Computed: true},
 			"has_undeployed_changes": schema.BoolAttribute{Computed: true},
+			"source": schema.SingleNestedAttribute{
+				Required: true,
+				Attributes: map[string]schema.Attribute{
+					"name": schema.StringAttribute{Required: true},
+					"config": schema.SingleNestedAttribute{
+						Required: true,
+						Attributes: map[string]schema.Attribute{
+							"host":     schema.StringAttribute{Required: true},
+							"port":     schema.NumberAttribute{Required: true},
+							"user":     schema.StringAttribute{Required: true},
+							"database": schema.StringAttribute{Required: true},
+						},
+					},
+					"tables": schema.ListNestedAttribute{
+						Required: true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"uuid":                  schema.StringAttribute{Computed: true},
+								"name":                  schema.StringAttribute{Required: true},
+								"schema":                schema.StringAttribute{Required: true},
+								"enable_history_mode":   schema.BoolAttribute{Optional: true},
+								"individual_deployment": schema.BoolAttribute{Optional: true},
+								"is_partitioned":        schema.BoolAttribute{Optional: true},
+								// "advanced_settings": schema.MapAttribute{
+								// 	Optional:    true,
+								// 	ElementType: types.StringType,
+								// },
+							},
+						},
+					},
+				},
+			},
+			"advanced_settings": schema.MapAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+			},
+			"unique_config": schema.MapAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+			},
 		},
 	}
 }
@@ -160,6 +257,17 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	data.Status = types.StringValue(deploymentResp.Deployment.Status)
 	data.LastUpdatedAt = types.StringValue(deploymentResp.Deployment.LastUpdatedAt)
 	data.HasUndeployedChanges = types.BoolValue(deploymentResp.Deployment.HasUndeployedChanges)
+	data.DestinationUUID = types.StringValue(deploymentResp.Deployment.DestinationUUID)
+	data.Source = &SourceModel{
+		Name: types.StringValue(deploymentResp.Deployment.Source.Name),
+		Config: SourceConfigModel{
+			Host:     types.StringValue(deploymentResp.Deployment.Source.Config.Host),
+			Port:     types.Int64Value(deploymentResp.Deployment.Source.Config.Port),
+			User:     types.StringValue(deploymentResp.Deployment.Source.Config.User),
+			Database: types.StringValue(deploymentResp.Deployment.Source.Config.Database),
+		},
+		Tables: make([]TableModel, len(deploymentResp.Deployment.Source.Tables)),
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

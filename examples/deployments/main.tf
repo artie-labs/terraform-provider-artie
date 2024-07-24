@@ -17,6 +17,25 @@ import {
 
 resource "artie_deployment" "example" {
   name = "MongoDB ➡️ BigQuery"
+  source = {
+    name = "MongoDB"
+    config = {
+      database = "myFirstDatabase"
+      host     = "mongodb+srv://cluster0.szddg49.mongodb.net/"
+      port     = 0
+      user     = "artie"
+    }
+    tables = [
+      {
+        name   = "customers"
+        schema = ""
+      },
+      {
+        name   = "stock"
+        schema = ""
+      }
+    ]
+  }
 }
 
 # data "artie_deployments" "example" {}
