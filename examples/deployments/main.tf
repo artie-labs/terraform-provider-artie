@@ -17,6 +17,35 @@ import {
 
 resource "artie_deployment" "example" {
   name = "MongoDB ➡️ BigQuery"
+  source = {
+    name = "MongoDB"
+    config = {
+      database = "myFirstDatabase"
+      host     = "mongodb+srv://cluster0.szddg49.mongodb.net/"
+      port     = 0
+      user     = "artie"
+    }
+    tables = [
+      {
+        name   = "customers"
+        schema = ""
+        advanced_settings = {
+          skip_delete = false
+        }
+      },
+      {
+        name   = "stock"
+        schema = ""
+      }
+    ]
+  }
+  destination_config = {
+    dataset = "customers"
+  }
+  advanced_settings = {
+    enable_soft_delete     = true
+    flush_interval_seconds = 60
+  }
 }
 
 # data "artie_deployments" "example" {}

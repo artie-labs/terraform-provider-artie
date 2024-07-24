@@ -17,14 +17,124 @@ Artie Deployment resource
 
 ### Required
 
+- `destination_config` (Attributes) (see [below for nested schema](#nestedatt--destination_config))
 - `name` (String)
+- `source` (Attributes) (see [below for nested schema](#nestedatt--source))
 
 ### Optional
 
+- `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--advanced_settings))
 - `status` (String)
 
 ### Read-Only
 
+- `destination_uuid` (String)
 - `has_undeployed_changes` (Boolean)
 - `last_updated_at` (String)
 - `uuid` (String)
+
+<a id="nestedatt--destination_config"></a>
+### Nested Schema for `destination_config`
+
+Optional:
+
+- `bucket_name` (String)
+- `database` (String)
+- `dataset` (String)
+- `optional_prefix` (String)
+- `schema` (String)
+- `schema_name_prefix` (String)
+- `schema_override` (String)
+- `use_same_schema_as_source` (Boolean)
+
+
+<a id="nestedatt--source"></a>
+### Nested Schema for `source`
+
+Required:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--source--config))
+- `name` (String)
+- `tables` (Attributes List) (see [below for nested schema](#nestedatt--source--tables))
+
+<a id="nestedatt--source--config"></a>
+### Nested Schema for `source.config`
+
+Required:
+
+- `database` (String)
+- `host` (String)
+- `port` (Number)
+- `user` (String)
+
+Optional:
+
+- `dynamodb` (Attributes) (see [below for nested schema](#nestedatt--source--config--dynamodb))
+- `snapshot_host` (String)
+
+<a id="nestedatt--source--config--dynamodb"></a>
+### Nested Schema for `source.config.dynamodb`
+
+Optional:
+
+- `aws_access_key_id` (String)
+- `aws_secret_access_key` (String)
+- `region` (String)
+- `streams_arn` (String)
+- `table_name` (String)
+
+
+
+<a id="nestedatt--source--tables"></a>
+### Nested Schema for `source.tables`
+
+Required:
+
+- `name` (String)
+- `schema` (String)
+
+Optional:
+
+- `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--source--tables--advanced_settings))
+- `enable_history_mode` (Boolean)
+- `individual_deployment` (Boolean)
+- `is_partitioned` (Boolean)
+
+Read-Only:
+
+- `uuid` (String)
+
+<a id="nestedatt--source--tables--advanced_settings"></a>
+### Nested Schema for `source.tables.advanced_settings`
+
+Optional:
+
+- `alias` (String)
+- `autoscale_max_replicas` (Number)
+- `autoscale_target_value` (Number)
+- `buffer_rows` (Number)
+- `flush_interval_seconds` (Number)
+- `flush_size_kb` (Number)
+- `k8s_request_cpu` (Number)
+- `k8s_request_memory_mb` (Number)
+- `skip_delete` (Boolean)
+
+
+
+
+<a id="nestedatt--advanced_settings"></a>
+### Nested Schema for `advanced_settings`
+
+Optional:
+
+- `buffer_rows` (Number)
+- `drop_deleted_columns` (Boolean)
+- `enable_heartbeats` (Boolean)
+- `enable_soft_delete` (Boolean)
+- `flush_interval_seconds` (Number)
+- `flush_size_kb` (Number)
+- `include_artie_updated_at_column` (Boolean)
+- `include_database_updated_at_column` (Boolean)
+- `publication_auto_create_mode` (String)
+- `publication_name_override` (String)
+- `replication_slot_override` (String)

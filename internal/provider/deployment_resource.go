@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,26 +30,6 @@ type DeploymentResource struct {
 	apiKey   string
 }
 
-type DeploymentResourceModel struct {
-	UUID                 types.String `tfsdk:"uuid"`
-	Name                 types.String `tfsdk:"name"`
-	Status               types.String `tfsdk:"status"`
-	LastUpdatedAt        types.String `tfsdk:"last_updated_at"`
-	HasUndeployedChanges types.Bool   `tfsdk:"has_undeployed_changes"`
-}
-
-type DeploymentResponse struct {
-	Deployment DeploymentResourceAPIModel `json:"deploy"`
-}
-
-type DeploymentResourceAPIModel struct {
-	UUID                 string `json:"uuid"`
-	Name                 string `json:"name"`
-	Status               string `json:"status"`
-	LastUpdatedAt        string `json:"lastUpdatedAt"`
-	HasUndeployedChanges bool   `json:"hasUndeployedChanges"`
-}
-
 func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_deployment"
 }
@@ -60,7 +42,94 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"name":                   schema.StringAttribute{Required: true},
 			"status":                 schema.StringAttribute{Computed: true, Optional: true},
 			"last_updated_at":        schema.StringAttribute{Computed: true},
+			"destination_uuid":       schema.StringAttribute{Computed: true},
 			"has_undeployed_changes": schema.BoolAttribute{Computed: true},
+			"source": schema.SingleNestedAttribute{
+				Required: true,
+				Attributes: map[string]schema.Attribute{
+					"name": schema.StringAttribute{Required: true},
+					"config": schema.SingleNestedAttribute{
+						Required: true,
+						Attributes: map[string]schema.Attribute{
+							"host":          schema.StringAttribute{Required: true},
+							"snapshot_host": schema.StringAttribute{Optional: true},
+							"port":          schema.Int64Attribute{Required: true},
+							"user":          schema.StringAttribute{Required: true},
+							"database":      schema.StringAttribute{Required: true},
+							"dynamodb": schema.SingleNestedAttribute{
+								Optional: true,
+								Attributes: map[string]schema.Attribute{
+									"region":                schema.StringAttribute{Optional: true},
+									"table_name":            schema.StringAttribute{Optional: true},
+									"streams_arn":           schema.StringAttribute{Optional: true},
+									"aws_access_key_id":     schema.StringAttribute{Optional: true},
+									"aws_secret_access_key": schema.StringAttribute{Optional: true},
+								},
+							},
+							// TODO Password
+						},
+					},
+					"tables": schema.ListNestedAttribute{
+						Required: true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"uuid":                  schema.StringAttribute{Computed: true},
+								"name":                  schema.StringAttribute{Required: true},
+								"schema":                schema.StringAttribute{Required: true},
+								"enable_history_mode":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+								"individual_deployment": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+								"is_partitioned":        schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+								"advanced_settings": schema.SingleNestedAttribute{
+									Optional: true,
+									Attributes: map[string]schema.Attribute{
+										"alias":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+										"skip_delete":            schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+										"flush_interval_seconds": schema.Int64Attribute{Optional: true, Computed: true},
+										"buffer_rows":            schema.Int64Attribute{Optional: true, Computed: true},
+										"flush_size_kb":          schema.Int64Attribute{Optional: true, Computed: true},
+										"autoscale_max_replicas": schema.Int64Attribute{Optional: true, Computed: true},
+										"autoscale_target_value": schema.Int64Attribute{Optional: true, Computed: true},
+										"k8s_request_cpu":        schema.Int64Attribute{Optional: true, Computed: true},
+										"k8s_request_memory_mb":  schema.Int64Attribute{Optional: true, Computed: true},
+										// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
+									},
+									Computed: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			"advanced_settings": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"drop_deleted_columns":               schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"include_artie_updated_at_column":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true)},
+					"include_database_updated_at_column": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"enable_heartbeats":                  schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"enable_soft_delete":                 schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"flush_interval_seconds":             schema.Int64Attribute{Optional: true, Computed: true},
+					"buffer_rows":                        schema.Int64Attribute{Optional: true, Computed: true},
+					"flush_size_kb":                      schema.Int64Attribute{Optional: true, Computed: true},
+					"publication_name_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"replication_slot_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"publication_auto_create_mode":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					// TODO PartitionRegex
+				},
+			},
+			"destination_config": schema.SingleNestedAttribute{
+				Required: true,
+				Attributes: map[string]schema.Attribute{
+					"database":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"schema":                    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"dataset":                   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"use_same_schema_as_source": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"schema_name_prefix":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"schema_override":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"bucket_name":               schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"optional_prefix":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+				},
+			},
 		},
 	}
 }
@@ -86,7 +155,7 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 }
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -116,7 +185,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -149,24 +218,22 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	var deploymentResp DeploymentResponse
+	var deploymentResp models.DeploymentAPIResponse
 	err = json.Unmarshal(bodyBytes, &deploymentResp)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
 	}
 
-	data.Name = types.StringValue(deploymentResp.Deployment.Name)
-	data.Status = types.StringValue(deploymentResp.Deployment.Status)
-	data.LastUpdatedAt = types.StringValue(deploymentResp.Deployment.LastUpdatedAt)
-	data.HasUndeployedChanges = types.BoolValue(deploymentResp.Deployment.HasUndeployedChanges)
+	// Translate API response into Terraform state
+	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -188,7 +255,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
