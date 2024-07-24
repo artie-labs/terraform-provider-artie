@@ -28,7 +28,6 @@ type DeploymentResource struct {
 	apiKey   string
 }
 
-// Resource model
 type DeploymentResourceModel struct {
 	UUID                 types.String `tfsdk:"uuid"`
 	Name                 types.String `tfsdk:"name"`
@@ -64,7 +63,6 @@ type TableModel struct {
 	// AdvancedSettings     types.Map    `tfsdk:"advanced_settings"`
 }
 
-// API response model
 type DeploymentResponse struct {
 	Deployment DeploymentResourceAPIModel `json:"deploy"`
 }
