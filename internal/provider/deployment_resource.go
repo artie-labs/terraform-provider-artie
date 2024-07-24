@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -26,143 +27,6 @@ func NewDeploymentResource() resource.Resource {
 type DeploymentResource struct {
 	endpoint string
 	apiKey   string
-}
-
-type DeploymentResourceModel struct {
-	UUID                 types.String                     `tfsdk:"uuid"`
-	Name                 types.String                     `tfsdk:"name"`
-	Status               types.String                     `tfsdk:"status"`
-	LastUpdatedAt        types.String                     `tfsdk:"last_updated_at"`
-	DestinationUUID      types.String                     `tfsdk:"destination_uuid"`
-	HasUndeployedChanges types.Bool                       `tfsdk:"has_undeployed_changes"`
-	Source               *SourceModel                     `tfsdk:"source"`
-	AdvancedSettings     *DeploymentAdvancedSettingsModel `tfsdk:"advanced_settings"`
-	UniqueConfig         types.Map                        `tfsdk:"unique_config"`
-}
-
-type DeploymentAdvancedSettingsModel struct {
-	DropDeletedColumns             types.Bool  `tfsdk:"drop_deleted_columns"`
-	IncludeArtieUpdatedAtColumn    types.Bool  `tfsdk:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn types.Bool  `tfsdk:"include_database_updated_at_column"`
-	EnableHeartbeats               types.Bool  `tfsdk:"enable_heartbeats"`
-	EnableSoftDelete               types.Bool  `tfsdk:"enable_soft_delete"`
-	FlushIntervalSeconds           types.Int64 `tfsdk:"flush_interval_seconds"`
-	BufferRows                     types.Int64 `tfsdk:"buffer_rows"`
-	FlushSizeKB                    types.Int64 `tfsdk:"flush_size_kb"`
-	// PublicationNameOverride
-	// ReplicationSlotOverride
-	// PublicationAutoCreateMode
-	// PartitionRegex
-}
-
-type SourceModel struct {
-	Name   types.String      `tfsdk:"name"`
-	Config SourceConfigModel `tfsdk:"config"`
-	Tables []TableModel      `tfsdk:"tables"`
-}
-
-type SourceConfigModel struct {
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int64  `tfsdk:"port"`
-	User     types.String `tfsdk:"user"`
-	Database types.String `tfsdk:"database"`
-	// Password
-	// DynamoDBConfig
-	// SnapshotHost
-}
-
-type TableModel struct {
-	UUID                 types.String               `tfsdk:"uuid"`
-	Name                 types.String               `tfsdk:"name"`
-	Schema               types.String               `tfsdk:"schema"`
-	EnableHistoryMode    types.Bool                 `tfsdk:"enable_history_mode"`
-	IndividualDeployment types.Bool                 `tfsdk:"individual_deployment"`
-	IsPartitioned        types.Bool                 `tfsdk:"is_partitioned"`
-	AdvancedSettings     TableAdvancedSettingsModel `tfsdk:"advanced_settings"`
-}
-
-type TableAdvancedSettingsModel struct {
-	Alias                types.String `tfsdk:"alias"`
-	SkipDelete           types.Bool   `tfsdk:"skip_delete"`
-	FlushIntervalSeconds types.Int64  `tfsdk:"flush_interval_seconds"`
-	BufferRows           types.Int64  `tfsdk:"buffer_rows"`
-	FlushSizeKB          types.Int64  `tfsdk:"flush_size_kb"`
-	// BigQueryPartitionSettings
-	// MergePredicates
-	// AutoscaleMaxReplicas
-	// AutoscaleTargetValue
-	// K8sRequestCPU
-	// K8sRequestMemoryMB
-	// ExcludeColumns
-}
-
-type DeploymentResponse struct {
-	Deployment DeploymentResourceAPIModel `json:"deploy"`
-}
-
-type DeploymentResourceAPIModel struct {
-	UUID                 string                             `json:"uuid"`
-	Name                 string                             `json:"name"`
-	Status               string                             `json:"status"`
-	LastUpdatedAt        string                             `json:"lastUpdatedAt"`
-	DestinationUUID      string                             `json:"destinationUUID"`
-	HasUndeployedChanges bool                               `json:"hasUndeployedChanges"`
-	Source               SourceAPIModel                     `json:"source"`
-	AdvancedSettings     DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
-	UniqueConfig         map[string]any                     `json:"uniqueConfig"`
-}
-
-type SourceAPIModel struct {
-	Name   string               `json:"name"`
-	Config SourceConfigAPIModel `json:"config"`
-	Tables []TableAPIModel      `json:"tables"`
-}
-
-type SourceConfigAPIModel struct {
-	Host     string `json:"host"`
-	Port     int64  `json:"port"`
-	User     string `json:"user"`
-	Database string `json:"database"`
-}
-
-type TableAPIModel struct {
-	UUID                 string                        `json:"uuid"`
-	Name                 string                        `json:"name"`
-	Schema               string                        `json:"schema"`
-	EnableHistoryMode    bool                          `json:"enableHistoryMode"`
-	IndividualDeployment bool                          `json:"individualDeployment"`
-	IsPartitioned        bool                          `json:"isPartitioned"`
-	AdvancedSettings     TableAdvancedSettingsAPIModel `json:"advancedSettings"`
-}
-
-type TableAdvancedSettingsAPIModel struct {
-	Alias                string `json:"alias"`
-	SkipDelete           bool   `json:"skip_delete"`
-	FlushIntervalSeconds int64  `json:"flush_interval_seconds"`
-	BufferRows           int64  `json:"buffer_rows"`
-	FlushSizeKB          int64  `json:"flush_size_kb"`
-	// BigQueryPartitionSettings
-	// MergePredicates
-	// AutoscaleMaxReplicas
-	// AutoscaleTargetValue
-	// K8sRequestCPU
-	// K8sRequestMemoryMB
-	// ExcludeColumns
-}
-
-type DeploymentAdvancedSettingsAPIModel struct {
-	DropDeletedColumns             bool  `json:"drop_deleted_columns"`
-	IncludeArtieUpdatedAtColumn    bool  `json:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn bool  `json:"include_database_updated_at_column"`
-	EnableHeartbeats               bool  `json:"enable_heartbeats"`
-	EnableSoftDelete               bool  `json:"enable_soft_delete"`
-	FlushIntervalSeconds           int64 `json:"flush_interval_seconds"`
-	BufferRows                     int64 `json:"buffer_rows"`
-	FlushSizeKB                    int64 `json:"flush_size_kb"`
-	// PublicationNameOverride
-	// ReplicationSlotOverride
-	// PublicationAutoCreateMode
-	// PartitionRegex
 }
 
 func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -259,7 +123,7 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 }
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -289,7 +153,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -322,64 +186,22 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	var deploymentResp DeploymentResponse
+	var deploymentResp models.DeploymentAPIResponse
 	err = json.Unmarshal(bodyBytes, &deploymentResp)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
 	}
 
-	data.Name = types.StringValue(deploymentResp.Deployment.Name)
-	data.Status = types.StringValue(deploymentResp.Deployment.Status)
-	data.LastUpdatedAt = types.StringValue(deploymentResp.Deployment.LastUpdatedAt)
-	data.HasUndeployedChanges = types.BoolValue(deploymentResp.Deployment.HasUndeployedChanges)
-	data.DestinationUUID = types.StringValue(deploymentResp.Deployment.DestinationUUID)
-
-	tables := []TableModel{}
-	for _, apiTable := range deploymentResp.Deployment.Source.Tables {
-		tables = append(tables, TableModel{
-			UUID:                 types.StringValue(apiTable.UUID),
-			Name:                 types.StringValue(apiTable.Name),
-			Schema:               types.StringValue(apiTable.Schema),
-			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
-			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
-			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-			AdvancedSettings: TableAdvancedSettingsModel{
-				Alias:                types.StringValue(apiTable.AdvancedSettings.Alias),
-				SkipDelete:           types.BoolValue(apiTable.AdvancedSettings.SkipDelete),
-				FlushIntervalSeconds: types.Int64Value(apiTable.AdvancedSettings.FlushIntervalSeconds),
-				BufferRows:           types.Int64Value(apiTable.AdvancedSettings.BufferRows),
-				FlushSizeKB:          types.Int64Value(apiTable.AdvancedSettings.FlushSizeKB),
-			},
-		})
-	}
-	data.Source = &SourceModel{
-		Name: types.StringValue(deploymentResp.Deployment.Source.Name),
-		Config: SourceConfigModel{
-			Host:     types.StringValue(deploymentResp.Deployment.Source.Config.Host),
-			Port:     types.Int64Value(deploymentResp.Deployment.Source.Config.Port),
-			User:     types.StringValue(deploymentResp.Deployment.Source.Config.User),
-			Database: types.StringValue(deploymentResp.Deployment.Source.Config.Database),
-		},
-		Tables: tables,
-	}
-	data.AdvancedSettings = &DeploymentAdvancedSettingsModel{
-		DropDeletedColumns:             types.BoolValue(deploymentResp.Deployment.AdvancedSettings.DropDeletedColumns),
-		IncludeArtieUpdatedAtColumn:    types.BoolValue(deploymentResp.Deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn),
-		IncludeDatabaseUpdatedAtColumn: types.BoolValue(deploymentResp.Deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn),
-		EnableHeartbeats:               types.BoolValue(deploymentResp.Deployment.AdvancedSettings.EnableHeartbeats),
-		EnableSoftDelete:               types.BoolValue(deploymentResp.Deployment.AdvancedSettings.EnableSoftDelete),
-		FlushIntervalSeconds:           types.Int64Value(deploymentResp.Deployment.AdvancedSettings.FlushIntervalSeconds),
-		BufferRows:                     types.Int64Value(deploymentResp.Deployment.AdvancedSettings.BufferRows),
-		FlushSizeKB:                    types.Int64Value(deploymentResp.Deployment.AdvancedSettings.FlushSizeKB),
-	}
+	// Translate API response into Terraform state
+	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -401,7 +223,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data DeploymentResourceModel
+	var data models.DeploymentResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
