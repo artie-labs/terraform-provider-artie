@@ -18,13 +18,55 @@ Artie Deployment resource
 ### Required
 
 - `name` (String)
+- `source` (Attributes) (see [below for nested schema](#nestedatt--source))
 
 ### Optional
 
+- `advanced_settings` (Map of String)
 - `status` (String)
+- `unique_config` (Map of String)
 
 ### Read-Only
 
+- `destination_uuid` (String)
 - `has_undeployed_changes` (Boolean)
 - `last_updated_at` (String)
+- `uuid` (String)
+
+<a id="nestedatt--source"></a>
+### Nested Schema for `source`
+
+Required:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--source--config))
+- `name` (String)
+- `tables` (Attributes List) (see [below for nested schema](#nestedatt--source--tables))
+
+<a id="nestedatt--source--config"></a>
+### Nested Schema for `source.config`
+
+Required:
+
+- `database` (String)
+- `host` (String)
+- `port` (Number)
+- `user` (String)
+
+
+<a id="nestedatt--source--tables"></a>
+### Nested Schema for `source.tables`
+
+Required:
+
+- `name` (String)
+- `schema` (String)
+
+Optional:
+
+- `enable_history_mode` (Boolean)
+- `individual_deployment` (Boolean)
+- `is_partitioned` (Boolean)
+
+Read-Only:
+
 - `uuid` (String)
