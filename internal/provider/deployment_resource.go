@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -63,18 +65,19 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"uuid":                  schema.StringAttribute{Computed: true},
 								"name":                  schema.StringAttribute{Required: true},
 								"schema":                schema.StringAttribute{Required: true},
-								"enable_history_mode":   schema.BoolAttribute{Optional: true},
-								"individual_deployment": schema.BoolAttribute{Optional: true},
-								"is_partitioned":        schema.BoolAttribute{Optional: true},
+								"enable_history_mode":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+								"individual_deployment": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+								"is_partitioned":        schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
 								"advanced_settings": schema.SingleNestedAttribute{
 									Optional: true,
 									Attributes: map[string]schema.Attribute{
-										"alias":                  schema.StringAttribute{Optional: true},
-										"skip_delete":            schema.BoolAttribute{Optional: true},
-										"flush_interval_seconds": schema.Int64Attribute{Optional: true},
-										"buffer_rows":            schema.Int64Attribute{Optional: true},
-										"flush_size_kb":          schema.Int64Attribute{Optional: true},
+										"alias":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+										"skip_delete":            schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+										"flush_interval_seconds": schema.Int64Attribute{Optional: true, Computed: true},
+										"buffer_rows":            schema.Int64Attribute{Optional: true, Computed: true},
+										"flush_size_kb":          schema.Int64Attribute{Optional: true, Computed: true},
 									},
+									Computed: true,
 								},
 							},
 						},
@@ -84,14 +87,14 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"advanced_settings": schema.SingleNestedAttribute{
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
-					"drop_deleted_columns":               schema.BoolAttribute{Optional: true},
-					"include_artie_updated_at_column":    schema.BoolAttribute{Optional: true},
-					"include_database_updated_at_column": schema.BoolAttribute{Optional: true},
-					"enable_heartbeats":                  schema.BoolAttribute{Optional: true},
-					"enable_soft_delete":                 schema.BoolAttribute{Optional: true},
-					"flush_interval_seconds":             schema.Int64Attribute{Optional: true},
-					"buffer_rows":                        schema.Int64Attribute{Optional: true},
-					"flush_size_kb":                      schema.Int64Attribute{Optional: true},
+					"drop_deleted_columns":               schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"include_artie_updated_at_column":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true)},
+					"include_database_updated_at_column": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"enable_heartbeats":                  schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"enable_soft_delete":                 schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"flush_interval_seconds":             schema.Int64Attribute{Optional: true, Computed: true},
+					"buffer_rows":                        schema.Int64Attribute{Optional: true, Computed: true},
+					"flush_size_kb":                      schema.Int64Attribute{Optional: true, Computed: true},
 				},
 			},
 			"unique_config": schema.MapAttribute{
