@@ -29,15 +29,30 @@ type DeploymentResource struct {
 }
 
 type DeploymentResourceModel struct {
-	UUID                 types.String `tfsdk:"uuid"`
-	Name                 types.String `tfsdk:"name"`
-	Status               types.String `tfsdk:"status"`
-	LastUpdatedAt        types.String `tfsdk:"last_updated_at"`
-	DestinationUUID      types.String `tfsdk:"destination_uuid"`
-	HasUndeployedChanges types.Bool   `tfsdk:"has_undeployed_changes"`
-	Source               *SourceModel `tfsdk:"source"`
-	AdvancedSettings     types.Map    `tfsdk:"advanced_settings"`
-	UniqueConfig         types.Map    `tfsdk:"unique_config"`
+	UUID                 types.String                     `tfsdk:"uuid"`
+	Name                 types.String                     `tfsdk:"name"`
+	Status               types.String                     `tfsdk:"status"`
+	LastUpdatedAt        types.String                     `tfsdk:"last_updated_at"`
+	DestinationUUID      types.String                     `tfsdk:"destination_uuid"`
+	HasUndeployedChanges types.Bool                       `tfsdk:"has_undeployed_changes"`
+	Source               *SourceModel                     `tfsdk:"source"`
+	AdvancedSettings     *DeploymentAdvancedSettingsModel `tfsdk:"advanced_settings"`
+	UniqueConfig         types.Map                        `tfsdk:"unique_config"`
+}
+
+type DeploymentAdvancedSettingsModel struct {
+	DropDeletedColumns             types.Bool  `tfsdk:"drop_deleted_columns"`
+	IncludeArtieUpdatedAtColumn    types.Bool  `tfsdk:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn types.Bool  `tfsdk:"include_database_updated_at_column"`
+	EnableHeartbeats               types.Bool  `tfsdk:"enable_heartbeats"`
+	EnableSoftDelete               types.Bool  `tfsdk:"enable_soft_delete"`
+	FlushIntervalSeconds           types.Int64 `tfsdk:"flush_interval_seconds"`
+	BufferRows                     types.Int64 `tfsdk:"buffer_rows"`
+	FlushSizeKB                    types.Int64 `tfsdk:"flush_size_kb"`
+	// PublicationNameOverride
+	// ReplicationSlotOverride
+	// PublicationAutoCreateMode
+	// PartitionRegex
 }
 
 type SourceModel struct {
@@ -86,15 +101,15 @@ type DeploymentResponse struct {
 }
 
 type DeploymentResourceAPIModel struct {
-	UUID                 string         `json:"uuid"`
-	Name                 string         `json:"name"`
-	Status               string         `json:"status"`
-	LastUpdatedAt        string         `json:"lastUpdatedAt"`
-	DestinationUUID      string         `json:"destinationUUID"`
-	HasUndeployedChanges bool           `json:"hasUndeployedChanges"`
-	Source               SourceAPIModel `json:"source"`
-	AdvancedSettings     map[string]any `json:"advancedSettings"`
-	UniqueConfig         map[string]any `json:"uniqueConfig"`
+	UUID                 string                             `json:"uuid"`
+	Name                 string                             `json:"name"`
+	Status               string                             `json:"status"`
+	LastUpdatedAt        string                             `json:"lastUpdatedAt"`
+	DestinationUUID      string                             `json:"destinationUUID"`
+	HasUndeployedChanges bool                               `json:"hasUndeployedChanges"`
+	Source               SourceAPIModel                     `json:"source"`
+	AdvancedSettings     DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
+	UniqueConfig         map[string]any                     `json:"uniqueConfig"`
 }
 
 type SourceAPIModel struct {
@@ -135,6 +150,21 @@ type TableAdvancedSettingsAPIModel struct {
 	// ExcludeColumns
 }
 
+type DeploymentAdvancedSettingsAPIModel struct {
+	DropDeletedColumns             bool  `json:"drop_deleted_columns"`
+	IncludeArtieUpdatedAtColumn    bool  `json:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn bool  `json:"include_database_updated_at_column"`
+	EnableHeartbeats               bool  `json:"enable_heartbeats"`
+	EnableSoftDelete               bool  `json:"enable_soft_delete"`
+	FlushIntervalSeconds           int64 `json:"flush_interval_seconds"`
+	BufferRows                     int64 `json:"buffer_rows"`
+	FlushSizeKB                    int64 `json:"flush_size_kb"`
+	// PublicationNameOverride
+	// ReplicationSlotOverride
+	// PublicationAutoCreateMode
+	// PartitionRegex
+}
+
 func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_deployment"
 }
@@ -157,7 +187,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Required: true,
 						Attributes: map[string]schema.Attribute{
 							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.NumberAttribute{Required: true},
+							"port":     schema.Int64Attribute{Required: true},
 							"user":     schema.StringAttribute{Required: true},
 							"database": schema.StringAttribute{Required: true},
 						},
@@ -177,9 +207,9 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Attributes: map[string]schema.Attribute{
 										"alias":                  schema.StringAttribute{Optional: true},
 										"skip_delete":            schema.BoolAttribute{Optional: true},
-										"flush_interval_seconds": schema.NumberAttribute{Optional: true},
-										"buffer_rows":            schema.NumberAttribute{Optional: true},
-										"flush_size_kb":          schema.NumberAttribute{Optional: true},
+										"flush_interval_seconds": schema.Int64Attribute{Optional: true},
+										"buffer_rows":            schema.Int64Attribute{Optional: true},
+										"flush_size_kb":          schema.Int64Attribute{Optional: true},
 									},
 								},
 							},
@@ -187,9 +217,18 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 				},
 			},
-			"advanced_settings": schema.MapAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+			"advanced_settings": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"drop_deleted_columns":               schema.BoolAttribute{Optional: true},
+					"include_artie_updated_at_column":    schema.BoolAttribute{Optional: true},
+					"include_database_updated_at_column": schema.BoolAttribute{Optional: true},
+					"enable_heartbeats":                  schema.BoolAttribute{Optional: true},
+					"enable_soft_delete":                 schema.BoolAttribute{Optional: true},
+					"flush_interval_seconds":             schema.Int64Attribute{Optional: true},
+					"buffer_rows":                        schema.Int64Attribute{Optional: true},
+					"flush_size_kb":                      schema.Int64Attribute{Optional: true},
+				},
 			},
 			"unique_config": schema.MapAttribute{
 				Optional:    true,
@@ -323,6 +362,16 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 			Database: types.StringValue(deploymentResp.Deployment.Source.Config.Database),
 		},
 		Tables: tables,
+	}
+	data.AdvancedSettings = &DeploymentAdvancedSettingsModel{
+		DropDeletedColumns:             types.BoolValue(deploymentResp.Deployment.AdvancedSettings.DropDeletedColumns),
+		IncludeArtieUpdatedAtColumn:    types.BoolValue(deploymentResp.Deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn),
+		IncludeDatabaseUpdatedAtColumn: types.BoolValue(deploymentResp.Deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn),
+		EnableHeartbeats:               types.BoolValue(deploymentResp.Deployment.AdvancedSettings.EnableHeartbeats),
+		EnableSoftDelete:               types.BoolValue(deploymentResp.Deployment.AdvancedSettings.EnableSoftDelete),
+		FlushIntervalSeconds:           types.Int64Value(deploymentResp.Deployment.AdvancedSettings.FlushIntervalSeconds),
+		BufferRows:                     types.Int64Value(deploymentResp.Deployment.AdvancedSettings.BufferRows),
+		FlushSizeKB:                    types.Int64Value(deploymentResp.Deployment.AdvancedSettings.FlushSizeKB),
 	}
 
 	// Save updated data into Terraform state

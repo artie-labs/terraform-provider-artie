@@ -39,6 +39,10 @@ resource "artie_deployment" "example" {
       }
     ]
   }
+  advanced_settings = {
+    drop_deleted_columns = false
+    enable_soft_delete   = true
+  }
 }
 
 # data "artie_deployments" "example" {}

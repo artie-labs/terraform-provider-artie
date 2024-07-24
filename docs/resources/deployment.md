@@ -22,7 +22,7 @@ Artie Deployment resource
 
 ### Optional
 
-- `advanced_settings` (Map of String)
+- `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--advanced_settings))
 - `status` (String)
 - `unique_config` (Map of String)
 
@@ -82,3 +82,20 @@ Optional:
 - `flush_interval_seconds` (Number)
 - `flush_size_kb` (Number)
 - `skip_delete` (Boolean)
+
+
+
+
+<a id="nestedatt--advanced_settings"></a>
+### Nested Schema for `advanced_settings`
+
+Optional:
+
+- `buffer_rows` (Number)
+- `drop_deleted_columns` (Boolean)
+- `enable_heartbeats` (Boolean)
+- `enable_soft_delete` (Boolean)
+- `flush_interval_seconds` (Number)
+- `flush_size_kb` (Number)
+- `include_artie_updated_at_column` (Boolean)
+- `include_database_updated_at_column` (Boolean)
