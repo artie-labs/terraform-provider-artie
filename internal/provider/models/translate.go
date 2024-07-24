@@ -30,10 +30,18 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	resourceModel.Source = &SourceModel{
 		Name: types.StringValue(apiModel.Source.Name),
 		Config: SourceConfigModel{
-			Host:     types.StringValue(apiModel.Source.Config.Host),
-			Port:     types.Int64Value(apiModel.Source.Config.Port),
-			User:     types.StringValue(apiModel.Source.Config.User),
-			Database: types.StringValue(apiModel.Source.Config.Database),
+			Host:         types.StringValue(apiModel.Source.Config.Host),
+			SnapshotHost: types.StringValue(apiModel.Source.Config.SnapshotHost),
+			Port:         types.Int64Value(apiModel.Source.Config.Port),
+			User:         types.StringValue(apiModel.Source.Config.User),
+			Database:     types.StringValue(apiModel.Source.Config.Database),
+			DynamoDB: &DynamoDBConfigModel{
+				Region:             types.StringValue(apiModel.Source.Config.DynamoDB.Region),
+				TableName:          types.StringValue(apiModel.Source.Config.DynamoDB.TableName),
+				StreamsArn:         types.StringValue(apiModel.Source.Config.DynamoDB.StreamsArn),
+				AwsAccessKeyID:     types.StringValue(apiModel.Source.Config.DynamoDB.AwsAccessKeyID),
+				AwsSecretAccessKey: types.StringValue(apiModel.Source.Config.DynamoDB.AwsSecretAccessKey),
+			},
 		},
 		Tables: tables,
 	}

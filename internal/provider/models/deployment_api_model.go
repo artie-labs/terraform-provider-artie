@@ -23,13 +23,21 @@ type SourceAPIModel struct {
 }
 
 type SourceConfigAPIModel struct {
-	Host     string `json:"host"`
-	Port     int64  `json:"port"`
-	User     string `json:"user"`
-	Database string `json:"database"`
-	// Password
-	// DynamoDBConfig
-	// SnapshotHost
+	Host         string                 `json:"host"`
+	SnapshotHost string                 `json:"snapshotHost"`
+	Port         int64                  `json:"port"`
+	User         string                 `json:"user"`
+	Database     string                 `json:"database"`
+	DynamoDB     DynamoDBConfigAPIModel `json:"dynamodb"`
+	// TODO Password
+}
+
+type DynamoDBConfigAPIModel struct {
+	Region             string `json:"region"`
+	TableName          string `json:"tableName"`
+	StreamsArn         string `json:"streamsArn"`
+	AwsAccessKeyID     string `json:"awsAccessKeyId"`
+	AwsSecretAccessKey string `json:"awsSecretAccessKey"`
 }
 
 type TableAPIModel struct {

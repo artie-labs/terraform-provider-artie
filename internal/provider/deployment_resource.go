@@ -51,10 +51,21 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"config": schema.SingleNestedAttribute{
 						Required: true,
 						Attributes: map[string]schema.Attribute{
-							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int64Attribute{Required: true},
-							"user":     schema.StringAttribute{Required: true},
-							"database": schema.StringAttribute{Required: true},
+							"host":          schema.StringAttribute{Required: true},
+							"snapshot_host": schema.StringAttribute{Optional: true},
+							"port":          schema.Int64Attribute{Required: true},
+							"user":          schema.StringAttribute{Required: true},
+							"database":      schema.StringAttribute{Required: true},
+							"dynamodb": schema.SingleNestedAttribute{
+								Optional: true,
+								Attributes: map[string]schema.Attribute{
+									"region":                schema.StringAttribute{Optional: true},
+									"table_name":            schema.StringAttribute{Optional: true},
+									"streams_arn":           schema.StringAttribute{Optional: true},
+									"aws_access_key_id":     schema.StringAttribute{Optional: true},
+									"aws_secret_access_key": schema.StringAttribute{Optional: true},
+								},
+							},
 						},
 					},
 					"tables": schema.ListNestedAttribute{

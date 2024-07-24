@@ -67,6 +67,23 @@ Required:
 - `port` (Number)
 - `user` (String)
 
+Optional:
+
+- `dynamodb` (Attributes) (see [below for nested schema](#nestedatt--source--config--dynamodb))
+- `snapshot_host` (String)
+
+<a id="nestedatt--source--config--dynamodb"></a>
+### Nested Schema for `source.config.dynamodb`
+
+Optional:
+
+- `aws_access_key_id` (String)
+- `aws_secret_access_key` (String)
+- `region` (String)
+- `streams_arn` (String)
+- `table_name` (String)
+
+
 
 <a id="nestedatt--source--tables"></a>
 ### Nested Schema for `source.tables`

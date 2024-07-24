@@ -21,13 +21,21 @@ type SourceModel struct {
 }
 
 type SourceConfigModel struct {
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int64  `tfsdk:"port"`
-	User     types.String `tfsdk:"user"`
-	Database types.String `tfsdk:"database"`
-	// Password
-	// DynamoDBConfig
-	// SnapshotHost
+	Host         types.String         `tfsdk:"host"`
+	SnapshotHost types.String         `tfsdk:"snapshot_host"`
+	Port         types.Int64          `tfsdk:"port"`
+	User         types.String         `tfsdk:"user"`
+	Database     types.String         `tfsdk:"database"`
+	DynamoDB     *DynamoDBConfigModel `tfsdk:"dynamodb"`
+	// TODO Password
+}
+
+type DynamoDBConfigModel struct {
+	Region             types.String `tfsdk:"region"`
+	TableName          types.String `tfsdk:"table_name"`
+	StreamsArn         types.String `tfsdk:"streams_arn"`
+	AwsAccessKeyID     types.String `tfsdk:"aws_access_key_id"`
+	AwsSecretAccessKey types.String `tfsdk:"aws_secret_access_key"`
 }
 
 type TableModel struct {
