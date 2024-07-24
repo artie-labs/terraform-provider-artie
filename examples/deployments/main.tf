@@ -39,6 +39,9 @@ resource "artie_deployment" "example" {
       }
     ]
   }
+  destination_config = {
+    dataset = "customers"
+  }
   advanced_settings = {
     enable_soft_delete = true
   }

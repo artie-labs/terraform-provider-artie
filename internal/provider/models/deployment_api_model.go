@@ -13,7 +13,7 @@ type DeploymentAPIModel struct {
 	HasUndeployedChanges bool                               `json:"hasUndeployedChanges"`
 	Source               SourceAPIModel                     `json:"source"`
 	AdvancedSettings     DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
-	UniqueConfig         map[string]any                     `json:"uniqueConfig"`
+	DestinationConfig    DestinationConfigAPIModel          `json:"uniqueConfig"`
 }
 
 type SourceAPIModel struct {
@@ -70,4 +70,15 @@ type DeploymentAdvancedSettingsAPIModel struct {
 	// ReplicationSlotOverride
 	// PublicationAutoCreateMode
 	// PartitionRegex
+}
+
+type DestinationConfigAPIModel struct {
+	Dataset               string `json:"dataset"`
+	Database              string `json:"database"`
+	Schema                string `json:"schema"`
+	SchemaOverride        string `json:"schemaOverride"`
+	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
+	SchemaNamePrefix      string `json:"schemaNamePrefix"`
+	BucketName            string `json:"bucketName"`
+	OptionalPrefix        string `json:"optionalPrefix"`
 }

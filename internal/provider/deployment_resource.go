@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -97,9 +96,18 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"flush_size_kb":                      schema.Int64Attribute{Optional: true, Computed: true},
 				},
 			},
-			"unique_config": schema.MapAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+			"destination_config": schema.SingleNestedAttribute{
+				Required: true,
+				Attributes: map[string]schema.Attribute{
+					"database":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"schema":                    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"dataset":                   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"use_same_schema_as_source": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
+					"schema_name_prefix":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"schema_override":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"bucket_name":               schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"optional_prefix":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+				},
 			},
 		},
 	}

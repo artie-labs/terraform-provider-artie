@@ -17,6 +17,7 @@ Artie Deployment resource
 
 ### Required
 
+- `destination_config` (Attributes) (see [below for nested schema](#nestedatt--destination_config))
 - `name` (String)
 - `source` (Attributes) (see [below for nested schema](#nestedatt--source))
 
@@ -24,7 +25,6 @@ Artie Deployment resource
 
 - `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--advanced_settings))
 - `status` (String)
-- `unique_config` (Map of String)
 
 ### Read-Only
 
@@ -32,6 +32,21 @@ Artie Deployment resource
 - `has_undeployed_changes` (Boolean)
 - `last_updated_at` (String)
 - `uuid` (String)
+
+<a id="nestedatt--destination_config"></a>
+### Nested Schema for `destination_config`
+
+Optional:
+
+- `bucket_name` (String)
+- `database` (String)
+- `dataset` (String)
+- `optional_prefix` (String)
+- `schema` (String)
+- `schema_name_prefix` (String)
+- `schema_override` (String)
+- `use_same_schema_as_source` (Boolean)
+
 
 <a id="nestedatt--source"></a>
 ### Nested Schema for `source`

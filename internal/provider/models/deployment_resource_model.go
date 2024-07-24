@@ -11,7 +11,7 @@ type DeploymentResourceModel struct {
 	HasUndeployedChanges types.Bool                       `tfsdk:"has_undeployed_changes"`
 	Source               *SourceModel                     `tfsdk:"source"`
 	AdvancedSettings     *DeploymentAdvancedSettingsModel `tfsdk:"advanced_settings"`
-	UniqueConfig         types.Map                        `tfsdk:"unique_config"`
+	DestinationConfig    *DestinationConfigModel          `tfsdk:"destination_config"`
 }
 
 type SourceModel struct {
@@ -68,4 +68,15 @@ type DeploymentAdvancedSettingsModel struct {
 	// ReplicationSlotOverride
 	// PublicationAutoCreateMode
 	// PartitionRegex
+}
+
+type DestinationConfigModel struct {
+	Dataset               types.String `tfsdk:"dataset"`
+	Database              types.String `tfsdk:"database"`
+	Schema                types.String `tfsdk:"schema"`
+	SchemaOverride        types.String `tfsdk:"schema_override"`
+	UseSameSchemaAsSource types.Bool   `tfsdk:"use_same_schema_as_source"`
+	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
+	BucketName            types.String `tfsdk:"bucket_name"`
+	OptionalPrefix        types.String `tfsdk:"optional_prefix"`
 }

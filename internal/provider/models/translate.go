@@ -37,6 +37,16 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		},
 		Tables: tables,
 	}
+	resourceModel.DestinationConfig = &DestinationConfigModel{
+		Dataset:               types.StringValue(apiModel.DestinationConfig.Dataset),
+		Database:              types.StringValue(apiModel.DestinationConfig.Database),
+		Schema:                types.StringValue(apiModel.DestinationConfig.Schema),
+		SchemaOverride:        types.StringValue(apiModel.DestinationConfig.SchemaOverride),
+		UseSameSchemaAsSource: types.BoolValue(apiModel.DestinationConfig.UseSameSchemaAsSource),
+		SchemaNamePrefix:      types.StringValue(apiModel.DestinationConfig.SchemaNamePrefix),
+		BucketName:            types.StringValue(apiModel.DestinationConfig.BucketName),
+		OptionalPrefix:        types.StringValue(apiModel.DestinationConfig.OptionalPrefix),
+	}
 	resourceModel.AdvancedSettings = &DeploymentAdvancedSettingsModel{
 		DropDeletedColumns:             types.BoolValue(apiModel.AdvancedSettings.DropDeletedColumns),
 		IncludeArtieUpdatedAtColumn:    types.BoolValue(apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn),
