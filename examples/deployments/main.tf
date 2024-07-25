@@ -56,6 +56,34 @@ resource "artie_deployment" "example" {
   }
 }
 
+resource "artie_deployment" "newdeployment" {
+  name = "New deployment from tf"
+  source = {
+    name = "MongoDB"
+    config = {
+      database = "myFirstDatabase"
+      host     = "mongodb+srv://cluster0.szddg49.mongodb.net/"
+      port     = 0
+      user     = "artie"
+      dynamodb = {}
+    }
+    tables = [
+      {
+        name   = "customers"
+        schema = ""
+        advanced_settings = {
+          skip_delete = false
+        }
+      },
+    ]
+  }
+  destination_uuid = "fa7d4efc-3957-41e5-b29c-66e2d49bffde"
+  destination_config = {
+    dataset = "customers"
+  }
+  advanced_settings = {}
+}
+
 # data "artie_deployments" "example" {}
 
 # output "deployments" {
