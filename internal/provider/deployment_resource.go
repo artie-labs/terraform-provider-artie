@@ -260,9 +260,8 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data models.DeploymentResourceModel
-
 	// Read Terraform prior state data into the model
+	var data models.DeploymentResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -295,9 +294,8 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data models.DeploymentResourceModel
-
 	// Read Terraform plan data into the model
+	var data models.DeploymentResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
