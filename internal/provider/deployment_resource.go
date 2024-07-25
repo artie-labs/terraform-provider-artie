@@ -244,11 +244,12 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	ctx = tflog.SetField(ctx, "uuid", data.UUID.ValueString())
+	url := fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString())
+	ctx = tflog.SetField(ctx, "url", url)
 	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
-	tflog.Info(ctx, "Updating deployment")
+	tflog.Info(ctx, "Updating deployment via API")
 
-	apiReq, err := http.NewRequest("POST", fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString()), bytes.NewReader(payloadBytes))
+	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
