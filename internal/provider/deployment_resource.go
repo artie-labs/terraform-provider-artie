@@ -192,7 +192,7 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	bodyBytes, err := r.HandleAPIRequest(ctx, apiReq)
+	bodyBytes, err := r.handleAPIRequest(ctx, apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
@@ -242,7 +242,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	bodyBytes, err := r.HandleAPIRequest(ctx, apiReq)
+	bodyBytes, err := r.handleAPIRequest(ctx, apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -278,7 +278,7 @@ func (r *DeploymentResource) ImportState(ctx context.Context, req resource.Impor
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
 }
 
-func (r *DeploymentResource) HandleAPIRequest(ctx context.Context, apiReq *http.Request) (bodyBytes []byte, err error) {
+func (r *DeploymentResource) handleAPIRequest(ctx context.Context, apiReq *http.Request) (bodyBytes []byte, err error) {
 	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
 	apiResp, err := http.DefaultClient.Do(apiReq)
 	if err != nil {
