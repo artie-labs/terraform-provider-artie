@@ -16,7 +16,7 @@ import {
 }
 
 resource "artie_deployment" "example" {
-  name = "MongoDB ➡️ BigQueryyy"
+  name = "MongoDB ➡️ BigQueryy"
   source = {
     name = "MongoDB"
     config = {
@@ -35,12 +35,12 @@ resource "artie_deployment" "example" {
         }
       },
       {
-        name              = "stock"
+        name              = "new_table"
         schema            = ""
         advanced_settings = {}
       },
       {
-        name              = "new_table"
+        name              = "stock"
         schema            = ""
         advanced_settings = {}
       }
