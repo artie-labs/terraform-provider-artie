@@ -192,20 +192,7 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
-	apiResp, err := http.DefaultClient.Do(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
-		return
-	}
-
-	if apiResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError("Unable to Read Deployment", fmt.Sprintf("Received status code %d", apiResp.StatusCode))
-		return
-	}
-
-	defer apiResp.Body.Close()
-	bodyBytes, err := io.ReadAll(apiResp.Body)
+	bodyBytes, err := r.HandleAPIRequest(ctx, apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
@@ -255,20 +242,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
-	apiResp, err := http.DefaultClient.Do(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	if apiResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError("Unable to Update Deployment", fmt.Sprintf("Received status code %d", apiResp.StatusCode))
-		return
-	}
-
-	defer apiResp.Body.Close()
-	bodyBytes, err := io.ReadAll(apiResp.Body)
+	bodyBytes, err := r.HandleAPIRequest(ctx, apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -302,4 +276,19 @@ func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 func (r *DeploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
+}
+
+func (r *DeploymentResource) HandleAPIRequest(ctx context.Context, apiReq *http.Request) (bodyBytes []byte, err error) {
+	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
+	apiResp, err := http.DefaultClient.Do(apiReq)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if apiResp.StatusCode != http.StatusOK {
+		return []byte{}, fmt.Errorf("received status code %d", apiResp.StatusCode)
+	}
+
+	defer apiResp.Body.Close()
+	return io.ReadAll(apiResp.Body)
 }
