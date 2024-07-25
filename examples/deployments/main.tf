@@ -16,7 +16,7 @@ import {
 }
 
 resource "artie_deployment" "example" {
-  name = "MongoDB ➡️ BigQueryy"
+  name = "MongoDB ➡️ BigQuery"
   source = {
     name = "MongoDB"
     config = {

@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -44,9 +45,9 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"uuid":                   schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"company_uuid":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                   schema.StringAttribute{Required: true},
-			"status":                 schema.StringAttribute{Computed: true, Optional: true},
-			"last_updated_at":        schema.StringAttribute{Computed: true},
+			"status":                 schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_uuid":       schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"last_updated_at":        schema.StringAttribute{Computed: true},
 			"has_undeployed_changes": schema.BoolAttribute{Computed: true},
 			"source": schema.SingleNestedAttribute{
 				Required: true,
@@ -88,13 +89,13 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Attributes: map[string]schema.Attribute{
 										"alias":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 										"skip_delete":            schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
-										"flush_interval_seconds": schema.Int64Attribute{Optional: true, Computed: true},
-										"buffer_rows":            schema.Int64Attribute{Optional: true, Computed: true},
-										"flush_size_kb":          schema.Int64Attribute{Optional: true, Computed: true},
-										"autoscale_max_replicas": schema.Int64Attribute{Optional: true, Computed: true},
-										"autoscale_target_value": schema.Int64Attribute{Optional: true, Computed: true},
-										"k8s_request_cpu":        schema.Int64Attribute{Optional: true, Computed: true},
-										"k8s_request_memory_mb":  schema.Int64Attribute{Optional: true, Computed: true},
+										"flush_interval_seconds": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+										"buffer_rows":            schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+										"flush_size_kb":          schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+										"autoscale_max_replicas": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+										"autoscale_target_value": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+										"k8s_request_cpu":        schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+										"k8s_request_memory_mb":  schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 										// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
 									},
 									Computed: true,
@@ -112,9 +113,9 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"include_database_updated_at_column": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
 					"enable_heartbeats":                  schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
 					"enable_soft_delete":                 schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
-					"flush_interval_seconds":             schema.Int64Attribute{Optional: true, Computed: true},
-					"buffer_rows":                        schema.Int64Attribute{Optional: true, Computed: true},
-					"flush_size_kb":                      schema.Int64Attribute{Optional: true, Computed: true},
+					"flush_interval_seconds":             schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+					"buffer_rows":                        schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+					"flush_size_kb":                      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 					"publication_name_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 					"replication_slot_override":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 					"publication_auto_create_mode":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
