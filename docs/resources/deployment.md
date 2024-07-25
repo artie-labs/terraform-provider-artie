@@ -24,11 +24,12 @@ Artie Deployment resource
 ### Optional
 
 - `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--advanced_settings))
+- `destination_uuid` (String)
 - `status` (String)
 
 ### Read-Only
 
-- `destination_uuid` (String)
+- `company_uuid` (String)
 - `has_undeployed_changes` (Boolean)
 - `last_updated_at` (String)
 - `uuid` (String)

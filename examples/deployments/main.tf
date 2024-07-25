@@ -16,7 +16,7 @@ import {
 }
 
 resource "artie_deployment" "example" {
-  name = "MongoDB ➡️ BigQuery"
+  name = "MongoDB ➡️ BigQueryyy"
   source = {
     name = "MongoDB"
     config = {
@@ -24,6 +24,7 @@ resource "artie_deployment" "example" {
       host     = "mongodb+srv://cluster0.szddg49.mongodb.net/"
       port     = 0
       user     = "artie"
+      dynamodb = {}
     }
     tables = [
       {
@@ -34,11 +35,18 @@ resource "artie_deployment" "example" {
         }
       },
       {
-        name   = "stock"
-        schema = ""
+        name              = "stock"
+        schema            = ""
+        advanced_settings = {}
+      },
+      {
+        name              = "new_table"
+        schema            = ""
+        advanced_settings = {}
       }
     ]
   }
+  destination_uuid = "fa7d4efc-3957-41e5-b29c-66e2d49bffde"
   destination_config = {
     dataset = "customers"
   }

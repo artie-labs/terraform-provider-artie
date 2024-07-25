@@ -1,8 +1,13 @@
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *DeploymentResourceModel) {
+	resourceModel.UUID = types.StringValue(apiModel.UUID)
+	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
 	resourceModel.LastUpdatedAt = types.StringValue(apiModel.LastUpdatedAt)
@@ -74,5 +79,88 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		ReplicationSlotOverride:        types.StringValue(apiModel.AdvancedSettings.ReplicationSlotOverride),
 		PublicationAutoCreateMode:      types.StringValue(apiModel.AdvancedSettings.PublicationAutoCreateMode),
 		// TODO PartitionRegex
+	}
+}
+
+func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) DeploymentAPIModel {
+	tables := []TableAPIModel{}
+	for _, table := range resourceModel.Source.Tables {
+		tableUUID := table.UUID.ValueString()
+		if tableUUID == "" {
+			tableUUID = uuid.Nil.String()
+		}
+		tables = append(tables, TableAPIModel{
+			UUID:                 tableUUID,
+			Name:                 table.Name.ValueString(),
+			Schema:               table.Schema.ValueString(),
+			EnableHistoryMode:    table.EnableHistoryMode.ValueBool(),
+			IndividualDeployment: table.IndividualDeployment.ValueBool(),
+			IsPartitioned:        table.IsPartitioned.ValueBool(),
+			AdvancedSettings: TableAdvancedSettingsAPIModel{
+				Alias:                table.AdvancedSettings.Alias.ValueString(),
+				SkipDelete:           table.AdvancedSettings.SkipDelete.ValueBool(),
+				FlushIntervalSeconds: table.AdvancedSettings.FlushIntervalSeconds.ValueInt64(),
+				BufferRows:           table.AdvancedSettings.BufferRows.ValueInt64(),
+				FlushSizeKB:          table.AdvancedSettings.FlushSizeKB.ValueInt64(),
+				AutoscaleMaxReplicas: table.AdvancedSettings.AutoscaleMaxReplicas.ValueInt64(),
+				AutoscaleTargetValue: table.AdvancedSettings.AutoscaleTargetValue.ValueInt64(),
+				K8sRequestCPU:        table.AdvancedSettings.K8sRequestCPU.ValueInt64(),
+				K8sRequestMemoryMB:   table.AdvancedSettings.K8sRequestMemoryMB.ValueInt64(),
+				// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
+			},
+		})
+	}
+
+	return DeploymentAPIModel{
+		UUID:                 resourceModel.UUID.ValueString(),
+		CompanyUUID:          resourceModel.CompanyUUID.ValueString(),
+		Name:                 resourceModel.Name.ValueString(),
+		Status:               resourceModel.Status.ValueString(),
+		LastUpdatedAt:        resourceModel.LastUpdatedAt.ValueString(),
+		HasUndeployedChanges: resourceModel.HasUndeployedChanges.ValueBool(),
+		DestinationUUID:      resourceModel.DestinationUUID.ValueString(),
+		Source: SourceAPIModel{
+			Name: resourceModel.Source.Name.ValueString(),
+			Config: SourceConfigAPIModel{
+				Host:         resourceModel.Source.Config.Host.ValueString(),
+				SnapshotHost: resourceModel.Source.Config.SnapshotHost.ValueString(),
+				Port:         resourceModel.Source.Config.Port.ValueInt64(),
+				User:         resourceModel.Source.Config.User.ValueString(),
+				Database:     resourceModel.Source.Config.Database.ValueString(),
+				DynamoDB: DynamoDBConfigAPIModel{
+					Region:             resourceModel.Source.Config.DynamoDB.Region.ValueString(),
+					TableName:          resourceModel.Source.Config.DynamoDB.TableName.ValueString(),
+					StreamsArn:         resourceModel.Source.Config.DynamoDB.StreamsArn.ValueString(),
+					AwsAccessKeyID:     resourceModel.Source.Config.DynamoDB.AwsAccessKeyID.ValueString(),
+					AwsSecretAccessKey: resourceModel.Source.Config.DynamoDB.AwsSecretAccessKey.ValueString(),
+				},
+				// TODO Password
+			},
+			Tables: tables,
+		},
+		DestinationConfig: DestinationConfigAPIModel{
+			Dataset:               resourceModel.DestinationConfig.Dataset.ValueString(),
+			Database:              resourceModel.DestinationConfig.Database.ValueString(),
+			Schema:                resourceModel.DestinationConfig.Schema.ValueString(),
+			SchemaOverride:        resourceModel.DestinationConfig.SchemaOverride.ValueString(),
+			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
+			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
+			BucketName:            resourceModel.DestinationConfig.BucketName.ValueString(),
+			OptionalPrefix:        resourceModel.DestinationConfig.OptionalPrefix.ValueString(),
+		},
+		AdvancedSettings: DeploymentAdvancedSettingsAPIModel{
+			DropDeletedColumns:             resourceModel.AdvancedSettings.DropDeletedColumns.ValueBool(),
+			IncludeArtieUpdatedAtColumn:    resourceModel.AdvancedSettings.IncludeArtieUpdatedAtColumn.ValueBool(),
+			IncludeDatabaseUpdatedAtColumn: resourceModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn.ValueBool(),
+			EnableHeartbeats:               resourceModel.AdvancedSettings.EnableHeartbeats.ValueBool(),
+			EnableSoftDelete:               resourceModel.AdvancedSettings.EnableSoftDelete.ValueBool(),
+			FlushIntervalSeconds:           resourceModel.AdvancedSettings.FlushIntervalSeconds.ValueInt64(),
+			BufferRows:                     resourceModel.AdvancedSettings.BufferRows.ValueInt64(),
+			FlushSizeKB:                    resourceModel.AdvancedSettings.FlushSizeKB.ValueInt64(),
+			PublicationNameOverride:        resourceModel.AdvancedSettings.PublicationNameOverride.ValueString(),
+			ReplicationSlotOverride:        resourceModel.AdvancedSettings.ReplicationSlotOverride.ValueString(),
+			PublicationAutoCreateMode:      resourceModel.AdvancedSettings.PublicationAutoCreateMode.ValueString(),
+			// TODO PartitionRegex
+		},
 	}
 }

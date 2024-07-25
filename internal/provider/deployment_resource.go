@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,7 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -38,11 +41,12 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Deployment resource",
 		Attributes: map[string]schema.Attribute{
-			"uuid":                   schema.StringAttribute{Computed: true},
+			"uuid":                   schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"company_uuid":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                   schema.StringAttribute{Required: true},
 			"status":                 schema.StringAttribute{Computed: true, Optional: true},
 			"last_updated_at":        schema.StringAttribute{Computed: true},
-			"destination_uuid":       schema.StringAttribute{Computed: true},
+			"destination_uuid":       schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"has_undeployed_changes": schema.BoolAttribute{Computed: true},
 			"source": schema.SingleNestedAttribute{
 				Required: true,
@@ -52,18 +56,18 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Required: true,
 						Attributes: map[string]schema.Attribute{
 							"host":          schema.StringAttribute{Required: true},
-							"snapshot_host": schema.StringAttribute{Optional: true},
+							"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 							"port":          schema.Int64Attribute{Required: true},
 							"user":          schema.StringAttribute{Required: true},
 							"database":      schema.StringAttribute{Required: true},
 							"dynamodb": schema.SingleNestedAttribute{
 								Optional: true,
 								Attributes: map[string]schema.Attribute{
-									"region":                schema.StringAttribute{Optional: true},
-									"table_name":            schema.StringAttribute{Optional: true},
-									"streams_arn":           schema.StringAttribute{Optional: true},
-									"aws_access_key_id":     schema.StringAttribute{Optional: true},
-									"aws_secret_access_key": schema.StringAttribute{Optional: true},
+									"region":                schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+									"table_name":            schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+									"streams_arn":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+									"aws_access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+									"aws_secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 								},
 							},
 							// TODO Password
@@ -73,7 +77,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Required: true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"uuid":                  schema.StringAttribute{Computed: true},
+								"uuid":                  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 								"name":                  schema.StringAttribute{Required: true},
 								"schema":                schema.StringAttribute{Required: true},
 								"enable_history_mode":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
@@ -159,22 +163,11 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	//     return
-	// }
-
-	// For the purposes of this example code, hardcoding a response value to
-	// save into the Terraform state.
-	// data.Id = types.StringValue("example-id")
+	// TODO implement Create
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
@@ -237,18 +230,59 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update example, got error: %s", err))
-	//     return
-	// }
+	payload := map[string]any{
+		"deploy":           models.DeploymentResourceToAPIModel(data),
+		"updateDeployOnly": true,
+	}
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	url := fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString())
+	ctx = tflog.SetField(ctx, "url", url)
+	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
+	tflog.Info(ctx, "Updating deployment via API")
+
+	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
+	apiResp, err := http.DefaultClient.Do(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	if apiResp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError("Unable to Update Deployment", fmt.Sprintf("Received status code %d", apiResp.StatusCode))
+		return
+	}
+
+	defer apiResp.Body.Close()
+	bodyBytes, err := io.ReadAll(apiResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	var deploymentResp models.DeploymentAPIResponse
+	err = json.Unmarshal(bodyBytes, &deploymentResp)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -259,18 +293,11 @@ func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete example, got error: %s", err))
-	//     return
-	// }
+	// TODO implement Delete
 }
 
 func (r *DeploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

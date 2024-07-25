@@ -4,6 +4,7 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 
 type DeploymentResourceModel struct {
 	UUID                 types.String                     `tfsdk:"uuid"`
+	CompanyUUID          types.String                     `tfsdk:"company_uuid"`
 	Name                 types.String                     `tfsdk:"name"`
 	Status               types.String                     `tfsdk:"status"`
 	LastUpdatedAt        types.String                     `tfsdk:"last_updated_at"`
