@@ -160,21 +160,102 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 }
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data models.DeploymentResourceModel
-
 	// Read Terraform plan data into the model
+	var data models.DeploymentResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// TODO implement Create
+	// Our API's create endpoint only accepts the source type, so we need to send two requests:
+	// one to create the bare-bones deployment, then one to update it with the rest of the data
+	payloadBytes, err := json.Marshal(map[string]any{"source": data.Source.Name.ValueString()})
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
+		return
+	}
 
-	// Write logs using the tflog package
-	// Documentation: https://terraform.io/plugin/log
-	tflog.Trace(ctx, "created a resource")
+	url := fmt.Sprintf("%s/deployments", r.endpoint)
+	ctx = tflog.SetField(ctx, "url", url)
+	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
+	tflog.Info(ctx, "Creating deployment via API")
+	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
+		return
+	}
 
-	// Save data into Terraform state
+	bodyBytes, err := r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
+		return
+	}
+
+	ctx = tflog.SetField(ctx, "response", string(bodyBytes))
+	tflog.Info(ctx, "Created deployment")
+
+	var deployment models.DeploymentAPIModel
+	err = json.Unmarshal(bodyBytes, &deployment)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
+		return
+	}
+
+	// Translate the Terraform plan into an API model and then fill in computed fields
+	// from the API response of the newly created deployment
+	model := models.DeploymentResourceToAPIModel(data)
+	model.UUID = deployment.UUID
+	model.CompanyUUID = deployment.CompanyUUID
+	model.Status = deployment.Status
+	if model.AdvancedSettings.FlushIntervalSeconds == 0 {
+		model.AdvancedSettings.FlushIntervalSeconds = deployment.AdvancedSettings.FlushIntervalSeconds
+	}
+	if model.AdvancedSettings.BufferRows == 0 {
+		model.AdvancedSettings.BufferRows = deployment.AdvancedSettings.BufferRows
+	}
+	if model.AdvancedSettings.FlushSizeKB == 0 {
+		model.AdvancedSettings.FlushSizeKB = deployment.AdvancedSettings.FlushSizeKB
+	}
+
+	// Second API request: update the newly created deployment
+	payload := map[string]any{
+		"deploy":           model,
+		"updateDeployOnly": true,
+	}
+	payloadBytes, err = json.Marshal(payload)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	url = fmt.Sprintf("%s/deployments/%s", r.endpoint, deployment.UUID)
+	ctx = tflog.SetField(ctx, "url", url)
+	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
+	tflog.Info(ctx, "Updating deployment via API")
+
+	apiReq, err = http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	bodyBytes, err = r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	var deploymentResp models.DeploymentAPIResponse
+	err = json.Unmarshal(bodyBytes, &deploymentResp)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
+
+	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
