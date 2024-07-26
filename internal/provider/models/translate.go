@@ -56,7 +56,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		},
 		Tables: tables,
 	}
-	resourceModel.DestinationConfig = &DestinationConfigModel{
+	resourceModel.DestinationConfig = &DeploymentDestinationConfigModel{
 		Dataset:               types.StringValue(apiModel.DestinationConfig.Dataset),
 		Database:              types.StringValue(apiModel.DestinationConfig.Database),
 		Schema:                types.StringValue(apiModel.DestinationConfig.Schema),

@@ -90,6 +90,7 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewDeploymentResource,
+		NewDestinationResource,
 	}
 }
 
