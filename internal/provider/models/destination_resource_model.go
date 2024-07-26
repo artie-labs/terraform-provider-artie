@@ -22,10 +22,10 @@ type DestinationSharedConfigModel struct {
 	AWSAccessKeyID      types.String `tfsdk:"aws_access_key_id"`
 	AWSRegion           types.String `tfsdk:"aws_region"`
 	SnowflakeAccountURL types.String `tfsdk:"snowflake_account_url"`
-	SnowflakePrivateKey types.String `tfsdk:"snowflake_private_key"`
 	SnowflakeVirtualDWH types.String `tfsdk:"snowflake_virtual_dwh"`
 	// TODO sensitive fields
 	// Password           types.String `tfsdk:"password"`
 	// GCPCredentialsData types.String `tfsdk:"credentials_data"`
 	// AWSSecretAccessKey types.String `tfsdk:"aws_secret_access_key"`
+	// SnowflakePrivateKey types.String `tfsdk:"snowflake_private_key"`
 }

@@ -52,7 +52,6 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 					"aws_access_key_id":     schema.StringAttribute{Optional: true},
 					"aws_region":            schema.StringAttribute{Optional: true},
 					"snowflake_account_url": schema.StringAttribute{Optional: true},
-					"snowflake_private_key": schema.StringAttribute{Optional: true},
 					"snowflake_virtual_dwh": schema.StringAttribute{Optional: true},
 				},
 			},
