@@ -260,9 +260,8 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data models.DeploymentResourceModel
-
 	// Read Terraform prior state data into the model
+	var data models.DeploymentResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -295,9 +294,8 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data models.DeploymentResourceModel
-
 	// Read Terraform plan data into the model
+	var data models.DeploymentResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -345,15 +343,24 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data models.DeploymentResourceModel
-
 	// Read Terraform prior state data into the model
+	var data models.DeploymentResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// TODO implement Delete
+	apiReq, err := http.NewRequest("DELETE", fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString()), nil)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Delete Deployment", err.Error())
+		return
+	}
+
+	_, err = r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Delete Deployment", err.Error())
+		return
+	}
 }
 
 func (r *DeploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
