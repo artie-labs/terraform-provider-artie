@@ -2,7 +2,10 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -10,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -101,7 +105,30 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// TODO implement Read
+	url := fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString())
+	ctx = tflog.SetField(ctx, "url", url)
+	tflog.Info(ctx, "Reading Destination")
+	apiReq, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
+		return
+	}
+
+	bodyBytes, err := r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
+		return
+	}
+
+	var destinationResp models.DestinationAPIModel
+	err = json.Unmarshal(bodyBytes, &destinationResp)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.DestinationAPIToResourceModel(destinationResp, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -133,4 +160,19 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *DestinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
+}
+
+func (r *DestinationResource) handleAPIRequest(apiReq *http.Request) (bodyBytes []byte, err error) {
+	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
+	apiResp, err := http.DefaultClient.Do(apiReq)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if apiResp.StatusCode != http.StatusOK {
+		return []byte{}, fmt.Errorf("received status code %d", apiResp.StatusCode)
+	}
+
+	defer apiResp.Body.Close()
+	return io.ReadAll(apiResp.Body)
 }

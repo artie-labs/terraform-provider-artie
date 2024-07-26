@@ -25,7 +25,7 @@ type DestinationSharedConfigModel struct {
 	SnowflakeVirtualDWH types.String `tfsdk:"snowflake_virtual_dwh"`
 	// TODO sensitive fields
 	// Password           types.String `tfsdk:"password"`
-	// GCPCredentialsData types.String `tfsdk:"credentials_data"`
+	// GCPCredentialsData types.String `tfsdk:"gcp_credentials_data"`
 	// AWSSecretAccessKey types.String `tfsdk:"aws_secret_access_key"`
 	// SnowflakePrivateKey types.String `tfsdk:"snowflake_private_key"`
 }
