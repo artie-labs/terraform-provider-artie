@@ -36,9 +36,26 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"company_uuid":    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":            schema.StringAttribute{Required: true},
 			"label":           schema.StringAttribute{Optional: true},
 			"last_updated_at": schema.StringAttribute{Computed: true},
+			"config": schema.SingleNestedAttribute{
+				Required: true,
+				Attributes: map[string]schema.Attribute{
+					"host":                  schema.StringAttribute{Optional: true},
+					"port":                  schema.Int64Attribute{Optional: true},
+					"endpoint":              schema.StringAttribute{Optional: true},
+					"username":              schema.StringAttribute{Optional: true},
+					"gcp_project_id":        schema.StringAttribute{Optional: true},
+					"gcp_location":          schema.StringAttribute{Optional: true},
+					"aws_access_key_id":     schema.StringAttribute{Optional: true},
+					"aws_region":            schema.StringAttribute{Optional: true},
+					"snowflake_account_url": schema.StringAttribute{Optional: true},
+					"snowflake_private_key": schema.StringAttribute{Optional: true},
+					"snowflake_virtual_dwh": schema.StringAttribute{Optional: true},
+				},
+			},
 		},
 	}
 }
