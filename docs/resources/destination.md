@@ -44,6 +44,5 @@ Optional:
 - `host` (String)
 - `port` (Number)
 - `snowflake_account_url` (String)
-- `snowflake_private_key` (String)
 - `snowflake_virtual_dwh` (String)
 - `username` (String)
