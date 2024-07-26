@@ -3,8 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -119,19 +117,4 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *DestinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
-}
-
-func (r *DestinationResource) handleAPIRequest(apiReq *http.Request) (bodyBytes []byte, err error) {
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
-	apiResp, err := http.DefaultClient.Do(apiReq)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	if apiResp.StatusCode != http.StatusOK {
-		return []byte{}, fmt.Errorf("received status code %d", apiResp.StatusCode)
-	}
-
-	defer apiResp.Body.Close()
-	return io.ReadAll(apiResp.Body)
 }
