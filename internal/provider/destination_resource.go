@@ -46,7 +46,7 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":            schema.StringAttribute{Required: true},
 			"label":           schema.StringAttribute{Optional: true},
-			"last_updated_at": schema.StringAttribute{Computed: true},
+			"last_updated_at": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"config": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
