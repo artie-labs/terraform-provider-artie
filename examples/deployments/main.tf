@@ -10,10 +10,10 @@ provider "artie" {
   endpoint = "http://0.0.0.0:8000"
 }
 
-import {
-  to = artie_destination.bigquery
-  id = "fa7d4efc-3957-41e5-b29c-66e2d49bffde"
-}
+# import {
+#   to = artie_destination.bigquery
+#   id = "fa7d4efc-3957-41e5-b29c-66e2d49bffde"
+# }
 
 resource "artie_destination" "bigquery" {
   name  = "BigQuery"

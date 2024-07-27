@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -47,16 +50,16 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"config": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
-					"host":                  schema.StringAttribute{Optional: true},
-					"port":                  schema.Int64Attribute{Optional: true},
-					"endpoint":              schema.StringAttribute{Optional: true},
-					"username":              schema.StringAttribute{Optional: true},
-					"gcp_project_id":        schema.StringAttribute{Optional: true},
-					"gcp_location":          schema.StringAttribute{Optional: true},
-					"aws_access_key_id":     schema.StringAttribute{Optional: true},
-					"aws_region":            schema.StringAttribute{Optional: true},
-					"snowflake_account_url": schema.StringAttribute{Optional: true},
-					"snowflake_virtual_dwh": schema.StringAttribute{Optional: true},
+					"host":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"port":                  schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0)},
+					"endpoint":              schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"username":              schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"gcp_project_id":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"gcp_location":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"aws_access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"aws_region":            schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"snowflake_account_url": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
+					"snowflake_virtual_dwh": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 				},
 			},
 		},
@@ -91,7 +94,50 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// TODO implement Create
+	destModel := models.DestinationResourceToAPIModel(data)
+	payload := map[string]any{
+		"name":         destModel.Name,
+		"label":        destModel.Label,
+		"sharedConfig": destModel.Config,
+	}
+	if destModel.SSHTunnelUUID != "" {
+		payload["sshTunnelUUID"] = destModel.SSHTunnelUUID
+	}
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
+		return
+	}
+
+	url := fmt.Sprintf("%s/destinations", r.endpoint)
+	ctx = tflog.SetField(ctx, "url", url)
+	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
+	tflog.Info(ctx, "Creating destination via API")
+
+	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
+		return
+	}
+
+	bodyBytes, err := r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
+		return
+	}
+
+	ctx = tflog.SetField(ctx, "response", string(bodyBytes))
+	tflog.Info(ctx, "Created destination")
+
+	var destination models.DestinationAPIModel
+	err = json.Unmarshal(bodyBytes, &destination)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.DestinationAPIToResourceModel(destination, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -107,7 +153,7 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 
 	url := fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString())
 	ctx = tflog.SetField(ctx, "url", url)
-	tflog.Info(ctx, "Reading Destination")
+	tflog.Info(ctx, "Reading destination from API")
 	apiReq, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
