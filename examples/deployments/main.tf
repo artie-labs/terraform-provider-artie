@@ -60,7 +60,7 @@ resource "artie_deployment" "example" {
       }
     ]
   }
-  destination_uuid = "fa7d4efc-3957-41e5-b29c-66e2d49bffde" // artie_destination.bigquery.uuid
+  destination_uuid = artie_destination.bigquery.uuid
   destination_config = {
     dataset = "customers"
   }
