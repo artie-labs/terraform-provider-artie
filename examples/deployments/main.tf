@@ -101,9 +101,3 @@ resource "artie_deployment" "example" {
 #   }
 #   advanced_settings = {}
 # }
-
-# data "artie_deployments" "example" {}
-
-# output "deployments" {
-#   value = data.artie_deployments.example.deployments
-# }
