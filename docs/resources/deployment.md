@@ -65,6 +65,7 @@ Required:
 
 - `database` (String)
 - `host` (String)
+- `password` (String, Sensitive)
 - `port` (Number)
 - `user` (String)
 
