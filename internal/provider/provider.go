@@ -95,9 +95,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 }
 
 func (p *ArtieProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		NewDeploymentsDataSource,
-	}
+	return []func() datasource.DataSource{}
 }
 
 func (p *ArtieProvider) Functions(ctx context.Context) []func() function.Function {
