@@ -60,6 +60,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 							"port":          schema.Int64Attribute{Required: true},
 							"user":          schema.StringAttribute{Required: true},
+							"password":      schema.StringAttribute{Required: true, Sensitive: true},
 							"database":      schema.StringAttribute{Required: true},
 							"dynamodb": schema.SingleNestedAttribute{
 								Optional: true,
@@ -71,7 +72,6 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 									"aws_secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 								},
 							},
-							// TODO Password
 						},
 					},
 					"tables": schema.ListNestedAttribute{

@@ -28,9 +28,9 @@ type SourceConfigAPIModel struct {
 	SnapshotHost string                 `json:"snapshotHost"`
 	Port         int64                  `json:"port"`
 	User         string                 `json:"user"`
+	Password     string                 `json:"password"`
 	Database     string                 `json:"database"`
 	DynamoDB     DynamoDBConfigAPIModel `json:"dynamodb"`
-	// TODO Password
 }
 
 type DynamoDBConfigAPIModel struct {

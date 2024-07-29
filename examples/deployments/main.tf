@@ -29,6 +29,11 @@ import {
   id = "38d5d2db-870a-4a38-a76c-9891b0e5122d"
 }
 
+variable "mongodb_password" {
+  type      = string
+  sensitive = true
+}
+
 resource "artie_deployment" "example" {
   name = "MongoDB ➡️ BigQuery"
   source = {
@@ -38,6 +43,7 @@ resource "artie_deployment" "example" {
       host     = "mongodb+srv://cluster0.szddg49.mongodb.net/"
       port     = 0
       user     = "artie"
+      password = var.mongodb_password
       dynamodb = {}
     }
     tables = [
