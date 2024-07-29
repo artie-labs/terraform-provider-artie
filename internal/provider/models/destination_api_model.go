@@ -15,15 +15,14 @@ type DestinationSharedConfigAPIModel struct {
 	Port                int64  `json:"port"`
 	Endpoint            string `json:"endpoint"`
 	Username            string `json:"username"`
+	Password            string `json:"password"`
 	GCPProjectID        string `json:"projectID"`
 	GCPLocation         string `json:"location"`
+	GCPCredentialsData  string `json:"credentialsData"`
 	AWSAccessKeyID      string `json:"awsAccessKeyID"`
+	AWSSecretAccessKey  string `json:"awsSecretAccessKey"`
 	AWSRegion           string `json:"awsRegion"`
 	SnowflakeAccountURL string `json:"accountURL"`
 	SnowflakeVirtualDWH string `json:"virtualDWH"`
-	// TODO sensitive fields
-	// Password           string `json:"password"`
-	// GCPCredentialsData string `json:"credentialsData"`
-	// AWSSecretAccessKey string `json:"awsSecretAccessKey"`
-	// SnowflakePrivateKey string `json:"privateKey"`
+	SnowflakePrivateKey string `json:"privateKey"`
 }

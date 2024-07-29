@@ -15,23 +15,29 @@ import {
   id = "fa7d4efc-3957-41e5-b29c-66e2d49bffde"
 }
 
+variable "mongodb_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "gcp_creds" {
+  type      = string
+  sensitive = true
+}
+
 resource "artie_destination" "bigquery" {
   name  = "BigQuery"
   label = "BigQuery"
   config = {
-    gcp_location   = "us"
-    gcp_project_id = "artie-labs"
+    gcp_location         = "us"
+    gcp_project_id       = "artie-labs"
+    gcp_credentials_data = var.gcp_creds
   }
 }
 
 import {
   to = artie_deployment.example
   id = "38d5d2db-870a-4a38-a76c-9891b0e5122d"
-}
-
-variable "mongodb_password" {
-  type      = string
-  sensitive = true
 }
 
 resource "artie_deployment" "example" {
