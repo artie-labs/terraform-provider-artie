@@ -49,11 +49,6 @@ resource "artie_deployment" "example" {
         }
       },
       {
-        name              = "new_table"
-        schema            = ""
-        advanced_settings = {}
-      },
-      {
         name              = "stock"
         schema            = ""
         advanced_settings = {}
@@ -69,6 +64,15 @@ resource "artie_deployment" "example" {
     flush_interval_seconds = 60
   }
 }
+
+# resource "artie_destination" "bigquery2" {
+#   name  = "BigQuery"
+#   label = "BigQuery2 (to delete)"
+#   config = {
+#     gcp_location   = "us"
+#     gcp_project_id = "artie-labs"
+#   }
+# }
 
 # resource "artie_deployment" "newdeployment" {
 #   name = "New deployment from tf"
@@ -91,7 +95,7 @@ resource "artie_deployment" "example" {
 #       },
 #     ]
 #   }
-#   destination_uuid = "fa7d4efc-3957-41e5-b29c-66e2d49bffde"
+#   destination_uuid = artie_destination.bigquery2.uuid
 #   destination_config = {
 #     dataset = "customers"
 #   }
