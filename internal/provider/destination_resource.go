@@ -232,7 +232,18 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// TODO implement Delete
+
+	apiReq, err := http.NewRequest("DELETE", fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString()), nil)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
+		return
+	}
+
+	_, err = r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
+		return
+	}
 }
 
 func (r *DestinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
