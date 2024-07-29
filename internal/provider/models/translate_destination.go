@@ -1,6 +1,9 @@
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *DestinationResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
@@ -30,13 +33,17 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 }
 
 func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) DestinationAPIModel {
+	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
+	if sshTunnelUUID == "" {
+		sshTunnelUUID = uuid.Nil.String()
+	}
 	return DestinationAPIModel{
 		UUID:          resourceModel.UUID.ValueString(),
 		CompanyUUID:   resourceModel.CompanyUUID.ValueString(),
 		Name:          resourceModel.Name.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
 		LastUpdatedAt: resourceModel.LastUpdatedAt.ValueString(),
-		SSHTunnelUUID: resourceModel.SSHTunnelUUID.ValueString(),
+		SSHTunnelUUID: sshTunnelUUID,
 		Config: DestinationSharedConfigAPIModel{
 			Host:                resourceModel.Config.Host.ValueString(),
 			Port:                resourceModel.Config.Port.ValueInt64(),

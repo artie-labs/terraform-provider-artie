@@ -188,7 +188,38 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// TODO implement Update
+	payloadBytes, err := json.Marshal(models.DestinationResourceToAPIModel(data))
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
+		return
+	}
+
+	url := fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString())
+	ctx = tflog.SetField(ctx, "url", url)
+	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
+	tflog.Info(ctx, "Updating destination via API")
+
+	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
+		return
+	}
+
+	bodyBytes, err := r.handleAPIRequest(apiReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
+		return
+	}
+
+	var destination models.DestinationAPIModel
+	err = json.Unmarshal(bodyBytes, &destination)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.DestinationAPIToResourceModel(destination, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
