@@ -17,15 +17,14 @@ type DestinationSharedConfigModel struct {
 	Port                types.Int64  `tfsdk:"port"`
 	Endpoint            types.String `tfsdk:"endpoint"`
 	Username            types.String `tfsdk:"username"`
+	Password            types.String `tfsdk:"password"`
 	GCPProjectID        types.String `tfsdk:"gcp_project_id"`
 	GCPLocation         types.String `tfsdk:"gcp_location"`
+	GCPCredentialsData  types.String `tfsdk:"gcp_credentials_data"`
 	AWSAccessKeyID      types.String `tfsdk:"aws_access_key_id"`
+	AWSSecretAccessKey  types.String `tfsdk:"aws_secret_access_key"`
 	AWSRegion           types.String `tfsdk:"aws_region"`
 	SnowflakeAccountURL types.String `tfsdk:"snowflake_account_url"`
 	SnowflakeVirtualDWH types.String `tfsdk:"snowflake_virtual_dwh"`
-	// TODO sensitive fields
-	// Password           types.String `tfsdk:"password"`
-	// GCPCredentialsData types.String `tfsdk:"gcp_credentials_data"`
-	// AWSSecretAccessKey types.String `tfsdk:"aws_secret_access_key"`
-	// SnowflakePrivateKey types.String `tfsdk:"snowflake_private_key"`
+	SnowflakePrivateKey types.String `tfsdk:"snowflake_private_key"`
 }

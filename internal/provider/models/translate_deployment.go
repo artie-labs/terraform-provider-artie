@@ -44,6 +44,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 			SnapshotHost: types.StringValue(apiModel.Source.Config.SnapshotHost),
 			Port:         types.Int64Value(apiModel.Source.Config.Port),
 			User:         types.StringValue(apiModel.Source.Config.User),
+			Password:     types.StringValue(apiModel.Source.Config.Password),
 			Database:     types.StringValue(apiModel.Source.Config.Database),
 			DynamoDB: &DynamoDBConfigModel{
 				Region:             types.StringValue(apiModel.Source.Config.DynamoDB.Region),
@@ -52,7 +53,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 				AwsAccessKeyID:     types.StringValue(apiModel.Source.Config.DynamoDB.AwsAccessKeyID),
 				AwsSecretAccessKey: types.StringValue(apiModel.Source.Config.DynamoDB.AwsSecretAccessKey),
 			},
-			// TODO Password
 		},
 		Tables: tables,
 	}
@@ -126,6 +126,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 				SnapshotHost: resourceModel.Source.Config.SnapshotHost.ValueString(),
 				Port:         resourceModel.Source.Config.Port.ValueInt64(),
 				User:         resourceModel.Source.Config.User.ValueString(),
+				Password:     resourceModel.Source.Config.Password.ValueString(),
 				Database:     resourceModel.Source.Config.Database.ValueString(),
 				DynamoDB: DynamoDBConfigAPIModel{
 					Region:             resourceModel.Source.Config.DynamoDB.Region.ValueString(),
@@ -134,7 +135,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 					AwsAccessKeyID:     resourceModel.Source.Config.DynamoDB.AwsAccessKeyID.ValueString(),
 					AwsSecretAccessKey: resourceModel.Source.Config.DynamoDB.AwsSecretAccessKey.ValueString(),
 				},
-				// TODO Password
 			},
 			Tables: tables,
 		},

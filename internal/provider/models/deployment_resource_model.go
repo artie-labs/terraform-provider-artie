@@ -28,7 +28,7 @@ type SourceConfigModel struct {
 	User         types.String         `tfsdk:"user"`
 	Database     types.String         `tfsdk:"database"`
 	DynamoDB     *DynamoDBConfigModel `tfsdk:"dynamodb"`
-	// TODO Password
+	Password     types.String         `tfsdk:"password"`
 }
 
 type DynamoDBConfigModel struct {
