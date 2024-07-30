@@ -3,16 +3,14 @@ package models
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
 type DeploymentResourceModel struct {
-	UUID                 types.String                      `tfsdk:"uuid"`
-	CompanyUUID          types.String                      `tfsdk:"company_uuid"`
-	Name                 types.String                      `tfsdk:"name"`
-	Status               types.String                      `tfsdk:"status"`
-	LastUpdatedAt        types.String                      `tfsdk:"last_updated_at"`
-	DestinationUUID      types.String                      `tfsdk:"destination_uuid"`
-	HasUndeployedChanges types.Bool                        `tfsdk:"has_undeployed_changes"`
-	Source               *SourceModel                      `tfsdk:"source"`
-	AdvancedSettings     *DeploymentAdvancedSettingsModel  `tfsdk:"advanced_settings"`
-	DestinationConfig    *DeploymentDestinationConfigModel `tfsdk:"destination_config"`
+	UUID              types.String                      `tfsdk:"uuid"`
+	CompanyUUID       types.String                      `tfsdk:"company_uuid"`
+	Name              types.String                      `tfsdk:"name"`
+	Status            types.String                      `tfsdk:"status"`
+	DestinationUUID   types.String                      `tfsdk:"destination_uuid"`
+	Source            *SourceModel                      `tfsdk:"source"`
+	AdvancedSettings  *DeploymentAdvancedSettingsModel  `tfsdk:"advanced_settings"`
+	DestinationConfig *DeploymentDestinationConfigModel `tfsdk:"destination_config"`
 }
 
 type SourceModel struct {

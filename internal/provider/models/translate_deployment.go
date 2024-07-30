@@ -10,8 +10,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
-	resourceModel.LastUpdatedAt = types.StringValue(apiModel.LastUpdatedAt)
-	resourceModel.HasUndeployedChanges = types.BoolValue(apiModel.HasUndeployedChanges)
 	resourceModel.DestinationUUID = types.StringValue(apiModel.DestinationUUID)
 
 	tables := []TableModel{}
@@ -158,13 +156,11 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 	}
 
 	return DeploymentAPIModel{
-		UUID:                 resourceModel.UUID.ValueString(),
-		CompanyUUID:          resourceModel.CompanyUUID.ValueString(),
-		Name:                 resourceModel.Name.ValueString(),
-		Status:               resourceModel.Status.ValueString(),
-		LastUpdatedAt:        resourceModel.LastUpdatedAt.ValueString(),
-		HasUndeployedChanges: resourceModel.HasUndeployedChanges.ValueBool(),
-		DestinationUUID:      resourceModel.DestinationUUID.ValueString(),
+		UUID:            resourceModel.UUID.ValueString(),
+		CompanyUUID:     resourceModel.CompanyUUID.ValueString(),
+		Name:            resourceModel.Name.ValueString(),
+		Status:          resourceModel.Status.ValueString(),
+		DestinationUUID: resourceModel.DestinationUUID.ValueString(),
 		Source: SourceAPIModel{
 			Name: resourceModel.Source.Name.ValueString(),
 			Config: SourceConfigAPIModel{
