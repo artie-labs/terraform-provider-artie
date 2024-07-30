@@ -63,7 +63,7 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     database = "DEV_TEST"
     schema   = "PUBLIC"
   }
-  advanced_settings = {}
+  # advanced_settings = {}
 }
 
 # import {

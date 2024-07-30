@@ -74,20 +74,25 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		BucketName:            types.StringValue(apiModel.DestinationConfig.BucketName),
 		OptionalPrefix:        types.StringValue(apiModel.DestinationConfig.OptionalPrefix),
 	}
-	resourceModel.AdvancedSettings = &DeploymentAdvancedSettingsModel{
-		DropDeletedColumns:             types.BoolValue(apiModel.AdvancedSettings.DropDeletedColumns),
-		IncludeArtieUpdatedAtColumn:    types.BoolValue(apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn),
-		IncludeDatabaseUpdatedAtColumn: types.BoolValue(apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn),
-		EnableHeartbeats:               types.BoolValue(apiModel.AdvancedSettings.EnableHeartbeats),
-		EnableSoftDelete:               types.BoolValue(apiModel.AdvancedSettings.EnableSoftDelete),
-		FlushIntervalSeconds:           types.Int64Value(apiModel.AdvancedSettings.FlushIntervalSeconds),
-		BufferRows:                     types.Int64Value(apiModel.AdvancedSettings.BufferRows),
-		FlushSizeKB:                    types.Int64Value(apiModel.AdvancedSettings.FlushSizeKB),
-		PublicationNameOverride:        types.StringValue(apiModel.AdvancedSettings.PublicationNameOverride),
-		ReplicationSlotOverride:        types.StringValue(apiModel.AdvancedSettings.ReplicationSlotOverride),
-		PublicationAutoCreateMode:      types.StringValue(apiModel.AdvancedSettings.PublicationAutoCreateMode),
-		// TODO PartitionRegex
+
+	var advSettings *DeploymentAdvancedSettingsModel
+	if apiModel.AdvancedSettings != nil {
+		advSettings = &DeploymentAdvancedSettingsModel{
+			DropDeletedColumns:             types.BoolValue(apiModel.AdvancedSettings.DropDeletedColumns),
+			IncludeArtieUpdatedAtColumn:    types.BoolValue(apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn),
+			IncludeDatabaseUpdatedAtColumn: types.BoolValue(apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn),
+			EnableHeartbeats:               types.BoolValue(apiModel.AdvancedSettings.EnableHeartbeats),
+			EnableSoftDelete:               types.BoolValue(apiModel.AdvancedSettings.EnableSoftDelete),
+			FlushIntervalSeconds:           types.Int64Value(apiModel.AdvancedSettings.FlushIntervalSeconds),
+			BufferRows:                     types.Int64Value(apiModel.AdvancedSettings.BufferRows),
+			FlushSizeKB:                    types.Int64Value(apiModel.AdvancedSettings.FlushSizeKB),
+			PublicationNameOverride:        types.StringValue(apiModel.AdvancedSettings.PublicationNameOverride),
+			ReplicationSlotOverride:        types.StringValue(apiModel.AdvancedSettings.ReplicationSlotOverride),
+			PublicationAutoCreateMode:      types.StringValue(apiModel.AdvancedSettings.PublicationAutoCreateMode),
+			// TODO PartitionRegex
+		}
 	}
+	resourceModel.AdvancedSettings = advSettings
 }
 
 func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) DeploymentAPIModel {
@@ -134,6 +139,24 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		}
 	}
 
+	var advSettings *DeploymentAdvancedSettingsAPIModel
+	if resourceModel.AdvancedSettings != nil {
+		advSettings = &DeploymentAdvancedSettingsAPIModel{
+			DropDeletedColumns:             resourceModel.AdvancedSettings.DropDeletedColumns.ValueBool(),
+			IncludeArtieUpdatedAtColumn:    resourceModel.AdvancedSettings.IncludeArtieUpdatedAtColumn.ValueBool(),
+			IncludeDatabaseUpdatedAtColumn: resourceModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn.ValueBool(),
+			EnableHeartbeats:               resourceModel.AdvancedSettings.EnableHeartbeats.ValueBool(),
+			EnableSoftDelete:               resourceModel.AdvancedSettings.EnableSoftDelete.ValueBool(),
+			FlushIntervalSeconds:           resourceModel.AdvancedSettings.FlushIntervalSeconds.ValueInt64(),
+			BufferRows:                     resourceModel.AdvancedSettings.BufferRows.ValueInt64(),
+			FlushSizeKB:                    resourceModel.AdvancedSettings.FlushSizeKB.ValueInt64(),
+			PublicationNameOverride:        resourceModel.AdvancedSettings.PublicationNameOverride.ValueString(),
+			ReplicationSlotOverride:        resourceModel.AdvancedSettings.ReplicationSlotOverride.ValueString(),
+			PublicationAutoCreateMode:      resourceModel.AdvancedSettings.PublicationAutoCreateMode.ValueString(),
+			// TODO PartitionRegex
+		}
+	}
+
 	return DeploymentAPIModel{
 		UUID:                 resourceModel.UUID.ValueString(),
 		CompanyUUID:          resourceModel.CompanyUUID.ValueString(),
@@ -165,19 +188,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			BucketName:            resourceModel.DestinationConfig.BucketName.ValueString(),
 			OptionalPrefix:        resourceModel.DestinationConfig.OptionalPrefix.ValueString(),
 		},
-		AdvancedSettings: DeploymentAdvancedSettingsAPIModel{
-			DropDeletedColumns:             resourceModel.AdvancedSettings.DropDeletedColumns.ValueBool(),
-			IncludeArtieUpdatedAtColumn:    resourceModel.AdvancedSettings.IncludeArtieUpdatedAtColumn.ValueBool(),
-			IncludeDatabaseUpdatedAtColumn: resourceModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn.ValueBool(),
-			EnableHeartbeats:               resourceModel.AdvancedSettings.EnableHeartbeats.ValueBool(),
-			EnableSoftDelete:               resourceModel.AdvancedSettings.EnableSoftDelete.ValueBool(),
-			FlushIntervalSeconds:           resourceModel.AdvancedSettings.FlushIntervalSeconds.ValueInt64(),
-			BufferRows:                     resourceModel.AdvancedSettings.BufferRows.ValueInt64(),
-			FlushSizeKB:                    resourceModel.AdvancedSettings.FlushSizeKB.ValueInt64(),
-			PublicationNameOverride:        resourceModel.AdvancedSettings.PublicationNameOverride.ValueString(),
-			ReplicationSlotOverride:        resourceModel.AdvancedSettings.ReplicationSlotOverride.ValueString(),
-			PublicationAutoCreateMode:      resourceModel.AdvancedSettings.PublicationAutoCreateMode.ValueString(),
-			// TODO PartitionRegex
-		},
+		AdvancedSettings: advSettings,
 	}
 }
