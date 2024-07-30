@@ -37,6 +37,16 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 			},
 		})
 	}
+	var dynamoDBConfig *DynamoDBConfigModel
+	if apiModel.Source.Config.DynamoDB != nil {
+		dynamoDBConfig = &DynamoDBConfigModel{
+			Region:             types.StringValue(apiModel.Source.Config.DynamoDB.Region),
+			TableName:          types.StringValue(apiModel.Source.Config.DynamoDB.TableName),
+			StreamsArn:         types.StringValue(apiModel.Source.Config.DynamoDB.StreamsArn),
+			AwsAccessKeyID:     types.StringValue(apiModel.Source.Config.DynamoDB.AwsAccessKeyID),
+			AwsSecretAccessKey: types.StringValue(apiModel.Source.Config.DynamoDB.AwsSecretAccessKey),
+		}
+	}
 	resourceModel.Source = &SourceModel{
 		Name: types.StringValue(apiModel.Source.Name),
 		Config: SourceConfigModel{
@@ -46,13 +56,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 			User:         types.StringValue(apiModel.Source.Config.User),
 			Password:     types.StringValue(apiModel.Source.Config.Password),
 			Database:     types.StringValue(apiModel.Source.Config.Database),
-			DynamoDB: &DynamoDBConfigModel{
-				Region:             types.StringValue(apiModel.Source.Config.DynamoDB.Region),
-				TableName:          types.StringValue(apiModel.Source.Config.DynamoDB.TableName),
-				StreamsArn:         types.StringValue(apiModel.Source.Config.DynamoDB.StreamsArn),
-				AwsAccessKeyID:     types.StringValue(apiModel.Source.Config.DynamoDB.AwsAccessKeyID),
-				AwsSecretAccessKey: types.StringValue(apiModel.Source.Config.DynamoDB.AwsSecretAccessKey),
-			},
+			DynamoDB:     dynamoDBConfig,
 		},
 		Tables: tables,
 	}
@@ -111,6 +115,17 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		})
 	}
 
+	var dynamoDBConfig *DynamoDBConfigAPIModel
+	if resourceModel.Source.Config.DynamoDB != nil {
+		dynamoDBConfig = &DynamoDBConfigAPIModel{
+			Region:             resourceModel.Source.Config.DynamoDB.Region.ValueString(),
+			TableName:          resourceModel.Source.Config.DynamoDB.TableName.ValueString(),
+			StreamsArn:         resourceModel.Source.Config.DynamoDB.StreamsArn.ValueString(),
+			AwsAccessKeyID:     resourceModel.Source.Config.DynamoDB.AwsAccessKeyID.ValueString(),
+			AwsSecretAccessKey: resourceModel.Source.Config.DynamoDB.AwsSecretAccessKey.ValueString(),
+		}
+	}
+
 	return DeploymentAPIModel{
 		UUID:                 resourceModel.UUID.ValueString(),
 		CompanyUUID:          resourceModel.CompanyUUID.ValueString(),
@@ -128,13 +143,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 				User:         resourceModel.Source.Config.User.ValueString(),
 				Password:     resourceModel.Source.Config.Password.ValueString(),
 				Database:     resourceModel.Source.Config.Database.ValueString(),
-				DynamoDB: DynamoDBConfigAPIModel{
-					Region:             resourceModel.Source.Config.DynamoDB.Region.ValueString(),
-					TableName:          resourceModel.Source.Config.DynamoDB.TableName.ValueString(),
-					StreamsArn:         resourceModel.Source.Config.DynamoDB.StreamsArn.ValueString(),
-					AwsAccessKeyID:     resourceModel.Source.Config.DynamoDB.AwsAccessKeyID.ValueString(),
-					AwsSecretAccessKey: resourceModel.Source.Config.DynamoDB.AwsSecretAccessKey.ValueString(),
-				},
+				DynamoDB:     dynamoDBConfig,
 			},
 			Tables: tables,
 		},
