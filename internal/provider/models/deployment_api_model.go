@@ -42,13 +42,13 @@ type DynamoDBConfigAPIModel struct {
 }
 
 type TableAPIModel struct {
-	UUID                 string                        `json:"uuid"`
-	Name                 string                        `json:"name"`
-	Schema               string                        `json:"schema"`
-	EnableHistoryMode    bool                          `json:"enableHistoryMode"`
-	IndividualDeployment bool                          `json:"individualDeployment"`
-	IsPartitioned        bool                          `json:"isPartitioned"`
-	AdvancedSettings     TableAdvancedSettingsAPIModel `json:"advancedSettings"`
+	UUID                 string                         `json:"uuid"`
+	Name                 string                         `json:"name"`
+	Schema               string                         `json:"schema"`
+	EnableHistoryMode    bool                           `json:"enableHistoryMode"`
+	IndividualDeployment bool                           `json:"individualDeployment"`
+	IsPartitioned        bool                           `json:"isPartitioned"`
+	AdvancedSettings     *TableAdvancedSettingsAPIModel `json:"advancedSettings"`
 }
 
 type TableAdvancedSettingsAPIModel struct {

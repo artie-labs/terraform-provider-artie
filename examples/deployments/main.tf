@@ -53,9 +53,8 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     }
     tables = [
       {
-        name              = "invite"
-        schema            = "public"
-        advanced_settings = {}
+        name   = "invite"
+        schema = "public"
       }
     ]
   }

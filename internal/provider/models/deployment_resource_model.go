@@ -40,13 +40,13 @@ type DynamoDBConfigModel struct {
 }
 
 type TableModel struct {
-	UUID                 types.String               `tfsdk:"uuid"`
-	Name                 types.String               `tfsdk:"name"`
-	Schema               types.String               `tfsdk:"schema"`
-	EnableHistoryMode    types.Bool                 `tfsdk:"enable_history_mode"`
-	IndividualDeployment types.Bool                 `tfsdk:"individual_deployment"`
-	IsPartitioned        types.Bool                 `tfsdk:"is_partitioned"`
-	AdvancedSettings     TableAdvancedSettingsModel `tfsdk:"advanced_settings"`
+	UUID                 types.String                `tfsdk:"uuid"`
+	Name                 types.String                `tfsdk:"name"`
+	Schema               types.String                `tfsdk:"schema"`
+	EnableHistoryMode    types.Bool                  `tfsdk:"enable_history_mode"`
+	IndividualDeployment types.Bool                  `tfsdk:"individual_deployment"`
+	IsPartitioned        types.Bool                  `tfsdk:"is_partitioned"`
+	AdvancedSettings     *TableAdvancedSettingsModel `tfsdk:"advanced_settings"`
 }
 
 type TableAdvancedSettingsModel struct {
