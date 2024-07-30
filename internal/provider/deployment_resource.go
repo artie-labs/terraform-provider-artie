@@ -64,6 +64,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"database":      schema.StringAttribute{Required: true},
 							"dynamodb": schema.SingleNestedAttribute{
 								Optional: true,
+								Computed: true,
 								Attributes: map[string]schema.Attribute{
 									"region":                schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 									"table_name":            schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
@@ -86,6 +87,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"is_partitioned":        schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
 								"advanced_settings": schema.SingleNestedAttribute{
 									Optional: true,
+									Computed: true,
 									Attributes: map[string]schema.Attribute{
 										"alias":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
 										"skip_delete":            schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
@@ -98,7 +100,6 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 										"k8s_request_memory_mb":  schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 										// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
 									},
-									Computed: true,
 								},
 							},
 						},
@@ -107,6 +108,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"advanced_settings": schema.SingleNestedAttribute{
 				Optional: true,
+				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"drop_deleted_columns":               schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false)},
 					"include_artie_updated_at_column":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true)},
