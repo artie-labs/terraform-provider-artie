@@ -5,16 +5,16 @@ type DeploymentAPIResponse struct {
 }
 
 type DeploymentAPIModel struct {
-	UUID                 string                             `json:"uuid"`
-	CompanyUUID          string                             `json:"companyUUID"`
-	Name                 string                             `json:"name"`
-	Status               string                             `json:"status"`
-	LastUpdatedAt        string                             `json:"lastUpdatedAt"`
-	DestinationUUID      string                             `json:"destinationUUID"`
-	HasUndeployedChanges bool                               `json:"hasUndeployedChanges"`
-	Source               SourceAPIModel                     `json:"source"`
-	AdvancedSettings     DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
-	DestinationConfig    DestinationConfigAPIModel          `json:"uniqueConfig"`
+	UUID                 string                              `json:"uuid"`
+	CompanyUUID          string                              `json:"companyUUID"`
+	Name                 string                              `json:"name"`
+	Status               string                              `json:"status"`
+	LastUpdatedAt        string                              `json:"lastUpdatedAt"`
+	DestinationUUID      string                              `json:"destinationUUID"`
+	HasUndeployedChanges bool                                `json:"hasUndeployedChanges"`
+	Source               SourceAPIModel                      `json:"source"`
+	AdvancedSettings     *DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
+	DestinationConfig    DestinationConfigAPIModel           `json:"uniqueConfig"`
 }
 
 type SourceAPIModel struct {
@@ -24,13 +24,13 @@ type SourceAPIModel struct {
 }
 
 type SourceConfigAPIModel struct {
-	Host         string                 `json:"host"`
-	SnapshotHost string                 `json:"snapshotHost"`
-	Port         int64                  `json:"port"`
-	User         string                 `json:"user"`
-	Password     string                 `json:"password"`
-	Database     string                 `json:"database"`
-	DynamoDB     DynamoDBConfigAPIModel `json:"dynamodb"`
+	Host         string                  `json:"host"`
+	SnapshotHost string                  `json:"snapshotHost"`
+	Port         int64                   `json:"port"`
+	User         string                  `json:"user"`
+	Password     string                  `json:"password"`
+	Database     string                  `json:"database"`
+	DynamoDB     *DynamoDBConfigAPIModel `json:"dynamodb"`
 }
 
 type DynamoDBConfigAPIModel struct {
@@ -42,13 +42,13 @@ type DynamoDBConfigAPIModel struct {
 }
 
 type TableAPIModel struct {
-	UUID                 string                        `json:"uuid"`
-	Name                 string                        `json:"name"`
-	Schema               string                        `json:"schema"`
-	EnableHistoryMode    bool                          `json:"enableHistoryMode"`
-	IndividualDeployment bool                          `json:"individualDeployment"`
-	IsPartitioned        bool                          `json:"isPartitioned"`
-	AdvancedSettings     TableAdvancedSettingsAPIModel `json:"advancedSettings"`
+	UUID                 string                         `json:"uuid"`
+	Name                 string                         `json:"name"`
+	Schema               string                         `json:"schema"`
+	EnableHistoryMode    bool                           `json:"enableHistoryMode"`
+	IndividualDeployment bool                           `json:"individualDeployment"`
+	IsPartitioned        bool                           `json:"isPartitioned"`
+	AdvancedSettings     *TableAdvancedSettingsAPIModel `json:"advancedSettings"`
 }
 
 type TableAdvancedSettingsAPIModel struct {

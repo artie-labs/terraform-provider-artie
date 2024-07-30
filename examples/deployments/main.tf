@@ -50,13 +50,11 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
       database = "prod_dump_july_2024_4cvzb"
       user     = "doadmin"
       password = var.postgres_password
-      dynamodb = {}
     }
     tables = [
       {
-        name              = "invite"
-        schema            = "public"
-        advanced_settings = {}
+        name   = "invite"
+        schema = "public"
       }
     ]
   }
@@ -65,7 +63,9 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     database = "DEV_TEST"
     schema   = "PUBLIC"
   }
-  advanced_settings = {}
+  # advanced_settings = {
+  #   enable_soft_delete = true
+  # }
 }
 
 # import {
@@ -108,7 +108,6 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
 #       port     = 0
 #       user     = "artie"
 #       password = var.mongodb_password
-#       dynamodb = {}
 #     }
 #     tables = [
 #       {
