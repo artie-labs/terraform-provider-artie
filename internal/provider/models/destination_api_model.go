@@ -5,7 +5,6 @@ type DestinationAPIModel struct {
 	CompanyUUID   string                          `json:"companyUUID"`
 	Name          string                          `json:"name"`
 	Label         string                          `json:"label"`
-	LastUpdatedAt string                          `json:"lastUpdatedAt"`
 	SSHTunnelUUID string                          `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfigAPIModel `json:"sharedConfig"`
 }

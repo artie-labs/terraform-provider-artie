@@ -5,16 +5,14 @@ type DeploymentAPIResponse struct {
 }
 
 type DeploymentAPIModel struct {
-	UUID                 string                              `json:"uuid"`
-	CompanyUUID          string                              `json:"companyUUID"`
-	Name                 string                              `json:"name"`
-	Status               string                              `json:"status"`
-	LastUpdatedAt        string                              `json:"lastUpdatedAt"`
-	DestinationUUID      string                              `json:"destinationUUID"`
-	HasUndeployedChanges bool                                `json:"hasUndeployedChanges"`
-	Source               SourceAPIModel                      `json:"source"`
-	AdvancedSettings     *DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
-	DestinationConfig    DestinationConfigAPIModel           `json:"uniqueConfig"`
+	UUID              string                              `json:"uuid"`
+	CompanyUUID       string                              `json:"companyUUID"`
+	Name              string                              `json:"name"`
+	Status            string                              `json:"status"`
+	DestinationUUID   string                              `json:"destinationUUID"`
+	Source            SourceAPIModel                      `json:"source"`
+	AdvancedSettings  *DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
+	DestinationConfig DestinationConfigAPIModel           `json:"uniqueConfig"`
 }
 
 type SourceAPIModel struct {

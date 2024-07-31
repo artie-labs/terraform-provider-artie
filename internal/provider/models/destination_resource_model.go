@@ -8,7 +8,6 @@ type DestinationResourceModel struct {
 	SSHTunnelUUID types.String                  `tfsdk:"ssh_tunnel_uuid"`
 	Name          types.String                  `tfsdk:"name"`
 	Label         types.String                  `tfsdk:"label"`
-	LastUpdatedAt types.String                  `tfsdk:"last_updated_at"`
 	Config        *DestinationSharedConfigModel `tfsdk:"config"`
 }
 

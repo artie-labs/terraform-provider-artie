@@ -10,7 +10,6 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Label = types.StringValue(apiModel.Label)
-	resourceModel.LastUpdatedAt = types.StringValue(apiModel.LastUpdatedAt)
 	resourceModel.SSHTunnelUUID = types.StringValue(apiModel.SSHTunnelUUID)
 
 	resourceModel.Config = &DestinationSharedConfigModel{
@@ -41,7 +40,6 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 		CompanyUUID:   resourceModel.CompanyUUID.ValueString(),
 		Name:          resourceModel.Name.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
-		LastUpdatedAt: resourceModel.LastUpdatedAt.ValueString(),
 		SSHTunnelUUID: sshTunnelUUID,
 		Config: DestinationSharedConfigAPIModel{
 			Host:                resourceModel.Config.Host.ValueString(),
