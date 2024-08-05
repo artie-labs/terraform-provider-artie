@@ -23,7 +23,6 @@ Artie Deployment resource
 
 ### Optional
 
-- `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--advanced_settings))
 - `destination_uuid` (String)
 - `status` (String)
 
@@ -95,7 +94,6 @@ Required:
 
 Optional:
 
-- `advanced_settings` (Attributes) (see [below for nested schema](#nestedatt--source--tables--advanced_settings))
 - `enable_history_mode` (Boolean)
 - `individual_deployment` (Boolean)
 - `is_partitioned` (Boolean)
@@ -103,38 +101,3 @@ Optional:
 Read-Only:
 
 - `uuid` (String)
-
-<a id="nestedatt--source--tables--advanced_settings"></a>
-### Nested Schema for `source.tables.advanced_settings`
-
-Optional:
-
-- `alias` (String)
-- `autoscale_max_replicas` (Number)
-- `autoscale_target_value` (Number)
-- `buffer_rows` (Number)
-- `flush_interval_seconds` (Number)
-- `flush_size_kb` (Number)
-- `k8s_request_cpu` (Number)
-- `k8s_request_memory_mb` (Number)
-- `skip_delete` (Boolean)
-
-
-
-
-<a id="nestedatt--advanced_settings"></a>
-### Nested Schema for `advanced_settings`
-
-Optional:
-
-- `buffer_rows` (Number)
-- `drop_deleted_columns` (Boolean)
-- `enable_heartbeats` (Boolean)
-- `enable_soft_delete` (Boolean)
-- `flush_interval_seconds` (Number)
-- `flush_size_kb` (Number)
-- `include_artie_updated_at_column` (Boolean)
-- `include_database_updated_at_column` (Boolean)
-- `publication_auto_create_mode` (String)
-- `publication_name_override` (String)
-- `replication_slot_override` (String)

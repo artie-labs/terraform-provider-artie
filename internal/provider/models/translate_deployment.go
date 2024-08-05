@@ -14,21 +14,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 
 	tables := []TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
-		var advSettings *TableAdvancedSettingsModel
-		if apiTable.AdvancedSettings != nil {
-			advSettings = &TableAdvancedSettingsModel{
-				Alias:                types.StringValue(apiTable.AdvancedSettings.Alias),
-				SkipDelete:           types.BoolValue(apiTable.AdvancedSettings.SkipDelete),
-				FlushIntervalSeconds: types.Int64Value(apiTable.AdvancedSettings.FlushIntervalSeconds),
-				BufferRows:           types.Int64Value(apiTable.AdvancedSettings.BufferRows),
-				FlushSizeKB:          types.Int64Value(apiTable.AdvancedSettings.FlushSizeKB),
-				AutoscaleMaxReplicas: types.Int64Value(apiTable.AdvancedSettings.AutoscaleMaxReplicas),
-				AutoscaleTargetValue: types.Int64Value(apiTable.AdvancedSettings.AutoscaleTargetValue),
-				K8sRequestCPU:        types.Int64Value(apiTable.AdvancedSettings.K8sRequestCPU),
-				K8sRequestMemoryMB:   types.Int64Value(apiTable.AdvancedSettings.K8sRequestMemoryMB),
-				// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
-			}
-		}
 		tables = append(tables, TableModel{
 			UUID:                 types.StringValue(apiTable.UUID),
 			Name:                 types.StringValue(apiTable.Name),
@@ -36,7 +21,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-			AdvancedSettings:     advSettings,
 		})
 	}
 	var dynamoDBConfig *DynamoDBConfigModel
@@ -72,25 +56,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		BucketName:            types.StringValue(apiModel.DestinationConfig.BucketName),
 		OptionalPrefix:        types.StringValue(apiModel.DestinationConfig.OptionalPrefix),
 	}
-
-	var advSettings *DeploymentAdvancedSettingsModel
-	if apiModel.AdvancedSettings != nil {
-		advSettings = &DeploymentAdvancedSettingsModel{
-			DropDeletedColumns:             types.BoolValue(apiModel.AdvancedSettings.DropDeletedColumns),
-			IncludeArtieUpdatedAtColumn:    types.BoolValue(apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn),
-			IncludeDatabaseUpdatedAtColumn: types.BoolValue(apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn),
-			EnableHeartbeats:               types.BoolValue(apiModel.AdvancedSettings.EnableHeartbeats),
-			EnableSoftDelete:               types.BoolValue(apiModel.AdvancedSettings.EnableSoftDelete),
-			FlushIntervalSeconds:           types.Int64Value(apiModel.AdvancedSettings.FlushIntervalSeconds),
-			BufferRows:                     types.Int64Value(apiModel.AdvancedSettings.BufferRows),
-			FlushSizeKB:                    types.Int64Value(apiModel.AdvancedSettings.FlushSizeKB),
-			PublicationNameOverride:        types.StringValue(apiModel.AdvancedSettings.PublicationNameOverride),
-			ReplicationSlotOverride:        types.StringValue(apiModel.AdvancedSettings.ReplicationSlotOverride),
-			PublicationAutoCreateMode:      types.StringValue(apiModel.AdvancedSettings.PublicationAutoCreateMode),
-			// TODO PartitionRegex
-		}
-	}
-	resourceModel.AdvancedSettings = advSettings
 }
 
 func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) DeploymentAPIModel {
@@ -100,21 +65,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		if tableUUID == "" {
 			tableUUID = uuid.Nil.String()
 		}
-		var advSettings *TableAdvancedSettingsAPIModel
-		if table.AdvancedSettings != nil {
-			advSettings = &TableAdvancedSettingsAPIModel{
-				Alias:                table.AdvancedSettings.Alias.ValueString(),
-				SkipDelete:           table.AdvancedSettings.SkipDelete.ValueBool(),
-				FlushIntervalSeconds: table.AdvancedSettings.FlushIntervalSeconds.ValueInt64(),
-				BufferRows:           table.AdvancedSettings.BufferRows.ValueInt64(),
-				FlushSizeKB:          table.AdvancedSettings.FlushSizeKB.ValueInt64(),
-				AutoscaleMaxReplicas: table.AdvancedSettings.AutoscaleMaxReplicas.ValueInt64(),
-				AutoscaleTargetValue: table.AdvancedSettings.AutoscaleTargetValue.ValueInt64(),
-				K8sRequestCPU:        table.AdvancedSettings.K8sRequestCPU.ValueInt64(),
-				K8sRequestMemoryMB:   table.AdvancedSettings.K8sRequestMemoryMB.ValueInt64(),
-				// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
-			}
-		}
 		tables = append(tables, TableAPIModel{
 			UUID:                 tableUUID,
 			Name:                 table.Name.ValueString(),
@@ -122,7 +72,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			EnableHistoryMode:    table.EnableHistoryMode.ValueBool(),
 			IndividualDeployment: table.IndividualDeployment.ValueBool(),
 			IsPartitioned:        table.IsPartitioned.ValueBool(),
-			AdvancedSettings:     advSettings,
 		})
 	}
 
@@ -134,24 +83,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			StreamsArn:         resourceModel.Source.Config.DynamoDB.StreamsArn.ValueString(),
 			AwsAccessKeyID:     resourceModel.Source.Config.DynamoDB.AwsAccessKeyID.ValueString(),
 			AwsSecretAccessKey: resourceModel.Source.Config.DynamoDB.AwsSecretAccessKey.ValueString(),
-		}
-	}
-
-	var advSettings *DeploymentAdvancedSettingsAPIModel
-	if resourceModel.AdvancedSettings != nil {
-		advSettings = &DeploymentAdvancedSettingsAPIModel{
-			DropDeletedColumns:             resourceModel.AdvancedSettings.DropDeletedColumns.ValueBool(),
-			IncludeArtieUpdatedAtColumn:    resourceModel.AdvancedSettings.IncludeArtieUpdatedAtColumn.ValueBool(),
-			IncludeDatabaseUpdatedAtColumn: resourceModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn.ValueBool(),
-			EnableHeartbeats:               resourceModel.AdvancedSettings.EnableHeartbeats.ValueBool(),
-			EnableSoftDelete:               resourceModel.AdvancedSettings.EnableSoftDelete.ValueBool(),
-			FlushIntervalSeconds:           resourceModel.AdvancedSettings.FlushIntervalSeconds.ValueInt64(),
-			BufferRows:                     resourceModel.AdvancedSettings.BufferRows.ValueInt64(),
-			FlushSizeKB:                    resourceModel.AdvancedSettings.FlushSizeKB.ValueInt64(),
-			PublicationNameOverride:        resourceModel.AdvancedSettings.PublicationNameOverride.ValueString(),
-			ReplicationSlotOverride:        resourceModel.AdvancedSettings.ReplicationSlotOverride.ValueString(),
-			PublicationAutoCreateMode:      resourceModel.AdvancedSettings.PublicationAutoCreateMode.ValueString(),
-			// TODO PartitionRegex
 		}
 	}
 
@@ -184,6 +115,5 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			BucketName:            resourceModel.DestinationConfig.BucketName.ValueString(),
 			OptionalPrefix:        resourceModel.DestinationConfig.OptionalPrefix.ValueString(),
 		},
-		AdvancedSettings: advSettings,
 	}
 }

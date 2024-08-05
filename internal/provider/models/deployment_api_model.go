@@ -5,14 +5,13 @@ type DeploymentAPIResponse struct {
 }
 
 type DeploymentAPIModel struct {
-	UUID              string                              `json:"uuid"`
-	CompanyUUID       string                              `json:"companyUUID"`
-	Name              string                              `json:"name"`
-	Status            string                              `json:"status"`
-	DestinationUUID   string                              `json:"destinationUUID"`
-	Source            SourceAPIModel                      `json:"source"`
-	AdvancedSettings  *DeploymentAdvancedSettingsAPIModel `json:"advancedSettings"`
-	DestinationConfig DestinationConfigAPIModel           `json:"uniqueConfig"`
+	UUID              string                    `json:"uuid"`
+	CompanyUUID       string                    `json:"companyUUID"`
+	Name              string                    `json:"name"`
+	Status            string                    `json:"status"`
+	DestinationUUID   string                    `json:"destinationUUID"`
+	Source            SourceAPIModel            `json:"source"`
+	DestinationConfig DestinationConfigAPIModel `json:"uniqueConfig"`
 }
 
 type SourceAPIModel struct {
@@ -40,41 +39,12 @@ type DynamoDBConfigAPIModel struct {
 }
 
 type TableAPIModel struct {
-	UUID                 string                         `json:"uuid"`
-	Name                 string                         `json:"name"`
-	Schema               string                         `json:"schema"`
-	EnableHistoryMode    bool                           `json:"enableHistoryMode"`
-	IndividualDeployment bool                           `json:"individualDeployment"`
-	IsPartitioned        bool                           `json:"isPartitioned"`
-	AdvancedSettings     *TableAdvancedSettingsAPIModel `json:"advancedSettings"`
-}
-
-type TableAdvancedSettingsAPIModel struct {
-	Alias                string `json:"alias"`
-	SkipDelete           bool   `json:"skipDelete"`
-	FlushIntervalSeconds int64  `json:"flushIntervalSeconds"`
-	BufferRows           int64  `json:"bufferRows"`
-	FlushSizeKB          int64  `json:"flushSizeKb"`
-	AutoscaleMaxReplicas int64  `json:"autoscaleMaxReplicas"`
-	AutoscaleTargetValue int64  `json:"autoscaleTargetValue"`
-	K8sRequestCPU        int64  `json:"k8sRequestCPU"`
-	K8sRequestMemoryMB   int64  `json:"k8sRequestMemoryMB"`
-	// TODO BigQueryPartitionSettings, MergePredicates, ExcludeColumns
-}
-
-type DeploymentAdvancedSettingsAPIModel struct {
-	DropDeletedColumns             bool   `json:"dropDeletedColumns"`
-	IncludeArtieUpdatedAtColumn    bool   `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn bool   `json:"includeDatabaseUpdatedAtColumn"`
-	EnableHeartbeats               bool   `json:"enableHeartbeats"`
-	EnableSoftDelete               bool   `json:"enableSoftDelete"`
-	FlushIntervalSeconds           int64  `json:"flushIntervalSeconds"`
-	BufferRows                     int64  `json:"bufferRows"`
-	FlushSizeKB                    int64  `json:"flushSizeKb"`
-	PublicationNameOverride        string `json:"publicationNameOverride"`
-	ReplicationSlotOverride        string `json:"replicationSlotOverride"`
-	PublicationAutoCreateMode      string `json:"publicationAutoCreateMode"`
-	// TODO PartitionRegex
+	UUID                 string `json:"uuid"`
+	Name                 string `json:"name"`
+	Schema               string `json:"schema"`
+	EnableHistoryMode    bool   `json:"enableHistoryMode"`
+	IndividualDeployment bool   `json:"individualDeployment"`
+	IsPartitioned        bool   `json:"isPartitioned"`
 }
 
 type DestinationConfigAPIModel struct {
