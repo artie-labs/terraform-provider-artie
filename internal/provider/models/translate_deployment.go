@@ -24,7 +24,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		})
 	}
 	resourceModel.Source = &SourceModel{
-		Name: types.StringValue(apiModel.Source.Name),
+		Type: types.StringValue(apiModel.Source.Type),
 		PostgresConfig: PostgresConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int64Value(apiModel.Source.Config.Port),
@@ -70,7 +70,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		Status:          resourceModel.Status.ValueString(),
 		DestinationUUID: resourceModel.DestinationUUID.ValueString(),
 		Source: SourceAPIModel{
-			Name: resourceModel.Source.Name.ValueString(),
+			Type: resourceModel.Source.Type.ValueString(),
 			Config: SourceConfigAPIModel{
 				Host:     resourceModel.Source.PostgresConfig.Host.ValueString(),
 				Port:     resourceModel.Source.PostgresConfig.Port.ValueInt64(),

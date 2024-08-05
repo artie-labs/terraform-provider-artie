@@ -13,7 +13,7 @@ type DeploymentResourceModel struct {
 }
 
 type SourceModel struct {
-	Name           types.String        `tfsdk:"name"`
+	Type           types.String        `tfsdk:"type"`
 	PostgresConfig PostgresConfigModel `tfsdk:"postgres_config"`
 	Tables         []TableModel        `tfsdk:"tables"`
 }

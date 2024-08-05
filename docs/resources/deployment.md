@@ -51,9 +51,9 @@ Optional:
 
 Required:
 
-- `name` (String)
 - `postgres_config` (Attributes) (see [below for nested schema](#nestedatt--source--postgres_config))
 - `tables` (Attributes List) (see [below for nested schema](#nestedatt--source--tables))
+- `type` (String)
 
 <a id="nestedatt--source--postgres_config"></a>
 ### Nested Schema for `source.postgres_config`

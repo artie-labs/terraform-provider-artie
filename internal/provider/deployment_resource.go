@@ -50,7 +50,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"source": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
-					"name": schema.StringAttribute{Required: true},
+					"type": schema.StringAttribute{Required: true},
 					"postgres_config": schema.SingleNestedAttribute{
 						Required: true,
 						Attributes: map[string]schema.Attribute{
@@ -123,7 +123,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Our API's create endpoint only accepts the source type, so we need to send two requests:
 	// one to create the bare-bones deployment, then one to update it with the rest of the data
-	payloadBytes, err := json.Marshal(map[string]any{"source": data.Source.Name.ValueString()})
+	payloadBytes, err := json.Marshal(map[string]any{"source": data.Source.Type.ValueString()})
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
