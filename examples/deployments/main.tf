@@ -32,11 +32,11 @@ variable "postgres_password" {
 resource "artie_destination" "snowflake" {
   name  = "Snowflake"
   label = "Snowflake (Partner Account)"
-  config = {
-    snowflake_account_url = "https://znb46775.snowflakecomputing.com"
-    username              = "tang8330"
-    password              = var.snowflake_password
-    snowflake_virtual_dwh = "compute_wh"
+  snowflake_config = {
+    account_url = "https://znb46775.snowflakecomputing.com"
+    virtual_dwh = "compute_wh"
+    username    = "tang8330"
+    password    = var.snowflake_password
   }
 }
 

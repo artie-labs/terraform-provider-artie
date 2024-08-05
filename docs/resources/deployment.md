@@ -51,12 +51,12 @@ Optional:
 
 Required:
 
-- `config` (Attributes) (see [below for nested schema](#nestedatt--source--config))
 - `name` (String)
+- `postgres_config` (Attributes) (see [below for nested schema](#nestedatt--source--postgres_config))
 - `tables` (Attributes List) (see [below for nested schema](#nestedatt--source--tables))
 
-<a id="nestedatt--source--config"></a>
-### Nested Schema for `source.config`
+<a id="nestedatt--source--postgres_config"></a>
+### Nested Schema for `source.postgres_config`
 
 Required:
 
@@ -65,23 +65,6 @@ Required:
 - `password` (String, Sensitive)
 - `port` (Number)
 - `user` (String)
-
-Optional:
-
-- `dynamodb` (Attributes) (see [below for nested schema](#nestedatt--source--config--dynamodb))
-- `snapshot_host` (String)
-
-<a id="nestedatt--source--config--dynamodb"></a>
-### Nested Schema for `source.config.dynamodb`
-
-Optional:
-
-- `aws_access_key_id` (String)
-- `aws_secret_access_key` (String)
-- `region` (String)
-- `streams_arn` (String)
-- `table_name` (String)
-
 
 
 <a id="nestedatt--source--tables"></a>

@@ -17,12 +17,14 @@ Artie Destination resource
 
 ### Required
 
-- `config` (Attributes) (see [below for nested schema](#nestedatt--config))
 - `name` (String)
 
 ### Optional
 
+- `big_query_config` (Attributes) (see [below for nested schema](#nestedatt--big_query_config))
 - `label` (String)
+- `redshift_config` (Attributes) (see [below for nested schema](#nestedatt--redshift_config))
+- `snowflake_config` (Attributes) (see [below for nested schema](#nestedatt--snowflake_config))
 
 ### Read-Only
 
@@ -30,22 +32,38 @@ Artie Destination resource
 - `ssh_tunnel_uuid` (String)
 - `uuid` (String)
 
-<a id="nestedatt--config"></a>
-### Nested Schema for `config`
+<a id="nestedatt--big_query_config"></a>
+### Nested Schema for `big_query_config`
 
-Optional:
+Required:
 
-- `aws_access_key_id` (String)
-- `aws_region` (String)
-- `aws_secret_access_key` (String, Sensitive)
+- `credentials_data` (String, Sensitive)
+- `location` (String)
+- `project_id` (String)
+
+
+<a id="nestedatt--redshift_config"></a>
+### Nested Schema for `redshift_config`
+
+Required:
+
 - `endpoint` (String)
-- `gcp_credentials_data` (String, Sensitive)
-- `gcp_location` (String)
-- `gcp_project_id` (String)
 - `host` (String)
 - `password` (String, Sensitive)
 - `port` (Number)
-- `snowflake_account_url` (String)
-- `snowflake_private_key` (String, Sensitive)
-- `snowflake_virtual_dwh` (String)
 - `username` (String)
+
+
+<a id="nestedatt--snowflake_config"></a>
+### Nested Schema for `snowflake_config`
+
+Required:
+
+- `account_url` (String)
+- `username` (String)
+- `virtual_dwh` (String)
+
+Optional:
+
+- `password` (String, Sensitive)
+- `private_key` (String, Sensitive)
