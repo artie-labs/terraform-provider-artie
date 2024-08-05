@@ -3,7 +3,7 @@ package models
 type DestinationAPIModel struct {
 	UUID          string                          `json:"uuid"`
 	CompanyUUID   string                          `json:"companyUUID"`
-	Name          string                          `json:"name"`
+	Type          string                          `json:"name"`
 	Label         string                          `json:"label"`
 	SSHTunnelUUID string                          `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfigAPIModel `json:"sharedConfig"`

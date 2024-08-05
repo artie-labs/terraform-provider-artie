@@ -30,7 +30,7 @@ variable "postgres_password" {
 }
 
 resource "artie_destination" "snowflake" {
-  name  = "Snowflake"
+  type  = "Snowflake"
   label = "Snowflake (Partner Account)"
   snowflake_config = {
     account_url = "https://znb46775.snowflakecomputing.com"

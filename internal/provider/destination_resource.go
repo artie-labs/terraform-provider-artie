@@ -43,7 +43,7 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"company_uuid":    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name":            schema.StringAttribute{Required: true},
+			"type":            schema.StringAttribute{Required: true},
 			"label":           schema.StringAttribute{Optional: true},
 			"snowflake_config": schema.SingleNestedAttribute{
 				Optional: true,
@@ -107,7 +107,7 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 
 	destModel := models.DestinationResourceToAPIModel(data)
 	payload := map[string]any{
-		"name":         destModel.Name,
+		"name":         destModel.Type,
 		"label":        destModel.Label,
 		"sharedConfig": destModel.Config,
 	}

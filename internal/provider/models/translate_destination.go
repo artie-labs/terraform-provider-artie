@@ -8,11 +8,11 @@ import (
 func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *DestinationResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
 	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
-	resourceModel.Name = types.StringValue(apiModel.Name)
+	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
 	resourceModel.SSHTunnelUUID = types.StringValue(apiModel.SSHTunnelUUID)
 
-	switch resourceModel.Name.ValueString() {
+	switch resourceModel.Type.ValueString() {
 	case "Snowflake":
 		resourceModel.SnowflakeConfig = &SnowflakeSharedConfigModel{
 			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
@@ -46,12 +46,12 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 	apiModel := DestinationAPIModel{
 		UUID:          resourceModel.UUID.ValueString(),
 		CompanyUUID:   resourceModel.CompanyUUID.ValueString(),
-		Name:          resourceModel.Name.ValueString(),
+		Type:          resourceModel.Type.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
 		SSHTunnelUUID: sshTunnelUUID,
 	}
 
-	switch resourceModel.Name.ValueString() {
+	switch resourceModel.Type.ValueString() {
 	case "Snowflake":
 		apiModel.Config = DestinationSharedConfigAPIModel{
 			SnowflakeAccountURL: resourceModel.SnowflakeConfig.AccountURL.ValueString(),

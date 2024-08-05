@@ -17,7 +17,7 @@ Artie Destination resource
 
 ### Required
 
-- `name` (String)
+- `type` (String)
 
 ### Optional
 
