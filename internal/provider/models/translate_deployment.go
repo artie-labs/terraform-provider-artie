@@ -23,26 +23,14 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 		})
 	}
-	var dynamoDBConfig *DynamoDBConfigModel
-	if apiModel.Source.Config.DynamoDB != nil {
-		dynamoDBConfig = &DynamoDBConfigModel{
-			Region:             types.StringValue(apiModel.Source.Config.DynamoDB.Region),
-			TableName:          types.StringValue(apiModel.Source.Config.DynamoDB.TableName),
-			StreamsArn:         types.StringValue(apiModel.Source.Config.DynamoDB.StreamsArn),
-			AwsAccessKeyID:     types.StringValue(apiModel.Source.Config.DynamoDB.AwsAccessKeyID),
-			AwsSecretAccessKey: types.StringValue(apiModel.Source.Config.DynamoDB.AwsSecretAccessKey),
-		}
-	}
 	resourceModel.Source = &SourceModel{
 		Name: types.StringValue(apiModel.Source.Name),
-		Config: SourceConfigModel{
-			Host:         types.StringValue(apiModel.Source.Config.Host),
-			SnapshotHost: types.StringValue(apiModel.Source.Config.SnapshotHost),
-			Port:         types.Int64Value(apiModel.Source.Config.Port),
-			User:         types.StringValue(apiModel.Source.Config.User),
-			Password:     types.StringValue(apiModel.Source.Config.Password),
-			Database:     types.StringValue(apiModel.Source.Config.Database),
-			DynamoDB:     dynamoDBConfig,
+		PostgresConfig: PostgresConfigModel{
+			Host:     types.StringValue(apiModel.Source.Config.Host),
+			Port:     types.Int64Value(apiModel.Source.Config.Port),
+			User:     types.StringValue(apiModel.Source.Config.User),
+			Password: types.StringValue(apiModel.Source.Config.Password),
+			Database: types.StringValue(apiModel.Source.Config.Database),
 		},
 		Tables: tables,
 	}
@@ -75,17 +63,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		})
 	}
 
-	var dynamoDBConfig *DynamoDBConfigAPIModel
-	if resourceModel.Source.Config.DynamoDB != nil {
-		dynamoDBConfig = &DynamoDBConfigAPIModel{
-			Region:             resourceModel.Source.Config.DynamoDB.Region.ValueString(),
-			TableName:          resourceModel.Source.Config.DynamoDB.TableName.ValueString(),
-			StreamsArn:         resourceModel.Source.Config.DynamoDB.StreamsArn.ValueString(),
-			AwsAccessKeyID:     resourceModel.Source.Config.DynamoDB.AwsAccessKeyID.ValueString(),
-			AwsSecretAccessKey: resourceModel.Source.Config.DynamoDB.AwsSecretAccessKey.ValueString(),
-		}
-	}
-
 	return DeploymentAPIModel{
 		UUID:            resourceModel.UUID.ValueString(),
 		CompanyUUID:     resourceModel.CompanyUUID.ValueString(),
@@ -95,13 +72,11 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		Source: SourceAPIModel{
 			Name: resourceModel.Source.Name.ValueString(),
 			Config: SourceConfigAPIModel{
-				Host:         resourceModel.Source.Config.Host.ValueString(),
-				SnapshotHost: resourceModel.Source.Config.SnapshotHost.ValueString(),
-				Port:         resourceModel.Source.Config.Port.ValueInt64(),
-				User:         resourceModel.Source.Config.User.ValueString(),
-				Password:     resourceModel.Source.Config.Password.ValueString(),
-				Database:     resourceModel.Source.Config.Database.ValueString(),
-				DynamoDB:     dynamoDBConfig,
+				Host:     resourceModel.Source.PostgresConfig.Host.ValueString(),
+				Port:     resourceModel.Source.PostgresConfig.Port.ValueInt64(),
+				User:     resourceModel.Source.PostgresConfig.User.ValueString(),
+				Password: resourceModel.Source.PostgresConfig.Password.ValueString(),
+				Database: resourceModel.Source.PostgresConfig.Database.ValueString(),
 			},
 			Tables: tables,
 		},

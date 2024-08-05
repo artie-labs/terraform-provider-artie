@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -52,27 +51,14 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Required: true,
 				Attributes: map[string]schema.Attribute{
 					"name": schema.StringAttribute{Required: true},
-					"config": schema.SingleNestedAttribute{
+					"postgres_config": schema.SingleNestedAttribute{
 						Required: true,
 						Attributes: map[string]schema.Attribute{
-							"host":          schema.StringAttribute{Required: true},
-							"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-							"port":          schema.Int64Attribute{Required: true},
-							"user":          schema.StringAttribute{Required: true},
-							"password":      schema.StringAttribute{Required: true, Sensitive: true},
-							"database":      schema.StringAttribute{Required: true},
-							"dynamodb": schema.SingleNestedAttribute{
-								Optional: true,
-								Computed: true,
-								Attributes: map[string]schema.Attribute{
-									"region":                schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-									"table_name":            schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-									"streams_arn":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-									"aws_access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-									"aws_secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-								},
-								PlanModifiers: []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-							},
+							"host":     schema.StringAttribute{Required: true},
+							"port":     schema.Int64Attribute{Required: true},
+							"user":     schema.StringAttribute{Required: true},
+							"password": schema.StringAttribute{Required: true, Sensitive: true},
+							"database": schema.StringAttribute{Required: true},
 						},
 					},
 					"tables": schema.ListNestedAttribute{

@@ -13,27 +13,17 @@ type DeploymentResourceModel struct {
 }
 
 type SourceModel struct {
-	Name   types.String      `tfsdk:"name"`
-	Config SourceConfigModel `tfsdk:"config"`
-	Tables []TableModel      `tfsdk:"tables"`
+	Name           types.String        `tfsdk:"name"`
+	PostgresConfig PostgresConfigModel `tfsdk:"postgres_config"`
+	Tables         []TableModel        `tfsdk:"tables"`
 }
 
-type SourceConfigModel struct {
-	Host         types.String         `tfsdk:"host"`
-	SnapshotHost types.String         `tfsdk:"snapshot_host"`
-	Port         types.Int64          `tfsdk:"port"`
-	User         types.String         `tfsdk:"user"`
-	Database     types.String         `tfsdk:"database"`
-	DynamoDB     *DynamoDBConfigModel `tfsdk:"dynamodb"`
-	Password     types.String         `tfsdk:"password"`
-}
-
-type DynamoDBConfigModel struct {
-	Region             types.String `tfsdk:"region"`
-	TableName          types.String `tfsdk:"table_name"`
-	StreamsArn         types.String `tfsdk:"streams_arn"`
-	AwsAccessKeyID     types.String `tfsdk:"aws_access_key_id"`
-	AwsSecretAccessKey types.String `tfsdk:"aws_secret_access_key"`
+type PostgresConfigModel struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int64  `tfsdk:"port"`
+	User     types.String `tfsdk:"user"`
+	Database types.String `tfsdk:"database"`
+	Password types.String `tfsdk:"password"`
 }
 
 type TableModel struct {
