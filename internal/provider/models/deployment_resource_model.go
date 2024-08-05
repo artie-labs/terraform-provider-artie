@@ -13,12 +13,21 @@ type DeploymentResourceModel struct {
 }
 
 type SourceModel struct {
-	Type           types.String        `tfsdk:"type"`
-	PostgresConfig PostgresConfigModel `tfsdk:"postgres_config"`
-	Tables         []TableModel        `tfsdk:"tables"`
+	Type           types.String         `tfsdk:"type"`
+	Tables         []TableModel         `tfsdk:"tables"`
+	PostgresConfig *PostgresConfigModel `tfsdk:"postgres_config"`
+	MySQLConfig    *MySQLConfigModel    `tfsdk:"mysql_config"`
 }
 
 type PostgresConfigModel struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int64  `tfsdk:"port"`
+	User     types.String `tfsdk:"user"`
+	Database types.String `tfsdk:"database"`
+	Password types.String `tfsdk:"password"`
+}
+
+type MySQLConfigModel struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int64  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`

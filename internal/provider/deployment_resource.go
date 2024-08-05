@@ -52,7 +52,17 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{Required: true},
 					"postgres_config": schema.SingleNestedAttribute{
-						Required: true,
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"host":     schema.StringAttribute{Required: true},
+							"port":     schema.Int64Attribute{Required: true},
+							"user":     schema.StringAttribute{Required: true},
+							"password": schema.StringAttribute{Required: true, Sensitive: true},
+							"database": schema.StringAttribute{Required: true},
+						},
+					},
+					"mysql_config": schema.SingleNestedAttribute{
+						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"host":     schema.StringAttribute{Required: true},
 							"port":     schema.Int64Attribute{Required: true},

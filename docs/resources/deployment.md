@@ -51,21 +51,13 @@ Optional:
 
 Required:
 
-- `postgres_config` (Attributes) (see [below for nested schema](#nestedatt--source--postgres_config))
 - `tables` (Attributes List) (see [below for nested schema](#nestedatt--source--tables))
 - `type` (String)
 
-<a id="nestedatt--source--postgres_config"></a>
-### Nested Schema for `source.postgres_config`
+Optional:
 
-Required:
-
-- `database` (String)
-- `host` (String)
-- `password` (String, Sensitive)
-- `port` (Number)
-- `user` (String)
-
+- `mysql_config` (Attributes) (see [below for nested schema](#nestedatt--source--mysql_config))
+- `postgres_config` (Attributes) (see [below for nested schema](#nestedatt--source--postgres_config))
 
 <a id="nestedatt--source--tables"></a>
 ### Nested Schema for `source.tables`
@@ -84,3 +76,27 @@ Optional:
 Read-Only:
 
 - `uuid` (String)
+
+
+<a id="nestedatt--source--mysql_config"></a>
+### Nested Schema for `source.mysql_config`
+
+Required:
+
+- `database` (String)
+- `host` (String)
+- `password` (String, Sensitive)
+- `port` (Number)
+- `user` (String)
+
+
+<a id="nestedatt--source--postgres_config"></a>
+### Nested Schema for `source.postgres_config`
+
+Required:
+
+- `database` (String)
+- `host` (String)
+- `password` (String, Sensitive)
+- `port` (Number)
+- `user` (String)
