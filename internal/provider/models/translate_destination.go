@@ -7,7 +7,6 @@ import (
 
 func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *DestinationResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
-	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
 	resourceModel.SSHTunnelUUID = types.StringValue(apiModel.SSHTunnelUUID)
@@ -45,7 +44,6 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 	}
 	apiModel := DestinationAPIModel{
 		UUID:          resourceModel.UUID.ValueString(),
-		CompanyUUID:   resourceModel.CompanyUUID.ValueString(),
 		Type:          resourceModel.Type.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
 		SSHTunnelUUID: sshTunnelUUID,

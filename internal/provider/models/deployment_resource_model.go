@@ -11,7 +11,6 @@ const (
 
 type DeploymentResourceModel struct {
 	UUID              types.String                      `tfsdk:"uuid"`
-	CompanyUUID       types.String                      `tfsdk:"company_uuid"`
 	Name              types.String                      `tfsdk:"name"`
 	Status            types.String                      `tfsdk:"status"`
 	DestinationUUID   types.String                      `tfsdk:"destination_uuid"`
