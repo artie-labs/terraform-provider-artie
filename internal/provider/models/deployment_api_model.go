@@ -15,7 +15,7 @@ type DeploymentAPIModel struct {
 }
 
 type SourceAPIModel struct {
-	Name   string               `json:"name"`
+	Type   string               `json:"name"`
 	Config SourceConfigAPIModel `json:"config"`
 	Tables []TableAPIModel      `json:"tables"`
 }

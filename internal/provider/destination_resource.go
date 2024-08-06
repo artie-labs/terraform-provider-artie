@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -44,25 +43,34 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"company_uuid":    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name":            schema.StringAttribute{Required: true},
+			"type":            schema.StringAttribute{Required: true},
 			"label":           schema.StringAttribute{Optional: true},
-			"config": schema.SingleNestedAttribute{
-				Required: true,
+			"snowflake_config": schema.SingleNestedAttribute{
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
-					"host":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"port":                  schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0)},
-					"endpoint":              schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"username":              schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"password":              schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
-					"gcp_project_id":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"gcp_location":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"gcp_credentials_data":  schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
-					"aws_access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"aws_secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
-					"aws_region":            schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"snowflake_account_url": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"snowflake_virtual_dwh": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("")},
-					"snowflake_private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
+					"account_url": schema.StringAttribute{Required: true},
+					"virtual_dwh": schema.StringAttribute{Required: true},
+					"username":    schema.StringAttribute{Required: true},
+					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
+					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
+				},
+			},
+			"big_query_config": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"project_id":       schema.StringAttribute{Required: true},
+					"location":         schema.StringAttribute{Required: true},
+					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true},
+				},
+			},
+			"redshift_config": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"endpoint": schema.StringAttribute{Required: true},
+					"host":     schema.StringAttribute{Required: true},
+					"port":     schema.Int64Attribute{Required: true},
+					"username": schema.StringAttribute{Required: true},
+					"password": schema.StringAttribute{Required: true, Sensitive: true},
 				},
 			},
 		},
@@ -99,7 +107,7 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 
 	destModel := models.DestinationResourceToAPIModel(data)
 	payload := map[string]any{
-		"name":         destModel.Name,
+		"name":         destModel.Type,
 		"label":        destModel.Label,
 		"sharedConfig": destModel.Config,
 	}

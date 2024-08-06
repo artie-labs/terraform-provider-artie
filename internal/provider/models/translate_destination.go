@@ -8,25 +8,33 @@ import (
 func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *DestinationResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
 	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
-	resourceModel.Name = types.StringValue(apiModel.Name)
+	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
 	resourceModel.SSHTunnelUUID = types.StringValue(apiModel.SSHTunnelUUID)
 
-	resourceModel.Config = &DestinationSharedConfigModel{
-		Host:                types.StringValue(apiModel.Config.Host),
-		Port:                types.Int64Value(apiModel.Config.Port),
-		Endpoint:            types.StringValue(apiModel.Config.Endpoint),
-		Username:            types.StringValue(apiModel.Config.Username),
-		Password:            types.StringValue(apiModel.Config.Password),
-		GCPProjectID:        types.StringValue(apiModel.Config.GCPProjectID),
-		GCPLocation:         types.StringValue(apiModel.Config.GCPLocation),
-		GCPCredentialsData:  types.StringValue(apiModel.Config.GCPCredentialsData),
-		AWSAccessKeyID:      types.StringValue(apiModel.Config.AWSAccessKeyID),
-		AWSSecretAccessKey:  types.StringValue(apiModel.Config.AWSSecretAccessKey),
-		AWSRegion:           types.StringValue(apiModel.Config.AWSRegion),
-		SnowflakeAccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
-		SnowflakeVirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
-		SnowflakePrivateKey: types.StringValue(apiModel.Config.SnowflakePrivateKey),
+	switch resourceModel.Type.ValueString() {
+	case string(Snowflake):
+		resourceModel.SnowflakeConfig = &SnowflakeSharedConfigModel{
+			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
+			VirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
+			PrivateKey: types.StringValue(apiModel.Config.SnowflakePrivateKey),
+			Username:   types.StringValue(apiModel.Config.Username),
+			Password:   types.StringValue(apiModel.Config.Password),
+		}
+	case string(BigQuery):
+		resourceModel.BigQueryConfig = &BigQuerySharedConfigModel{
+			ProjectID:       types.StringValue(apiModel.Config.GCPProjectID),
+			Location:        types.StringValue(apiModel.Config.GCPLocation),
+			CredentialsData: types.StringValue(apiModel.Config.GCPCredentialsData),
+		}
+	case string(Redshift):
+		resourceModel.RedshiftConfig = &RedshiftSharedConfigModel{
+			Endpoint: types.StringValue(apiModel.Config.Endpoint),
+			Host:     types.StringValue(apiModel.Config.Host),
+			Port:     types.Int64Value(apiModel.Config.Port),
+			Username: types.StringValue(apiModel.Config.Username),
+			Password: types.StringValue(apiModel.Config.Password),
+		}
 	}
 }
 
@@ -35,27 +43,38 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 	if sshTunnelUUID == "" {
 		sshTunnelUUID = uuid.Nil.String()
 	}
-	return DestinationAPIModel{
+	apiModel := DestinationAPIModel{
 		UUID:          resourceModel.UUID.ValueString(),
 		CompanyUUID:   resourceModel.CompanyUUID.ValueString(),
-		Name:          resourceModel.Name.ValueString(),
+		Type:          resourceModel.Type.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
 		SSHTunnelUUID: sshTunnelUUID,
-		Config: DestinationSharedConfigAPIModel{
-			Host:                resourceModel.Config.Host.ValueString(),
-			Port:                resourceModel.Config.Port.ValueInt64(),
-			Endpoint:            resourceModel.Config.Endpoint.ValueString(),
-			Username:            resourceModel.Config.Username.ValueString(),
-			Password:            resourceModel.Config.Password.ValueString(),
-			GCPProjectID:        resourceModel.Config.GCPProjectID.ValueString(),
-			GCPLocation:         resourceModel.Config.GCPLocation.ValueString(),
-			GCPCredentialsData:  resourceModel.Config.GCPCredentialsData.ValueString(),
-			AWSAccessKeyID:      resourceModel.Config.AWSAccessKeyID.ValueString(),
-			AWSSecretAccessKey:  resourceModel.Config.AWSSecretAccessKey.ValueString(),
-			AWSRegion:           resourceModel.Config.AWSRegion.ValueString(),
-			SnowflakeAccountURL: resourceModel.Config.SnowflakeAccountURL.ValueString(),
-			SnowflakeVirtualDWH: resourceModel.Config.SnowflakeVirtualDWH.ValueString(),
-			SnowflakePrivateKey: resourceModel.Config.SnowflakePrivateKey.ValueString(),
-		},
 	}
+
+	switch resourceModel.Type.ValueString() {
+	case string(Snowflake):
+		apiModel.Config = DestinationSharedConfigAPIModel{
+			SnowflakeAccountURL: resourceModel.SnowflakeConfig.AccountURL.ValueString(),
+			SnowflakeVirtualDWH: resourceModel.SnowflakeConfig.VirtualDWH.ValueString(),
+			SnowflakePrivateKey: resourceModel.SnowflakeConfig.PrivateKey.ValueString(),
+			Username:            resourceModel.SnowflakeConfig.Username.ValueString(),
+			Password:            resourceModel.SnowflakeConfig.Password.ValueString(),
+		}
+	case string(BigQuery):
+		apiModel.Config = DestinationSharedConfigAPIModel{
+			GCPProjectID:       resourceModel.BigQueryConfig.ProjectID.ValueString(),
+			GCPLocation:        resourceModel.BigQueryConfig.Location.ValueString(),
+			GCPCredentialsData: resourceModel.BigQueryConfig.CredentialsData.ValueString(),
+		}
+	case string(Redshift):
+		apiModel.Config = DestinationSharedConfigAPIModel{
+			Endpoint: resourceModel.RedshiftConfig.Endpoint.ValueString(),
+			Host:     resourceModel.RedshiftConfig.Host.ValueString(),
+			Port:     resourceModel.RedshiftConfig.Port.ValueInt64(),
+			Username: resourceModel.RedshiftConfig.Username.ValueString(),
+			Password: resourceModel.RedshiftConfig.Password.ValueString(),
+		}
+	}
+
+	return apiModel
 }
