@@ -18,9 +18,6 @@ type DestinationSharedConfigAPIModel struct {
 	GCPProjectID        string `json:"projectID"`
 	GCPLocation         string `json:"location"`
 	GCPCredentialsData  string `json:"credentialsData"`
-	AWSAccessKeyID      string `json:"awsAccessKeyID"`
-	AWSSecretAccessKey  string `json:"awsSecretAccessKey"`
-	AWSRegion           string `json:"awsRegion"`
 	SnowflakeAccountURL string `json:"accountURL"`
 	SnowflakeVirtualDWH string `json:"virtualDWH"`
 	SnowflakePrivateKey string `json:"privateKey"`
