@@ -44,7 +44,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":             schema.StringAttribute{Required: true},
-			"status":           schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"status":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"source": schema.SingleNestedAttribute{
 				Required: true,
