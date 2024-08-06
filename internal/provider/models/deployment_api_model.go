@@ -5,13 +5,14 @@ type DeploymentAPIResponse struct {
 }
 
 type DeploymentAPIModel struct {
-	UUID              string                    `json:"uuid"`
-	Name              string                    `json:"name"`
-	Status            string                    `json:"status"`
-	DestinationUUID   string                    `json:"destinationUUID"`
-	SSHTunnelUUID     *string                   `json:"sshTunnelUUID"`
-	Source            SourceAPIModel            `json:"source"`
-	DestinationConfig DestinationConfigAPIModel `json:"uniqueConfig"`
+	UUID                     string                    `json:"uuid"`
+	Name                     string                    `json:"name"`
+	Status                   string                    `json:"status"`
+	Source                   SourceAPIModel            `json:"source"`
+	DestinationUUID          string                    `json:"destinationUUID"`
+	DestinationConfig        DestinationConfigAPIModel `json:"uniqueConfig"`
+	SSHTunnelUUID            *string                   `json:"sshTunnelUUID"`
+	SnowflakeEcoScheduleUUID *string                   `json:"snowflakeEcoScheduleUUID"`
 }
 
 type SourceAPIModel struct {

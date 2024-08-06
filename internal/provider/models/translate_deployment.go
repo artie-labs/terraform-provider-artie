@@ -17,6 +17,12 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	}
 	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
 
+	snowflakeEcoScheduleUUID := ""
+	if apiModel.SnowflakeEcoScheduleUUID != nil {
+		snowflakeEcoScheduleUUID = *apiModel.SnowflakeEcoScheduleUUID
+	}
+	resourceModel.SnowflakeEcoScheduleUUID = types.StringValue(snowflakeEcoScheduleUUID)
+
 	tables := []TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
 		tables = append(tables, TableModel{
@@ -100,6 +106,11 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
 	if sshTunnelUUID != "" {
 		apiModel.SSHTunnelUUID = &sshTunnelUUID
+	}
+
+	snowflakeEcoScheduleUUID := resourceModel.SnowflakeEcoScheduleUUID.ValueString()
+	if snowflakeEcoScheduleUUID != "" {
+		apiModel.SnowflakeEcoScheduleUUID = &snowflakeEcoScheduleUUID
 	}
 
 	switch resourceModel.Source.Type.ValueString() {
