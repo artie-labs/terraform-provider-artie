@@ -13,7 +13,7 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 	resourceModel.SSHTunnelUUID = types.StringValue(apiModel.SSHTunnelUUID)
 
 	switch resourceModel.Type.ValueString() {
-	case "Snowflake":
+	case string(Snowflake):
 		resourceModel.SnowflakeConfig = &SnowflakeSharedConfigModel{
 			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
 			VirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
@@ -21,13 +21,13 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 			Username:   types.StringValue(apiModel.Config.Username),
 			Password:   types.StringValue(apiModel.Config.Password),
 		}
-	case "BigQuery":
+	case string(BigQuery):
 		resourceModel.BigQueryConfig = &BigQuerySharedConfigModel{
 			ProjectID:       types.StringValue(apiModel.Config.GCPProjectID),
 			Location:        types.StringValue(apiModel.Config.GCPLocation),
 			CredentialsData: types.StringValue(apiModel.Config.GCPCredentialsData),
 		}
-	case "Redshift":
+	case string(Redshift):
 		resourceModel.RedshiftConfig = &RedshiftSharedConfigModel{
 			Endpoint: types.StringValue(apiModel.Config.Endpoint),
 			Host:     types.StringValue(apiModel.Config.Host),
@@ -52,7 +52,7 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 	}
 
 	switch resourceModel.Type.ValueString() {
-	case "Snowflake":
+	case string(Snowflake):
 		apiModel.Config = DestinationSharedConfigAPIModel{
 			SnowflakeAccountURL: resourceModel.SnowflakeConfig.AccountURL.ValueString(),
 			SnowflakeVirtualDWH: resourceModel.SnowflakeConfig.VirtualDWH.ValueString(),
@@ -60,13 +60,13 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 			Username:            resourceModel.SnowflakeConfig.Username.ValueString(),
 			Password:            resourceModel.SnowflakeConfig.Password.ValueString(),
 		}
-	case "BigQuery":
+	case string(BigQuery):
 		apiModel.Config = DestinationSharedConfigAPIModel{
 			GCPProjectID:       resourceModel.BigQueryConfig.ProjectID.ValueString(),
 			GCPLocation:        resourceModel.BigQueryConfig.Location.ValueString(),
 			GCPCredentialsData: resourceModel.BigQueryConfig.CredentialsData.ValueString(),
 		}
-	case "Redshift":
+	case string(Redshift):
 		apiModel.Config = DestinationSharedConfigAPIModel{
 			Endpoint: resourceModel.RedshiftConfig.Endpoint.ValueString(),
 			Host:     resourceModel.RedshiftConfig.Host.ValueString(),

@@ -28,7 +28,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		Tables: tables,
 	}
 	switch resourceModel.Source.Type.ValueString() {
-	case "PostgreSQL":
+	case string(PostgreSQL):
 		resourceModel.Source.PostgresConfig = &PostgresConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int64Value(apiModel.Source.Config.Port),
@@ -36,7 +36,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
-	case "MySQL":
+	case string(MySQL):
 		resourceModel.Source.MySQLConfig = &MySQLConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int64Value(apiModel.Source.Config.Port),
@@ -98,7 +98,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 	}
 
 	switch resourceModel.Source.Type.ValueString() {
-	case "PostgreSQL":
+	case string(PostgreSQL):
 		apiModel.Source.Config = SourceConfigAPIModel{
 			Host:     resourceModel.Source.PostgresConfig.Host.ValueString(),
 			Port:     resourceModel.Source.PostgresConfig.Port.ValueInt64(),
@@ -106,7 +106,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			Password: resourceModel.Source.PostgresConfig.Password.ValueString(),
 			Database: resourceModel.Source.PostgresConfig.Database.ValueString(),
 		}
-	case "MySQL":
+	case string(MySQL):
 		apiModel.Source.Config = SourceConfigAPIModel{
 			Host:     resourceModel.Source.MySQLConfig.Host.ValueString(),
 			Port:     resourceModel.Source.MySQLConfig.Port.ValueInt64(),

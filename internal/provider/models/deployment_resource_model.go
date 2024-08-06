@@ -2,6 +2,13 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
+type SourceType string
+
+const (
+	PostgreSQL SourceType = "PostgreSQL"
+	MySQL      SourceType = "MySQL"
+)
+
 type DeploymentResourceModel struct {
 	UUID              types.String                      `tfsdk:"uuid"`
 	CompanyUUID       types.String                      `tfsdk:"company_uuid"`

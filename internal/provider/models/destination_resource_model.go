@@ -2,6 +2,14 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
+type DestinationType string
+
+const (
+	Snowflake DestinationType = "Snowflake"
+	BigQuery  DestinationType = "BigQuery"
+	Redshift  DestinationType = "Redshift"
+)
+
 type DestinationResourceModel struct {
 	UUID            types.String                `tfsdk:"uuid"`
 	CompanyUUID     types.String                `tfsdk:"company_uuid"`
