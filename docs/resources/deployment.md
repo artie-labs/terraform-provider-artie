@@ -24,10 +24,11 @@ Artie Deployment resource
 ### Optional
 
 - `destination_uuid` (String)
-- `ssh_tunnel_uuid` (String)
 
 ### Read-Only
 
+- `snowflake_eco_schedule_uuid` (String)
+- `ssh_tunnel_uuid` (String)
 - `status` (String)
 - `uuid` (String)
 
