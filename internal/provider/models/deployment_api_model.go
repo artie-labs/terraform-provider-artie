@@ -54,6 +54,4 @@ type DestinationConfigAPIModel struct {
 	SchemaOverride        string `json:"schemaOverride"`
 	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
-	BucketName            string `json:"bucketName"`
-	OptionalPrefix        string `json:"optionalPrefix"`
 }

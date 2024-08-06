@@ -36,10 +36,8 @@ Artie Deployment resource
 
 Optional:
 
-- `bucket_name` (String)
 - `database` (String)
 - `dataset` (String)
-- `optional_prefix` (String)
 - `schema` (String)
 - `schema_name_prefix` (String)
 - `schema_override` (String)

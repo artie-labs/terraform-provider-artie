@@ -53,8 +53,6 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 		SchemaOverride:        types.StringValue(apiModel.DestinationConfig.SchemaOverride),
 		UseSameSchemaAsSource: types.BoolValue(apiModel.DestinationConfig.UseSameSchemaAsSource),
 		SchemaNamePrefix:      types.StringValue(apiModel.DestinationConfig.SchemaNamePrefix),
-		BucketName:            types.StringValue(apiModel.DestinationConfig.BucketName),
-		OptionalPrefix:        types.StringValue(apiModel.DestinationConfig.OptionalPrefix),
 	}
 }
 
@@ -92,8 +90,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			SchemaOverride:        resourceModel.DestinationConfig.SchemaOverride.ValueString(),
 			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
 			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
-			BucketName:            resourceModel.DestinationConfig.BucketName.ValueString(),
-			OptionalPrefix:        resourceModel.DestinationConfig.OptionalPrefix.ValueString(),
 		},
 	}
 

@@ -58,6 +58,4 @@ type DeploymentDestinationConfigModel struct {
 	SchemaOverride        types.String `tfsdk:"schema_override"`
 	UseSameSchemaAsSource types.Bool   `tfsdk:"use_same_schema_as_source"`
 	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
-	BucketName            types.String `tfsdk:"bucket_name"`
-	OptionalPrefix        types.String `tfsdk:"optional_prefix"`
 }
