@@ -27,7 +27,10 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 
 	tables := map[string]TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
-		tableKey := fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
+		tableKey := apiTable.Name
+		if apiTable.Schema != "" {
+			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
+		}
 		tables[tableKey] = TableModel{
 			UUID:                 types.StringValue(apiTable.UUID),
 			Name:                 types.StringValue(apiTable.Name),
