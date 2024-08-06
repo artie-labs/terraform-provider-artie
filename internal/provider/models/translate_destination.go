@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -9,7 +8,12 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
-	resourceModel.SSHTunnelUUID = types.StringValue(apiModel.SSHTunnelUUID)
+
+	sshTunnelUUID := ""
+	if apiModel.SSHTunnelUUID != nil {
+		sshTunnelUUID = *apiModel.SSHTunnelUUID
+	}
+	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
 
 	switch resourceModel.Type.ValueString() {
 	case string(Snowflake):
@@ -38,15 +42,15 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 }
 
 func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) DestinationAPIModel {
-	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
-	if sshTunnelUUID == "" {
-		sshTunnelUUID = uuid.Nil.String()
-	}
 	apiModel := DestinationAPIModel{
-		UUID:          resourceModel.UUID.ValueString(),
-		Type:          resourceModel.Type.ValueString(),
-		Label:         resourceModel.Label.ValueString(),
-		SSHTunnelUUID: sshTunnelUUID,
+		UUID:  resourceModel.UUID.ValueString(),
+		Type:  resourceModel.Type.ValueString(),
+		Label: resourceModel.Label.ValueString(),
+	}
+
+	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
+	if sshTunnelUUID != "" {
+		apiModel.SSHTunnelUUID = &sshTunnelUUID
 	}
 
 	switch resourceModel.Type.ValueString() {

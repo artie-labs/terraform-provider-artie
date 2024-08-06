@@ -4,7 +4,7 @@ type DestinationAPIModel struct {
 	UUID          string                          `json:"uuid"`
 	Type          string                          `json:"name"`
 	Label         string                          `json:"label"`
-	SSHTunnelUUID string                          `json:"sshTunnelUUID"`
+	SSHTunnelUUID *string                         `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfigAPIModel `json:"sharedConfig"`
 }
 

@@ -24,6 +24,7 @@ Artie Deployment resource
 ### Optional
 
 - `destination_uuid` (String)
+- `ssh_tunnel_uuid` (String)
 
 ### Read-Only
 
