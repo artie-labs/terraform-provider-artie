@@ -21,21 +21,12 @@ type SourceAPIModel struct {
 }
 
 type SourceConfigAPIModel struct {
-	Host         string                  `json:"host"`
-	SnapshotHost string                  `json:"snapshotHost"`
-	Port         int64                   `json:"port"`
-	User         string                  `json:"user"`
-	Password     string                  `json:"password"`
-	Database     string                  `json:"database"`
-	DynamoDB     *DynamoDBConfigAPIModel `json:"dynamodb"`
-}
-
-type DynamoDBConfigAPIModel struct {
-	Region             string `json:"region"`
-	TableName          string `json:"tableName"`
-	StreamsArn         string `json:"streamsArn"`
-	AwsAccessKeyID     string `json:"awsAccessKeyId"`
-	AwsSecretAccessKey string `json:"awsSecretAccessKey"`
+	Host         string `json:"host"`
+	SnapshotHost string `json:"snapshotHost"`
+	Port         int64  `json:"port"`
+	User         string `json:"user"`
+	Password     string `json:"password"`
+	Database     string `json:"database"`
 }
 
 type TableAPIModel struct {
@@ -54,6 +45,4 @@ type DestinationConfigAPIModel struct {
 	SchemaOverride        string `json:"schemaOverride"`
 	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
-	BucketName            string `json:"bucketName"`
-	OptionalPrefix        string `json:"optionalPrefix"`
 }
