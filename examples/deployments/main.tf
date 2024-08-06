@@ -53,9 +53,21 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     }
     tables = [
       {
+        name   = "account"
+        schema = "public"
+      },
+      {
+        name   = "company"
+        schema = "public"
+      },
+      {
         name   = "invite"
         schema = "public"
-      }
+      },
+      {
+        name   = "monitor"
+        schema = "public"
+      },
     ]
   }
   destination_uuid = artie_destination.snowflake.uuid

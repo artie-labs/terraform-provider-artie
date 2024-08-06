@@ -110,8 +110,8 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		"label":        destModel.Label,
 		"sharedConfig": destModel.Config,
 	}
-	if destModel.SSHTunnelUUID != "" {
-		payload["sshTunnelUUID"] = destModel.SSHTunnelUUID
+	if destModel.SSHTunnelUUID != nil {
+		payload["sshTunnelUUID"] = *destModel.SSHTunnelUUID
 	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {

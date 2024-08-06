@@ -11,6 +11,12 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	resourceModel.Status = types.StringValue(apiModel.Status)
 	resourceModel.DestinationUUID = types.StringValue(apiModel.DestinationUUID)
 
+	sshTunnelUUID := ""
+	if apiModel.SSHTunnelUUID != nil {
+		sshTunnelUUID = *apiModel.SSHTunnelUUID
+	}
+	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
+
 	tables := []TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
 		tables = append(tables, TableModel{
@@ -89,6 +95,11 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
 			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
 		},
+	}
+
+	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
+	if sshTunnelUUID != "" {
+		apiModel.SSHTunnelUUID = &sshTunnelUUID
 	}
 
 	switch resourceModel.Source.Type.ValueString() {

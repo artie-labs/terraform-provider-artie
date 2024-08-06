@@ -9,6 +9,7 @@ type DeploymentAPIModel struct {
 	Name              string                    `json:"name"`
 	Status            string                    `json:"status"`
 	DestinationUUID   string                    `json:"destinationUUID"`
+	SSHTunnelUUID     *string                   `json:"sshTunnelUUID"`
 	Source            SourceAPIModel            `json:"source"`
 	DestinationConfig DestinationConfigAPIModel `json:"uniqueConfig"`
 }
