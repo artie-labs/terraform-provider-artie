@@ -10,7 +10,7 @@ type DestinationAPIModel struct {
 
 type DestinationSharedConfigAPIModel struct {
 	Host                string `json:"host"`
-	Port                int64  `json:"port"`
+	Port                int32  `json:"port"`
 	Endpoint            string `json:"endpoint"`
 	Username            string `json:"username"`
 	Password            string `json:"password"`

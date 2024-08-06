@@ -37,7 +37,7 @@ type BigQuerySharedConfigModel struct {
 type RedshiftSharedConfigModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	Host     types.String `tfsdk:"host"`
-	Port     types.Int64  `tfsdk:"port"`
+	Port     types.Int32  `tfsdk:"port"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }

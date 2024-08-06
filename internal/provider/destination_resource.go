@@ -67,7 +67,7 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{Required: true},
 					"host":     schema.StringAttribute{Required: true},
-					"port":     schema.Int64Attribute{Required: true},
+					"port":     schema.Int32Attribute{Required: true},
 					"username": schema.StringAttribute{Required: true},
 					"password": schema.StringAttribute{Required: true, Sensitive: true},
 				},

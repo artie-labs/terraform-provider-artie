@@ -22,7 +22,7 @@ type SourceAPIModel struct {
 type SourceConfigAPIModel struct {
 	Host         string `json:"host"`
 	SnapshotHost string `json:"snapshotHost"`
-	Port         int64  `json:"port"`
+	Port         int32  `json:"port"`
 	User         string `json:"user"`
 	Password     string `json:"password"`
 	Database     string `json:"database"`

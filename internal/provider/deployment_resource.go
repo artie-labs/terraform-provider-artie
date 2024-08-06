@@ -54,7 +54,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int64Attribute{Required: true},
+							"port":     schema.Int32Attribute{Required: true},
 							"user":     schema.StringAttribute{Required: true},
 							"password": schema.StringAttribute{Required: true, Sensitive: true},
 							"database": schema.StringAttribute{Required: true},
@@ -64,7 +64,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int64Attribute{Required: true},
+							"port":     schema.Int32Attribute{Required: true},
 							"user":     schema.StringAttribute{Required: true},
 							"password": schema.StringAttribute{Required: true, Sensitive: true},
 							"database": schema.StringAttribute{Required: true},
