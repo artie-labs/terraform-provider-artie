@@ -2,6 +2,7 @@ package provider
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -327,9 +328,16 @@ func (r *DeploymentResource) handleAPIRequest(apiReq *http.Request) (bodyBytes [
 	}
 
 	if apiResp.StatusCode != http.StatusOK {
-		return []byte{}, fmt.Errorf("received status code %d", apiResp.StatusCode)
+		err = fmt.Errorf("received status code %d", apiResp.StatusCode)
 	}
 
 	defer apiResp.Body.Close()
-	return io.ReadAll(apiResp.Body)
+	body, readErr := io.ReadAll(apiResp.Body)
+	if err != nil && readErr == nil {
+		// If the status code was not OK, include the response body in the error message
+		// if we were able to read it
+		err = fmt.Errorf("%s: %s", err, string(body))
+	}
+
+	return body, cmp.Or(err, readErr)
 }
