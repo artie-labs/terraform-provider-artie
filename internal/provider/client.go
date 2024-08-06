@@ -40,21 +40,6 @@ func NewClient(endpoint string, apiKey string) (ArtieClient, error) {
 	return ArtieClient{endpoint: endpoint, apiKey: apiKey}, nil
 }
 
-func (ac ArtieClient) makeRequest(ctx context.Context, method string, path string, body io.Reader) (*http.Response, error) {
-	_url, err := url.JoinPath(ac.endpoint, path)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, _url, body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ac.apiKey))
-
-	return http.DefaultClient.Do(req)
-}
-
 func buildError(resp *http.Response) error {
 	if resp.StatusCode == http.StatusNotFound {
 		return ErrNotFound
@@ -70,6 +55,31 @@ func buildError(resp *http.Response) error {
 	return HttpError{StatusCode: resp.StatusCode}
 }
 
+func (ac ArtieClient) makeRequest(ctx context.Context, method string, path string, body io.Reader) (*http.Response, error) {
+	_url, err := url.JoinPath(ac.endpoint, path)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, _url, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ac.apiKey))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		return nil, buildError(resp)
+	}
+
+	return resp, nil
+}
+
 func makeRequest[Out any](ctx context.Context, client ArtieClient, method string, path string, body any) (Out, error) {
 	bodyBuf := new(bytes.Buffer)
 	if body != nil {
@@ -83,10 +93,6 @@ func makeRequest[Out any](ctx context.Context, client ArtieClient, method string
 		return *new(Out), fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return *new(Out), buildError(resp)
-	}
 
 	respBody := new(Out)
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
