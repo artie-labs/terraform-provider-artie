@@ -43,7 +43,6 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 		MarkdownDescription: "Artie Deployment resource",
 		Attributes: map[string]schema.Attribute{
 			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"company_uuid":     schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":             schema.StringAttribute{Required: true},
 			"status":           schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -167,7 +166,6 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	// from the API response of the newly created deployment
 	model := models.DeploymentResourceToAPIModel(data)
 	model.UUID = deployment.UUID
-	model.CompanyUUID = deployment.CompanyUUID
 	model.Status = deployment.Status
 
 	// Second API request: update the newly created deployment

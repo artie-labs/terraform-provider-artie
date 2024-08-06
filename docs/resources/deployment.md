@@ -28,7 +28,6 @@ Artie Deployment resource
 
 ### Read-Only
 
-- `company_uuid` (String)
 - `uuid` (String)
 
 <a id="nestedatt--destination_config"></a>

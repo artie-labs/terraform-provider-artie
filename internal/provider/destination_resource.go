@@ -41,7 +41,6 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 		MarkdownDescription: "Artie Destination resource",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"company_uuid":    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"type":            schema.StringAttribute{Required: true},
 			"label":           schema.StringAttribute{Optional: true},

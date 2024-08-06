@@ -28,7 +28,6 @@ Artie Destination resource
 
 ### Read-Only
 
-- `company_uuid` (String)
 - `ssh_tunnel_uuid` (String)
 - `uuid` (String)
 

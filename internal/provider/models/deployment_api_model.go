@@ -6,7 +6,6 @@ type DeploymentAPIResponse struct {
 
 type DeploymentAPIModel struct {
 	UUID              string                    `json:"uuid"`
-	CompanyUUID       string                    `json:"companyUUID"`
 	Name              string                    `json:"name"`
 	Status            string                    `json:"status"`
 	DestinationUUID   string                    `json:"destinationUUID"`

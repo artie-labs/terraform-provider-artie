@@ -7,7 +7,6 @@ import (
 
 func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *DeploymentResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
-	resourceModel.CompanyUUID = types.StringValue(apiModel.CompanyUUID)
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
 	resourceModel.DestinationUUID = types.StringValue(apiModel.DestinationUUID)
@@ -75,7 +74,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 
 	apiModel := DeploymentAPIModel{
 		UUID:            resourceModel.UUID.ValueString(),
-		CompanyUUID:     resourceModel.CompanyUUID.ValueString(),
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
 		DestinationUUID: resourceModel.DestinationUUID.ValueString(),

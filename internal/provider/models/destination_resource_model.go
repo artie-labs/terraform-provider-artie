@@ -12,7 +12,6 @@ const (
 
 type DestinationResourceModel struct {
 	UUID            types.String                `tfsdk:"uuid"`
-	CompanyUUID     types.String                `tfsdk:"company_uuid"`
 	SSHTunnelUUID   types.String                `tfsdk:"ssh_tunnel_uuid"`
 	Type            types.String                `tfsdk:"type"`
 	Label           types.String                `tfsdk:"label"`
