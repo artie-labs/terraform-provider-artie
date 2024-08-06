@@ -12,6 +12,21 @@ import (
 	"terraform-provider-artie/internal/provider/models"
 )
 
+var ErrNotFound = fmt.Errorf("artie-client: not found")
+
+type HttpError struct {
+	StatusCode int
+	message    string
+}
+
+func (he HttpError) Error() string {
+	message := he.message
+	if len(message) == 0 {
+		message = "server returned a non-200 status code"
+	}
+	return fmt.Sprintf("%s (HTTP %d)", message, he.StatusCode)
+}
+
 type ArtieClient struct {
 	endpoint string
 	apiKey   string
@@ -19,7 +34,7 @@ type ArtieClient struct {
 
 func NewClient(endpoint string, apiKey string) (ArtieClient, error) {
 	if !strings.HasPrefix(apiKey, "arsk_") {
-		return ArtieClient{}, fmt.Errorf("artie client: api key is malformed (should start with arsk_)")
+		return ArtieClient{}, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
 	}
 
 	return ArtieClient{endpoint: endpoint, apiKey: apiKey}, nil
@@ -40,6 +55,21 @@ func (ac ArtieClient) makeRequest(ctx context.Context, method string, path strin
 	return http.DefaultClient.Do(req)
 }
 
+func buildError(resp *http.Response) error {
+	if resp.StatusCode == http.StatusNotFound {
+		return ErrNotFound
+	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
+		type errorBody struct {
+			ErrorMsg string `json:"error"`
+		}
+		errorResponse := errorBody{}
+		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err == nil {
+			return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
+		}
+	}
+	return HttpError{StatusCode: resp.StatusCode}
+}
+
 func makeRequest[Out any](ctx context.Context, client ArtieClient, method string, path string, body any) (Out, error) {
 	bodyBuf := new(bytes.Buffer)
 	if body != nil {
@@ -55,7 +85,7 @@ func makeRequest[Out any](ctx context.Context, client ArtieClient, method string
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return *new(Out), fmt.Errorf("server returned a non-200 status code (%d)", resp.StatusCode)
+		return *new(Out), buildError(resp)
 	}
 
 	respBody := new(Out)
