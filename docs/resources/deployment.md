@@ -50,7 +50,7 @@ Optional:
 
 Required:
 
-- `tables` (Attributes List) (see [below for nested schema](#nestedatt--source--tables))
+- `tables` (Attributes Map) (see [below for nested schema](#nestedatt--source--tables))
 - `type` (String)
 
 Optional:

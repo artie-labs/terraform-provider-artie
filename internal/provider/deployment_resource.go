@@ -73,7 +73,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"database": schema.StringAttribute{Required: true},
 						},
 					},
-					"tables": schema.ListNestedAttribute{
+					"tables": schema.MapNestedAttribute{
 						Required: true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
