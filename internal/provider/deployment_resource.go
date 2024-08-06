@@ -44,7 +44,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":             schema.StringAttribute{Required: true},
-			"status":           schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"status":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"source": schema.SingleNestedAttribute{
 				Required: true,
@@ -54,7 +54,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int64Attribute{Required: true},
+							"port":     schema.Int32Attribute{Required: true},
 							"user":     schema.StringAttribute{Required: true},
 							"password": schema.StringAttribute{Required: true, Sensitive: true},
 							"database": schema.StringAttribute{Required: true},
@@ -64,7 +64,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int64Attribute{Required: true},
+							"port":     schema.Int32Attribute{Required: true},
 							"user":     schema.StringAttribute{Required: true},
 							"password": schema.StringAttribute{Required: true, Sensitive: true},
 							"database": schema.StringAttribute{Required: true},

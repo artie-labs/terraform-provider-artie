@@ -27,7 +27,7 @@ type SourceModel struct {
 
 type PostgresConfigModel struct {
 	Host     types.String `tfsdk:"host"`
-	Port     types.Int64  `tfsdk:"port"`
+	Port     types.Int32  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
 	Database types.String `tfsdk:"database"`
 	Password types.String `tfsdk:"password"`
@@ -35,7 +35,7 @@ type PostgresConfigModel struct {
 
 type MySQLConfigModel struct {
 	Host     types.String `tfsdk:"host"`
-	Port     types.Int64  `tfsdk:"port"`
+	Port     types.Int32  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
 	Database types.String `tfsdk:"database"`
 	Password types.String `tfsdk:"password"`

@@ -30,7 +30,7 @@ func DestinationAPIToResourceModel(apiModel DestinationAPIModel, resourceModel *
 		resourceModel.RedshiftConfig = &RedshiftSharedConfigModel{
 			Endpoint: types.StringValue(apiModel.Config.Endpoint),
 			Host:     types.StringValue(apiModel.Config.Host),
-			Port:     types.Int64Value(apiModel.Config.Port),
+			Port:     types.Int32Value(apiModel.Config.Port),
 			Username: types.StringValue(apiModel.Config.Username),
 			Password: types.StringValue(apiModel.Config.Password),
 		}
@@ -68,7 +68,7 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) Desti
 		apiModel.Config = DestinationSharedConfigAPIModel{
 			Endpoint: resourceModel.RedshiftConfig.Endpoint.ValueString(),
 			Host:     resourceModel.RedshiftConfig.Host.ValueString(),
-			Port:     resourceModel.RedshiftConfig.Port.ValueInt64(),
+			Port:     resourceModel.RedshiftConfig.Port.ValueInt32(),
 			Username: resourceModel.RedshiftConfig.Username.ValueString(),
 			Password: resourceModel.RedshiftConfig.Password.ValueString(),
 		}

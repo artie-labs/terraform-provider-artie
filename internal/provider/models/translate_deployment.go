@@ -30,7 +30,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	case string(PostgreSQL):
 		resourceModel.Source.PostgresConfig = &PostgresConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
-			Port:     types.Int64Value(apiModel.Source.Config.Port),
+			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
@@ -38,7 +38,7 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	case string(MySQL):
 		resourceModel.Source.MySQLConfig = &MySQLConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
-			Port:     types.Int64Value(apiModel.Source.Config.Port),
+			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
@@ -95,7 +95,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 	case string(PostgreSQL):
 		apiModel.Source.Config = SourceConfigAPIModel{
 			Host:     resourceModel.Source.PostgresConfig.Host.ValueString(),
-			Port:     resourceModel.Source.PostgresConfig.Port.ValueInt64(),
+			Port:     resourceModel.Source.PostgresConfig.Port.ValueInt32(),
 			User:     resourceModel.Source.PostgresConfig.User.ValueString(),
 			Password: resourceModel.Source.PostgresConfig.Password.ValueString(),
 			Database: resourceModel.Source.PostgresConfig.Database.ValueString(),
@@ -103,7 +103,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 	case string(MySQL):
 		apiModel.Source.Config = SourceConfigAPIModel{
 			Host:     resourceModel.Source.MySQLConfig.Host.ValueString(),
-			Port:     resourceModel.Source.MySQLConfig.Port.ValueInt64(),
+			Port:     resourceModel.Source.MySQLConfig.Port.ValueInt32(),
 			User:     resourceModel.Source.MySQLConfig.User.ValueString(),
 			Password: resourceModel.Source.MySQLConfig.Password.ValueString(),
 			Database: resourceModel.Source.MySQLConfig.Database.ValueString(),

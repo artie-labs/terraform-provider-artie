@@ -24,10 +24,10 @@ Artie Deployment resource
 ### Optional
 
 - `destination_uuid` (String)
-- `status` (String)
 
 ### Read-Only
 
+- `status` (String)
 - `uuid` (String)
 
 <a id="nestedatt--destination_config"></a>
