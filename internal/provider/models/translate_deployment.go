@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -23,16 +25,20 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	}
 	resourceModel.SnowflakeEcoScheduleUUID = types.StringValue(snowflakeEcoScheduleUUID)
 
-	tables := []TableModel{}
+	tables := map[string]TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
-		tables = append(tables, TableModel{
+		tableKey := apiTable.Name
+		if apiTable.Schema != "" {
+			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
+		}
+		tables[tableKey] = TableModel{
 			UUID:                 types.StringValue(apiTable.UUID),
 			Name:                 types.StringValue(apiTable.Name),
 			Schema:               types.StringValue(apiTable.Schema),
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-		})
+		}
 	}
 	resourceModel.Source = &SourceModel{
 		Type:   types.StringValue(apiModel.Source.Type),

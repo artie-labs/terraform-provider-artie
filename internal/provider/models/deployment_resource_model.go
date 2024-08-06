@@ -21,10 +21,10 @@ type DeploymentResourceModel struct {
 }
 
 type SourceModel struct {
-	Type           types.String         `tfsdk:"type"`
-	Tables         []TableModel         `tfsdk:"tables"`
-	PostgresConfig *PostgresConfigModel `tfsdk:"postgres_config"`
-	MySQLConfig    *MySQLConfigModel    `tfsdk:"mysql_config"`
+	Type           types.String          `tfsdk:"type"`
+	Tables         map[string]TableModel `tfsdk:"tables"`
+	PostgresConfig *PostgresConfigModel  `tfsdk:"postgres_config"`
+	MySQLConfig    *MySQLConfigModel     `tfsdk:"mysql_config"`
 }
 
 type PostgresConfigModel struct {

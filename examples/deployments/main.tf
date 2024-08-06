@@ -51,24 +51,24 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
       user     = "doadmin"
       password = var.postgres_password
     }
-    tables = [
-      {
+    tables = {
+      "public.account" = {
         name   = "account"
         schema = "public"
       },
-      {
+      "public.company" = {
         name   = "company"
         schema = "public"
       },
-      {
+      "public.invite" = {
         name   = "invite"
         schema = "public"
       },
-      {
+      "public.monitor" = {
         name   = "monitor"
         schema = "public"
       },
-    ]
+    }
   }
   destination_uuid = artie_destination.snowflake.uuid
   destination_config = {
