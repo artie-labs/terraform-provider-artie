@@ -12,6 +12,21 @@ import (
 	"terraform-provider-artie/internal/provider/models"
 )
 
+var ErrNotFound = fmt.Errorf("artie-client: not found")
+
+type HttpError struct {
+	StatusCode int
+	message    string
+}
+
+func (he HttpError) Error() string {
+	message := he.message
+	if len(message) == 0 {
+		message = "server returned a non-200 status code"
+	}
+	return fmt.Sprintf("%s (HTTP %d)", message, he.StatusCode)
+}
+
 type ArtieClient struct {
 	endpoint string
 	apiKey   string
@@ -19,10 +34,25 @@ type ArtieClient struct {
 
 func NewClient(endpoint string, apiKey string) (ArtieClient, error) {
 	if !strings.HasPrefix(apiKey, "arsk_") {
-		return ArtieClient{}, fmt.Errorf("artie client: api key is malformed (should start with arsk_)")
+		return ArtieClient{}, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
 	}
 
 	return ArtieClient{endpoint: endpoint, apiKey: apiKey}, nil
+}
+
+func buildError(resp *http.Response) error {
+	if resp.StatusCode == http.StatusNotFound {
+		return ErrNotFound
+	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
+		type errorBody struct {
+			ErrorMsg string `json:"error"`
+		}
+		errorResponse := errorBody{}
+		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err == nil {
+			return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
+		}
+	}
+	return HttpError{StatusCode: resp.StatusCode}
 }
 
 func (ac ArtieClient) makeRequest(ctx context.Context, method string, path string, body io.Reader) (*http.Response, error) {
@@ -37,7 +67,17 @@ func (ac ArtieClient) makeRequest(ctx context.Context, method string, path strin
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ac.apiKey))
 
-	return http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		return nil, buildError(resp)
+	}
+
+	return resp, nil
 }
 
 func makeRequest[Out any](ctx context.Context, client ArtieClient, method string, path string, body any) (Out, error) {
@@ -53,10 +93,6 @@ func makeRequest[Out any](ctx context.Context, client ArtieClient, method string
 		return *new(Out), fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return *new(Out), fmt.Errorf("server returned a non-200 status code (%d)", resp.StatusCode)
-	}
 
 	respBody := new(Out)
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
