@@ -8,11 +8,11 @@ type DeploymentAPIModel struct {
 	UUID                     string                    `json:"uuid"`
 	Name                     string                    `json:"name"`
 	Status                   string                    `json:"status"`
+	Source                   SourceAPIModel            `json:"source"`
 	DestinationUUID          string                    `json:"destinationUUID"`
+	DestinationConfig        DestinationConfigAPIModel `json:"uniqueConfig"`
 	SSHTunnelUUID            *string                   `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *string                   `json:"snowflakeEcoScheduleUUID"`
-	Source                   SourceAPIModel            `json:"source"`
-	DestinationConfig        DestinationConfigAPIModel `json:"uniqueConfig"`
 }
 
 type SourceAPIModel struct {

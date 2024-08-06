@@ -13,11 +13,11 @@ type DeploymentResourceModel struct {
 	UUID                     types.String                      `tfsdk:"uuid"`
 	Name                     types.String                      `tfsdk:"name"`
 	Status                   types.String                      `tfsdk:"status"`
+	Source                   *SourceModel                      `tfsdk:"source"`
 	DestinationUUID          types.String                      `tfsdk:"destination_uuid"`
+	DestinationConfig        *DeploymentDestinationConfigModel `tfsdk:"destination_config"`
 	SSHTunnelUUID            types.String                      `tfsdk:"ssh_tunnel_uuid"`
 	SnowflakeEcoScheduleUUID types.String                      `tfsdk:"snowflake_eco_schedule_uuid"`
-	Source                   *SourceModel                      `tfsdk:"source"`
-	DestinationConfig        *DeploymentDestinationConfigModel `tfsdk:"destination_config"`
 }
 
 type SourceModel struct {
