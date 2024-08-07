@@ -12,9 +12,9 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
-	resourceModel.DestinationUUID = types.StringValue(optionalUUIDToString(apiModel.DestinationUUID))
-	resourceModel.SSHTunnelUUID = types.StringValue(optionalUUIDToString(apiModel.SSHTunnelUUID))
-	resourceModel.SnowflakeEcoScheduleUUID = types.StringValue(optionalUUIDToString(apiModel.SnowflakeEcoScheduleUUID))
+	resourceModel.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
+	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
+	resourceModel.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
 
 	tables := map[string]TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
@@ -85,7 +85,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 		UUID:            uuid.MustParse(resourceModel.UUID.ValueString()),
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
-		DestinationUUID: parseOptionalUUID(resourceModel.DestinationUUID.ValueString()),
+		DestinationUUID: parseOptionalUUID(resourceModel.DestinationUUID),
 		Source: artieclient.Source{
 			Type:   resourceModel.Source.Type.ValueString(),
 			Tables: tables,
@@ -98,8 +98,8 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
 			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
 		},
-		SSHTunnelUUID:            parseOptionalUUID(resourceModel.SSHTunnelUUID.ValueString()),
-		SnowflakeEcoScheduleUUID: parseOptionalUUID(resourceModel.SnowflakeEcoScheduleUUID.ValueString()),
+		SSHTunnelUUID:            parseOptionalUUID(resourceModel.SSHTunnelUUID),
+		SnowflakeEcoScheduleUUID: parseOptionalUUID(resourceModel.SnowflakeEcoScheduleUUID),
 	}
 
 	switch resourceModel.Source.Type.ValueString() {

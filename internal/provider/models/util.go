@@ -1,20 +1,23 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
-func parseOptionalUUID(value string) *uuid.UUID {
-	if len(value) == 0 {
+func parseOptionalUUID(value types.String) *uuid.UUID {
+	if value.IsNull() || len(value.ValueString()) == 0 {
 		return nil
 	}
 
 	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
-	_uuid := uuid.MustParse(value)
+	_uuid := uuid.MustParse(value.ValueString())
 	return &_uuid
 }
 
-func optionalUUIDToString(value *uuid.UUID) string {
+func optionalUUIDToStringValue(value *uuid.UUID) types.String {
 	if value == nil {
-		return ""
+		return types.StringValue("")
 	}
-	return value.String()
+	return types.StringValue(value.String())
 }

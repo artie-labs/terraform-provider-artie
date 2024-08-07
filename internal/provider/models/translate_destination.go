@@ -11,7 +11,7 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
-	resourceModel.SSHTunnelUUID = types.StringValue(optionalUUIDToString(apiModel.SSHTunnelUUID))
+	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 
 	switch resourceModel.Type.ValueString() {
 	case string(Snowflake):
@@ -44,7 +44,7 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artie
 		UUID:          uuid.MustParse(resourceModel.UUID.ValueString()),
 		Type:          resourceModel.Type.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
-		SSHTunnelUUID: parseOptionalUUID(resourceModel.SSHTunnelUUID.ValueString()),
+		SSHTunnelUUID: parseOptionalUUID(resourceModel.SSHTunnelUUID),
 	}
 
 	switch resourceModel.Type.ValueString() {
