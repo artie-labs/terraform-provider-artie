@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -142,8 +141,6 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment models.Deploym
 		"deploy":           deployment,
 		"updateDeployOnly": updateDeploymentOnly,
 	}
-
-	slog.Info("body", "is", body)
 
 	response, err := makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)
 	if err != nil {
