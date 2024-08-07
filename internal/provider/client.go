@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -106,14 +107,57 @@ type DeploymentClient struct {
 	client ArtieClient
 }
 
+func (DeploymentClient) basePath() string {
+	return "deployments"
+}
+
 func (ac ArtieClient) Deployments() DeploymentClient {
 	return DeploymentClient{client: ac}
 }
 
-func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (models.DeploymentAPIResponse, error) {
-	path, err := url.JoinPath("deployments", deploymentUUID)
+func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (models.DeploymentAPIModel, error) {
+	path, err := url.JoinPath(dc.basePath(), deploymentUUID)
 	if err != nil {
-		return models.DeploymentAPIResponse{}, err
+		return models.DeploymentAPIModel{}, err
 	}
-	return makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodGet, path, nil)
+	response, err := makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodGet, path, nil)
+	if err != nil {
+		return models.DeploymentAPIModel{}, err
+	}
+	return response.Deployment, nil
+}
+
+func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (models.DeploymentAPIModel, error) {
+	body := map[string]any{"source": sourceType}
+	return makeRequest[models.DeploymentAPIModel](ctx, dc.client, http.MethodPost, dc.basePath(), body)
+}
+
+func (dc DeploymentClient) Update(ctx context.Context, deployment models.DeploymentAPIModel, updateDeploymentOnly bool) (models.DeploymentAPIModel, error) {
+	path, err := url.JoinPath(dc.basePath(), deployment.UUID)
+	if err != nil {
+		return models.DeploymentAPIModel{}, err
+	}
+
+	body := map[string]any{
+		"deploy":           deployment,
+		"updateDeployOnly": updateDeploymentOnly,
+	}
+
+	slog.Info("body", "is", body)
+
+	response, err := makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)
+	if err != nil {
+		return models.DeploymentAPIModel{}, err
+	}
+	return response.Deployment, nil
+}
+
+func (dc DeploymentClient) Delete(ctx context.Context, deploymentUUID string) error {
+	path, err := url.JoinPath(dc.basePath(), deploymentUUID)
+	if err != nil {
+		return err
+	}
+
+	_, err = makeRequest[any](ctx, dc.client, http.MethodDelete, path, nil)
+	return err
 }
