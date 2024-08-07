@@ -11,12 +11,7 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
-
-	sshTunnelUUID := ""
-	if apiModel.SSHTunnelUUID != nil {
-		sshTunnelUUID = apiModel.SSHTunnelUUID.String()
-	}
-	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
+	resourceModel.SSHTunnelUUID = types.StringValue(optionalUUIDToString(apiModel.SSHTunnelUUID))
 
 	switch resourceModel.Type.ValueString() {
 	case string(Snowflake):

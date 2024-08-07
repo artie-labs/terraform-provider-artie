@@ -11,3 +11,10 @@ func parseOptionalUUID(value string) *uuid.UUID {
 	_uuid := uuid.MustParse(value)
 	return &_uuid
 }
+
+func optionalUUIDToString(value *uuid.UUID) string {
+	if value == nil {
+		return ""
+	}
+	return value.String()
+}

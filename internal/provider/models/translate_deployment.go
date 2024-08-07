@@ -12,24 +12,9 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
-
-	destinationUUID := ""
-	if apiModel.DestinationUUID != nil {
-		destinationUUID = apiModel.DestinationUUID.String()
-	}
-	resourceModel.DestinationUUID = types.StringValue(destinationUUID)
-
-	sshTunnelUUID := ""
-	if apiModel.SSHTunnelUUID != nil {
-		sshTunnelUUID = apiModel.SSHTunnelUUID.String()
-	}
-	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
-
-	snowflakeEcoScheduleUUID := ""
-	if apiModel.SnowflakeEcoScheduleUUID != nil {
-		snowflakeEcoScheduleUUID = apiModel.SnowflakeEcoScheduleUUID.String()
-	}
-	resourceModel.SnowflakeEcoScheduleUUID = types.StringValue(snowflakeEcoScheduleUUID)
+	resourceModel.DestinationUUID = types.StringValue(optionalUUIDToString(apiModel.DestinationUUID))
+	resourceModel.SSHTunnelUUID = types.StringValue(optionalUUIDToString(apiModel.SSHTunnelUUID))
+	resourceModel.SnowflakeEcoScheduleUUID = types.StringValue(optionalUUIDToString(apiModel.SnowflakeEcoScheduleUUID))
 
 	tables := map[string]TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
