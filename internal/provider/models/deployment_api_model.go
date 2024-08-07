@@ -1,9 +1,5 @@
 package models
 
-type DeploymentAPIResponse struct {
-	Deployment DeploymentAPIModel `json:"deploy"`
-}
-
 type DeploymentAPIModel struct {
 	UUID                     string                    `json:"uuid"`
 	Name                     string                    `json:"name"`
