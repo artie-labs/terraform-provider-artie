@@ -2,12 +2,13 @@ package models
 
 import (
 	"fmt"
+	"terraform-provider-artie/internal/artieclient"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *DeploymentResourceModel) {
+func DeploymentAPIToResourceModel(apiModel artieclient.DeploymentAPIModel, resourceModel *DeploymentResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
@@ -73,14 +74,14 @@ func DeploymentAPIToResourceModel(apiModel DeploymentAPIModel, resourceModel *De
 	}
 }
 
-func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) DeploymentAPIModel {
-	tables := []TableAPIModel{}
+func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artieclient.DeploymentAPIModel {
+	tables := []artieclient.TableAPIModel{}
 	for _, table := range resourceModel.Source.Tables {
 		tableUUID := table.UUID.ValueString()
 		if tableUUID == "" {
 			tableUUID = uuid.Nil.String()
 		}
-		tables = append(tables, TableAPIModel{
+		tables = append(tables, artieclient.TableAPIModel{
 			UUID:                 tableUUID,
 			Name:                 table.Name.ValueString(),
 			Schema:               table.Schema.ValueString(),
@@ -90,16 +91,16 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 		})
 	}
 
-	apiModel := DeploymentAPIModel{
+	apiModel := artieclient.DeploymentAPIModel{
 		UUID:            resourceModel.UUID.ValueString(),
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
 		DestinationUUID: resourceModel.DestinationUUID.ValueString(),
-		Source: SourceAPIModel{
+		Source: artieclient.SourceAPIModel{
 			Type:   resourceModel.Source.Type.ValueString(),
 			Tables: tables,
 		},
-		DestinationConfig: DestinationConfigAPIModel{
+		DestinationConfig: artieclient.DestinationConfigAPIModel{
 			Dataset:               resourceModel.DestinationConfig.Dataset.ValueString(),
 			Database:              resourceModel.DestinationConfig.Database.ValueString(),
 			Schema:                resourceModel.DestinationConfig.Schema.ValueString(),
@@ -121,7 +122,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 
 	switch resourceModel.Source.Type.ValueString() {
 	case string(PostgreSQL):
-		apiModel.Source.Config = SourceConfigAPIModel{
+		apiModel.Source.Config = artieclient.SourceConfigAPIModel{
 			Host:     resourceModel.Source.PostgresConfig.Host.ValueString(),
 			Port:     resourceModel.Source.PostgresConfig.Port.ValueInt32(),
 			User:     resourceModel.Source.PostgresConfig.User.ValueString(),
@@ -129,7 +130,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) Deploym
 			Database: resourceModel.Source.PostgresConfig.Database.ValueString(),
 		}
 	case string(MySQL):
-		apiModel.Source.Config = SourceConfigAPIModel{
+		apiModel.Source.Config = artieclient.SourceConfigAPIModel{
 			Host:     resourceModel.Source.MySQLConfig.Host.ValueString(),
 			Port:     resourceModel.Source.MySQLConfig.Port.ValueInt32(),
 			User:     resourceModel.Source.MySQLConfig.User.ValueString(),
