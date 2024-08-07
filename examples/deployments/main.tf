@@ -67,7 +67,7 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
       "public.monitor" = {
         name   = "monitor"
         schema = "public"
-      },
+      }
     }
   }
   destination_uuid = artie_destination.snowflake.uuid
