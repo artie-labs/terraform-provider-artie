@@ -3,7 +3,6 @@ package models
 import (
 	"terraform-provider-artie/internal/artieclient"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -41,7 +40,7 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 
 func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
 	apiModel := artieclient.Destination{
-		UUID:          uuid.MustParse(resourceModel.UUID.ValueString()),
+		UUID:          parseUUID(resourceModel.UUID),
 		Type:          resourceModel.Type.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
 		SSHTunnelUUID: parseOptionalUUID(resourceModel.SSHTunnelUUID),

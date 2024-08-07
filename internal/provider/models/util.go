@@ -5,6 +5,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+func parseUUID(value types.String) uuid.UUID {
+	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
+	return uuid.MustParse(value.ValueString())
+}
+
 func parseOptionalUUID(value types.String) *uuid.UUID {
 	if value.IsNull() || len(value.ValueString()) == 0 {
 		return nil
