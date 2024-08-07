@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"os"
+	"terraform-provider-artie/internal/artieclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
@@ -36,6 +37,10 @@ type ArtieProviderModel struct {
 type ArtieProviderData struct {
 	Endpoint string
 	APIKey   string
+}
+
+func (a ArtieProviderData) NewClient() (artieclient.Client, error) {
+	return artieclient.New(a.Endpoint, a.APIKey)
 }
 
 func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
