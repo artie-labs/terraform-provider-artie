@@ -4,13 +4,15 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+
+	"github.com/google/uuid"
 )
 
 type Destination struct {
-	UUID          string                  `json:"uuid"`
+	UUID          uuid.UUID               `json:"uuid"`
 	Type          string                  `json:"name"`
 	Label         string                  `json:"label"`
-	SSHTunnelUUID *string                 `json:"sshTunnelUUID"`
+	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfig `json:"sharedConfig"`
 }
 
@@ -57,7 +59,7 @@ func (dc DestinationClient) Create(ctx context.Context, destination Destination)
 }
 
 func (dc DestinationClient) Update(ctx context.Context, destination Destination) (Destination, error) {
-	path, err := url.JoinPath(dc.basePath(), destination.UUID)
+	path, err := url.JoinPath(dc.basePath(), destination.UUID.String())
 	if err != nil {
 		return Destination{}, err
 	}

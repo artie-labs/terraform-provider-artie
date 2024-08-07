@@ -3,17 +3,18 @@ package models
 import (
 	"terraform-provider-artie/internal/artieclient"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceModel *DestinationResourceModel) {
-	resourceModel.UUID = types.StringValue(apiModel.UUID)
+	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
 
 	sshTunnelUUID := ""
 	if apiModel.SSHTunnelUUID != nil {
-		sshTunnelUUID = *apiModel.SSHTunnelUUID
+		sshTunnelUUID = apiModel.SSHTunnelUUID.String()
 	}
 	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
 
@@ -45,14 +46,10 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 
 func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
 	apiModel := artieclient.Destination{
-		UUID:  resourceModel.UUID.ValueString(),
-		Type:  resourceModel.Type.ValueString(),
-		Label: resourceModel.Label.ValueString(),
-	}
-
-	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
-	if sshTunnelUUID != "" {
-		apiModel.SSHTunnelUUID = &sshTunnelUUID
+		UUID:          uuid.MustParse(resourceModel.UUID.ValueString()),
+		Type:          resourceModel.Type.ValueString(),
+		Label:         resourceModel.Label.ValueString(),
+		SSHTunnelUUID: parseOptionalUUID(resourceModel.SSHTunnelUUID.ValueString()),
 	}
 
 	switch resourceModel.Type.ValueString() {
