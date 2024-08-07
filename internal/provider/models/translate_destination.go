@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func DestinationAPIToResourceModel(apiModel artieclient.DestinationAPIModel, resourceModel *DestinationResourceModel) {
+func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceModel *DestinationResourceModel) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID)
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
@@ -43,8 +43,8 @@ func DestinationAPIToResourceModel(apiModel artieclient.DestinationAPIModel, res
 	}
 }
 
-func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.DestinationAPIModel {
-	apiModel := artieclient.DestinationAPIModel{
+func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
+	apiModel := artieclient.Destination{
 		UUID:  resourceModel.UUID.ValueString(),
 		Type:  resourceModel.Type.ValueString(),
 		Label: resourceModel.Label.ValueString(),
@@ -57,7 +57,7 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artie
 
 	switch resourceModel.Type.ValueString() {
 	case string(Snowflake):
-		apiModel.Config = artieclient.DestinationSharedConfigAPIModel{
+		apiModel.Config = artieclient.DestinationSharedConfig{
 			SnowflakeAccountURL: resourceModel.SnowflakeConfig.AccountURL.ValueString(),
 			SnowflakeVirtualDWH: resourceModel.SnowflakeConfig.VirtualDWH.ValueString(),
 			SnowflakePrivateKey: resourceModel.SnowflakeConfig.PrivateKey.ValueString(),
@@ -65,13 +65,13 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artie
 			Password:            resourceModel.SnowflakeConfig.Password.ValueString(),
 		}
 	case string(BigQuery):
-		apiModel.Config = artieclient.DestinationSharedConfigAPIModel{
+		apiModel.Config = artieclient.DestinationSharedConfig{
 			GCPProjectID:       resourceModel.BigQueryConfig.ProjectID.ValueString(),
 			GCPLocation:        resourceModel.BigQueryConfig.Location.ValueString(),
 			GCPCredentialsData: resourceModel.BigQueryConfig.CredentialsData.ValueString(),
 		}
 	case string(Redshift):
-		apiModel.Config = artieclient.DestinationSharedConfigAPIModel{
+		apiModel.Config = artieclient.DestinationSharedConfig{
 			Endpoint: resourceModel.RedshiftConfig.Endpoint.ValueString(),
 			Host:     resourceModel.RedshiftConfig.Host.ValueString(),
 			Port:     resourceModel.RedshiftConfig.Port.ValueInt32(),

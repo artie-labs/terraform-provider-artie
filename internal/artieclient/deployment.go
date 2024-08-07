@@ -6,24 +6,24 @@ import (
 	"net/url"
 )
 
-type DeploymentAPIModel struct {
-	UUID                     string                    `json:"uuid"`
-	Name                     string                    `json:"name"`
-	Status                   string                    `json:"status"`
-	Source                   SourceAPIModel            `json:"source"`
-	DestinationUUID          string                    `json:"destinationUUID"`
-	DestinationConfig        DestinationConfigAPIModel `json:"uniqueConfig"`
-	SSHTunnelUUID            *string                   `json:"sshTunnelUUID"`
-	SnowflakeEcoScheduleUUID *string                   `json:"snowflakeEcoScheduleUUID"`
+type Deployment struct {
+	UUID                     string            `json:"uuid"`
+	Name                     string            `json:"name"`
+	Status                   string            `json:"status"`
+	Source                   Source            `json:"source"`
+	DestinationUUID          string            `json:"destinationUUID"`
+	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
+	SSHTunnelUUID            *string           `json:"sshTunnelUUID"`
+	SnowflakeEcoScheduleUUID *string           `json:"snowflakeEcoScheduleUUID"`
 }
 
-type SourceAPIModel struct {
-	Type   string               `json:"name"`
-	Config SourceConfigAPIModel `json:"config"`
-	Tables []TableAPIModel      `json:"tables"`
+type Source struct {
+	Type   string       `json:"name"`
+	Config SourceConfig `json:"config"`
+	Tables []Table      `json:"tables"`
 }
 
-type SourceConfigAPIModel struct {
+type SourceConfig struct {
 	Host         string `json:"host"`
 	SnapshotHost string `json:"snapshotHost"`
 	Port         int32  `json:"port"`
@@ -32,7 +32,7 @@ type SourceConfigAPIModel struct {
 	Database     string `json:"database"`
 }
 
-type TableAPIModel struct {
+type Table struct {
 	UUID                 string `json:"uuid"`
 	Name                 string `json:"name"`
 	Schema               string `json:"schema"`
@@ -41,7 +41,7 @@ type TableAPIModel struct {
 	IsPartitioned        bool   `json:"isPartitioned"`
 }
 
-type DestinationConfigAPIModel struct {
+type DestinationConfig struct {
 	Dataset               string `json:"dataset"`
 	Database              string `json:"database"`
 	Schema                string `json:"schema"`
@@ -59,30 +59,30 @@ func (DeploymentClient) basePath() string {
 }
 
 type deploymentAPIResponse struct {
-	Deployment DeploymentAPIModel `json:"deploy"`
+	Deployment Deployment `json:"deploy"`
 }
 
-func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (DeploymentAPIModel, error) {
+func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (Deployment, error) {
 	path, err := url.JoinPath(dc.basePath(), deploymentUUID)
 	if err != nil {
-		return DeploymentAPIModel{}, err
+		return Deployment{}, err
 	}
 	response, err := makeRequest[deploymentAPIResponse](ctx, dc.client, http.MethodGet, path, nil)
 	if err != nil {
-		return DeploymentAPIModel{}, err
+		return Deployment{}, err
 	}
 	return response.Deployment, nil
 }
 
-func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (DeploymentAPIModel, error) {
+func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (Deployment, error) {
 	body := map[string]any{"source": sourceType}
-	return makeRequest[DeploymentAPIModel](ctx, dc.client, http.MethodPost, dc.basePath(), body)
+	return makeRequest[Deployment](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }
 
-func (dc DeploymentClient) Update(ctx context.Context, deployment DeploymentAPIModel) (DeploymentAPIModel, error) {
+func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (Deployment, error) {
 	path, err := url.JoinPath(dc.basePath(), deployment.UUID)
 	if err != nil {
-		return DeploymentAPIModel{}, err
+		return Deployment{}, err
 	}
 
 	body := map[string]any{
@@ -92,7 +92,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment DeploymentAPIM
 
 	response, err := makeRequest[deploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)
 	if err != nil {
-		return DeploymentAPIModel{}, err
+		return Deployment{}, err
 	}
 	return response.Deployment, nil
 }
