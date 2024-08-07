@@ -1,12 +1,10 @@
 package provider
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+
+	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -28,8 +26,7 @@ func NewDestinationResource() resource.Resource {
 }
 
 type DestinationResource struct {
-	endpoint string
-	apiKey   string
+	client artieclient.Client
 }
 
 func (r *DestinationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -92,8 +89,13 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	r.endpoint = providerData.Endpoint
-	r.apiKey = providerData.APIKey
+	client, err := providerData.NewClient()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
+		return
+	}
+
+	r.client = client
 }
 
 func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -105,46 +107,15 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	destModel := models.DestinationResourceToAPIModel(data)
-	payload := map[string]any{
-		"name":         destModel.Type,
-		"label":        destModel.Label,
-		"sharedConfig": destModel.Config,
-	}
-	if destModel.SSHTunnelUUID != nil {
-		payload["sshTunnelUUID"] = *destModel.SSHTunnelUUID
-	}
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
-		return
-	}
 
-	url := fmt.Sprintf("%s/destinations", r.endpoint)
-	ctx = tflog.SetField(ctx, "url", url)
-	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
 	tflog.Info(ctx, "Creating destination via API")
-
-	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	destination, err := r.client.Destinations().Create(ctx, destModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
 	}
 
-	bodyBytes, err := r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
-		return
-	}
-
-	ctx = tflog.SetField(ctx, "response", string(bodyBytes))
 	tflog.Info(ctx, "Created destination")
-
-	var destination models.DestinationAPIModel
-	err = json.Unmarshal(bodyBytes, &destination)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
-		return
-	}
 
 	// Translate API response into Terraform state
 	models.DestinationAPIToResourceModel(destination, &data)
@@ -161,23 +132,8 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	url := fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString())
-	ctx = tflog.SetField(ctx, "url", url)
 	tflog.Info(ctx, "Reading destination from API")
-	apiReq, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
-		return
-	}
-
-	bodyBytes, err := r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
-		return
-	}
-
-	var destinationResp models.DestinationAPIModel
-	err = json.Unmarshal(bodyBytes, &destinationResp)
+	destinationResp, err := r.client.Destinations().Get(ctx, data.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
 		return
@@ -198,31 +154,8 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	payloadBytes, err := json.Marshal(models.DestinationResourceToAPIModel(data))
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
-		return
-	}
-
-	url := fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString())
-	ctx = tflog.SetField(ctx, "url", url)
-	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
 	tflog.Info(ctx, "Updating destination via API")
-
-	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
-		return
-	}
-
-	bodyBytes, err := r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
-		return
-	}
-
-	var destination models.DestinationAPIModel
-	err = json.Unmarshal(bodyBytes, &destination)
+	destination, err := r.client.Destinations().Update(ctx, models.DestinationResourceToAPIModel(data))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
@@ -243,14 +176,7 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	apiReq, err := http.NewRequest("DELETE", fmt.Sprintf("%s/destinations/%s", r.endpoint, data.UUID.ValueString()), nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
-		return
-	}
-
-	_, err = r.handleAPIRequest(apiReq)
-	if err != nil {
+	if err := r.client.Destinations().Delete(ctx, data.UUID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
 		return
 	}
@@ -258,19 +184,4 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *DestinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
-}
-
-func (r *DestinationResource) handleAPIRequest(apiReq *http.Request) (bodyBytes []byte, err error) {
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
-	apiResp, err := http.DefaultClient.Do(apiReq)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	if apiResp.StatusCode != http.StatusOK {
-		return []byte{}, fmt.Errorf("received status code %d", apiResp.StatusCode)
-	}
-
-	defer apiResp.Body.Close()
-	return io.ReadAll(apiResp.Body)
 }
