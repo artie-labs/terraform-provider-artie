@@ -7,15 +7,10 @@ import (
 )
 
 func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceModel *DestinationResourceModel) {
-	resourceModel.UUID = types.StringValue(apiModel.UUID)
+	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Type = types.StringValue(apiModel.Type)
 	resourceModel.Label = types.StringValue(apiModel.Label)
-
-	sshTunnelUUID := ""
-	if apiModel.SSHTunnelUUID != nil {
-		sshTunnelUUID = *apiModel.SSHTunnelUUID
-	}
-	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
+	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 
 	switch resourceModel.Type.ValueString() {
 	case string(Snowflake):
@@ -45,14 +40,10 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 
 func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
 	apiModel := artieclient.Destination{
-		UUID:  resourceModel.UUID.ValueString(),
-		Type:  resourceModel.Type.ValueString(),
-		Label: resourceModel.Label.ValueString(),
-	}
-
-	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
-	if sshTunnelUUID != "" {
-		apiModel.SSHTunnelUUID = &sshTunnelUUID
+		UUID:          parseUUID(resourceModel.UUID),
+		Type:          resourceModel.Type.ValueString(),
+		Label:         resourceModel.Label.ValueString(),
+		SSHTunnelUUID: parseOptionalUUID(resourceModel.SSHTunnelUUID),
 	}
 
 	switch resourceModel.Type.ValueString() {

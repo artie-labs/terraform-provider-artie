@@ -4,17 +4,19 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+
+	"github.com/google/uuid"
 )
 
 type Deployment struct {
-	UUID                     string            `json:"uuid"`
+	UUID                     uuid.UUID         `json:"uuid"`
 	Name                     string            `json:"name"`
 	Status                   string            `json:"status"`
 	Source                   Source            `json:"source"`
-	DestinationUUID          string            `json:"destinationUUID"`
+	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
-	SSHTunnelUUID            *string           `json:"sshTunnelUUID"`
-	SnowflakeEcoScheduleUUID *string           `json:"snowflakeEcoScheduleUUID"`
+	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
+	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 }
 
 type Source struct {
@@ -33,12 +35,12 @@ type SourceConfig struct {
 }
 
 type Table struct {
-	UUID                 string `json:"uuid"`
-	Name                 string `json:"name"`
-	Schema               string `json:"schema"`
-	EnableHistoryMode    bool   `json:"enableHistoryMode"`
-	IndividualDeployment bool   `json:"individualDeployment"`
-	IsPartitioned        bool   `json:"isPartitioned"`
+	UUID                 uuid.UUID `json:"uuid"`
+	Name                 string    `json:"name"`
+	Schema               string    `json:"schema"`
+	EnableHistoryMode    bool      `json:"enableHistoryMode"`
+	IndividualDeployment bool      `json:"individualDeployment"`
+	IsPartitioned        bool      `json:"isPartitioned"`
 }
 
 type DestinationConfig struct {
@@ -80,7 +82,7 @@ func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (Deplo
 }
 
 func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (Deployment, error) {
-	path, err := url.JoinPath(dc.basePath(), deployment.UUID)
+	path, err := url.JoinPath(dc.basePath(), deployment.UUID.String())
 	if err != nil {
 		return Deployment{}, err
 	}
