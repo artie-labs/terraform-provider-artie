@@ -32,7 +32,7 @@ func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (model
 	return makeRequest[models.DeploymentAPIModel](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }
 
-func (dc DeploymentClient) Update(ctx context.Context, deployment models.DeploymentAPIModel, updateDeploymentOnly bool) (models.DeploymentAPIModel, error) {
+func (dc DeploymentClient) Update(ctx context.Context, deployment models.DeploymentAPIModel) (models.DeploymentAPIModel, error) {
 	path, err := url.JoinPath(dc.basePath(), deployment.UUID)
 	if err != nil {
 		return models.DeploymentAPIModel{}, err
@@ -40,7 +40,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment models.Deploym
 
 	body := map[string]any{
 		"deploy":           deployment,
-		"updateDeployOnly": updateDeploymentOnly,
+		"updateDeployOnly": true,
 	}
 
 	response, err := makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)

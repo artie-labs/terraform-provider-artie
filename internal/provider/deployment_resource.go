@@ -150,7 +150,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Second API request: update the newly created deployment
 	tflog.Info(ctx, "Updating deployment via API")
-	updatedDeployment, err := r.client.Deployments().Update(ctx, model, true)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, model)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -192,7 +192,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	deployment, err := r.client.Deployments().Update(ctx, models.DeploymentResourceToAPIModel(data), true)
+	deployment, err := r.client.Deployments().Update(ctx, models.DeploymentResourceToAPIModel(data))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
