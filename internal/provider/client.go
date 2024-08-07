@@ -55,50 +55,51 @@ func buildError(resp *http.Response) error {
 	return HttpError{StatusCode: resp.StatusCode}
 }
 
-func (ac ArtieClient) makeRequest(ctx context.Context, method string, path string, body io.Reader) (*http.Response, error) {
+func (ac ArtieClient) makeRequest(ctx context.Context, method string, path string, body any, out any) error {
 	_url, err := url.JoinPath(ac.endpoint, path)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, _url, body)
+	var bodyReader io.Reader
+	if body != nil {
+		bodyBuff := new(bytes.Buffer)
+		if err := json.NewEncoder(bodyBuff).Encode(body); err != nil {
+			return fmt.Errorf("artie-client: failed to encode request body: %w", err)
+		}
+		bodyReader = bodyBuff
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, _url, bodyReader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return fmt.Errorf("artie-client: failed to create request: %w", err)
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ac.apiKey))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		defer resp.Body.Close()
-		return nil, buildError(resp)
-	}
-
-	return resp, nil
-}
-
-func makeRequest[Out any](ctx context.Context, client ArtieClient, method string, path string, body any) (Out, error) {
-	bodyBuf := new(bytes.Buffer)
-	if body != nil {
-		if err := json.NewEncoder(bodyBuf).Encode(body); err != nil {
-			return *new(Out), fmt.Errorf("failed to encode request body: %w", err)
-		}
-	}
-
-	resp, err := client.makeRequest(ctx, method, path, bodyBuf)
-	if err != nil {
-		return *new(Out), fmt.Errorf("request failed: %w", err)
+		return fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
-	respBody := new(Out)
-	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
-		return *new(Out), fmt.Errorf("failed to decode response body: %w", err)
+	if resp.StatusCode != http.StatusOK {
+		return buildError(resp)
 	}
 
+	if out != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+			return fmt.Errorf("artie-client: failed to decode response body: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func makeRequest[Out any](ctx context.Context, client ArtieClient, method string, path string, body any) (Out, error) {
+	respBody := new(Out)
+	if err := client.makeRequest(ctx, method, path, body, respBody); err != nil {
+		return *new(Out), err
+	}
 	return *respBody, nil
 }
 
