@@ -54,8 +54,8 @@ func buildError(resp *http.Response) error {
 	return HttpError{StatusCode: resp.StatusCode}
 }
 
-func (ac Client) makeRequest(ctx context.Context, method string, path string, body any, out any) error {
-	_url, err := url.JoinPath(ac.endpoint, path)
+func (c Client) makeRequest(ctx context.Context, method string, path string, body any, out any) error {
+	_url, err := url.JoinPath(c.endpoint, path)
 	if err != nil {
 		return nil
 	}
@@ -73,7 +73,7 @@ func (ac Client) makeRequest(ctx context.Context, method string, path string, bo
 	if err != nil {
 		return fmt.Errorf("artie-client: failed to create request: %w", err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ac.apiKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -102,10 +102,10 @@ func makeRequest[Out any](ctx context.Context, client Client, method string, pat
 	return *respBody, nil
 }
 
-func (ac Client) Deployments() DeploymentClient {
-	return DeploymentClient{client: ac}
+func (c Client) Deployments() DeploymentClient {
+	return DeploymentClient{client: c}
 }
 
-func (ac Client) Destinations() DestinationClient {
-	return DestinationClient{client: ac}
+func (c Client) Destinations() DestinationClient {
+	return DestinationClient{client: c}
 }
