@@ -1,13 +1,9 @@
 package provider
 
 import (
-	"bytes"
-	"cmp"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -31,8 +27,7 @@ func NewDeploymentResource() resource.Resource {
 }
 
 type DeploymentResource struct {
-	endpoint string
-	apiKey   string
+	client artieclient.Client
 }
 
 func (r *DeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -119,8 +114,13 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 		return
 	}
 
-	r.endpoint = providerData.Endpoint
-	r.apiKey = providerData.APIKey
+	client, err := providerData.NewClient()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
+		return
+	}
+
+	r.client = client
 }
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -133,37 +133,14 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Our API's create endpoint only accepts the source type, so we need to send two requests:
 	// one to create the bare-bones deployment, then one to update it with the rest of the data
-	payloadBytes, err := json.Marshal(map[string]any{"source": data.Source.Type.ValueString()})
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
-		return
-	}
-
-	url := fmt.Sprintf("%s/deployments", r.endpoint)
-	ctx = tflog.SetField(ctx, "url", url)
-	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
 	tflog.Info(ctx, "Creating deployment via API")
-	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	deployment, err := r.client.Deployments().Create(ctx, data.Source.Type.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
 
-	bodyBytes, err := r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
-		return
-	}
-
-	ctx = tflog.SetField(ctx, "response", string(bodyBytes))
 	tflog.Info(ctx, "Created deployment")
-
-	var deployment models.DeploymentAPIModel
-	err = json.Unmarshal(bodyBytes, &deployment)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
-		return
-	}
 
 	// Translate the Terraform plan into an API model and then fill in computed fields
 	// from the API response of the newly created deployment
@@ -172,42 +149,15 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	model.Status = deployment.Status
 
 	// Second API request: update the newly created deployment
-	payload := map[string]any{
-		"deploy":           model,
-		"updateDeployOnly": true,
-	}
-	payloadBytes, err = json.Marshal(payload)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	url = fmt.Sprintf("%s/deployments/%s", r.endpoint, deployment.UUID)
-	ctx = tflog.SetField(ctx, "url", url)
-	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
 	tflog.Info(ctx, "Updating deployment via API")
-
-	apiReq, err = http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	bodyBytes, err = r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	var deploymentResp models.DeploymentAPIResponse
-	err = json.Unmarshal(bodyBytes, &deploymentResp)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, model)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state
-	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
+	models.DeploymentAPIToResourceModel(updatedDeployment, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -221,27 +171,14 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	apiReq, err := http.NewRequest("GET", fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString()), nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
-		return
-	}
-
-	bodyBytes, err := r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
-		return
-	}
-
-	var deploymentResp models.DeploymentAPIResponse
-	err = json.Unmarshal(bodyBytes, &deploymentResp)
+	deployment, err := r.client.Deployments().Get(ctx, data.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state
-	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
+	models.DeploymentAPIToResourceModel(deployment, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -255,42 +192,14 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	payload := map[string]any{
-		"deploy":           models.DeploymentResourceToAPIModel(data),
-		"updateDeployOnly": true,
-	}
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	url := fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString())
-	ctx = tflog.SetField(ctx, "url", url)
-	ctx = tflog.SetField(ctx, "payload", string(payloadBytes))
-	tflog.Info(ctx, "Updating deployment via API")
-
-	apiReq, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	bodyBytes, err := r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	var deploymentResp models.DeploymentAPIResponse
-	err = json.Unmarshal(bodyBytes, &deploymentResp)
+	deployment, err := r.client.Deployments().Update(ctx, models.DeploymentResourceToAPIModel(data))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state
-	models.DeploymentAPIToResourceModel(deploymentResp.Deployment, &data)
+	models.DeploymentAPIToResourceModel(deployment, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -304,41 +213,11 @@ func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	apiReq, err := http.NewRequest("DELETE", fmt.Sprintf("%s/deployments/%s", r.endpoint, data.UUID.ValueString()), nil)
-	if err != nil {
+	if err := r.client.Deployments().Delete(ctx, data.UUID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Deployment", err.Error())
-		return
-	}
-
-	_, err = r.handleAPIRequest(apiReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Delete Deployment", err.Error())
-		return
 	}
 }
 
 func (r *DeploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
-}
-
-func (r *DeploymentResource) handleAPIRequest(apiReq *http.Request) (bodyBytes []byte, err error) {
-	apiReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
-	apiResp, err := http.DefaultClient.Do(apiReq)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	if apiResp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("received status code %d", apiResp.StatusCode)
-	}
-
-	defer apiResp.Body.Close()
-	body, readErr := io.ReadAll(apiResp.Body)
-	if err != nil && readErr == nil {
-		// If the status code was not OK, include the response body in the error message
-		// if we were able to read it
-		err = fmt.Errorf("%s: %s", err, string(body))
-	}
-
-	return body, cmp.Or(err, readErr)
 }
