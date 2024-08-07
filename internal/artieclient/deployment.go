@@ -8,7 +8,7 @@ import (
 )
 
 type DeploymentClient struct {
-	client ArtieClient
+	client Client
 }
 
 func (DeploymentClient) basePath() string {

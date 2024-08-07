@@ -26,17 +26,17 @@ func (he HttpError) Error() string {
 	return fmt.Sprintf("%s (HTTP %d)", message, he.StatusCode)
 }
 
-type ArtieClient struct {
+type Client struct {
 	endpoint string
 	apiKey   string
 }
 
-func New(endpoint string, apiKey string) (ArtieClient, error) {
+func New(endpoint string, apiKey string) (Client, error) {
 	if !strings.HasPrefix(apiKey, "arsk_") {
-		return ArtieClient{}, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
+		return Client{}, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
 	}
 
-	return ArtieClient{endpoint: endpoint, apiKey: apiKey}, nil
+	return Client{endpoint: endpoint, apiKey: apiKey}, nil
 }
 
 func buildError(resp *http.Response) error {
@@ -54,8 +54,8 @@ func buildError(resp *http.Response) error {
 	return HttpError{StatusCode: resp.StatusCode}
 }
 
-func (ac ArtieClient) makeRequest(ctx context.Context, method string, path string, body any, out any) error {
-	_url, err := url.JoinPath(ac.endpoint, path)
+func (c Client) makeRequest(ctx context.Context, method string, path string, body any, out any) error {
+	_url, err := url.JoinPath(c.endpoint, path)
 	if err != nil {
 		return nil
 	}
@@ -73,7 +73,7 @@ func (ac ArtieClient) makeRequest(ctx context.Context, method string, path strin
 	if err != nil {
 		return fmt.Errorf("artie-client: failed to create request: %w", err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ac.apiKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -94,7 +94,7 @@ func (ac ArtieClient) makeRequest(ctx context.Context, method string, path strin
 	return nil
 }
 
-func makeRequest[Out any](ctx context.Context, client ArtieClient, method string, path string, body any) (Out, error) {
+func makeRequest[Out any](ctx context.Context, client Client, method string, path string, body any) (Out, error) {
 	respBody := new(Out)
 	if err := client.makeRequest(ctx, method, path, body, respBody); err != nil {
 		return *new(Out), err
@@ -102,6 +102,10 @@ func makeRequest[Out any](ctx context.Context, client ArtieClient, method string
 	return *respBody, nil
 }
 
-func (ac ArtieClient) Deployments() DeploymentClient {
-	return DeploymentClient{client: ac}
+func (c Client) Deployments() DeploymentClient {
+	return DeploymentClient{client: c}
+}
+
+func (c Client) Destinations() DestinationClient {
+	return DestinationClient{client: c}
 }
