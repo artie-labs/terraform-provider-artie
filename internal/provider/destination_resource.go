@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
