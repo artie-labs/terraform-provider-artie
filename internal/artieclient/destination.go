@@ -6,15 +6,15 @@ import (
 	"net/url"
 )
 
-type DestinationAPIModel struct {
-	UUID          string                          `json:"uuid"`
-	Type          string                          `json:"name"`
-	Label         string                          `json:"label"`
-	SSHTunnelUUID *string                         `json:"sshTunnelUUID"`
-	Config        DestinationSharedConfigAPIModel `json:"sharedConfig"`
+type Destination struct {
+	UUID          string                  `json:"uuid"`
+	Type          string                  `json:"name"`
+	Label         string                  `json:"label"`
+	SSHTunnelUUID *string                 `json:"sshTunnelUUID"`
+	Config        DestinationSharedConfig `json:"sharedConfig"`
 }
 
-type DestinationSharedConfigAPIModel struct {
+type DestinationSharedConfig struct {
 	Host                string `json:"host"`
 	Port                int32  `json:"port"`
 	Endpoint            string `json:"endpoint"`
@@ -36,15 +36,15 @@ func (DestinationClient) basePath() string {
 	return "destinations"
 }
 
-func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (DestinationAPIModel, error) {
+func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (Destination, error) {
 	path, err := url.JoinPath(dc.basePath(), destinationUUID)
 	if err != nil {
-		return DestinationAPIModel{}, err
+		return Destination{}, err
 	}
-	return makeRequest[DestinationAPIModel](ctx, dc.client, http.MethodGet, path, nil)
+	return makeRequest[Destination](ctx, dc.client, http.MethodGet, path, nil)
 }
 
-func (dc DestinationClient) Create(ctx context.Context, destination DestinationAPIModel) (DestinationAPIModel, error) {
+func (dc DestinationClient) Create(ctx context.Context, destination Destination) (Destination, error) {
 	body := map[string]any{
 		"name":         destination.Type,
 		"label":        destination.Label,
@@ -53,16 +53,16 @@ func (dc DestinationClient) Create(ctx context.Context, destination DestinationA
 	if destination.SSHTunnelUUID != nil {
 		body["sshTunnelUUID"] = *destination.SSHTunnelUUID
 	}
-	return makeRequest[DestinationAPIModel](ctx, dc.client, http.MethodPost, dc.basePath(), body)
+	return makeRequest[Destination](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }
 
-func (dc DestinationClient) Update(ctx context.Context, destination DestinationAPIModel) (DestinationAPIModel, error) {
+func (dc DestinationClient) Update(ctx context.Context, destination Destination) (Destination, error) {
 	path, err := url.JoinPath(dc.basePath(), destination.UUID)
 	if err != nil {
-		return DestinationAPIModel{}, err
+		return Destination{}, err
 	}
 
-	return makeRequest[DestinationAPIModel](ctx, dc.client, http.MethodPost, path, destination)
+	return makeRequest[Destination](ctx, dc.client, http.MethodPost, path, destination)
 }
 
 func (dc DestinationClient) Delete(ctx context.Context, destinationUUID string) error {
