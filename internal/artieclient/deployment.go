@@ -15,12 +15,16 @@ func (DeploymentClient) basePath() string {
 	return "deployments"
 }
 
+type deploymentAPIResponse struct {
+	Deployment models.DeploymentAPIModel `json:"deploy"`
+}
+
 func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (models.DeploymentAPIModel, error) {
 	path, err := url.JoinPath(dc.basePath(), deploymentUUID)
 	if err != nil {
 		return models.DeploymentAPIModel{}, err
 	}
-	response, err := makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodGet, path, nil)
+	response, err := makeRequest[deploymentAPIResponse](ctx, dc.client, http.MethodGet, path, nil)
 	if err != nil {
 		return models.DeploymentAPIModel{}, err
 	}
@@ -43,7 +47,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment models.Deploym
 		"updateDeployOnly": true,
 	}
 
-	response, err := makeRequest[models.DeploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)
+	response, err := makeRequest[deploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)
 	if err != nil {
 		return models.DeploymentAPIModel{}, err
 	}
