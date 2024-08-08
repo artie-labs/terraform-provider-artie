@@ -195,13 +195,12 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	deployment := models.DeploymentResourceToAPIModel(data)
 	tflog.Info(ctx, "Validating deployment source via API")
-	err := r.client.Deployments().ValidateSource(ctx, deployment)
-	if err != nil {
+	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
-	deployment, err = r.client.Deployments().Update(ctx, deployment)
+	deployment, err := r.client.Deployments().Update(ctx, deployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
