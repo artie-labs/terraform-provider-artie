@@ -2,6 +2,7 @@ package artieclient
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -64,6 +65,10 @@ type deploymentAPIResponse struct {
 	Deployment Deployment `json:"deploy"`
 }
 
+type validationResponse struct {
+	Error string `json:"error"`
+}
+
 func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (Deployment, error) {
 	path, err := url.JoinPath(dc.basePath(), deploymentUUID)
 	if err != nil {
@@ -97,6 +102,30 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 		return Deployment{}, err
 	}
 	return response.Deployment, nil
+}
+
+func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deployment) error {
+	path, err := url.JoinPath(dc.basePath(), "validate-source")
+	if err != nil {
+		return err
+	}
+
+	body := map[string]any{
+		"source":         deployment.Source,
+		"sshTunnelUUID":  deployment.SSHTunnelUUID,
+		"validateTables": true,
+	}
+
+	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return fmt.Errorf("source validation failed: %s", response.Error)
+	}
+
+	return nil
 }
 
 func (dc DeploymentClient) Delete(ctx context.Context, deploymentUUID string) error {
