@@ -9,22 +9,12 @@ import (
 )
 
 func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel *DeploymentResourceModel) {
-	resourceModel.UUID = types.StringValue(apiModel.UUID)
+	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
-	resourceModel.DestinationUUID = types.StringValue(apiModel.DestinationUUID)
-
-	sshTunnelUUID := ""
-	if apiModel.SSHTunnelUUID != nil {
-		sshTunnelUUID = *apiModel.SSHTunnelUUID
-	}
-	resourceModel.SSHTunnelUUID = types.StringValue(sshTunnelUUID)
-
-	snowflakeEcoScheduleUUID := ""
-	if apiModel.SnowflakeEcoScheduleUUID != nil {
-		snowflakeEcoScheduleUUID = *apiModel.SnowflakeEcoScheduleUUID
-	}
-	resourceModel.SnowflakeEcoScheduleUUID = types.StringValue(snowflakeEcoScheduleUUID)
+	resourceModel.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
+	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
+	resourceModel.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
 
 	tables := map[string]TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
@@ -33,7 +23,7 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
 		}
 		tables[tableKey] = TableModel{
-			UUID:                 types.StringValue(apiTable.UUID),
+			UUID:                 types.StringValue(apiTable.UUID.String()),
 			Name:                 types.StringValue(apiTable.Name),
 			Schema:               types.StringValue(apiTable.Schema),
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
@@ -82,7 +72,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 			tableUUID = uuid.Nil.String()
 		}
 		tables = append(tables, artieclient.Table{
-			UUID:                 tableUUID,
+			UUID:                 uuid.MustParse(tableUUID),
 			Name:                 table.Name.ValueString(),
 			Schema:               table.Schema.ValueString(),
 			EnableHistoryMode:    table.EnableHistoryMode.ValueBool(),
@@ -92,10 +82,10 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 	}
 
 	apiModel := artieclient.Deployment{
-		UUID:            resourceModel.UUID.ValueString(),
+		UUID:            parseUUID(resourceModel.UUID),
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
-		DestinationUUID: resourceModel.DestinationUUID.ValueString(),
+		DestinationUUID: parseOptionalUUID(resourceModel.DestinationUUID),
 		Source: artieclient.Source{
 			Type:   resourceModel.Source.Type.ValueString(),
 			Tables: tables,
@@ -108,16 +98,8 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
 			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
 		},
-	}
-
-	sshTunnelUUID := resourceModel.SSHTunnelUUID.ValueString()
-	if sshTunnelUUID != "" {
-		apiModel.SSHTunnelUUID = &sshTunnelUUID
-	}
-
-	snowflakeEcoScheduleUUID := resourceModel.SnowflakeEcoScheduleUUID.ValueString()
-	if snowflakeEcoScheduleUUID != "" {
-		apiModel.SnowflakeEcoScheduleUUID = &snowflakeEcoScheduleUUID
+		SSHTunnelUUID:            parseOptionalUUID(resourceModel.SSHTunnelUUID),
+		SnowflakeEcoScheduleUUID: parseOptionalUUID(resourceModel.SnowflakeEcoScheduleUUID),
 	}
 
 	switch resourceModel.Source.Type.ValueString() {
