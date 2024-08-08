@@ -105,7 +105,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 }
 
 func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deployment) error {
-	path, err := url.JoinPath(dc.basePath(), "validate-source/")
+	path, err := url.JoinPath(dc.basePath(), "validate-source")
 	if err != nil {
 		return err
 	}
