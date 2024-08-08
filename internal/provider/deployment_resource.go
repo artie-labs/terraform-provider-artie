@@ -200,6 +200,14 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	if deployment.DestinationUUID != nil {
+		tflog.Info(ctx, "Validating deployment destination via API")
+		if err := r.client.Deployments().ValidateDestination(ctx, deployment); err != nil {
+			resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+			return
+		}
+	}
+
 	deployment, err := r.client.Deployments().Update(ctx, deployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
