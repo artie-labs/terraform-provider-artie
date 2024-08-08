@@ -128,6 +128,30 @@ func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deploy
 	return nil
 }
 
+func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment Deployment) error {
+	path, err := url.JoinPath(dc.basePath(), "validate-destination")
+	if err != nil {
+		return err
+	}
+
+	body := map[string]any{
+		"destinationUUID": deployment.DestinationUUID,
+		"uniqueCfg":       deployment.DestinationConfig,
+		"tables":          deployment.Source.Tables,
+	}
+
+	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return fmt.Errorf("destination validation failed: %s", response.Error)
+	}
+
+	return nil
+}
+
 func (dc DeploymentClient) Delete(ctx context.Context, deploymentUUID string) error {
 	path, err := url.JoinPath(dc.basePath(), deploymentUUID)
 	if err != nil {
