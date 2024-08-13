@@ -96,6 +96,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 	return []func() resource.Resource{
 		NewDeploymentResource,
 		NewDestinationResource,
+		NewSSHTunnelResource,
 	}
 }
 
