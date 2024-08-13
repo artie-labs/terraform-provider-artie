@@ -109,3 +109,7 @@ func (c Client) Deployments() DeploymentClient {
 func (c Client) Destinations() DestinationClient {
 	return DestinationClient{client: c}
 }
+
+func (c Client) SSHTunnels() SSHTunnelClient {
+	return SSHTunnelClient{client: c}
+}
