@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -30,8 +32,14 @@ func (r *SSHTunnelResource) Metadata(ctx context.Context, req resource.MetadataR
 func (r *SSHTunnelResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie SSH Tunnel resource",
-		// TODO
-		Attributes: map[string]schema.Attribute{},
+		Attributes: map[string]schema.Attribute{
+			"uuid":       schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"name":       schema.StringAttribute{Required: true},
+			"host":       schema.StringAttribute{Required: true},
+			"port":       schema.Int32Attribute{Required: true},
+			"username":   schema.StringAttribute{Required: true},
+			"public_key": schema.StringAttribute{Computed: true, Sensitive: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+		},
 	}
 }
 
