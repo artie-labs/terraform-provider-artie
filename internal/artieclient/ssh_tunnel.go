@@ -34,12 +34,12 @@ func (sc SSHTunnelClient) Get(ctx context.Context, sshTunnelUUID string) (SSHTun
 	return makeRequest[SSHTunnel](ctx, sc.client, http.MethodGet, path, nil)
 }
 
-func (sc SSHTunnelClient) Create(ctx context.Context, sshTunnel SSHTunnel) (SSHTunnel, error) {
+func (sc SSHTunnelClient) Create(ctx context.Context, name, host, username string, port int32) (SSHTunnel, error) {
 	body := map[string]any{
-		"name":     sshTunnel.Name,
-		"address":  sshTunnel.Host,
-		"port":     sshTunnel.Port,
-		"username": sshTunnel.Username,
+		"name":     name,
+		"address":  host,
+		"port":     port,
+		"username": username,
 	}
 	return makeRequest[SSHTunnel](ctx, sc.client, http.MethodPost, sc.basePath(), body)
 }

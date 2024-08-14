@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -70,13 +72,23 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 
 func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read Terraform plan data into the model
-	var data any
+	var data models.SSHTunnelResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// TODO
+	tflog.Info(ctx, "Creating SSH Tunnel via API")
+	sshTunnel, err := r.client.SSHTunnels().Create(ctx, data.Name.ValueString(), data.Host.ValueString(), data.Username.ValueString(), data.Port.ValueInt32())
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Create SSH Tunnel", err.Error())
+		return
+	}
+
+	tflog.Info(ctx, "Created SSH Tunnel")
+
+	// Translate API response into Terraform state
+	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -84,13 +96,21 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read Terraform prior state data into the model
-	var data any
+	var data models.SSHTunnelResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// TODO
+	tflog.Info(ctx, "Reading SSH Tunnel from API")
+	sshTunnel, err := r.client.SSHTunnels().Get(ctx, data.UUID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Read SSH Tunnel", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -98,7 +118,7 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read Terraform plan data into the model
-	var data any
+	var data models.SSHTunnelResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -112,7 +132,7 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read Terraform prior state data into the model
-	var data any
+	var data models.SSHTunnelResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
