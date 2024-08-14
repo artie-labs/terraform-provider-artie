@@ -10,7 +10,7 @@ func parseUUID(value types.String) uuid.UUID {
 	return uuid.MustParse(value.ValueString())
 }
 
-func parseOptionalUUID(value types.String) *uuid.UUID {
+func ParseOptionalUUID(value types.String) *uuid.UUID {
 	if value.IsNull() || len(value.ValueString()) == 0 {
 		return nil
 	}

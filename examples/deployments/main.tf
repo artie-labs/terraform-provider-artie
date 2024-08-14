@@ -46,7 +46,7 @@ resource "artie_destination" "snowflake" {
 }
 
 resource "artie_ssh_tunnel" "ssh_tunnel" {
-  name     = "SSH Tunnel from tf"
+  name     = "SSH Tunnel"
   host     = "34.203.191.184"
   port     = 22
   username = "ec2-user"
@@ -87,7 +87,6 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     database = "DEV_TEST"
     schema   = "PUBLIC"
   }
-  ssh_tunnel_uuid = "a8d19279-e3aa-468f-8e9a-e3590f11e8e8"
 }
 
 # import {

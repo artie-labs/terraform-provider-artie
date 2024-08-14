@@ -38,17 +38,10 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 	}
 }
 
-func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
-	apiModel := artieclient.Destination{
-		UUID:          parseUUID(resourceModel.UUID),
-		Type:          resourceModel.Type.ValueString(),
-		Label:         resourceModel.Label.ValueString(),
-		SSHTunnelUUID: parseOptionalUUID(resourceModel.SSHTunnelUUID),
-	}
-
+func DestinationResourceToAPISharedConfigModel(resourceModel DestinationResourceModel) artieclient.DestinationSharedConfig {
 	switch resourceModel.Type.ValueString() {
 	case string(Snowflake):
-		apiModel.Config = artieclient.DestinationSharedConfig{
+		return artieclient.DestinationSharedConfig{
 			SnowflakeAccountURL: resourceModel.SnowflakeConfig.AccountURL.ValueString(),
 			SnowflakeVirtualDWH: resourceModel.SnowflakeConfig.VirtualDWH.ValueString(),
 			SnowflakePrivateKey: resourceModel.SnowflakeConfig.PrivateKey.ValueString(),
@@ -56,20 +49,30 @@ func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artie
 			Password:            resourceModel.SnowflakeConfig.Password.ValueString(),
 		}
 	case string(BigQuery):
-		apiModel.Config = artieclient.DestinationSharedConfig{
+		return artieclient.DestinationSharedConfig{
 			GCPProjectID:       resourceModel.BigQueryConfig.ProjectID.ValueString(),
 			GCPLocation:        resourceModel.BigQueryConfig.Location.ValueString(),
 			GCPCredentialsData: resourceModel.BigQueryConfig.CredentialsData.ValueString(),
 		}
 	case string(Redshift):
-		apiModel.Config = artieclient.DestinationSharedConfig{
+		return artieclient.DestinationSharedConfig{
 			Endpoint: resourceModel.RedshiftConfig.Endpoint.ValueString(),
 			Host:     resourceModel.RedshiftConfig.Host.ValueString(),
 			Port:     resourceModel.RedshiftConfig.Port.ValueInt32(),
 			Username: resourceModel.RedshiftConfig.Username.ValueString(),
 			Password: resourceModel.RedshiftConfig.Password.ValueString(),
 		}
+	default:
+		return artieclient.DestinationSharedConfig{}
 	}
+}
 
-	return apiModel
+func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
+	return artieclient.Destination{
+		UUID:          parseUUID(resourceModel.UUID),
+		Type:          resourceModel.Type.ValueString(),
+		Label:         resourceModel.Label.ValueString(),
+		Config:        DestinationResourceToAPISharedConfigModel(resourceModel),
+		SSHTunnelUUID: ParseOptionalUUID(resourceModel.SSHTunnelUUID),
+	}
 }

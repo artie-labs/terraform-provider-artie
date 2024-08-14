@@ -85,7 +85,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 		UUID:            parseUUID(resourceModel.UUID),
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
-		DestinationUUID: parseOptionalUUID(resourceModel.DestinationUUID),
+		DestinationUUID: ParseOptionalUUID(resourceModel.DestinationUUID),
 		Source: artieclient.Source{
 			Type:   resourceModel.Source.Type.ValueString(),
 			Tables: tables,
@@ -98,8 +98,8 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
 			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
 		},
-		SSHTunnelUUID:            parseOptionalUUID(resourceModel.SSHTunnelUUID),
-		SnowflakeEcoScheduleUUID: parseOptionalUUID(resourceModel.SnowflakeEcoScheduleUUID),
+		SSHTunnelUUID:            ParseOptionalUUID(resourceModel.SSHTunnelUUID),
+		SnowflakeEcoScheduleUUID: ParseOptionalUUID(resourceModel.SnowflakeEcoScheduleUUID),
 	}
 
 	switch resourceModel.Source.Type.ValueString() {

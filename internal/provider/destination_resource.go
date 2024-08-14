@@ -106,10 +106,11 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	destModel := models.DestinationResourceToAPIModel(data)
+	config := models.DestinationResourceToAPISharedConfigModel(data)
+	sshTunnelUUID := models.ParseOptionalUUID(data.SSHTunnelUUID)
 
 	tflog.Info(ctx, "Creating destination via API")
-	destination, err := r.client.Destinations().Create(ctx, destModel)
+	destination, err := r.client.Destinations().Create(ctx, data.Type.ValueString(), data.Label.ValueString(), config, sshTunnelUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
