@@ -124,7 +124,16 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// TODO
+	sshTunnel := models.SSHTunnelResourceToAPIModel(data)
+	tflog.Info(ctx, "Updating SSH Tunnel via API")
+	sshTunnel, err := r.client.SSHTunnels().Update(ctx, sshTunnel)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update SSH Tunnel", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -138,7 +147,10 @@ func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	// TODO
+	tflog.Info(ctx, "Deleting SSH Tunnel via API")
+	if err := r.client.SSHTunnels().Delete(ctx, data.UUID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("Unable to Delete SSH Tunnel", err.Error())
+	}
 }
 
 func (r *SSHTunnelResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
