@@ -10,7 +10,7 @@ import (
 
 type Destination struct {
 	UUID          uuid.UUID               `json:"uuid"`
-	Type          string                  `json:"name"`
+	Type          string                  `json:"type"`
 	Label         string                  `json:"label"`
 	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfig `json:"sharedConfig"`
