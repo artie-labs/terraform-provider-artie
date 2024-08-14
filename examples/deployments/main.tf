@@ -20,6 +20,11 @@ import {
   id = "c3dfa503-b6ae-48f3-a6b1-8491a506126d"
 }
 
+import {
+  to = artie_ssh_tunnel.ssh_tunnel
+  id = "a8d19279-e3aa-468f-8e9a-e3590f11e8e8"
+}
+
 variable "snowflake_password" {
   type      = string
   sensitive = true
@@ -38,6 +43,13 @@ resource "artie_destination" "snowflake" {
     username    = "tang8330"
     password    = var.snowflake_password
   }
+}
+
+resource "artie_ssh_tunnel" "ssh_tunnel" {
+  name     = "SSH Tunnel from tf"
+  host     = "34.203.191.184"
+  port     = 22
+  username = "ec2-user"
 }
 
 resource "artie_deployment" "dev_postgres_to_snowflake" {
@@ -75,6 +87,7 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     database = "DEV_TEST"
     schema   = "PUBLIC"
   }
+  ssh_tunnel_uuid = "a8d19279-e3aa-468f-8e9a-e3590f11e8e8"
 }
 
 # import {
