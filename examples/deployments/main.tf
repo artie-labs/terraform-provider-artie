@@ -46,7 +46,7 @@ resource "artie_destination" "snowflake" {
 }
 
 resource "artie_ssh_tunnel" "ssh_tunnel" {
-  name     = "SSH Tunnel from tf"
+  name     = "SSH Tunnel from tf renamed"
   host     = "34.203.191.184"
   port     = 22
   username = "ec2-user"

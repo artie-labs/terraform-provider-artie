@@ -124,7 +124,16 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// TODO
+	sshTunnel := models.SSHTunnelResourceToAPIModel(data)
+	tflog.Info(ctx, "Updating SSH Tunnel via API")
+	sshTunnel, err := r.client.SSHTunnels().Update(ctx, sshTunnel)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to Update SSH Tunnel", err.Error())
+		return
+	}
+
+	// Translate API response into Terraform state
+	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
