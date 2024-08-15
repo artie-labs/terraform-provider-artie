@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"terraform-provider-artie/internal/artieclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,7 +13,7 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 	resourceModel.Label = types.StringValue(apiModel.Label)
 	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 
-	switch resourceModel.Type.ValueString() {
+	switch strings.ToLower(resourceModel.Type.ValueString()) {
 	case string(Snowflake):
 		resourceModel.SnowflakeConfig = &SnowflakeSharedConfigModel{
 			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
@@ -39,7 +40,7 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 }
 
 func DestinationResourceToAPISharedConfigModel(resourceModel DestinationResourceModel) artieclient.DestinationSharedConfig {
-	switch resourceModel.Type.ValueString() {
+	switch strings.ToLower(resourceModel.Type.ValueString()) {
 	case string(Snowflake):
 		return artieclient.DestinationSharedConfig{
 			SnowflakeAccountURL: resourceModel.SnowflakeConfig.AccountURL.ValueString(),

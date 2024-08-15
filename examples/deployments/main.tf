@@ -35,7 +35,7 @@ variable "postgres_password" {
 }
 
 resource "artie_destination" "snowflake" {
-  type  = "Snowflake"
+  type  = "snowflake"
   label = "Snowflake (Partner Account)"
   snowflake_config = {
     account_url = "https://znb46775.snowflakecomputing.com"
@@ -55,7 +55,7 @@ resource "artie_ssh_tunnel" "ssh_tunnel" {
 resource "artie_deployment" "dev_postgres_to_snowflake" {
   name = "Dev PostgreSQL > Snowflake"
   source = {
-    type = "PostgreSQL"
+    type = "postgresql"
     postgres_config = {
       host     = "db-postgresql-sfo3-03243-do-user-13261354-0.c.db.ondigitalocean.com"
       port     = 25060

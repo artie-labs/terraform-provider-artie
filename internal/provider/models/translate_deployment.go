@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 	"terraform-provider-artie/internal/artieclient"
 
 	"github.com/google/uuid"
@@ -35,7 +36,7 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 		Type:   types.StringValue(apiModel.Source.Type),
 		Tables: tables,
 	}
-	switch resourceModel.Source.Type.ValueString() {
+	switch strings.ToLower(resourceModel.Source.Type.ValueString()) {
 	case string(PostgreSQL):
 		resourceModel.Source.PostgresConfig = &PostgresConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),

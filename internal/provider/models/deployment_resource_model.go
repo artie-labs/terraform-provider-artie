@@ -5,8 +5,8 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 type SourceType string
 
 const (
-	PostgreSQL SourceType = "PostgreSQL"
-	MySQL      SourceType = "MySQL"
+	PostgreSQL SourceType = "postgresql"
+	MySQL      SourceType = "mysql"
 )
 
 type DeploymentResourceModel struct {

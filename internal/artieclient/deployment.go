@@ -21,7 +21,7 @@ type Deployment struct {
 }
 
 type Source struct {
-	Type   string       `json:"name"`
+	Type   string       `json:"type"`
 	Config SourceConfig `json:"config"`
 	Tables []Table      `json:"tables"`
 }

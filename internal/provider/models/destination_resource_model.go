@@ -5,9 +5,9 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 type DestinationType string
 
 const (
-	Snowflake DestinationType = "Snowflake"
-	BigQuery  DestinationType = "BigQuery"
-	Redshift  DestinationType = "Redshift"
+	Snowflake DestinationType = "snowflake"
+	BigQuery  DestinationType = "bigquery"
+	Redshift  DestinationType = "redshift"
 )
 
 type DestinationResourceModel struct {
