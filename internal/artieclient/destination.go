@@ -48,7 +48,7 @@ func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (De
 
 func (dc DestinationClient) Create(ctx context.Context, type_, label string, config DestinationSharedConfig, sshTunnelUUID *uuid.UUID) (Destination, error) {
 	body := map[string]any{
-		"name":         type_,
+		"type":         type_,
 		"label":        label,
 		"sharedConfig": config,
 	}
