@@ -35,7 +35,7 @@ variable "postgres_password" {
 }
 
 resource "artie_destination" "snowflake" {
-  type  = "Snowflake"
+  type  = "snowflake"
   label = "Snowflake (Partner Account)"
   snowflake_config = {
     account_url = "https://znb46775.snowflakecomputing.com"
@@ -46,7 +46,7 @@ resource "artie_destination" "snowflake" {
 }
 
 resource "artie_ssh_tunnel" "ssh_tunnel" {
-  name     = "SSH Tunnel from tf"
+  name     = "SSH Tunnel"
   host     = "34.203.191.184"
   port     = 22
   username = "ec2-user"
@@ -55,7 +55,7 @@ resource "artie_ssh_tunnel" "ssh_tunnel" {
 resource "artie_deployment" "dev_postgres_to_snowflake" {
   name = "Dev PostgreSQL > Snowflake"
   source = {
-    type = "PostgreSQL"
+    type = "postgresql"
     postgres_config = {
       host     = "db-postgresql-sfo3-03243-do-user-13261354-0.c.db.ondigitalocean.com"
       port     = 25060
@@ -87,7 +87,6 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
     database = "DEV_TEST"
     schema   = "PUBLIC"
   }
-  ssh_tunnel_uuid = "a8d19279-e3aa-468f-8e9a-e3590f11e8e8"
 }
 
 # import {
