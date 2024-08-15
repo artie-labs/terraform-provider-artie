@@ -46,9 +46,9 @@ func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (De
 	return makeRequest[Destination](ctx, dc.client, http.MethodGet, path, nil)
 }
 
-func (dc DestinationClient) Create(ctx context.Context, _type, label string, config DestinationSharedConfig, sshTunnelUUID *uuid.UUID) (Destination, error) {
+func (dc DestinationClient) Create(ctx context.Context, type_, label string, config DestinationSharedConfig, sshTunnelUUID *uuid.UUID) (Destination, error) {
 	body := map[string]any{
-		"name":         _type,
+		"name":         type_,
 		"label":        label,
 		"sharedConfig": config,
 	}
