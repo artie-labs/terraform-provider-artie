@@ -11,7 +11,7 @@ import (
 type SSHTunnel struct {
 	UUID      uuid.UUID `json:"uuid"`
 	Name      string    `json:"name"`
-	Host      string    `json:"address"`
+	Host      string    `json:"host"`
 	Port      int32     `json:"port"`
 	Username  string    `json:"username"`
 	PublicKey string    `json:"publicKey"`
@@ -37,7 +37,7 @@ func (sc SSHTunnelClient) Get(ctx context.Context, sshTunnelUUID string) (SSHTun
 func (sc SSHTunnelClient) Create(ctx context.Context, name, host, username string, port int32) (SSHTunnel, error) {
 	body := map[string]any{
 		"name":     name,
-		"address":  host,
+		"host":     host,
 		"port":     port,
 		"username": username,
 	}
