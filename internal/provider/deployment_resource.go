@@ -3,10 +3,12 @@ package provider
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -62,8 +64,13 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"postgres_config": schema.SingleNestedAttribute{
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
-							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int32Attribute{Required: true},
+							"host": schema.StringAttribute{Required: true},
+							"port": schema.Int32Attribute{
+								Required: true,
+								Validators: []validator.Int32{
+									int32validator.Between(1024, math.MaxUint16),
+								},
+							},
 							"user":     schema.StringAttribute{Required: true},
 							"password": schema.StringAttribute{Required: true, Sensitive: true},
 							"database": schema.StringAttribute{Required: true},
@@ -72,8 +79,13 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"mysql_config": schema.SingleNestedAttribute{
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
-							"host":     schema.StringAttribute{Required: true},
-							"port":     schema.Int32Attribute{Required: true},
+							"host": schema.StringAttribute{Required: true},
+							"port": schema.Int32Attribute{
+								Required: true,
+								Validators: []validator.Int32{
+									int32validator.Between(1024, math.MaxUint16),
+								},
+							},
 							"user":     schema.StringAttribute{Required: true},
 							"password": schema.StringAttribute{Required: true, Sensitive: true},
 							"database": schema.StringAttribute{Required: true},
