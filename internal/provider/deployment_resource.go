@@ -52,10 +52,12 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Required: true,
-						Validators: []validator.String{stringvalidator.OneOf(
-							string(models.MySQL),
-							string(models.PostgreSQL),
-						)},
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								string(models.MySQL),
+								string(models.PostgreSQL),
+							),
+						},
 					},
 					"postgres_config": schema.SingleNestedAttribute{
 						Optional: true,

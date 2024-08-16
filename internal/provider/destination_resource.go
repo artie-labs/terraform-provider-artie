@@ -43,11 +43,13 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"type": schema.StringAttribute{
 				Required: true,
-				Validators: []validator.String{stringvalidator.OneOf(
-					string(models.BigQuery),
-					string(models.Redshift),
-					string(models.Snowflake),
-				)},
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						string(models.BigQuery),
+						string(models.Redshift),
+						string(models.Snowflake),
+					),
+				},
 			},
 			"label": schema.StringAttribute{Optional: true},
 			"snowflake_config": schema.SingleNestedAttribute{
