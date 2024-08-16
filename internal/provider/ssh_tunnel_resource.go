@@ -3,14 +3,17 @@ package provider
 import (
 	"context"
 	"fmt"
+	"math"
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -35,10 +38,15 @@ func (r *SSHTunnelResource) Schema(ctx context.Context, req resource.SchemaReque
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie SSH Tunnel resource",
 		Attributes: map[string]schema.Attribute{
-			"uuid":       schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name":       schema.StringAttribute{Required: true},
-			"host":       schema.StringAttribute{Required: true},
-			"port":       schema.Int32Attribute{Required: true},
+			"uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"name": schema.StringAttribute{Required: true},
+			"host": schema.StringAttribute{Required: true},
+			"port": schema.Int32Attribute{
+				Required: true,
+				Validators: []validator.Int32{
+					int32validator.Between(22, math.MaxUint16),
+				},
+			},
 			"username":   schema.StringAttribute{Required: true},
 			"public_key": schema.StringAttribute{Computed: true, Sensitive: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
