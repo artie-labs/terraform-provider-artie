@@ -37,17 +37,6 @@ func (r *DeploymentResource) Metadata(ctx context.Context, req resource.Metadata
 	resp.TypeName = req.ProviderTypeName + "_deployment"
 }
 
-type SourceTypeValidator struct {
-}
-
-func (SourceTypeValidator) Description(context.Context) string {
-	return ""
-}
-
-func (SourceTypeValidator) ValidateString(context.Context, validator.StringRequest, *validator.StringResponse) string {
-	return ""
-}
-
 func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Deployment resource",
