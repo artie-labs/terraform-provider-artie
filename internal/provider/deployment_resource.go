@@ -7,6 +7,7 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -35,6 +37,17 @@ func (r *DeploymentResource) Metadata(ctx context.Context, req resource.Metadata
 	resp.TypeName = req.ProviderTypeName + "_deployment"
 }
 
+type SourceTypeValidator struct {
+}
+
+func (SourceTypeValidator) Description(context.Context) string {
+	return ""
+}
+
+func (SourceTypeValidator) ValidateString(context.Context, validator.StringRequest, *validator.StringResponse) string {
+	return ""
+}
+
 func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Deployment resource",
@@ -48,7 +61,13 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"source": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{Required: true},
+					"type": schema.StringAttribute{
+						Required: true,
+						Validators: []validator.String{stringvalidator.OneOf(
+							string(models.MySQL),
+							string(models.PostgreSQL),
+						)},
+					},
 					"postgres_config": schema.SingleNestedAttribute{
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
