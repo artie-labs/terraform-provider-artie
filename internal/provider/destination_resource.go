@@ -3,10 +3,12 @@ package provider
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -75,7 +77,11 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{Required: true},
 					"host":     schema.StringAttribute{Required: true},
-					"port":     schema.Int32Attribute{Required: true},
+					"port":     schema.Int32Attribute{
+						Required: true,
+						Validators: []validator.Int32{
+							int32validator.Between(1024, math.MaxUint16),
+						},
 					"username": schema.StringAttribute{Required: true},
 					"password": schema.StringAttribute{Required: true, Sensitive: true},
 				},
