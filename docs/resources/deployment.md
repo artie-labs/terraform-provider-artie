@@ -3,12 +3,12 @@
 page_title: "artie_deployment Resource - artie"
 subcategory: ""
 description: |-
-  Artie Deployment resource. This represents a connection to replicate data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).
+  Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).
 ---
 
 # artie_deployment (Resource)
 
-Artie Deployment resource. This represents a connection to replicate data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).
+Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).
 
 
 
@@ -17,14 +17,14 @@ Artie Deployment resource. This represents a connection to replicate data from a
 
 ### Required
 
-- `destination_config` (Attributes) This contains configuration for the destination database that is specific to this deployment. The basic connection settings for the destination, which can be shared between deployments, are stored in the corresponding `artie_destination` resource. (see [below for nested schema](#nestedatt--destination_config))
+- `destination_config` (Attributes) This contains configuration that pertains to the destination database but is specific to this deployment. The basic connection settings for the destination, which can be shared by multiple deployments, are stored in the corresponding `artie_destination` resource. (see [below for nested schema](#nestedatt--destination_config))
 - `name` (String) The human-readable name of the deployment. This is used only as a label and can contain any characters.
-- `source` (Attributes) (see [below for nested schema](#nestedatt--source))
+- `source` (Attributes) This contains configuration for this deployment's source database. (see [below for nested schema](#nestedatt--source))
 
 ### Optional
 
 - `destination_uuid` (String) This must point to an `artie_destination` resource.
-- `ssh_tunnel_uuid` (String)
+- `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database.
 
 ### Read-Only
 
@@ -40,8 +40,8 @@ Optional:
 - `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is Snowflake, unless `use_same_schema_as_source` is set to true.
 - `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.
 - `schema` (String) The name of the schema that data should be synced to in the destination. This should be filled if the destination is Snowflake or Redshift.
-- `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL.
-- `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL.
+- `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.
+- `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.
 
 
 <a id="nestedatt--source"></a>
@@ -83,7 +83,7 @@ Required:
 
 - `database` (String) The name of the database in the MySQL server.
 - `host` (String) The hostname of the MySQL database. This must point to the primary host, not a read replica.
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it here via a variable, instead of putting it in plaintext in your Terraform config file.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for MySQL is 3306.
 - `user` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
 
@@ -95,6 +95,6 @@ Required:
 
 - `database` (String) The name of the database in the PostgreSQL server.
 - `host` (String) The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`.
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it here via a variable, instead of putting it in plaintext in your Terraform config file.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for PostgreSQL is 5432.
 - `user` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.

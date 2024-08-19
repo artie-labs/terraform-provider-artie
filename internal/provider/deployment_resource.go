@@ -47,10 +47,11 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"name":                        schema.StringAttribute{Required: true, MarkdownDescription: "The human-readable name of the deployment. This is used only as a label and can contain any characters."},
 			"status":                      schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_uuid":            schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_destination` resource."},
-			"ssh_tunnel_uuid":             schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ssh_tunnel_uuid":             schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database."},
 			"snowflake_eco_schedule_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"source": schema.SingleNestedAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "This contains configuration for this deployment's source database.",
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Required:            true,
@@ -75,7 +76,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 							},
 							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
-							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it here via a variable, instead of putting it in plaintext in your Terraform config file."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the PostgreSQL server."},
 						},
 					},
@@ -92,7 +93,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 							},
 							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
-							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it here via a variable, instead of putting it in plaintext in your Terraform config file."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the MySQL server."},
 						},
 					},
@@ -114,7 +115,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"destination_config": schema.SingleNestedAttribute{
 				Required:            true,
-				MarkdownDescription: "This contains configuration for the destination database that is specific to this deployment. The basic connection settings for the destination, which can be shared between deployments, are stored in the corresponding `artie_destination` resource.",
+				MarkdownDescription: "This contains configuration that pertains to the destination database but is specific to this deployment. The basic connection settings for the destination, which can be shared by multiple deployments, are stored in the corresponding `artie_destination` resource.",
 				Attributes: map[string]schema.Attribute{
 					"database": schema.StringAttribute{
 						MarkdownDescription: "The name of the database that data should be synced to in the destination. This should be filled if the destination is Snowflake, unless `use_same_schema_as_source` is set to true.",
@@ -138,13 +139,13 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
 					"use_same_schema_as_source": schema.BoolAttribute{
-						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL.",
+						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.",
 						Optional:            true,
 						Computed:            true, Default: booldefault.StaticBool(false),
 						PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 					},
 					"schema_name_prefix": schema.StringAttribute{
-						MarkdownDescription: "If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL.",
+						MarkdownDescription: "If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),
