@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
@@ -21,7 +18,6 @@ const DEFAULT_API_ENDPOINT = "https://api.artie.com"
 var _ provider.Provider = &ArtieProvider{}
 var _ provider.ProviderWithFunctions = &ArtieProvider{}
 
-// ArtieProvider defines the provider implementation.
 type ArtieProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
@@ -29,7 +25,6 @@ type ArtieProvider struct {
 	version string
 }
 
-// ArtieProviderModel describes the provider data model.
 type ArtieProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	APIKey   types.String `tfsdk:"api_key"`
