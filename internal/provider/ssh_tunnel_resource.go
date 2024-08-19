@@ -101,10 +101,8 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 
 	tflog.Info(ctx, "Created SSH Tunnel")
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -123,10 +121,8 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -146,10 +142,8 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

@@ -215,10 +215,8 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DeploymentAPIToResourceModel(updatedDeployment, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -236,10 +234,8 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DeploymentAPIToResourceModel(deployment, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -272,10 +268,8 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DeploymentAPIToResourceModel(deployment, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

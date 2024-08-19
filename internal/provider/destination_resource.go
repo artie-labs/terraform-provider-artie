@@ -131,10 +131,8 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 
 	tflog.Info(ctx, "Created destination")
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DestinationAPIToResourceModel(destination, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -153,10 +151,8 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DestinationAPIToResourceModel(destinationResp, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -175,10 +171,8 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DestinationAPIToResourceModel(destination, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
