@@ -29,17 +29,18 @@ To compile the provider, run `go install`. This will build the provider and put 
 
 **You'll need to run `go install` any time you make changes to the provider code before running it again locally.**
 
-This provider requires an Artie API key. To run it against your local Artie API instance, create a new API key through the dashboard (locally) and then set the following env vars:
+This provider requires an Artie API key. To run it against your local Artie API instance, create a new API key through the dashboard (locally) and then set this env var:
 
 ```shell
-export ARTIE_API_KEY=<yoursecretkey>
-export ARTIE_ENDPOINT=https://0.0.0.0:8000/api
+export TF_VAR_artie_api_key=<yoursecretkey>
 ```
 
-The `examples/` directory contains example Terraform config files. To test managing an Artie deployment with this provider:
+Create an `example.tf` file in the top level directory (it will be git-ignored) to hold the Terraform config you want to develop against. Ping Dana for an example of what to put in it.
+
+To test managing an Artie deployment with this provider:
 
 ```shell
-cd examples/deployments
+go install
 terraform plan
 terraform apply
 ```
@@ -48,10 +49,11 @@ You'll be prompted for any secrets that are specified in the config. You can avo
 
 ```shell
 export TF_VAR_snowflake_password=...
-export TF_VAR_mongodb_password=...
+export TF_VAR_postgres_password=...
 ```
 
 To run with a particular log level:
+
 ```shell
 TF_LOG=INFO terraform plan
 ```
@@ -66,4 +68,4 @@ TODO: add acceptance tests before publishing.
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+_Note:_ Acceptance tests create real resources, and often cost money to run.
