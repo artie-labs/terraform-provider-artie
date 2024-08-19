@@ -83,7 +83,7 @@ Required:
 
 - `database` (String) The name of the database in the MySQL server.
 - `host` (String) The hostname of the MySQL database. This must point to the primary host, not a read replica.
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for MySQL is 3306.
 - `user` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
 
@@ -95,6 +95,6 @@ Required:
 
 - `database` (String) The name of the database in the PostgreSQL server.
 - `host` (String) The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`.
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for PostgreSQL is 5432.
 - `user` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.
