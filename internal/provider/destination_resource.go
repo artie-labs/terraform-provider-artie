@@ -3,12 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
-	"math"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/models"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -42,9 +40,10 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 		MarkdownDescription: "Artie Destination resource",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift."},
 			"type": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "The type of destination database. This must be one of the following: `bigquery`, `redshift`, or `snowflake`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						string(models.BigQuery),
@@ -53,38 +52,34 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 					),
 				},
 			},
-			"label": schema.StringAttribute{Optional: true},
+			"label": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this destination."},
 			"snowflake_config": schema.SingleNestedAttribute{
-				Optional: true,
+				MarkdownDescription: "This should be filled out if the destination type is `snowflake`.",
+				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"account_url": schema.StringAttribute{Required: true},
-					"virtual_dwh": schema.StringAttribute{Required: true},
-					"username":    schema.StringAttribute{Required: true},
-					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
-					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString("")},
+					"account_url": schema.StringAttribute{Required: true, MarkdownDescription: "The URL of your Snowflake account."},
+					"virtual_dwh": schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
+					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
+					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
+					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
 				},
 			},
-			"big_query_config": schema.SingleNestedAttribute{
-				Optional: true,
+			"bigquery_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the destination type is `bigquery`.",
+				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"project_id":       schema.StringAttribute{Required: true},
-					"location":         schema.StringAttribute{Required: true},
-					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true},
+					"project_id":       schema.StringAttribute{Required: true, MarkdownDescription: "The ID of the Google Cloud project."},
+					"location":         schema.StringAttribute{Required: true, MarkdownDescription: "The location of the BigQuery dataset. This must be either `US` or `EU`."},
+					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
 			"redshift_config": schema.SingleNestedAttribute{
-				Optional: true,
+				MarkdownDescription: "This should be filled out if the destination type is `redshift`.",
+				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"endpoint": schema.StringAttribute{Required: true},
-					"host":     schema.StringAttribute{Required: true},
-					"port": schema.Int32Attribute{
-						Required: true,
-						Validators: []validator.Int32{
-							int32validator.Between(1024, math.MaxUint16),
-						},
-					},
-					"username": schema.StringAttribute{Required: true},
-					"password": schema.StringAttribute{Required: true, Sensitive: true},
+					"endpoint": schema.StringAttribute{Required: true, MarkdownDescription: "The endpoint URL of your Redshift cluster. This should include both the host and port."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Redshift."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the service account we should use to connect to Redshift."},
 				},
 			},
 		},

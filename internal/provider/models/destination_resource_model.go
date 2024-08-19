@@ -16,7 +16,7 @@ type DestinationResourceModel struct {
 	Type            types.String                `tfsdk:"type"`
 	Label           types.String                `tfsdk:"label"`
 	SnowflakeConfig *SnowflakeSharedConfigModel `tfsdk:"snowflake_config"`
-	BigQueryConfig  *BigQuerySharedConfigModel  `tfsdk:"big_query_config"`
+	BigQueryConfig  *BigQuerySharedConfigModel  `tfsdk:"bigquery_config"`
 	RedshiftConfig  *RedshiftSharedConfigModel  `tfsdk:"redshift_config"`
 }
 
@@ -36,8 +36,6 @@ type BigQuerySharedConfigModel struct {
 
 type RedshiftSharedConfigModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int32  `tfsdk:"port"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }

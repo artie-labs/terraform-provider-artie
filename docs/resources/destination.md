@@ -17,28 +17,28 @@ Artie Destination resource
 
 ### Required
 
-- `type` (String)
+- `type` (String) The type of destination database. This must be one of the following: `bigquery`, `redshift`, or `snowflake`.
 
 ### Optional
 
-- `big_query_config` (Attributes) (see [below for nested schema](#nestedatt--big_query_config))
-- `label` (String)
-- `redshift_config` (Attributes) (see [below for nested schema](#nestedatt--redshift_config))
-- `snowflake_config` (Attributes) (see [below for nested schema](#nestedatt--snowflake_config))
+- `bigquery_config` (Attributes) This should be filled out if the destination type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
+- `label` (String) An optional human-readable label for this destination.
+- `redshift_config` (Attributes) This should be filled out if the destination type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
+- `snowflake_config` (Attributes) This should be filled out if the destination type is `snowflake`. (see [below for nested schema](#nestedatt--snowflake_config))
 
 ### Read-Only
 
-- `ssh_tunnel_uuid` (String)
+- `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift.
 - `uuid` (String)
 
-<a id="nestedatt--big_query_config"></a>
-### Nested Schema for `big_query_config`
+<a id="nestedatt--bigquery_config"></a>
+### Nested Schema for `bigquery_config`
 
 Required:
 
-- `credentials_data` (String, Sensitive)
-- `location` (String)
-- `project_id` (String)
+- `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `location` (String) The location of the BigQuery dataset. This must be either `US` or `EU`.
+- `project_id` (String) The ID of the Google Cloud project.
 
 
 <a id="nestedatt--redshift_config"></a>
@@ -46,11 +46,9 @@ Required:
 
 Required:
 
-- `endpoint` (String)
-- `host` (String)
-- `password` (String, Sensitive)
-- `port` (Number)
-- `username` (String)
+- `endpoint` (String) The endpoint URL of your Redshift cluster. This should include both the host and port.
+- `password` (String, Sensitive) The password for the service account we should use to connect to Redshift.
+- `username` (String) The username of the service account we should use to connect to Redshift.
 
 
 <a id="nestedatt--snowflake_config"></a>
@@ -58,11 +56,11 @@ Required:
 
 Required:
 
-- `account_url` (String)
-- `username` (String)
-- `virtual_dwh` (String)
+- `account_url` (String) The URL of your Snowflake account.
+- `username` (String) The username of the service account we should use to connect to Snowflake.
+- `virtual_dwh` (String) The name of your Snowflake virtual data warehouse.
 
 Optional:
 
-- `password` (String, Sensitive)
-- `private_key` (String, Sensitive)
+- `password` (String, Sensitive) The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided.
+- `private_key` (String, Sensitive) The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided.
