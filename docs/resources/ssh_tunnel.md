@@ -3,12 +3,12 @@
 page_title: "artie_ssh_tunnel Resource - artie"
 subcategory: ""
 description: |-
-  Artie SSH Tunnel resource
+  Artie SSH Tunnel resource. This resource allows you to create an SSH tunnel to connect to your source or destination databases.
 ---
 
 # artie_ssh_tunnel (Resource)
 
-Artie SSH Tunnel resource
+Artie SSH Tunnel resource. This resource allows you to create an SSH tunnel to connect to your source or destination databases.
 
 
 
@@ -17,12 +17,12 @@ Artie SSH Tunnel resource
 
 ### Required
 
-- `host` (String)
-- `name` (String)
-- `port` (Number)
-- `username` (String)
+- `host` (String) The public hostname or IP address of your SSH server.
+- `name` (String) A human-readable label for this SSH tunnel.
+- `port` (Number) The port number of your SSH server.
+- `username` (String) The username we should use when connecting to your SSH server.
 
 ### Read-Only
 
-- `public_key` (String, Sensitive)
+- `public_key` (String, Sensitive) When you create an SSH tunnel in Artie, we generate a public/private key pair. Once generated, you'll need to add this public key to `~/.ssh/authorized_keys` on your SSH server.
 - `uuid` (String)

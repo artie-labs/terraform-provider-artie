@@ -3,12 +3,12 @@
 page_title: "artie_destination Resource - artie"
 subcategory: ""
 description: |-
-  Artie Destination resource
+  Artie Destination resource. This represents a database or data warehouse that you want to replicate data to. Destinations are used by Deployments.
 ---
 
 # artie_destination (Resource)
 
-Artie Destination resource
+Artie Destination resource. This represents a database or data warehouse that you want to replicate data to. Destinations are used by Deployments.
 
 
 
