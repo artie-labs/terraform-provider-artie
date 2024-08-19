@@ -19,6 +19,13 @@ resource "artie_destination" "snowflake" {
   }
 }
 
+resource "artie_ssh_tunnel" "ssh_tunnel" {
+  name     = "SSH Tunnel"
+  host     = "1.2.3.4"
+  port     = 22
+  username = "artie"
+}
+
 resource "artie_deployment" "postgres_to_snowflake" {
   name = "PostgreSQL to Snowflake"
   source = {
@@ -43,6 +50,7 @@ resource "artie_deployment" "postgres_to_snowflake" {
     }
   }
   destination_uuid = artie_destination.snowflake.uuid
+  ssh_tunnel_uuid  = artie_ssh_tunnel.ssh_tunnel.uuid
   destination_config = {
     database = "ANALYTICS"
     schema   = "PUBLIC"
