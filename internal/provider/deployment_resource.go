@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -192,14 +191,11 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Our API's create endpoint only accepts the source type, so we need to send two requests:
 	// one to create the bare-bones deployment, then one to update it with the rest of the data
-	tflog.Info(ctx, "Creating deployment via API")
 	deployment, err := r.client.Deployments().Create(ctx, data.Source.Type.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
-
-	tflog.Info(ctx, "Created deployment")
 
 	// Translate the Terraform plan into an API model and then fill in computed fields
 	// from the API response of the newly created deployment
@@ -208,17 +204,14 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	model.Status = deployment.Status
 
 	// Second API request: update the newly created deployment
-	tflog.Info(ctx, "Updating deployment via API")
 	updatedDeployment, err := r.client.Deployments().Update(ctx, model)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DeploymentAPIToResourceModel(updatedDeployment, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -236,10 +229,8 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DeploymentAPIToResourceModel(deployment, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -252,14 +243,12 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	deployment := models.DeploymentResourceToAPIModel(data)
-	tflog.Info(ctx, "Validating deployment source via API")
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	if deployment.DestinationUUID != nil {
-		tflog.Info(ctx, "Validating deployment destination via API")
 		if err := r.client.Deployments().ValidateDestination(ctx, deployment); err != nil {
 			resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 			return
@@ -272,10 +261,8 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.DeploymentAPIToResourceModel(deployment, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

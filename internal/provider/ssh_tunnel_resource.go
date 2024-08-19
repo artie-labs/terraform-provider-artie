@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -92,19 +91,14 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	tflog.Info(ctx, "Creating SSH Tunnel via API")
 	sshTunnel, err := r.client.SSHTunnels().Create(ctx, data.Name.ValueString(), data.Host.ValueString(), data.Username.ValueString(), data.Port.ValueInt32())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create SSH Tunnel", err.Error())
 		return
 	}
 
-	tflog.Info(ctx, "Created SSH Tunnel")
-
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -116,17 +110,14 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	tflog.Info(ctx, "Reading SSH Tunnel from API")
 	sshTunnel, err := r.client.SSHTunnels().Get(ctx, data.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read SSH Tunnel", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -139,17 +130,14 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	sshTunnel := models.SSHTunnelResourceToAPIModel(data)
-	tflog.Info(ctx, "Updating SSH Tunnel via API")
 	sshTunnel, err := r.client.SSHTunnels().Update(ctx, sshTunnel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update SSH Tunnel", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform state
+	// Translate API response into Terraform state & save state
 	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -161,7 +149,6 @@ func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	tflog.Info(ctx, "Deleting SSH Tunnel via API")
 	if err := r.client.SSHTunnels().Delete(ctx, data.UUID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete SSH Tunnel", err.Error())
 	}

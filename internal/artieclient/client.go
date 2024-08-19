@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var ErrNotFound = fmt.Errorf("artie-client: not found")
@@ -59,6 +61,8 @@ func (c Client) makeRequest(ctx context.Context, method string, path string, bod
 	if err != nil {
 		return nil
 	}
+
+	tflog.Info(ctx, fmt.Sprintf("Making API request: %s %s", method, _url))
 
 	var bodyReader io.Reader
 	if body != nil {
