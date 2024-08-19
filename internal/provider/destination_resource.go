@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -122,14 +121,11 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 	config := models.DestinationResourceToAPISharedConfigModel(data)
 	sshTunnelUUID := models.ParseOptionalUUID(data.SSHTunnelUUID)
 
-	tflog.Info(ctx, "Creating destination via API")
 	destination, err := r.client.Destinations().Create(ctx, data.Type.ValueString(), data.Label.ValueString(), config, sshTunnelUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
 	}
-
-	tflog.Info(ctx, "Created destination")
 
 	// Translate API response into Terraform state & save state
 	models.DestinationAPIToResourceModel(destination, &data)
@@ -144,7 +140,6 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	tflog.Info(ctx, "Reading destination from API")
 	destinationResp, err := r.client.Destinations().Get(ctx, data.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
@@ -164,7 +159,6 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	tflog.Info(ctx, "Updating destination via API")
 	destination, err := r.client.Destinations().Update(ctx, models.DestinationResourceToAPIModel(data))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
