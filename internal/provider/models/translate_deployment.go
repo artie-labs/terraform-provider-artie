@@ -59,7 +59,6 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 		Dataset:               types.StringValue(apiModel.DestinationConfig.Dataset),
 		Database:              types.StringValue(apiModel.DestinationConfig.Database),
 		Schema:                types.StringValue(apiModel.DestinationConfig.Schema),
-		SchemaOverride:        types.StringValue(apiModel.DestinationConfig.SchemaOverride),
 		UseSameSchemaAsSource: types.BoolValue(apiModel.DestinationConfig.UseSameSchemaAsSource),
 		SchemaNamePrefix:      types.StringValue(apiModel.DestinationConfig.SchemaNamePrefix),
 	}
@@ -95,7 +94,6 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 			Dataset:               resourceModel.DestinationConfig.Dataset.ValueString(),
 			Database:              resourceModel.DestinationConfig.Database.ValueString(),
 			Schema:                resourceModel.DestinationConfig.Schema.ValueString(),
-			SchemaOverride:        resourceModel.DestinationConfig.SchemaOverride.ValueString(),
 			UseSameSchemaAsSource: resourceModel.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
 			SchemaNamePrefix:      resourceModel.DestinationConfig.SchemaNamePrefix.ValueString(),
 		},
