@@ -39,16 +39,22 @@ func (r *SSHTunnelResource) Schema(ctx context.Context, req resource.SchemaReque
 		MarkdownDescription: "Artie SSH Tunnel resource",
 		Attributes: map[string]schema.Attribute{
 			"uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name": schema.StringAttribute{Required: true},
-			"host": schema.StringAttribute{Required: true},
+			"name": schema.StringAttribute{Required: true, MarkdownDescription: "A human-readable label for this SSH tunnel."},
+			"host": schema.StringAttribute{Required: true, MarkdownDescription: "The public hostname or IP address of your SSH server."},
 			"port": schema.Int32Attribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "The port number of your SSH server.",
 				Validators: []validator.Int32{
 					int32validator.Between(22, math.MaxUint16),
 				},
 			},
-			"username":   schema.StringAttribute{Required: true},
-			"public_key": schema.StringAttribute{Computed: true, Sensitive: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username we should use when connecting to your SSH server."},
+			"public_key": schema.StringAttribute{
+				Computed:            true,
+				Sensitive:           true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				MarkdownDescription: "When you create an SSH tunnel in Artie, we generate a public/private key pair. Once generated, you'll need to add this public key to `~/.ssh/authorized_keys` on your SSH server.",
+			},
 		},
 	}
 }
