@@ -6,8 +6,14 @@ terraform {
   }
 }
 
+variable "artie_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "artie" {
   endpoint = "http://0.0.0.0:8000"
+  api_key  = var.artie_api_key
 }
 
 import {
