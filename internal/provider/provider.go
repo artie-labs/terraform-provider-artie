@@ -5,7 +5,6 @@ package provider
 
 import (
 	"context"
-	"os"
 	"terraform-provider-artie/internal/artieclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -15,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+const DEFAULT_API_ENDPOINT = "https://api.artie.com"
 
 // Ensure ArtieProvider satisfies various provider interfaces.
 var _ provider.Provider = &ArtieProvider{}
@@ -52,12 +53,13 @@ func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Artie API endpoint",
+				MarkdownDescription: "Artie API endpoint. This defaults to https://api.artie.com and should not need to be changed except when developing the provider.",
 				Optional:            true,
 			},
 			"api_key": schema.StringAttribute{
-				MarkdownDescription: "Artie API key",
-				Optional:            true,
+				MarkdownDescription: "Artie API key to authenticate requests to the Artie API. Generate an API key in the Artie web app at https://app.artie.com/settings. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.",
+				Required:            true,
+				Sensitive:           true,
 			},
 		},
 	}
@@ -72,20 +74,14 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		return
 	}
 
-	// Default values to environment variables, but override
-	// with Terraform configuration value if set.
-	endpoint := os.Getenv("ARTIE_ENDPOINT")
+	endpoint := DEFAULT_API_ENDPOINT
 	if !data.Endpoint.IsNull() {
 		endpoint = data.Endpoint.ValueString()
-	}
-	apiKey := os.Getenv("ARTIE_API_KEY")
-	if !data.APIKey.IsNull() {
-		apiKey = data.APIKey.ValueString()
 	}
 
 	providerData := ArtieProviderData{
 		Endpoint: endpoint,
-		APIKey:   apiKey,
+		APIKey:   data.APIKey.ValueString(),
 	}
 
 	resp.DataSourceData = providerData
