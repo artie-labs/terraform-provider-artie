@@ -41,19 +41,21 @@ func (r *DeploymentResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie Deployment resource",
+		MarkdownDescription: "Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).",
 		Attributes: map[string]schema.Attribute{
 			"uuid":                        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name":                        schema.StringAttribute{Required: true},
+			"name":                        schema.StringAttribute{Required: true, MarkdownDescription: "The human-readable name of the deployment. This is used only as a label and can contain any characters."},
 			"status":                      schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"destination_uuid":            schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ssh_tunnel_uuid":             schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"destination_uuid":            schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_destination` resource."},
+			"ssh_tunnel_uuid":             schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database."},
 			"snowflake_eco_schedule_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"source": schema.SingleNestedAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "This contains configuration for this deployment's source database.",
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Required: true,
+						Required:            true,
+						MarkdownDescription: "The type of source database. This must be one of the following: `mysql` or `postgresql`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								string(models.MySQL),
@@ -61,60 +63,94 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							),
 						},
 					},
-					"postgres_config": schema.SingleNestedAttribute{
-						Optional: true,
+					"postgresql_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `postgresql`.",
 						Attributes: map[string]schema.Attribute{
-							"host": schema.StringAttribute{Required: true},
+							"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`."},
 							"port": schema.Int32Attribute{
-								Required: true,
+								Required:            true,
+								MarkdownDescription: "The default port for PostgreSQL is 5432.",
 								Validators: []validator.Int32{
 									int32validator.Between(1024, math.MaxUint16),
 								},
 							},
-							"user":     schema.StringAttribute{Required: true},
-							"password": schema.StringAttribute{Required: true, Sensitive: true},
-							"database": schema.StringAttribute{Required: true},
+							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the PostgreSQL server."},
 						},
 					},
 					"mysql_config": schema.SingleNestedAttribute{
-						Optional: true,
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `mysql`.",
 						Attributes: map[string]schema.Attribute{
-							"host": schema.StringAttribute{Required: true},
+							"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the MySQL database. This must point to the primary host, not a read replica."},
 							"port": schema.Int32Attribute{
-								Required: true,
+								Required:            true,
+								MarkdownDescription: "The default port for MySQL is 3306.",
 								Validators: []validator.Int32{
 									int32validator.Between(1024, math.MaxUint16),
 								},
 							},
-							"user":     schema.StringAttribute{Required: true},
-							"password": schema.StringAttribute{Required: true, Sensitive: true},
-							"database": schema.StringAttribute{Required: true},
+							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a sensitive Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the MySQL server."},
 						},
 					},
 					"tables": schema.MapNestedAttribute{
-						Required: true,
+						Required:            true,
+						MarkdownDescription: "A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"uuid":                  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-								"name":                  schema.StringAttribute{Required: true},
-								"schema":                schema.StringAttribute{Required: true},
-								"enable_history_mode":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-								"individual_deployment": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-								"is_partitioned":        schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+								"name":                  schema.StringAttribute{Required: true, MarkdownDescription: "The name of the table in the source database."},
+								"schema":                schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`."},
+								"enable_history_mode":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time."},
+								"individual_deployment": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, we will spin up a separate Artie Transfer deployment to handle this table. This should only be used if this table has extremely high throughput (over 1M+ per hour) and has much higher throughput than other tables."},
+								"is_partitioned":        schema.BoolAttribute{Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 							},
 						},
 					},
 				},
 			},
 			"destination_config": schema.SingleNestedAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "This contains configuration that pertains to the destination database but is specific to this deployment. The basic connection settings for the destination, which can be shared by multiple deployments, are stored in the corresponding `artie_destination` resource.",
 				Attributes: map[string]schema.Attribute{
-					"database":                  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-					"schema":                    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-					"dataset":                   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-					"use_same_schema_as_source": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-					"schema_name_prefix":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-					"schema_override":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+					"database": schema.StringAttribute{
+						MarkdownDescription: "The name of the database that data should be synced to in the destination. This should be filled if the destination is Snowflake, unless `use_same_schema_as_source` is set to true.",
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"schema": schema.StringAttribute{
+						MarkdownDescription: "The name of the schema that data should be synced to in the destination. This should be filled if the destination is Snowflake or Redshift.",
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"dataset": schema.StringAttribute{
+						MarkdownDescription: "The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.",
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"use_same_schema_as_source": schema.BoolAttribute{
+						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.",
+						Optional:            true,
+						Computed:            true, Default: booldefault.StaticBool(false),
+						PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+					},
+					"schema_name_prefix": schema.StringAttribute{
+						MarkdownDescription: "If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.",
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
 				},
 			},
 		},

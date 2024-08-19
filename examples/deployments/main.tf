@@ -56,7 +56,7 @@ resource "artie_deployment" "dev_postgres_to_snowflake" {
   name = "Dev PostgreSQL > Snowflake"
   source = {
     type = "postgresql"
-    postgres_config = {
+    postgresql_config = {
       host     = "db-postgresql-sfo3-03243-do-user-13261354-0.c.db.ondigitalocean.com"
       port     = 25060
       database = "prod_dump_july_2024_4cvzb"

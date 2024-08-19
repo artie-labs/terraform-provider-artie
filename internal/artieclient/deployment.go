@@ -48,7 +48,6 @@ type DestinationConfig struct {
 	Dataset               string `json:"dataset"`
 	Database              string `json:"database"`
 	Schema                string `json:"schema"`
-	SchemaOverride        string `json:"schemaOverride"`
 	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
 }

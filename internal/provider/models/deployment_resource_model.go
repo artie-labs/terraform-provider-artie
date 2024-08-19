@@ -23,7 +23,7 @@ type DeploymentResourceModel struct {
 type SourceModel struct {
 	Type           types.String          `tfsdk:"type"`
 	Tables         map[string]TableModel `tfsdk:"tables"`
-	PostgresConfig *PostgresConfigModel  `tfsdk:"postgres_config"`
+	PostgresConfig *PostgresConfigModel  `tfsdk:"postgresql_config"`
 	MySQLConfig    *MySQLConfigModel     `tfsdk:"mysql_config"`
 }
 
@@ -56,7 +56,6 @@ type DeploymentDestinationConfigModel struct {
 	Dataset               types.String `tfsdk:"dataset"`
 	Database              types.String `tfsdk:"database"`
 	Schema                types.String `tfsdk:"schema"`
-	SchemaOverride        types.String `tfsdk:"schema_override"`
 	UseSameSchemaAsSource types.Bool   `tfsdk:"use_same_schema_as_source"`
 	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
 }
