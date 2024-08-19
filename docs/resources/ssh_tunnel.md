@@ -3,12 +3,12 @@
 page_title: "artie_ssh_tunnel Resource - artie"
 subcategory: ""
 description: |-
-  Artie SSH Tunnel resource
+  Artie SSH Tunnel resource. This resource allows you to create an SSH tunnel to connect to your source or destination databases.
 ---
 
 # artie_ssh_tunnel (Resource)
 
-Artie SSH Tunnel resource
+Artie SSH Tunnel resource. This resource allows you to create an SSH tunnel to connect to your source or destination databases.
 
 
 

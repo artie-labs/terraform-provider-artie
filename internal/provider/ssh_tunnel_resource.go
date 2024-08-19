@@ -36,7 +36,7 @@ func (r *SSHTunnelResource) Metadata(ctx context.Context, req resource.MetadataR
 
 func (r *SSHTunnelResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie SSH Tunnel resource",
+		MarkdownDescription: "Artie SSH Tunnel resource. This resource allows you to create an SSH tunnel to connect to your source or destination databases.",
 		Attributes: map[string]schema.Attribute{
 			"uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name": schema.StringAttribute{Required: true, MarkdownDescription: "A human-readable label for this SSH tunnel."},
