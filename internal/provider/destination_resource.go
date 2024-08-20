@@ -159,7 +159,13 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	destination, err := r.client.Destinations().Update(ctx, models.DestinationResourceToAPIModel(data))
+	destination := models.DestinationResourceToAPIModel(data)
+	if err := r.client.Destinations().TestConnection(ctx, destination); err != nil {
+		resp.Diagnostics.AddError("Unable to connect to Destination", err.Error())
+		return
+	}
+
+	destination, err := r.client.Destinations().Update(ctx, destination)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return

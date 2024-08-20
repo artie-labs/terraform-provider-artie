@@ -2,6 +2,7 @@ package artieclient
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -65,6 +66,30 @@ func (dc DestinationClient) Update(ctx context.Context, destination Destination)
 	}
 
 	return makeRequest[Destination](ctx, dc.client, http.MethodPost, path, destination)
+}
+
+func (dc DestinationClient) TestConnection(ctx context.Context, destination Destination) error {
+	path, err := url.JoinPath(dc.basePath(), "ping")
+	if err != nil {
+		return err
+	}
+
+	body := map[string]any{
+		"type":          destination.Type,
+		"sharedConfig":  destination.Config,
+		"sshTunnelUUID": destination.SSHTunnelUUID,
+	}
+
+	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return fmt.Errorf("failed to connect to destination: %s", response.Error)
+	}
+
+	return nil
 }
 
 func (dc DestinationClient) Delete(ctx context.Context, destinationUUID string) error {
