@@ -1,13 +1,15 @@
 # Artie Terraform Provider
 
-Currently in development. TODO: [publish it on the Terraform Registry](https://developer.hashicorp.com/terraform/registry/providers/publishing)
-
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
 - [Go](https://golang.org/doc/install) >= 1.21
 
-## Developing the Provider
+## Using the Provider
+
+To use this Terraform provider, you must already be an Artie customer and have an account in our web app. Once you're logged in, you can create an API key at [app.artie.com/settings](https://app.artie.com/settings) which you'll use to authenticate requests from this provider. See the `examples/` and `docs/` directories for guidance on how to set up your Terraform config for Artie.
+
+## Developing the Provider (internal to Artie)
 
 Create a `~/.terraformrc` file containing the following:
 
@@ -64,8 +66,6 @@ To generate or update documentation, run `go generate`. If you make changes to a
 
 ### Testing
 
-TODO: add acceptance tests before publishing.
+TODO: add acceptance tests.
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
-
-_Note:_ Acceptance tests create real resources, and often cost money to run.
