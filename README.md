@@ -17,7 +17,7 @@ Create a `~/.terraformrc` file containing the following:
 provider_installation {
 
   dev_overrides {
-      "artie.com/terraform/artie" = "/Users/<your-username>/go/bin"
+      "artie-labs/artie" = "/Users/<your-username>/go/bin"
   }
 
   # For all other providers, install them directly from their origin provider

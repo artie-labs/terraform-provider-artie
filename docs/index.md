@@ -16,7 +16,7 @@ description: |-
 terraform {
   required_providers {
     artie = {
-      source = "artie.com/terraform/artie"
+      source = "artie-labs/artie"
     }
   }
 }
