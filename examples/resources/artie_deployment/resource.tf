@@ -1,29 +1,6 @@
-variable "snowflake_password" {
-  type      = string
-  sensitive = true
-}
-
 variable "postgres_password" {
   type      = string
   sensitive = true
-}
-
-resource "artie_destination" "snowflake" {
-  type  = "snowflake"
-  label = "Snowflake (Analytics)"
-  snowflake_config = {
-    account_url = "https://abc12345.snowflakecomputing.com"
-    virtual_dwh = "compute_wh"
-    username    = "user_abcd"
-    password    = var.snowflake_password
-  }
-}
-
-resource "artie_ssh_tunnel" "ssh_tunnel" {
-  name     = "SSH Tunnel"
-  host     = "1.2.3.4"
-  port     = 22
-  username = "artie"
 }
 
 resource "artie_deployment" "postgres_to_snowflake" {
