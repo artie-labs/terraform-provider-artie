@@ -43,10 +43,10 @@ resource "artie_destination" "snowflake" {
 - `label` (String) An optional human-readable label for this destination.
 - `redshift_config` (Attributes) This should be filled out if the destination type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
 - `snowflake_config` (Attributes) This should be filled out if the destination type is `snowflake`. (see [below for nested schema](#nestedatt--snowflake_config))
+- `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift.
 
 ### Read-Only
 
-- `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift.
 - `uuid` (String)
 
 <a id="nestedatt--bigquery_config"></a>
