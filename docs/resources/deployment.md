@@ -56,12 +56,12 @@ resource "artie_deployment" "postgres_to_snowflake" {
 ### Required
 
 - `destination_config` (Attributes) This contains configuration that pertains to the destination database but is specific to this deployment. The basic connection settings for the destination, which can be shared by multiple deployments, are stored in the corresponding `artie_destination` resource. (see [below for nested schema](#nestedatt--destination_config))
+- `destination_uuid` (String) This must point to an `artie_destination` resource.
 - `name` (String) The human-readable name of the deployment. This is used only as a label and can contain any characters.
 - `source` (Attributes) This contains configuration for this deployment's source database. (see [below for nested schema](#nestedatt--source))
 
 ### Optional
 
-- `destination_uuid` (String) This must point to an `artie_destination` resource.
 - `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database.
 
 ### Read-Only
