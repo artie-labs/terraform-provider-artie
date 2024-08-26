@@ -37,44 +37,44 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 	}
 }
 
-func (rm DestinationResourceModel) ToBaseAPIModel() artieclient.BaseDestination {
+func (d DestinationResourceModel) ToBaseAPIModel() artieclient.BaseDestination {
 	var sharedConfig artieclient.DestinationSharedConfig
-	switch strings.ToLower(rm.Type.ValueString()) {
+	switch strings.ToLower(d.Type.ValueString()) {
 	case string(Snowflake):
 		sharedConfig = artieclient.DestinationSharedConfig{
-			SnowflakeAccountURL: rm.SnowflakeConfig.AccountURL.ValueString(),
-			SnowflakeVirtualDWH: rm.SnowflakeConfig.VirtualDWH.ValueString(),
-			SnowflakePrivateKey: rm.SnowflakeConfig.PrivateKey.ValueString(),
-			Username:            rm.SnowflakeConfig.Username.ValueString(),
-			Password:            rm.SnowflakeConfig.Password.ValueString(),
+			SnowflakeAccountURL: d.SnowflakeConfig.AccountURL.ValueString(),
+			SnowflakeVirtualDWH: d.SnowflakeConfig.VirtualDWH.ValueString(),
+			SnowflakePrivateKey: d.SnowflakeConfig.PrivateKey.ValueString(),
+			Username:            d.SnowflakeConfig.Username.ValueString(),
+			Password:            d.SnowflakeConfig.Password.ValueString(),
 		}
 	case string(BigQuery):
 		sharedConfig = artieclient.DestinationSharedConfig{
-			GCPProjectID:       rm.BigQueryConfig.ProjectID.ValueString(),
-			GCPLocation:        rm.BigQueryConfig.Location.ValueString(),
-			GCPCredentialsData: rm.BigQueryConfig.CredentialsData.ValueString(),
+			GCPProjectID:       d.BigQueryConfig.ProjectID.ValueString(),
+			GCPLocation:        d.BigQueryConfig.Location.ValueString(),
+			GCPCredentialsData: d.BigQueryConfig.CredentialsData.ValueString(),
 		}
 	case string(Redshift):
 		sharedConfig = artieclient.DestinationSharedConfig{
-			Endpoint: rm.RedshiftConfig.Endpoint.ValueString(),
-			Username: rm.RedshiftConfig.Username.ValueString(),
-			Password: rm.RedshiftConfig.Password.ValueString(),
+			Endpoint: d.RedshiftConfig.Endpoint.ValueString(),
+			Username: d.RedshiftConfig.Username.ValueString(),
+			Password: d.RedshiftConfig.Password.ValueString(),
 		}
 	default:
 		sharedConfig = artieclient.DestinationSharedConfig{}
 	}
 
 	return artieclient.BaseDestination{
-		Type:          rm.Type.ValueString(),
-		Label:         rm.Label.ValueString(),
+		Type:          d.Type.ValueString(),
+		Label:         d.Label.ValueString(),
 		Config:        sharedConfig,
-		SSHTunnelUUID: ParseOptionalUUID(rm.SSHTunnelUUID),
+		SSHTunnelUUID: ParseOptionalUUID(d.SSHTunnelUUID),
 	}
 }
 
-func (rm DestinationResourceModel) ToAPIModel() artieclient.Destination {
+func (d DestinationResourceModel) ToAPIModel() artieclient.Destination {
 	return artieclient.Destination{
-		UUID:            parseUUID(rm.UUID),
-		BaseDestination: rm.ToBaseAPIModel(),
+		UUID:            parseUUID(d.UUID),
+		BaseDestination: d.ToBaseAPIModel(),
 	}
 }
