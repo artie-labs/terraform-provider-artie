@@ -25,9 +25,9 @@ func (s SSHTunnelResourceModel) ToBaseAPIModel() artieclient.BaseSSHTunnel {
 	}
 }
 
-func SSHTunnelResourceToAPIModel(resourceModel SSHTunnelResourceModel) artieclient.SSHTunnel {
+func (s SSHTunnelResourceModel) ToAPIModel() artieclient.SSHTunnel {
 	return artieclient.SSHTunnel{
-		UUID:          parseUUID(resourceModel.UUID),
-		BaseSSHTunnel: resourceModel.ToBaseAPIModel(),
+		UUID:          parseUUID(s.UUID),
+		BaseSSHTunnel: s.ToBaseAPIModel(),
 	}
 }
