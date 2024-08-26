@@ -91,7 +91,7 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	sshTunnel, err := r.client.SSHTunnels().Create(ctx, data.ToBaseAPIModel())
+	sshTunnel, err := r.client.SSHTunnels().Create(ctx, data.ToAPIBaseModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create SSH Tunnel", err.Error())
 		return
