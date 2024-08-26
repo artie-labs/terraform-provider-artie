@@ -52,12 +52,10 @@ func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (De
 
 func (dc DestinationClient) Create(ctx context.Context, destination BaseDestination) (Destination, error) {
 	body := map[string]any{
-		"type":         destination.Type,
-		"label":        destination.Label,
-		"sharedConfig": destination.Config,
-	}
-	if destination.SSHTunnelUUID != nil {
-		body["sshTunnelUUID"] = *destination.SSHTunnelUUID
+		"type":          destination.Type,
+		"label":         destination.Label,
+		"sharedConfig":  destination.Config,
+		"sshTunnelUUID": destination.SSHTunnelUUID,
 	}
 	return makeRequest[Destination](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }
