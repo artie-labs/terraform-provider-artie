@@ -118,10 +118,7 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	config := models.DestinationResourceToAPISharedConfigModel(data)
-	sshTunnelUUID := models.ParseOptionalUUID(data.SSHTunnelUUID)
-
-	destination, err := r.client.Destinations().Create(ctx, data.Type.ValueString(), data.Label.ValueString(), config, sshTunnelUUID)
+	destination, err := r.client.Destinations().Create(ctx, data.ToBaseAPIModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
@@ -159,20 +156,21 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	destination := models.DestinationResourceToAPIModel(data)
-	if err := r.client.Destinations().TestConnection(ctx, destination); err != nil {
+	baseDestination := data.ToBaseAPIModel()
+	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
 
-	destination, err := r.client.Destinations().Update(ctx, destination)
+	fullDestination := data.ToAPIModel()
+	updatedDestination, err := r.client.Destinations().Update(ctx, fullDestination)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DestinationAPIToResourceModel(destination, &data)
+	models.DestinationAPIToResourceModel(updatedDestination, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

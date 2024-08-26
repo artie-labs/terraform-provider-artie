@@ -9,12 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Destination struct {
-	UUID          uuid.UUID               `json:"uuid"`
+type BaseDestination struct {
 	Type          string                  `json:"type"`
 	Label         string                  `json:"label"`
 	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfig `json:"sharedConfig"`
+}
+type Destination struct {
+	BaseDestination
+	UUID uuid.UUID `json:"uuid"`
 }
 
 type DestinationSharedConfig struct {
@@ -47,14 +50,12 @@ func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (De
 	return makeRequest[Destination](ctx, dc.client, http.MethodGet, path, nil)
 }
 
-func (dc DestinationClient) Create(ctx context.Context, type_, label string, config DestinationSharedConfig, sshTunnelUUID *uuid.UUID) (Destination, error) {
+func (dc DestinationClient) Create(ctx context.Context, destination BaseDestination) (Destination, error) {
 	body := map[string]any{
-		"type":         type_,
-		"label":        label,
-		"sharedConfig": config,
-	}
-	if sshTunnelUUID != nil {
-		body["sshTunnelUUID"] = *sshTunnelUUID
+		"type":          destination.Type,
+		"label":         destination.Label,
+		"sharedConfig":  destination.Config,
+		"sshTunnelUUID": destination.SSHTunnelUUID,
 	}
 	return makeRequest[Destination](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }
@@ -68,7 +69,7 @@ func (dc DestinationClient) Update(ctx context.Context, destination Destination)
 	return makeRequest[Destination](ctx, dc.client, http.MethodPost, path, destination)
 }
 
-func (dc DestinationClient) TestConnection(ctx context.Context, destination Destination) error {
+func (dc DestinationClient) TestConnection(ctx context.Context, destination BaseDestination) error {
 	path, err := url.JoinPath(dc.basePath(), "ping")
 	if err != nil {
 		return err
