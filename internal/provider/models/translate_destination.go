@@ -37,7 +37,7 @@ func DestinationAPIToResourceModel(apiModel artieclient.Destination, resourceMod
 	}
 }
 
-func DestinationResourceToAPISharedConfigModel(resourceModel DestinationResourceModel) artieclient.DestinationSharedConfig {
+func destinationResourceToAPISharedConfigModel(resourceModel DestinationResourceModel) artieclient.DestinationSharedConfig {
 	switch strings.ToLower(resourceModel.Type.ValueString()) {
 	case string(Snowflake):
 		return artieclient.DestinationSharedConfig{
@@ -64,18 +64,18 @@ func DestinationResourceToAPISharedConfigModel(resourceModel DestinationResource
 	}
 }
 
-func DestinationResourceToBaseAPIModel(resourceModel DestinationResourceModel) artieclient.BaseDestination {
+func (rm DestinationResourceModel) ToBaseAPIModel() artieclient.BaseDestination {
 	return artieclient.BaseDestination{
-		Type:          resourceModel.Type.ValueString(),
-		Label:         resourceModel.Label.ValueString(),
-		Config:        DestinationResourceToAPISharedConfigModel(resourceModel),
-		SSHTunnelUUID: ParseOptionalUUID(resourceModel.SSHTunnelUUID),
+		Type:          rm.Type.ValueString(),
+		Label:         rm.Label.ValueString(),
+		Config:        destinationResourceToAPISharedConfigModel(rm),
+		SSHTunnelUUID: ParseOptionalUUID(rm.SSHTunnelUUID),
 	}
 }
 
-func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
+func (rm DestinationResourceModel) ToAPIModel() artieclient.Destination {
 	return artieclient.Destination{
-		UUID:            parseUUID(resourceModel.UUID),
-		BaseDestination: DestinationResourceToBaseAPIModel(resourceModel),
+		UUID:            parseUUID(rm.UUID),
+		BaseDestination: rm.ToBaseAPIModel(),
 	}
 }
