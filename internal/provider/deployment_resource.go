@@ -203,7 +203,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Our API's create endpoint only accepts the source type, so we need to send two requests:
 	// one to create the bare-bones deployment, then one to update it with the rest of the data
-	createdDeployment, err := r.client.Deployments().Create(ctx, data.Source.Type.ValueString())
+	createdDeployment, err := r.client.Deployments().Create(ctx, deployment.Source.Type)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -262,8 +262,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	fullDeployment := data.ToAPIModel()
-	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, data.ToAPIModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
