@@ -64,7 +64,7 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 	}
 }
 
-func (d DeploymentResourceModel) ToBaseAPIModel() artieclient.BaseDeployment {
+func (d DeploymentResourceModel) ToAPIBaseModel() artieclient.BaseDeployment {
 	tables := []artieclient.Table{}
 	for _, table := range d.Source.Tables {
 		tableUUID := table.UUID.ValueString()
@@ -124,6 +124,6 @@ func (d DeploymentResourceModel) ToBaseAPIModel() artieclient.BaseDeployment {
 func (d DeploymentResourceModel) ToAPIModel() artieclient.Deployment {
 	return artieclient.Deployment{
 		UUID:           parseUUID(d.UUID),
-		BaseDeployment: d.ToBaseAPIModel(),
+		BaseDeployment: d.ToAPIBaseModel(),
 	}
 }

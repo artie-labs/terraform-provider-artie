@@ -190,7 +190,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Validate config before creating the deployment
-	deployment := data.ToBaseAPIModel()
+	deployment := data.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -251,7 +251,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	baseDeployment := data.ToBaseAPIModel()
+	baseDeployment := data.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
