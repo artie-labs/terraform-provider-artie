@@ -264,14 +264,14 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	fullDeployment := models.DeploymentResourceToAPIModel(data)
-	fullDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DeploymentAPIToResourceModel(fullDeployment, &data)
+	models.DeploymentAPIToResourceModel(updatedDeployment, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
