@@ -6,13 +6,13 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 )
 
-func SSHTunnelAPIToResourceModel(apiModel artieclient.SSHTunnel, resourceModel *SSHTunnelResourceModel) {
-	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
-	resourceModel.Name = types.StringValue(apiModel.Name)
-	resourceModel.Host = types.StringValue(apiModel.Host)
-	resourceModel.Port = types.Int32Value(apiModel.Port)
-	resourceModel.Username = types.StringValue(apiModel.Username)
-	resourceModel.PublicKey = types.StringValue(apiModel.PublicKey)
+func (s *SSHTunnelResourceModel) FillFromAPIModel(apiModel artieclient.SSHTunnel) {
+	s.UUID = types.StringValue(apiModel.UUID.String())
+	s.Name = types.StringValue(apiModel.Name)
+	s.Host = types.StringValue(apiModel.Host)
+	s.Port = types.Int32Value(apiModel.Port)
+	s.Username = types.StringValue(apiModel.Username)
+	s.PublicKey = types.StringValue(apiModel.PublicKey)
 }
 
 func (s SSHTunnelResourceModel) ToAPIBaseModel() artieclient.BaseSSHTunnel {
