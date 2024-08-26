@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel *DeploymentResourceModel) {
+func (resourceModel *DeploymentResourceModel) FillFromAPIModel(apiModel artieclient.Deployment) {
 	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
 	resourceModel.Name = types.StringValue(apiModel.Name)
 	resourceModel.Status = types.StringValue(apiModel.Status)
