@@ -11,7 +11,6 @@ import (
 
 type BaseDeployment struct {
 	Name                     string            `json:"name"`
-	Status                   string            `json:"status"`
 	Source                   Source            `json:"source"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
@@ -21,7 +20,8 @@ type BaseDeployment struct {
 
 type Deployment struct {
 	BaseDeployment
-	UUID uuid.UUID `json:"uuid"`
+	UUID   uuid.UUID `json:"uuid"`
+	Status string    `json:"status"`
 }
 
 type Source struct {

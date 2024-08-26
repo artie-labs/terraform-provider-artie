@@ -210,7 +210,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Fill in computed fields from the API response of the newly created deployment
-	fullDeployment := models.BaseDeploymentAPIModelToDeploymentAPIModel(deployment, createdDeployment.UUID)
+	fullDeployment := models.BaseDeploymentAPIModelToDeploymentAPIModel(deployment, createdDeployment.UUID, createdDeployment.Status)
 	fullDeployment.Status = createdDeployment.Status
 
 	// Second API request: update the newly created deployment
@@ -263,15 +263,15 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	deployment := models.DeploymentResourceToAPIModel(data)
-	deployment, err := r.client.Deployments().Update(ctx, deployment)
+	fullDeployment := models.DeploymentResourceToAPIModel(data)
+	fullDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DeploymentAPIToResourceModel(deployment, &data)
+	models.DeploymentAPIToResourceModel(fullDeployment, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

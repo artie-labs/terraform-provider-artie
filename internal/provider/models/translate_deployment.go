@@ -83,7 +83,6 @@ func DeploymentResourceToBaseAPIModel(resourceModel DeploymentResourceModel) art
 
 	baseDeployment := artieclient.BaseDeployment{
 		Name:            resourceModel.Name.ValueString(),
-		Status:          resourceModel.Status.ValueString(),
 		DestinationUUID: ParseOptionalUUID(resourceModel.DestinationUUID),
 		Source: artieclient.Source{
 			Type:   resourceModel.Source.Type.ValueString(),
@@ -129,9 +128,10 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 	}
 }
 
-func BaseDeploymentAPIModelToDeploymentAPIModel(baseDeployment artieclient.BaseDeployment, deploymentUUID uuid.UUID) artieclient.Deployment {
+func BaseDeploymentAPIModelToDeploymentAPIModel(baseDeployment artieclient.BaseDeployment, _uuid uuid.UUID, status string) artieclient.Deployment {
 	return artieclient.Deployment{
-		UUID:           deploymentUUID,
+		UUID:           _uuid,
+		Status:         status,
 		BaseDeployment: baseDeployment,
 	}
 }
