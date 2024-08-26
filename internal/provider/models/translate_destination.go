@@ -64,12 +64,18 @@ func DestinationResourceToAPISharedConfigModel(resourceModel DestinationResource
 	}
 }
 
-func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
-	return artieclient.Destination{
-		UUID:          parseUUID(resourceModel.UUID),
+func DestinationResourceToBaseAPIModel(resourceModel DestinationResourceModel) artieclient.BaseDestination {
+	return artieclient.BaseDestination{
 		Type:          resourceModel.Type.ValueString(),
 		Label:         resourceModel.Label.ValueString(),
 		Config:        DestinationResourceToAPISharedConfigModel(resourceModel),
 		SSHTunnelUUID: ParseOptionalUUID(resourceModel.SSHTunnelUUID),
+	}
+}
+
+func DestinationResourceToAPIModel(resourceModel DestinationResourceModel) artieclient.Destination {
+	return artieclient.Destination{
+		UUID:            parseUUID(resourceModel.UUID),
+		BaseDestination: DestinationResourceToBaseAPIModel(resourceModel),
 	}
 }
