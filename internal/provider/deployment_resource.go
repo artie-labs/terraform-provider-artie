@@ -189,22 +189,31 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	// Validate config before creating the deployment
+	deployment := data.ToAPIBaseModel()
+	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
+		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
+		return
+	}
+
+	if err := r.client.Deployments().ValidateDestination(ctx, deployment); err != nil {
+		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
+		return
+	}
+
 	// Our API's create endpoint only accepts the source type, so we need to send two requests:
 	// one to create the bare-bones deployment, then one to update it with the rest of the data
-	deployment, err := r.client.Deployments().Create(ctx, data.Source.Type.ValueString())
+	createdDeployment, err := r.client.Deployments().Create(ctx, deployment.Source.Type)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
 
-	// Translate the Terraform plan into an API model and then fill in computed fields
-	// from the API response of the newly created deployment
-	model := models.DeploymentResourceToAPIModel(data)
-	model.UUID = deployment.UUID
-	model.Status = deployment.Status
+	// Fill in computed fields from the API response of the newly created deployment
+	fullDeployment := deployment.ToFullDeployment(createdDeployment.UUID, createdDeployment.Status)
 
 	// Second API request: update the newly created deployment
-	updatedDeployment, err := r.client.Deployments().Update(ctx, model)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -242,25 +251,25 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	deployment := models.DeploymentResourceToAPIModel(data)
-	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
+	baseDeployment := data.ToAPIBaseModel()
+	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
-	if err := r.client.Deployments().ValidateDestination(ctx, deployment); err != nil {
+	if err := r.client.Deployments().ValidateDestination(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
-	deployment, err := r.client.Deployments().Update(ctx, deployment)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, data.ToAPIModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DeploymentAPIToResourceModel(deployment, &data)
+	models.DeploymentAPIToResourceModel(updatedDeployment, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

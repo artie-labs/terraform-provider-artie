@@ -9,15 +9,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type Deployment struct {
-	UUID                     uuid.UUID         `json:"uuid"`
+type BaseDeployment struct {
 	Name                     string            `json:"name"`
-	Status                   string            `json:"status"`
 	Source                   Source            `json:"source"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
+}
+
+type Deployment struct {
+	BaseDeployment
+	UUID   uuid.UUID `json:"uuid"`
+	Status string    `json:"status"`
 }
 
 type Source struct {
@@ -50,6 +54,14 @@ type DestinationConfig struct {
 	Schema                string `json:"schema"`
 	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
+}
+
+func (bd BaseDeployment) ToFullDeployment(_uuid uuid.UUID, status string) Deployment {
+	return Deployment{
+		UUID:           _uuid,
+		Status:         status,
+		BaseDeployment: bd,
+	}
 }
 
 type DeploymentClient struct {
@@ -104,7 +116,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 	return response.Deployment, nil
 }
 
-func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deployment) error {
+func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDeployment) error {
 	path, err := url.JoinPath(dc.basePath(), "validate-source")
 	if err != nil {
 		return err
@@ -128,7 +140,7 @@ func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deploy
 	return nil
 }
 
-func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment Deployment) error {
+func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment BaseDeployment) error {
 	path, err := url.JoinPath(dc.basePath(), "validate-destination")
 	if err != nil {
 		return err
