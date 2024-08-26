@@ -7,15 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (resourceModel *DestinationResourceModel) FillFromAPIModel(apiModel artieclient.Destination) {
-	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
-	resourceModel.Type = types.StringValue(apiModel.Type)
-	resourceModel.Label = types.StringValue(apiModel.Label)
-	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
+func (d *DestinationResourceModel) FillFromAPIModel(apiModel artieclient.Destination) {
+	d.UUID = types.StringValue(apiModel.UUID.String())
+	d.Type = types.StringValue(apiModel.Type)
+	d.Label = types.StringValue(apiModel.Label)
+	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 
-	switch strings.ToLower(resourceModel.Type.ValueString()) {
+	switch strings.ToLower(d.Type.ValueString()) {
 	case string(Snowflake):
-		resourceModel.SnowflakeConfig = &SnowflakeSharedConfigModel{
+		d.SnowflakeConfig = &SnowflakeSharedConfigModel{
 			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
 			VirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
 			PrivateKey: types.StringValue(apiModel.Config.SnowflakePrivateKey),
@@ -23,13 +23,13 @@ func (resourceModel *DestinationResourceModel) FillFromAPIModel(apiModel artiecl
 			Password:   types.StringValue(apiModel.Config.Password),
 		}
 	case string(BigQuery):
-		resourceModel.BigQueryConfig = &BigQuerySharedConfigModel{
+		d.BigQueryConfig = &BigQuerySharedConfigModel{
 			ProjectID:       types.StringValue(apiModel.Config.GCPProjectID),
 			Location:        types.StringValue(apiModel.Config.GCPLocation),
 			CredentialsData: types.StringValue(apiModel.Config.GCPCredentialsData),
 		}
 	case string(Redshift):
-		resourceModel.RedshiftConfig = &RedshiftSharedConfigModel{
+		d.RedshiftConfig = &RedshiftSharedConfigModel{
 			Endpoint: types.StringValue(apiModel.Config.Endpoint),
 			Username: types.StringValue(apiModel.Config.Username),
 			Password: types.StringValue(apiModel.Config.Password),
