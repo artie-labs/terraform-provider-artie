@@ -190,7 +190,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Validate config before creating the deployment
-	deployment := models.DeploymentResourceToBaseAPIModel(data)
+	deployment := data.ToBaseAPIModel()
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -210,8 +210,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Fill in computed fields from the API response of the newly created deployment
-	fullDeployment := models.BaseDeploymentAPIModelToDeploymentAPIModel(deployment, createdDeployment.UUID, createdDeployment.Status)
-	fullDeployment.Status = createdDeployment.Status
+	fullDeployment := deployment.ToFullDeployment(createdDeployment.UUID, createdDeployment.Status)
 
 	// Second API request: update the newly created deployment
 	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
@@ -252,7 +251,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	baseDeployment := models.DeploymentResourceToBaseAPIModel(data)
+	baseDeployment := data.ToBaseAPIModel()
 	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -263,7 +262,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	fullDeployment := models.DeploymentResourceToAPIModel(data)
+	fullDeployment := data.ToAPIModel()
 	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())

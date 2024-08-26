@@ -56,6 +56,14 @@ type DestinationConfig struct {
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
 }
 
+func (bd BaseDeployment) ToFullDeployment(_uuid uuid.UUID, status string) Deployment {
+	return Deployment{
+		UUID:           _uuid,
+		Status:         status,
+		BaseDeployment: bd,
+	}
+}
+
 type DeploymentClient struct {
 	client Client
 }
