@@ -10,7 +10,7 @@ import (
 )
 
 type Deployment struct {
-	UUID                     uuid.UUID         `json:"uuid"`
+	UUID                     *uuid.UUID        `json:"uuid"`
 	Name                     string            `json:"name"`
 	Status                   string            `json:"status"`
 	Source                   Source            `json:"source"`

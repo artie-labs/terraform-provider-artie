@@ -82,7 +82,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 	}
 
 	apiModel := artieclient.Deployment{
-		UUID:            parseUUID(resourceModel.UUID),
+		UUID:            ParseOptionalUUID(resourceModel.UUID),
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
 		DestinationUUID: ParseOptionalUUID(resourceModel.DestinationUUID),
