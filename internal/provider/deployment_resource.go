@@ -190,7 +190,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Validate config before creating the deployment
-	deployment := models.DeploymentResourceToAPIModel(data)
+	deployment := models.DeploymentResourceToBaseAPIModel(data)
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -210,11 +210,11 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Fill in computed fields from the API response of the newly created deployment
-	deployment.UUID = createdDeployment.UUID
-	deployment.Status = createdDeployment.Status
+	fullDeployment := models.BaseDeploymentAPIModelToDeploymentAPIModel(deployment, createdDeployment.UUID)
+	fullDeployment.Status = createdDeployment.Status
 
 	// Second API request: update the newly created deployment
-	updatedDeployment, err := r.client.Deployments().Update(ctx, deployment)
+	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -252,17 +252,18 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	baseDeployment := models.DeploymentResourceToBaseAPIModel(data)
+	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
+	if err := r.client.Deployments().ValidateDestination(ctx, baseDeployment); err != nil {
+		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
+		return
+	}
+
 	deployment := models.DeploymentResourceToAPIModel(data)
-	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	if err := r.client.Deployments().ValidateDestination(ctx, deployment); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
 	deployment, err := r.client.Deployments().Update(ctx, deployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())

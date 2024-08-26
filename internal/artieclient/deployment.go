@@ -9,8 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Deployment struct {
-	UUID                     *uuid.UUID        `json:"uuid"`
+type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Status                   string            `json:"status"`
 	Source                   Source            `json:"source"`
@@ -18,6 +17,11 @@ type Deployment struct {
 	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
+}
+
+type Deployment struct {
+	BaseDeployment
+	UUID uuid.UUID `json:"uuid"`
 }
 
 type Source struct {
@@ -86,10 +90,6 @@ func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (Deplo
 }
 
 func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (Deployment, error) {
-	if deployment.UUID == nil {
-		return Deployment{}, fmt.Errorf("deployment UUID is required")
-	}
-
 	path, err := url.JoinPath(dc.basePath(), deployment.UUID.String())
 	if err != nil {
 		return Deployment{}, err
@@ -108,7 +108,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 	return response.Deployment, nil
 }
 
-func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deployment) error {
+func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDeployment) error {
 	path, err := url.JoinPath(dc.basePath(), "validate-source")
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment Deploy
 	return nil
 }
 
-func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment Deployment) error {
+func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment BaseDeployment) error {
 	path, err := url.JoinPath(dc.basePath(), "validate-destination")
 	if err != nil {
 		return err

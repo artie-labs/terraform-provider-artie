@@ -64,7 +64,7 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 	}
 }
 
-func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artieclient.Deployment {
+func DeploymentResourceToBaseAPIModel(resourceModel DeploymentResourceModel) artieclient.BaseDeployment {
 	tables := []artieclient.Table{}
 	for _, table := range resourceModel.Source.Tables {
 		tableUUID := table.UUID.ValueString()
@@ -81,8 +81,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 		})
 	}
 
-	apiModel := artieclient.Deployment{
-		UUID:            ParseOptionalUUID(resourceModel.UUID),
+	baseDeployment := artieclient.BaseDeployment{
 		Name:            resourceModel.Name.ValueString(),
 		Status:          resourceModel.Status.ValueString(),
 		DestinationUUID: ParseOptionalUUID(resourceModel.DestinationUUID),
@@ -103,7 +102,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 
 	switch resourceModel.Source.Type.ValueString() {
 	case string(PostgreSQL):
-		apiModel.Source.Config = artieclient.SourceConfig{
+		baseDeployment.Source.Config = artieclient.SourceConfig{
 			Host:     resourceModel.Source.PostgresConfig.Host.ValueString(),
 			Port:     resourceModel.Source.PostgresConfig.Port.ValueInt32(),
 			User:     resourceModel.Source.PostgresConfig.User.ValueString(),
@@ -111,7 +110,7 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 			Database: resourceModel.Source.PostgresConfig.Database.ValueString(),
 		}
 	case string(MySQL):
-		apiModel.Source.Config = artieclient.SourceConfig{
+		baseDeployment.Source.Config = artieclient.SourceConfig{
 			Host:     resourceModel.Source.MySQLConfig.Host.ValueString(),
 			Port:     resourceModel.Source.MySQLConfig.Port.ValueInt32(),
 			User:     resourceModel.Source.MySQLConfig.User.ValueString(),
@@ -120,5 +119,19 @@ func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artiecl
 		}
 	}
 
-	return apiModel
+	return baseDeployment
+}
+
+func DeploymentResourceToAPIModel(resourceModel DeploymentResourceModel) artieclient.Deployment {
+	return artieclient.Deployment{
+		UUID:           parseUUID(resourceModel.UUID),
+		BaseDeployment: DeploymentResourceToBaseAPIModel(resourceModel),
+	}
+}
+
+func BaseDeploymentAPIModelToDeploymentAPIModel(baseDeployment artieclient.BaseDeployment, deploymentUUID uuid.UUID) artieclient.Deployment {
+	return artieclient.Deployment{
+		UUID:           deploymentUUID,
+		BaseDeployment: baseDeployment,
+	}
 }
