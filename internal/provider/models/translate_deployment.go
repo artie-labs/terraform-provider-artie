@@ -64,9 +64,9 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 	}
 }
 
-func (rm DeploymentResourceModel) ToBaseAPIModel() artieclient.BaseDeployment {
+func (d DeploymentResourceModel) ToBaseAPIModel() artieclient.BaseDeployment {
 	tables := []artieclient.Table{}
-	for _, table := range rm.Source.Tables {
+	for _, table := range d.Source.Tables {
 		tableUUID := table.UUID.ValueString()
 		if tableUUID == "" {
 			tableUUID = uuid.Nil.String()
@@ -82,48 +82,48 @@ func (rm DeploymentResourceModel) ToBaseAPIModel() artieclient.BaseDeployment {
 	}
 
 	baseDeployment := artieclient.BaseDeployment{
-		Name:            rm.Name.ValueString(),
-		DestinationUUID: ParseOptionalUUID(rm.DestinationUUID),
+		Name:            d.Name.ValueString(),
+		DestinationUUID: ParseOptionalUUID(d.DestinationUUID),
 		Source: artieclient.Source{
-			Type:   rm.Source.Type.ValueString(),
+			Type:   d.Source.Type.ValueString(),
 			Tables: tables,
 		},
 		DestinationConfig: artieclient.DestinationConfig{
-			Dataset:               rm.DestinationConfig.Dataset.ValueString(),
-			Database:              rm.DestinationConfig.Database.ValueString(),
-			Schema:                rm.DestinationConfig.Schema.ValueString(),
-			UseSameSchemaAsSource: rm.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
-			SchemaNamePrefix:      rm.DestinationConfig.SchemaNamePrefix.ValueString(),
+			Dataset:               d.DestinationConfig.Dataset.ValueString(),
+			Database:              d.DestinationConfig.Database.ValueString(),
+			Schema:                d.DestinationConfig.Schema.ValueString(),
+			UseSameSchemaAsSource: d.DestinationConfig.UseSameSchemaAsSource.ValueBool(),
+			SchemaNamePrefix:      d.DestinationConfig.SchemaNamePrefix.ValueString(),
 		},
-		SSHTunnelUUID:            ParseOptionalUUID(rm.SSHTunnelUUID),
-		SnowflakeEcoScheduleUUID: ParseOptionalUUID(rm.SnowflakeEcoScheduleUUID),
+		SSHTunnelUUID:            ParseOptionalUUID(d.SSHTunnelUUID),
+		SnowflakeEcoScheduleUUID: ParseOptionalUUID(d.SnowflakeEcoScheduleUUID),
 	}
 
-	switch rm.Source.Type.ValueString() {
+	switch d.Source.Type.ValueString() {
 	case string(PostgreSQL):
 		baseDeployment.Source.Config = artieclient.SourceConfig{
-			Host:     rm.Source.PostgresConfig.Host.ValueString(),
-			Port:     rm.Source.PostgresConfig.Port.ValueInt32(),
-			User:     rm.Source.PostgresConfig.User.ValueString(),
-			Password: rm.Source.PostgresConfig.Password.ValueString(),
-			Database: rm.Source.PostgresConfig.Database.ValueString(),
+			Host:     d.Source.PostgresConfig.Host.ValueString(),
+			Port:     d.Source.PostgresConfig.Port.ValueInt32(),
+			User:     d.Source.PostgresConfig.User.ValueString(),
+			Password: d.Source.PostgresConfig.Password.ValueString(),
+			Database: d.Source.PostgresConfig.Database.ValueString(),
 		}
 	case string(MySQL):
 		baseDeployment.Source.Config = artieclient.SourceConfig{
-			Host:     rm.Source.MySQLConfig.Host.ValueString(),
-			Port:     rm.Source.MySQLConfig.Port.ValueInt32(),
-			User:     rm.Source.MySQLConfig.User.ValueString(),
-			Password: rm.Source.MySQLConfig.Password.ValueString(),
-			Database: rm.Source.MySQLConfig.Database.ValueString(),
+			Host:     d.Source.MySQLConfig.Host.ValueString(),
+			Port:     d.Source.MySQLConfig.Port.ValueInt32(),
+			User:     d.Source.MySQLConfig.User.ValueString(),
+			Password: d.Source.MySQLConfig.Password.ValueString(),
+			Database: d.Source.MySQLConfig.Database.ValueString(),
 		}
 	}
 
 	return baseDeployment
 }
 
-func (rm DeploymentResourceModel) ToAPIModel() artieclient.Deployment {
+func (d DeploymentResourceModel) ToAPIModel() artieclient.Deployment {
 	return artieclient.Deployment{
-		UUID:           parseUUID(rm.UUID),
-		BaseDeployment: rm.ToBaseAPIModel(),
+		UUID:           parseUUID(d.UUID),
+		BaseDeployment: d.ToBaseAPIModel(),
 	}
 }
