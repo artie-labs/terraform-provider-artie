@@ -125,7 +125,7 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DestinationAPIToResourceModel(destination, &data)
+	data.FillFromAPIModel(destination)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -144,7 +144,7 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DestinationAPIToResourceModel(destinationResp, &data)
+	data.FillFromAPIModel(destinationResp)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -170,7 +170,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Translate API response into Terraform state & save state
-	models.DestinationAPIToResourceModel(updatedDestination, &data)
+	data.FillFromAPIModel(updatedDestination)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
