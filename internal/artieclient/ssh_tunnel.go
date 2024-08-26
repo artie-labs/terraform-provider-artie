@@ -8,13 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type BaseSSHTunnel struct {
+	Name      string `json:"name"`
+	Host      string `json:"host"`
+	Port      int32  `json:"port"`
+	Username  string `json:"username"`
+	PublicKey string `json:"publicKey"`
+}
+
 type SSHTunnel struct {
-	UUID      uuid.UUID `json:"uuid"`
-	Name      string    `json:"name"`
-	Host      string    `json:"host"`
-	Port      int32     `json:"port"`
-	Username  string    `json:"username"`
-	PublicKey string    `json:"publicKey"`
+	BaseSSHTunnel
+	UUID uuid.UUID `json:"uuid"`
 }
 
 type SSHTunnelClient struct {
@@ -34,12 +38,12 @@ func (sc SSHTunnelClient) Get(ctx context.Context, sshTunnelUUID string) (SSHTun
 	return makeRequest[SSHTunnel](ctx, sc.client, http.MethodGet, path, nil)
 }
 
-func (sc SSHTunnelClient) Create(ctx context.Context, name, host, username string, port int32) (SSHTunnel, error) {
+func (sc SSHTunnelClient) Create(ctx context.Context, sshTunnel BaseSSHTunnel) (SSHTunnel, error) {
 	body := map[string]any{
-		"name":     name,
-		"host":     host,
-		"port":     port,
-		"username": username,
+		"name":     sshTunnel.Name,
+		"host":     sshTunnel.Host,
+		"port":     sshTunnel.Port,
+		"username": sshTunnel.Username,
 	}
 	return makeRequest[SSHTunnel](ctx, sc.client, http.MethodPost, sc.basePath(), body)
 }

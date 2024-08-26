@@ -15,13 +15,19 @@ func SSHTunnelAPIToResourceModel(apiModel artieclient.SSHTunnel, resourceModel *
 	resourceModel.PublicKey = types.StringValue(apiModel.PublicKey)
 }
 
+func (s SSHTunnelResourceModel) ToBaseAPIModel() artieclient.BaseSSHTunnel {
+	return artieclient.BaseSSHTunnel{
+		Name:      s.Name.ValueString(),
+		Host:      s.Host.ValueString(),
+		Port:      s.Port.ValueInt32(),
+		Username:  s.Username.ValueString(),
+		PublicKey: s.PublicKey.ValueString(),
+	}
+}
+
 func SSHTunnelResourceToAPIModel(resourceModel SSHTunnelResourceModel) artieclient.SSHTunnel {
 	return artieclient.SSHTunnel{
-		UUID:      parseUUID(resourceModel.UUID),
-		Name:      resourceModel.Name.ValueString(),
-		Host:      resourceModel.Host.ValueString(),
-		Port:      resourceModel.Port.ValueInt32(),
-		Username:  resourceModel.Username.ValueString(),
-		PublicKey: resourceModel.PublicKey.ValueString(),
+		UUID:          parseUUID(resourceModel.UUID),
+		BaseSSHTunnel: resourceModel.ToBaseAPIModel(),
 	}
 }
