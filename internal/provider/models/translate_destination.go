@@ -37,7 +37,7 @@ func (d *DestinationResourceModel) FillFromAPIModel(apiModel artieclient.Destina
 	}
 }
 
-func (d DestinationResourceModel) ToBaseAPIModel() artieclient.BaseDestination {
+func (d DestinationResourceModel) ToAPIBaseModel() artieclient.BaseDestination {
 	var sharedConfig artieclient.DestinationSharedConfig
 	switch strings.ToLower(d.Type.ValueString()) {
 	case string(Snowflake):
@@ -75,6 +75,6 @@ func (d DestinationResourceModel) ToBaseAPIModel() artieclient.BaseDestination {
 func (d DestinationResourceModel) ToAPIModel() artieclient.Destination {
 	return artieclient.Destination{
 		UUID:            parseUUID(d.UUID),
-		BaseDestination: d.ToBaseAPIModel(),
+		BaseDestination: d.ToAPIBaseModel(),
 	}
 }
