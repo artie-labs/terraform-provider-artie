@@ -86,6 +86,10 @@ func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (Deplo
 }
 
 func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (Deployment, error) {
+	if deployment.UUID == nil {
+		return Deployment{}, fmt.Errorf("deployment UUID is required")
+	}
+
 	path, err := url.JoinPath(dc.basePath(), deployment.UUID.String())
 	if err != nil {
 		return Deployment{}, err
