@@ -2,19 +2,11 @@ package tfmodels
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
-)
-
-type SourceType string
-
-const (
-	PostgreSQL SourceType = "postgresql"
-	MySQL      SourceType = "mysql"
 )
 
 type Deployment struct {
@@ -92,11 +84,11 @@ func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 		}
 	}
 	d.Source = &Source{
-		Type:   types.StringValue(apiModel.Source.Type),
+		Type:   types.StringValue(string(apiModel.Source.Type)),
 		Tables: tables,
 	}
-	switch strings.ToLower(d.Source.Type.ValueString()) {
-	case string(PostgreSQL):
+	switch apiModel.Source.Type {
+	case artieclient.PostgreSQL:
 		d.Source.PostgresConfig = &PostgresConfig{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
@@ -104,7 +96,7 @@ func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
-	case string(MySQL):
+	case artieclient.MySQL:
 		d.Source.MySQLConfig = &MySQLConfig{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
@@ -112,6 +104,8 @@ func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", apiModel.Source.Type))
 	}
 
 	d.DestinationConfig = &DeploymentDestinationConfig{
@@ -140,11 +134,12 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 		})
 	}
 
+	sourceType := artieclient.SourceTypeFromString(d.Source.Type.ValueString())
 	baseDeployment := artieclient.BaseDeployment{
 		Name:            d.Name.ValueString(),
 		DestinationUUID: ParseOptionalUUID(d.DestinationUUID),
 		Source: artieclient.Source{
-			Type:   d.Source.Type.ValueString(),
+			Type:   sourceType,
 			Tables: tables,
 		},
 		DestinationConfig: artieclient.DestinationConfig{
@@ -158,8 +153,8 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 		SnowflakeEcoScheduleUUID: ParseOptionalUUID(d.SnowflakeEcoScheduleUUID),
 	}
 
-	switch d.Source.Type.ValueString() {
-	case string(PostgreSQL):
+	switch sourceType {
+	case artieclient.PostgreSQL:
 		baseDeployment.Source.Config = artieclient.SourceConfig{
 			Host:     d.Source.PostgresConfig.Host.ValueString(),
 			Port:     d.Source.PostgresConfig.Port.ValueInt32(),
@@ -167,7 +162,7 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 			Password: d.Source.PostgresConfig.Password.ValueString(),
 			Database: d.Source.PostgresConfig.Database.ValueString(),
 		}
-	case string(MySQL):
+	case artieclient.MySQL:
 		baseDeployment.Source.Config = artieclient.SourceConfig{
 			Host:     d.Source.MySQLConfig.Host.ValueString(),
 			Port:     d.Source.MySQLConfig.Port.ValueInt32(),
@@ -175,6 +170,8 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 			Password: d.Source.MySQLConfig.Password.ValueString(),
 			Database: d.Source.MySQLConfig.Database.ValueString(),
 		}
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", d.Source.Type.ValueString()))
 	}
 
 	return baseDeployment

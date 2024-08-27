@@ -9,6 +9,29 @@ import (
 	"github.com/google/uuid"
 )
 
+type SourceType string
+
+const (
+	MySQL      SourceType = "mysql"
+	PostgreSQL SourceType = "postgresql"
+)
+
+var AllSourceTypes = []string{
+	string(MySQL),
+	string(PostgreSQL),
+}
+
+func SourceTypeFromString(sourceType string) SourceType {
+	switch SourceType(sourceType) {
+	case MySQL:
+		return MySQL
+	case PostgreSQL:
+		return PostgreSQL
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", sourceType))
+	}
+}
+
 type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Source                   Source            `json:"source"`
@@ -25,7 +48,7 @@ type Deployment struct {
 }
 
 type Source struct {
-	Type   string       `json:"type"`
+	Type   SourceType   `json:"type"`
 	Config SourceConfig `json:"config"`
 	Tables []Table      `json:"tables"`
 }
@@ -92,7 +115,7 @@ func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (Depl
 	return response.Deployment, nil
 }
 
-func (dc DeploymentClient) Create(ctx context.Context, sourceType string) (Deployment, error) {
+func (dc DeploymentClient) Create(ctx context.Context, sourceType SourceType) (Deployment, error) {
 	body := map[string]any{"source": sourceType}
 	return makeRequest[Deployment](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }

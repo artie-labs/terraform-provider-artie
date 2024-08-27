@@ -43,13 +43,7 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"type": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The type of destination database. This must be one of the following: `bigquery`, `redshift`, or `snowflake`.",
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						string(tfmodels.BigQuery),
-						string(tfmodels.Redshift),
-						string(tfmodels.Snowflake),
-					),
-				},
+				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllDestinationTypes...)},
 			},
 			"label": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this destination."},
 			"snowflake_config": schema.SingleNestedAttribute{
