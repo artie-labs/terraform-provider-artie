@@ -85,11 +85,6 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 	r.client = client
 }
 
-func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
-	// Translate API response type into Terraform model and save it into state
-	diagnostics.Append(state.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))...)
-}
-
 func (r *SSHTunnelResource) GetStateData(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) tfmodels.SSHTunnel {
 	var stateData tfmodels.SSHTunnel
 	diagnostics.Append(state.Get(ctx, &stateData)...)
@@ -100,6 +95,11 @@ func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, di
 	var planData tfmodels.SSHTunnel
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData
+}
+
+func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
+	// Translate API response type into Terraform model and save it into state
+	diagnostics.Append(state.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))...)
 }
 
 func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
