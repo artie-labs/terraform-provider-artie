@@ -9,8 +9,29 @@ import (
 	"github.com/google/uuid"
 )
 
+type DestinationType string
+
+const (
+	Snowflake DestinationType = "snowflake"
+	BigQuery  DestinationType = "bigquery"
+	Redshift  DestinationType = "redshift"
+)
+
+func DestinationTypeFromString(destType string) DestinationType {
+	switch destType {
+	case string(Snowflake):
+		return Snowflake
+	case string(BigQuery):
+		return BigQuery
+	case string(Redshift):
+		return Redshift
+	default:
+		return ""
+	}
+}
+
 type BaseDestination struct {
-	Type          string                  `json:"type"`
+	Type          DestinationType         `json:"type"`
 	Label         string                  `json:"label"`
 	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfig `json:"sharedConfig"`

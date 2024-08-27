@@ -1,19 +1,9 @@
 package tfmodels
 
 import (
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
-)
-
-type DestinationType string
-
-const (
-	Snowflake DestinationType = "snowflake"
-	BigQuery  DestinationType = "bigquery"
-	Redshift  DestinationType = "redshift"
 )
 
 type Destination struct {
@@ -48,12 +38,12 @@ type RedshiftSharedConfig struct {
 
 func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 	d.UUID = types.StringValue(apiModel.UUID.String())
-	d.Type = types.StringValue(apiModel.Type)
+	d.Type = types.StringValue(string(apiModel.Type))
 	d.Label = types.StringValue(apiModel.Label)
 	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 
-	switch strings.ToLower(d.Type.ValueString()) {
-	case string(Snowflake):
+	switch apiModel.Type {
+	case artieclient.Snowflake:
 		d.SnowflakeConfig = &SnowflakeSharedConfig{
 			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
 			VirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
@@ -61,13 +51,13 @@ func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 			Username:   types.StringValue(apiModel.Config.Username),
 			Password:   types.StringValue(apiModel.Config.Password),
 		}
-	case string(BigQuery):
+	case artieclient.BigQuery:
 		d.BigQueryConfig = &BigQuerySharedConfig{
 			ProjectID:       types.StringValue(apiModel.Config.GCPProjectID),
 			Location:        types.StringValue(apiModel.Config.GCPLocation),
 			CredentialsData: types.StringValue(apiModel.Config.GCPCredentialsData),
 		}
-	case string(Redshift):
+	case artieclient.Redshift:
 		d.RedshiftConfig = &RedshiftSharedConfig{
 			Endpoint: types.StringValue(apiModel.Config.Endpoint),
 			Username: types.StringValue(apiModel.Config.Username),
@@ -78,8 +68,9 @@ func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 
 func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 	var sharedConfig artieclient.DestinationSharedConfig
-	switch strings.ToLower(d.Type.ValueString()) {
-	case string(Snowflake):
+	destinationType := artieclient.DestinationTypeFromString(d.Type.ValueString())
+	switch destinationType {
+	case artieclient.Snowflake:
 		sharedConfig = artieclient.DestinationSharedConfig{
 			SnowflakeAccountURL: d.SnowflakeConfig.AccountURL.ValueString(),
 			SnowflakeVirtualDWH: d.SnowflakeConfig.VirtualDWH.ValueString(),
@@ -87,13 +78,13 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 			Username:            d.SnowflakeConfig.Username.ValueString(),
 			Password:            d.SnowflakeConfig.Password.ValueString(),
 		}
-	case string(BigQuery):
+	case artieclient.BigQuery:
 		sharedConfig = artieclient.DestinationSharedConfig{
 			GCPProjectID:       d.BigQueryConfig.ProjectID.ValueString(),
 			GCPLocation:        d.BigQueryConfig.Location.ValueString(),
 			GCPCredentialsData: d.BigQueryConfig.CredentialsData.ValueString(),
 		}
-	case string(Redshift):
+	case artieclient.Redshift:
 		sharedConfig = artieclient.DestinationSharedConfig{
 			Endpoint: d.RedshiftConfig.Endpoint.ValueString(),
 			Username: d.RedshiftConfig.Username.ValueString(),
@@ -104,7 +95,7 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 	}
 
 	return artieclient.BaseDestination{
-		Type:          d.Type.ValueString(),
+		Type:          destinationType,
 		Label:         d.Label.ValueString(),
 		Config:        sharedConfig,
 		SSHTunnelUUID: ParseOptionalUUID(d.SSHTunnelUUID),

@@ -57,8 +57,8 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "The type of source database. This must be one of the following: `mysql` or `postgresql`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
-								string(tfmodels.MySQL),
-								string(tfmodels.PostgreSQL),
+								string(artieclient.MySQL),
+								string(artieclient.PostgreSQL),
 							),
 						},
 					},

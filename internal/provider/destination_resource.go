@@ -45,9 +45,9 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 				MarkdownDescription: "The type of destination database. This must be one of the following: `bigquery`, `redshift`, or `snowflake`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
-						string(tfmodels.BigQuery),
-						string(tfmodels.Redshift),
-						string(tfmodels.Snowflake),
+						string(artieclient.BigQuery),
+						string(artieclient.Redshift),
+						string(artieclient.Snowflake),
 					),
 				},
 			},
