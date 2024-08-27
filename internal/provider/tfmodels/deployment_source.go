@@ -47,21 +47,9 @@ func SourceFromAPIModel(apiModel artieclient.Source) Source {
 
 	switch apiModel.Type {
 	case artieclient.MySQL:
-		source.MySQLConfig = &MySQLConfig{
-			Host:     types.StringValue(apiModel.Config.Host),
-			Port:     types.Int32Value(apiModel.Config.Port),
-			User:     types.StringValue(apiModel.Config.User),
-			Password: types.StringValue(apiModel.Config.Password),
-			Database: types.StringValue(apiModel.Config.Database),
-		}
+		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
 	case artieclient.PostgreSQL:
-		source.PostgresConfig = &PostgresConfig{
-			Host:     types.StringValue(apiModel.Config.Host),
-			Port:     types.Int32Value(apiModel.Config.Port),
-			User:     types.StringValue(apiModel.Config.User),
-			Password: types.StringValue(apiModel.Config.Password),
-			Database: types.StringValue(apiModel.Config.Database),
-		}
+		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
 	default:
 		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
 	}
@@ -87,6 +75,16 @@ func (m MySQLConfig) ToAPIModel() artieclient.SourceConfig {
 	}
 }
 
+func MySQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MySQLConfig {
+	return &MySQLConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+		Database: types.StringValue(apiModel.Database),
+	}
+}
+
 type PostgresConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
@@ -102,5 +100,15 @@ func (p PostgresConfig) ToAPIModel() artieclient.SourceConfig {
 		User:     p.User.ValueString(),
 		Password: p.Password.ValueString(),
 		Database: p.Database.ValueString(),
+	}
+}
+
+func PostgresConfigFromAPIModel(apiModel artieclient.SourceConfig) *PostgresConfig {
+	return &PostgresConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+		Database: types.StringValue(apiModel.Database),
 	}
 }
