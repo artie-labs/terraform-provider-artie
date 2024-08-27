@@ -215,8 +215,8 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Translate API response into Terraform model and save it into state
-	newState := tfmodels.DeploymentFromAPIModel(updatedDeployment)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	diagnostics := resp.State.Set(ctx, tfmodels.DeploymentFromAPIModel(updatedDeployment))
+	resp.Diagnostics.Append(diagnostics...)
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -234,8 +234,8 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Translate API response into Terraform model and save it into state
-	newState := tfmodels.DeploymentFromAPIModel(deployment)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	diagnostics := resp.State.Set(ctx, tfmodels.DeploymentFromAPIModel(deployment))
+	resp.Diagnostics.Append(diagnostics...)
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -264,8 +264,8 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Translate API response into Terraform model and save it into state
-	newState := tfmodels.DeploymentFromAPIModel(updatedDeployment)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	diagnostics := resp.State.Set(ctx, tfmodels.DeploymentFromAPIModel(updatedDeployment))
+	resp.Diagnostics.Append(diagnostics...)
 }
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
