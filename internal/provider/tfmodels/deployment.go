@@ -36,6 +36,17 @@ func (d Deployment) ToAPIModel() artieclient.Deployment {
 	}
 }
 
+func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
+	d.UUID = types.StringValue(apiModel.UUID.String())
+	d.Name = types.StringValue(apiModel.Name)
+	d.Status = types.StringValue(apiModel.Status)
+	d.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
+	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
+	d.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
+	d.Source = SourceFromAPIModel(apiModel.Source)
+	d.DestinationConfig = DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
+}
+
 type DeploymentDestinationConfig struct {
 	Dataset               types.String `tfsdk:"dataset"`
 	Database              types.String `tfsdk:"database"`
@@ -62,15 +73,4 @@ func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationCon
 		UseSameSchemaAsSource: types.BoolValue(apiModel.UseSameSchemaAsSource),
 		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
 	}
-}
-
-func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
-	d.UUID = types.StringValue(apiModel.UUID.String())
-	d.Name = types.StringValue(apiModel.Name)
-	d.Status = types.StringValue(apiModel.Status)
-	d.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
-	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
-	d.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
-	d.Source = SourceFromAPIModel(apiModel.Source)
-	d.DestinationConfig = DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 }
