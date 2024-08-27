@@ -90,25 +90,26 @@ func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedCon
 	}
 }
 
-func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
-	d.UUID = types.StringValue(apiModel.UUID.String())
-	d.Type = types.StringValue(string(apiModel.Type))
-	d.Label = types.StringValue(apiModel.Label)
-	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
-	d.BigQueryConfig = nil
-	d.RedshiftConfig = nil
-	d.SnowflakeConfig = nil
+func DestinationFromAPIModel(apiModel artieclient.Destination) Destination {
+	destination := Destination{
+		UUID:          types.StringValue(apiModel.UUID.String()),
+		Type:          types.StringValue(string(apiModel.Type)),
+		Label:         types.StringValue(apiModel.Label),
+		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
+	}
 
 	switch apiModel.Type {
 	case artieclient.BigQuery:
-		d.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
+		destination.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Redshift:
-		d.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
+		destination.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Snowflake:
-		d.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
+		destination.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		panic(fmt.Sprintf("invalid destination type: %s", apiModel.Type))
 	}
+
+	return destination
 }
 
 func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
