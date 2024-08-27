@@ -61,22 +61,20 @@ func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 }
 
 func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ArtieProviderModel
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
+	var configData ArtieProviderModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	endpoint := DEFAULT_API_ENDPOINT
-	if !data.Endpoint.IsNull() {
-		endpoint = data.Endpoint.ValueString()
+	if !configData.Endpoint.IsNull() {
+		endpoint = configData.Endpoint.ValueString()
 	}
 
 	providerData := ArtieProviderData{
 		Endpoint: endpoint,
-		APIKey:   data.APIKey.ValueString(),
+		APIKey:   configData.APIKey.ValueString(),
 	}
 
 	resp.DataSourceData = providerData
