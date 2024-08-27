@@ -55,12 +55,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"type": schema.StringAttribute{
 						Required:            true,
 						MarkdownDescription: "The type of source database. This must be one of the following: `mysql` or `postgresql`.",
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								string(artieclient.MySQL),
-								string(artieclient.PostgreSQL),
-							),
-						},
+						Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllSourceTypes...)},
 					},
 					"postgresql_config": schema.SingleNestedAttribute{
 						Optional:            true,

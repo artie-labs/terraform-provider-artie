@@ -12,10 +12,16 @@ import (
 type DestinationType string
 
 const (
-	Snowflake DestinationType = "snowflake"
 	BigQuery  DestinationType = "bigquery"
 	Redshift  DestinationType = "redshift"
+	Snowflake DestinationType = "snowflake"
 )
+
+var AllDestinationTypes = []string{
+	string(BigQuery),
+	string(Redshift),
+	string(Snowflake),
+}
 
 func DestinationTypeFromString(destType string) DestinationType {
 	switch DestinationType(destType) {

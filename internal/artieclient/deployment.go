@@ -12,9 +12,14 @@ import (
 type SourceType string
 
 const (
-	PostgreSQL SourceType = "postgresql"
 	MySQL      SourceType = "mysql"
+	PostgreSQL SourceType = "postgresql"
 )
+
+var AllSourceTypes = []string{
+	string(MySQL),
+	string(PostgreSQL),
+}
 
 func SourceTypeFromString(sourceType string) SourceType {
 	switch SourceType(sourceType) {
