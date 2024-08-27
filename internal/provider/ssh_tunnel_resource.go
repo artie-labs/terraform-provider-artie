@@ -8,12 +8,14 @@ import (
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -83,10 +85,25 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 	r.client = client
 }
 
-func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Read Terraform plan data into the model
+func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
+	// Translate API response type into Terraform model and save it into state
+	diagnostics.Append(state.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))...)
+}
+
+func (r *SSHTunnelResource) GetStateData(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) tfmodels.SSHTunnel {
+	var stateData tfmodels.SSHTunnel
+	diagnostics.Append(state.Get(ctx, &stateData)...)
+	return stateData
+}
+
+func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) tfmodels.SSHTunnel {
 	var planData tfmodels.SSHTunnel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	diagnostics.Append(plan.Get(ctx, &planData)...)
+	return planData
+}
+
+func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	planData := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -97,15 +114,11 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, sshTunnel)
 }
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Read Terraform prior state data into the model
-	var stateData tfmodels.SSHTunnel
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	stateData := r.GetStateData(ctx, req.State, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -116,15 +129,11 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, sshTunnel)
 }
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Read Terraform plan data into the model
-	var planData tfmodels.SSHTunnel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	planData := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,15 +144,11 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, sshTunnel)
 }
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Read Terraform prior state data into the model
-	var stateData tfmodels.SSHTunnel
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	stateData := r.GetStateData(ctx, req.State, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
