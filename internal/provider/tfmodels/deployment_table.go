@@ -17,13 +17,13 @@ type Table struct {
 }
 
 func (t Table) ToAPIModel() artieclient.Table {
-	tableUUID := t.UUID.ValueString()
-	if tableUUID == "" {
-		tableUUID = uuid.Nil.String()
+	tableUUID := uuid.Nil
+	if t.UUID.ValueString() != "" {
+		tableUUID = uuid.MustParse(t.UUID.ValueString())
 	}
 
 	return artieclient.Table{
-		UUID:                 uuid.MustParse(tableUUID),
+		UUID:                 tableUUID,
 		Name:                 t.Name.ValueString(),
 		Schema:               t.Schema.ValueString(),
 		EnableHistoryMode:    t.EnableHistoryMode.ValueBool(),
