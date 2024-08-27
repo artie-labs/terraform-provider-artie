@@ -9,13 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel *DeploymentResourceModel) {
-	resourceModel.UUID = types.StringValue(apiModel.UUID.String())
-	resourceModel.Name = types.StringValue(apiModel.Name)
-	resourceModel.Status = types.StringValue(apiModel.Status)
-	resourceModel.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
-	resourceModel.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
-	resourceModel.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
+func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deployment) {
+	d.UUID = types.StringValue(apiModel.UUID.String())
+	d.Name = types.StringValue(apiModel.Name)
+	d.Status = types.StringValue(apiModel.Status)
+	d.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
+	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
+	d.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
 
 	tables := map[string]TableModel{}
 	for _, apiTable := range apiModel.Source.Tables {
@@ -32,13 +32,13 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 		}
 	}
-	resourceModel.Source = &SourceModel{
+	d.Source = &SourceModel{
 		Type:   types.StringValue(apiModel.Source.Type),
 		Tables: tables,
 	}
-	switch strings.ToLower(resourceModel.Source.Type.ValueString()) {
+	switch strings.ToLower(d.Source.Type.ValueString()) {
 	case string(PostgreSQL):
-		resourceModel.Source.PostgresConfig = &PostgresConfigModel{
+		d.Source.PostgresConfig = &PostgresConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
@@ -46,7 +46,7 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
 	case string(MySQL):
-		resourceModel.Source.MySQLConfig = &MySQLConfigModel{
+		d.Source.MySQLConfig = &MySQLConfigModel{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
@@ -55,7 +55,7 @@ func DeploymentAPIToResourceModel(apiModel artieclient.Deployment, resourceModel
 		}
 	}
 
-	resourceModel.DestinationConfig = &DeploymentDestinationConfigModel{
+	d.DestinationConfig = &DeploymentDestinationConfigModel{
 		Dataset:               types.StringValue(apiModel.DestinationConfig.Dataset),
 		Database:              types.StringValue(apiModel.DestinationConfig.Database),
 		Schema:                types.StringValue(apiModel.DestinationConfig.Schema),
