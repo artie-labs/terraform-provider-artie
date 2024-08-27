@@ -173,6 +173,7 @@ func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment B
 		"destinationUUID": deployment.DestinationUUID,
 		"uniqueCfg":       deployment.DestinationConfig,
 		"tables":          deployment.Source.Tables,
+		"sourceType":      deployment.Source.Type,
 	}
 
 	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
