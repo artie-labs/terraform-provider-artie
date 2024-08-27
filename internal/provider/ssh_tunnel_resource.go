@@ -98,8 +98,8 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Translate API response into Terraform model and save it into state
-	planData.UpdateFromAPIModel(sshTunnel)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
+	newState := tfmodels.SSHTunnelFromAPIModel(sshTunnel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -117,8 +117,8 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// Translate API response into Terraform model and save it into state
-	stateData.UpdateFromAPIModel(sshTunnel)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	newState := tfmodels.SSHTunnelFromAPIModel(sshTunnel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -136,8 +136,8 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Translate API response into Terraform model and save it into state
-	planData.UpdateFromAPIModel(sshTunnel)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
+	newState := tfmodels.SSHTunnelFromAPIModel(sshTunnel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
