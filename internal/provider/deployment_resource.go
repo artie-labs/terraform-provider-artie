@@ -6,7 +6,7 @@ import (
 	"math"
 
 	"terraform-provider-artie/internal/artieclient"
-	"terraform-provider-artie/internal/provider/models"
+	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -57,8 +57,8 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "The type of source database. This must be one of the following: `mysql` or `postgresql`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
-								string(models.MySQL),
-								string(models.PostgreSQL),
+								string(tfmodels.MySQL),
+								string(tfmodels.PostgreSQL),
 							),
 						},
 					},
@@ -183,7 +183,7 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read Terraform plan data into the model
-	var data models.DeploymentResourceModel
+	var data tfmodels.DeploymentResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -226,7 +226,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read Terraform prior state data into the model
-	var data models.DeploymentResourceModel
+	var data tfmodels.DeploymentResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -245,7 +245,7 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read Terraform plan data into the model
-	var data models.DeploymentResourceModel
+	var data tfmodels.DeploymentResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -275,7 +275,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read Terraform prior state data into the model
-	var data models.DeploymentResourceModel
+	var data tfmodels.DeploymentResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return

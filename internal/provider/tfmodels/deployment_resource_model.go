@@ -1,4 +1,4 @@
-package models
+package tfmodels
 
 import (
 	"fmt"
