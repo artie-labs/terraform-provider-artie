@@ -24,10 +24,42 @@ type BigQuerySharedConfig struct {
 	CredentialsData types.String `tfsdk:"credentials_data"`
 }
 
+func (b BigQuerySharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
+	return artieclient.DestinationSharedConfig{
+		GCPProjectID:       b.ProjectID.ValueString(),
+		GCPLocation:        b.Location.ValueString(),
+		GCPCredentialsData: b.CredentialsData.ValueString(),
+	}
+}
+
+func BigQuerySharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *BigQuerySharedConfig {
+	return &BigQuerySharedConfig{
+		ProjectID:       types.StringValue(apiModel.GCPProjectID),
+		Location:        types.StringValue(apiModel.GCPLocation),
+		CredentialsData: types.StringValue(apiModel.GCPCredentialsData),
+	}
+}
+
 type RedshiftSharedConfig struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
+}
+
+func (r RedshiftSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
+	return artieclient.DestinationSharedConfig{
+		Endpoint: r.Endpoint.ValueString(),
+		Username: r.Username.ValueString(),
+		Password: r.Password.ValueString(),
+	}
+}
+
+func RedshiftSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *RedshiftSharedConfig {
+	return &RedshiftSharedConfig{
+		Endpoint: types.StringValue(apiModel.Endpoint),
+		Username: types.StringValue(apiModel.Username),
+		Password: types.StringValue(apiModel.Password),
+	}
 }
 
 type SnowflakeSharedConfig struct {
@@ -36,6 +68,26 @@ type SnowflakeSharedConfig struct {
 	Username   types.String `tfsdk:"username"`
 	Password   types.String `tfsdk:"password"`
 	PrivateKey types.String `tfsdk:"private_key"`
+}
+
+func (s SnowflakeSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
+	return artieclient.DestinationSharedConfig{
+		SnowflakeAccountURL: s.AccountURL.ValueString(),
+		SnowflakeVirtualDWH: s.VirtualDWH.ValueString(),
+		SnowflakePrivateKey: s.PrivateKey.ValueString(),
+		Username:            s.Username.ValueString(),
+		Password:            s.Password.ValueString(),
+	}
+}
+
+func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *SnowflakeSharedConfig {
+	return &SnowflakeSharedConfig{
+		AccountURL: types.StringValue(apiModel.SnowflakeAccountURL),
+		VirtualDWH: types.StringValue(apiModel.SnowflakeVirtualDWH),
+		PrivateKey: types.StringValue(apiModel.SnowflakePrivateKey),
+		Username:   types.StringValue(apiModel.Username),
+		Password:   types.StringValue(apiModel.Password),
+	}
 }
 
 func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
@@ -49,25 +101,11 @@ func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 
 	switch apiModel.Type {
 	case artieclient.BigQuery:
-		d.BigQueryConfig = &BigQuerySharedConfig{
-			ProjectID:       types.StringValue(apiModel.Config.GCPProjectID),
-			Location:        types.StringValue(apiModel.Config.GCPLocation),
-			CredentialsData: types.StringValue(apiModel.Config.GCPCredentialsData),
-		}
+		d.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Redshift:
-		d.RedshiftConfig = &RedshiftSharedConfig{
-			Endpoint: types.StringValue(apiModel.Config.Endpoint),
-			Username: types.StringValue(apiModel.Config.Username),
-			Password: types.StringValue(apiModel.Config.Password),
-		}
+		d.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Snowflake:
-		d.SnowflakeConfig = &SnowflakeSharedConfig{
-			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
-			VirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
-			PrivateKey: types.StringValue(apiModel.Config.SnowflakePrivateKey),
-			Username:   types.StringValue(apiModel.Config.Username),
-			Password:   types.StringValue(apiModel.Config.Password),
-		}
+		d.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		panic(fmt.Sprintf("invalid destination type: %s", apiModel.Type))
 	}
@@ -78,25 +116,11 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 	destinationType := artieclient.DestinationTypeFromString(d.Type.ValueString())
 	switch destinationType {
 	case artieclient.BigQuery:
-		sharedConfig = artieclient.DestinationSharedConfig{
-			GCPProjectID:       d.BigQueryConfig.ProjectID.ValueString(),
-			GCPLocation:        d.BigQueryConfig.Location.ValueString(),
-			GCPCredentialsData: d.BigQueryConfig.CredentialsData.ValueString(),
-		}
+		sharedConfig = d.BigQueryConfig.ToAPIModel()
 	case artieclient.Redshift:
-		sharedConfig = artieclient.DestinationSharedConfig{
-			Endpoint: d.RedshiftConfig.Endpoint.ValueString(),
-			Username: d.RedshiftConfig.Username.ValueString(),
-			Password: d.RedshiftConfig.Password.ValueString(),
-		}
+		sharedConfig = d.RedshiftConfig.ToAPIModel()
 	case artieclient.Snowflake:
-		sharedConfig = artieclient.DestinationSharedConfig{
-			SnowflakeAccountURL: d.SnowflakeConfig.AccountURL.ValueString(),
-			SnowflakeVirtualDWH: d.SnowflakeConfig.VirtualDWH.ValueString(),
-			SnowflakePrivateKey: d.SnowflakeConfig.PrivateKey.ValueString(),
-			Username:            d.SnowflakeConfig.Username.ValueString(),
-			Password:            d.SnowflakeConfig.Password.ValueString(),
-		}
+		sharedConfig = d.SnowflakeConfig.ToAPIModel()
 	default:
 		panic(fmt.Sprintf("invalid destination type: %s", d.Type.ValueString()))
 	}
