@@ -156,8 +156,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	baseDestination := data.ToAPIBaseModel()
-	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
+	if err := r.client.Destinations().TestConnection(ctx, data.ToAPIBaseModel()); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
