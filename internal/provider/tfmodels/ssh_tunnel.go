@@ -15,13 +15,15 @@ type SSHTunnel struct {
 	PublicKey types.String `tfsdk:"public_key"`
 }
 
-func (s *SSHTunnel) UpdateFromAPIModel(apiModel artieclient.SSHTunnel) {
-	s.UUID = types.StringValue(apiModel.UUID.String())
-	s.Name = types.StringValue(apiModel.Name)
-	s.Host = types.StringValue(apiModel.Host)
-	s.Port = types.Int32Value(apiModel.Port)
-	s.Username = types.StringValue(apiModel.Username)
-	s.PublicKey = types.StringValue(apiModel.PublicKey)
+func SSHTunnelFromAPIModel(apiModel artieclient.SSHTunnel) SSHTunnel {
+	return SSHTunnel{
+		UUID:      types.StringValue(apiModel.UUID.String()),
+		Name:      types.StringValue(apiModel.Name),
+		Host:      types.StringValue(apiModel.Host),
+		Port:      types.Int32Value(apiModel.Port),
+		Username:  types.StringValue(apiModel.Username),
+		PublicKey: types.StringValue(apiModel.PublicKey),
+	}
 }
 
 func (s SSHTunnel) ToAPIBaseModel() artieclient.BaseSSHTunnel {

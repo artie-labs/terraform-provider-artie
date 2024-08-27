@@ -125,8 +125,8 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Translate API response into Terraform model and save it into state
-	planData.UpdateFromAPIModel(destination)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
+	diagnostics := resp.State.Set(ctx, tfmodels.DestinationFromAPIModel(destination))
+	resp.Diagnostics.Append(diagnostics...)
 }
 
 func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -144,8 +144,8 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Translate API response into Terraform model and save it into state
-	stateData.UpdateFromAPIModel(destinationResp)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
+	diagnostics := resp.State.Set(ctx, tfmodels.DestinationFromAPIModel(destinationResp))
+	resp.Diagnostics.Append(diagnostics...)
 }
 
 func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -169,8 +169,8 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Translate API response into Terraform model and save it into state
-	planData.UpdateFromAPIModel(updatedDestination)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
+	diagnostics := resp.State.Set(ctx, tfmodels.DestinationFromAPIModel(updatedDestination))
+	resp.Diagnostics.Append(diagnostics...)
 }
 
 func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
