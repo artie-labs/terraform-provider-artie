@@ -1,8 +1,6 @@
 package tfmodels
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -56,6 +54,16 @@ func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig 
 	}
 }
 
+func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationConfig) *DeploymentDestinationConfig {
+	return &DeploymentDestinationConfig{
+		Dataset:               types.StringValue(apiModel.Dataset),
+		Database:              types.StringValue(apiModel.Database),
+		Schema:                types.StringValue(apiModel.Schema),
+		UseSameSchemaAsSource: types.BoolValue(apiModel.UseSameSchemaAsSource),
+		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
+	}
+}
+
 func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 	d.UUID = types.StringValue(apiModel.UUID.String())
 	d.Name = types.StringValue(apiModel.Name)
@@ -63,52 +71,6 @@ func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 	d.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
 	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 	d.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
-
-	tables := map[string]Table{}
-	for _, apiTable := range apiModel.Source.Tables {
-		tableKey := apiTable.Name
-		if apiTable.Schema != "" {
-			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
-		}
-		tables[tableKey] = Table{
-			UUID:                 types.StringValue(apiTable.UUID.String()),
-			Name:                 types.StringValue(apiTable.Name),
-			Schema:               types.StringValue(apiTable.Schema),
-			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
-			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
-			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-		}
-	}
-	d.Source = &Source{
-		Type:   types.StringValue(string(apiModel.Source.Type)),
-		Tables: tables,
-	}
-	switch apiModel.Source.Type {
-	case artieclient.MySQL:
-		d.Source.MySQLConfig = &MySQLConfig{
-			Host:     types.StringValue(apiModel.Source.Config.Host),
-			Port:     types.Int32Value(apiModel.Source.Config.Port),
-			User:     types.StringValue(apiModel.Source.Config.User),
-			Password: types.StringValue(apiModel.Source.Config.Password),
-			Database: types.StringValue(apiModel.Source.Config.Database),
-		}
-	case artieclient.PostgreSQL:
-		d.Source.PostgresConfig = &PostgresConfig{
-			Host:     types.StringValue(apiModel.Source.Config.Host),
-			Port:     types.Int32Value(apiModel.Source.Config.Port),
-			User:     types.StringValue(apiModel.Source.Config.User),
-			Password: types.StringValue(apiModel.Source.Config.Password),
-			Database: types.StringValue(apiModel.Source.Config.Database),
-		}
-	default:
-		panic(fmt.Sprintf("invalid source type: %s", apiModel.Source.Type))
-	}
-
-	d.DestinationConfig = &DeploymentDestinationConfig{
-		Dataset:               types.StringValue(apiModel.DestinationConfig.Dataset),
-		Database:              types.StringValue(apiModel.DestinationConfig.Database),
-		Schema:                types.StringValue(apiModel.DestinationConfig.Schema),
-		UseSameSchemaAsSource: types.BoolValue(apiModel.DestinationConfig.UseSameSchemaAsSource),
-		SchemaNamePrefix:      types.StringValue(apiModel.DestinationConfig.SchemaNamePrefix),
-	}
+	d.Source = SourceFromAPIModel(apiModel.Source)
+	d.DestinationConfig = DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 }

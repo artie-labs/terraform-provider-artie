@@ -39,6 +39,36 @@ func (s Source) ToAPIModel() artieclient.Source {
 	}
 }
 
+func SourceFromAPIModel(apiModel artieclient.Source) *Source {
+	source := Source{
+		Type:   types.StringValue(string(apiModel.Type)),
+		Tables: TablesFromAPIModel(apiModel.Tables),
+	}
+
+	switch apiModel.Type {
+	case artieclient.MySQL:
+		source.MySQLConfig = &MySQLConfig{
+			Host:     types.StringValue(apiModel.Config.Host),
+			Port:     types.Int32Value(apiModel.Config.Port),
+			User:     types.StringValue(apiModel.Config.User),
+			Password: types.StringValue(apiModel.Config.Password),
+			Database: types.StringValue(apiModel.Config.Database),
+		}
+	case artieclient.PostgreSQL:
+		source.PostgresConfig = &PostgresConfig{
+			Host:     types.StringValue(apiModel.Config.Host),
+			Port:     types.Int32Value(apiModel.Config.Port),
+			User:     types.StringValue(apiModel.Config.User),
+			Password: types.StringValue(apiModel.Config.Password),
+			Database: types.StringValue(apiModel.Config.Database),
+		}
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
+	}
+
+	return &source
+}
+
 type MySQLConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`

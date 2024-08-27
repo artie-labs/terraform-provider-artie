@@ -1,6 +1,8 @@
 package tfmodels
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -30,4 +32,24 @@ func (t Table) ToAPIModel() artieclient.Table {
 		IndividualDeployment: t.IndividualDeployment.ValueBool(),
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
 	}
+}
+
+func TablesFromAPIModel(apiModelTables []artieclient.Table) map[string]Table {
+	tables := map[string]Table{}
+	for _, apiTable := range apiModelTables {
+		tableKey := apiTable.Name
+		if apiTable.Schema != "" {
+			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
+		}
+		tables[tableKey] = Table{
+			UUID:                 types.StringValue(apiTable.UUID.String()),
+			Name:                 types.StringValue(apiTable.Name),
+			Schema:               types.StringValue(apiTable.Schema),
+			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
+			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
+			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
+		}
+	}
+
+	return tables
 }
