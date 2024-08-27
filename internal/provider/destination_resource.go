@@ -8,6 +8,7 @@ import (
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -104,10 +106,25 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 	r.client = client
 }
 
-func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Read Terraform plan data into the model
+func (r *DestinationResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) string {
+	var stateData tfmodels.Destination
+	diagnostics.Append(state.Get(ctx, &stateData)...)
+	return stateData.UUID.ValueString()
+}
+
+func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) tfmodels.Destination {
 	var planData tfmodels.Destination
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	diagnostics.Append(plan.Get(ctx, &planData)...)
+	return planData
+}
+
+func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, destination artieclient.Destination) {
+	// Translate API response type into Terraform model and save it into state
+	diagnostics.Append(state.Set(ctx, tfmodels.DestinationFromAPIModel(destination))...)
+}
+
+func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	planData := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -124,34 +141,26 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.DestinationFromAPIModel(destination))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, destination)
 }
 
 func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Read Terraform prior state data into the model
-	var stateData tfmodels.Destination
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	destinationUUID := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	destinationResp, err := r.client.Destinations().Get(ctx, stateData.UUID.ValueString())
+	destination, err := r.client.Destinations().Get(ctx, destinationUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.DestinationFromAPIModel(destinationResp))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, destination)
 }
 
 func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Read Terraform plan data into the model
-	var planData tfmodels.Destination
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	planData := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -168,20 +177,16 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.DestinationFromAPIModel(updatedDestination))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, updatedDestination)
 }
 
 func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Read Terraform prior state data into the model
-	var stateData tfmodels.Destination
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	destinationUUID := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Destinations().Delete(ctx, stateData.UUID.ValueString()); err != nil {
+	if err := r.client.Destinations().Delete(ctx, destinationUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
 		return
 	}
