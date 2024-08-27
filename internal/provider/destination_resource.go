@@ -118,7 +118,13 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	destination, err := r.client.Destinations().Create(ctx, data.ToAPIBaseModel())
+	baseDestination := data.ToAPIBaseModel()
+	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
+		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
+		return
+	}
+
+	destination, err := r.client.Destinations().Create(ctx, baseDestination)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
