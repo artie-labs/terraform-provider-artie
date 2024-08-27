@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 	"terraform-provider-artie/internal/artieclient"
-	"terraform-provider-artie/internal/provider/models"
+	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -85,7 +85,7 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 
 func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read Terraform plan data into the model
-	var data models.SSHTunnelResourceModel
+	var data tfmodels.SSHTunnel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -104,7 +104,7 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read Terraform prior state data into the model
-	var data models.SSHTunnelResourceModel
+	var data tfmodels.SSHTunnel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -123,7 +123,7 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read Terraform plan data into the model
-	var data models.SSHTunnelResourceModel
+	var data tfmodels.SSHTunnel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -142,7 +142,7 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read Terraform prior state data into the model
-	var data models.SSHTunnelResourceModel
+	var data tfmodels.SSHTunnel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
