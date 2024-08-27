@@ -112,13 +112,13 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 
 func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read Terraform plan data into the model
-	var data tfmodels.Destination
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var planData tfmodels.Destination
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	baseDestination := data.ToAPIBaseModel()
+	baseDestination := planData.ToAPIBaseModel()
 	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
@@ -130,64 +130,64 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// Translate API response into Terraform state & save state
-	data.UpdateFromAPIModel(destination)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	// Translate API response into Terraform model and save it into state
+	planData.UpdateFromAPIModel(destination)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
 }
 
 func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read Terraform prior state data into the model
-	var data tfmodels.Destination
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var stateData tfmodels.Destination
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	destinationResp, err := r.client.Destinations().Get(ctx, data.UUID.ValueString())
+	destinationResp, err := r.client.Destinations().Get(ctx, stateData.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform state & save state
-	data.UpdateFromAPIModel(destinationResp)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	// Translate API response into Terraform model and save it into state
+	stateData.UpdateFromAPIModel(destinationResp)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read Terraform plan data into the model
-	var data tfmodels.Destination
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var planData tfmodels.Destination
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Destinations().TestConnection(ctx, data.ToAPIBaseModel()); err != nil {
+	if err := r.client.Destinations().TestConnection(ctx, planData.ToAPIBaseModel()); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
 
-	fullDestination := data.ToAPIModel()
+	fullDestination := planData.ToAPIModel()
 	updatedDestination, err := r.client.Destinations().Update(ctx, fullDestination)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform state & save state
-	data.UpdateFromAPIModel(updatedDestination)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	// Translate API response into Terraform model and save it into state
+	planData.UpdateFromAPIModel(updatedDestination)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
 }
 
 func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read Terraform prior state data into the model
-	var data tfmodels.Destination
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var stateData tfmodels.Destination
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Destinations().Delete(ctx, data.UUID.ValueString()); err != nil {
+	if err := r.client.Destinations().Delete(ctx, stateData.UUID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
 		return
 	}
