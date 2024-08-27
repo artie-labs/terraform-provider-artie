@@ -41,6 +41,9 @@ func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 	d.Type = types.StringValue(string(apiModel.Type))
 	d.Label = types.StringValue(apiModel.Label)
 	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
+	d.SnowflakeConfig = nil
+	d.BigQueryConfig = nil
+	d.RedshiftConfig = nil
 
 	switch apiModel.Type {
 	case artieclient.Snowflake:
