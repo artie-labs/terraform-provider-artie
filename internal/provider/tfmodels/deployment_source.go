@@ -39,7 +39,7 @@ func (s Source) ToAPIModel() artieclient.Source {
 	}
 }
 
-func SourceFromAPIModel(apiModel artieclient.Source) *Source {
+func SourceFromAPIModel(apiModel artieclient.Source) Source {
 	source := Source{
 		Type:   types.StringValue(string(apiModel.Type)),
 		Tables: TablesFromAPIModel(apiModel.Tables),
@@ -66,7 +66,7 @@ func SourceFromAPIModel(apiModel artieclient.Source) *Source {
 		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
 	}
 
-	return &source
+	return source
 }
 
 type MySQLConfig struct {

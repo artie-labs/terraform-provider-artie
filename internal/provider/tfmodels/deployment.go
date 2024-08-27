@@ -7,14 +7,14 @@ import (
 )
 
 type Deployment struct {
-	UUID                     types.String                 `tfsdk:"uuid"`
-	Name                     types.String                 `tfsdk:"name"`
-	Status                   types.String                 `tfsdk:"status"`
-	Source                   *Source                      `tfsdk:"source"`
-	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
-	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
-	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
-	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
+	UUID                     types.String                `tfsdk:"uuid"`
+	Name                     types.String                `tfsdk:"name"`
+	Status                   types.String                `tfsdk:"status"`
+	Source                   Source                      `tfsdk:"source"`
+	DestinationUUID          types.String                `tfsdk:"destination_uuid"`
+	DestinationConfig        DeploymentDestinationConfig `tfsdk:"destination_config"`
+	SSHTunnelUUID            types.String                `tfsdk:"ssh_tunnel_uuid"`
+	SnowflakeEcoScheduleUUID types.String                `tfsdk:"snowflake_eco_schedule_uuid"`
 }
 
 func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
@@ -65,8 +65,8 @@ func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig 
 	}
 }
 
-func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationConfig) *DeploymentDestinationConfig {
-	return &DeploymentDestinationConfig{
+func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationConfig) DeploymentDestinationConfig {
+	return DeploymentDestinationConfig{
 		Dataset:               types.StringValue(apiModel.Dataset),
 		Database:              types.StringValue(apiModel.Database),
 		Schema:                types.StringValue(apiModel.Schema),
