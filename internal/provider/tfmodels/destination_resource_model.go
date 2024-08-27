@@ -16,17 +16,17 @@ const (
 	Redshift  DestinationType = "redshift"
 )
 
-type DestinationResourceModel struct {
-	UUID            types.String                `tfsdk:"uuid"`
-	SSHTunnelUUID   types.String                `tfsdk:"ssh_tunnel_uuid"`
-	Type            types.String                `tfsdk:"type"`
-	Label           types.String                `tfsdk:"label"`
-	SnowflakeConfig *SnowflakeSharedConfigModel `tfsdk:"snowflake_config"`
-	BigQueryConfig  *BigQuerySharedConfigModel  `tfsdk:"bigquery_config"`
-	RedshiftConfig  *RedshiftSharedConfigModel  `tfsdk:"redshift_config"`
+type Destination struct {
+	UUID            types.String           `tfsdk:"uuid"`
+	SSHTunnelUUID   types.String           `tfsdk:"ssh_tunnel_uuid"`
+	Type            types.String           `tfsdk:"type"`
+	Label           types.String           `tfsdk:"label"`
+	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
+	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
+	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
 }
 
-type SnowflakeSharedConfigModel struct {
+type SnowflakeSharedConfig struct {
 	AccountURL types.String `tfsdk:"account_url"`
 	VirtualDWH types.String `tfsdk:"virtual_dwh"`
 	Username   types.String `tfsdk:"username"`
@@ -34,19 +34,19 @@ type SnowflakeSharedConfigModel struct {
 	PrivateKey types.String `tfsdk:"private_key"`
 }
 
-type BigQuerySharedConfigModel struct {
+type BigQuerySharedConfig struct {
 	ProjectID       types.String `tfsdk:"project_id"`
 	Location        types.String `tfsdk:"location"`
 	CredentialsData types.String `tfsdk:"credentials_data"`
 }
 
-type RedshiftSharedConfigModel struct {
+type RedshiftSharedConfig struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }
 
-func (d *DestinationResourceModel) UpdateFromAPIModel(apiModel artieclient.Destination) {
+func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 	d.UUID = types.StringValue(apiModel.UUID.String())
 	d.Type = types.StringValue(apiModel.Type)
 	d.Label = types.StringValue(apiModel.Label)
@@ -54,7 +54,7 @@ func (d *DestinationResourceModel) UpdateFromAPIModel(apiModel artieclient.Desti
 
 	switch strings.ToLower(d.Type.ValueString()) {
 	case string(Snowflake):
-		d.SnowflakeConfig = &SnowflakeSharedConfigModel{
+		d.SnowflakeConfig = &SnowflakeSharedConfig{
 			AccountURL: types.StringValue(apiModel.Config.SnowflakeAccountURL),
 			VirtualDWH: types.StringValue(apiModel.Config.SnowflakeVirtualDWH),
 			PrivateKey: types.StringValue(apiModel.Config.SnowflakePrivateKey),
@@ -62,13 +62,13 @@ func (d *DestinationResourceModel) UpdateFromAPIModel(apiModel artieclient.Desti
 			Password:   types.StringValue(apiModel.Config.Password),
 		}
 	case string(BigQuery):
-		d.BigQueryConfig = &BigQuerySharedConfigModel{
+		d.BigQueryConfig = &BigQuerySharedConfig{
 			ProjectID:       types.StringValue(apiModel.Config.GCPProjectID),
 			Location:        types.StringValue(apiModel.Config.GCPLocation),
 			CredentialsData: types.StringValue(apiModel.Config.GCPCredentialsData),
 		}
 	case string(Redshift):
-		d.RedshiftConfig = &RedshiftSharedConfigModel{
+		d.RedshiftConfig = &RedshiftSharedConfig{
 			Endpoint: types.StringValue(apiModel.Config.Endpoint),
 			Username: types.StringValue(apiModel.Config.Username),
 			Password: types.StringValue(apiModel.Config.Password),
@@ -76,7 +76,7 @@ func (d *DestinationResourceModel) UpdateFromAPIModel(apiModel artieclient.Desti
 	}
 }
 
-func (d DestinationResourceModel) ToAPIBaseModel() artieclient.BaseDestination {
+func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 	var sharedConfig artieclient.DestinationSharedConfig
 	switch strings.ToLower(d.Type.ValueString()) {
 	case string(Snowflake):
@@ -111,7 +111,7 @@ func (d DestinationResourceModel) ToAPIBaseModel() artieclient.BaseDestination {
 	}
 }
 
-func (d DestinationResourceModel) ToAPIModel() artieclient.Destination {
+func (d Destination) ToAPIModel() artieclient.Destination {
 	return artieclient.Destination{
 		UUID:            parseUUID(d.UUID),
 		BaseDestination: d.ToAPIBaseModel(),

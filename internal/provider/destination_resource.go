@@ -112,7 +112,7 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 
 func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read Terraform plan data into the model
-	var data tfmodels.DestinationResourceModel
+	var data tfmodels.Destination
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -131,7 +131,7 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 
 func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read Terraform prior state data into the model
-	var data tfmodels.DestinationResourceModel
+	var data tfmodels.Destination
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,7 +150,7 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 
 func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read Terraform plan data into the model
-	var data tfmodels.DestinationResourceModel
+	var data tfmodels.Destination
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -175,7 +175,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 
 func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read Terraform prior state data into the model
-	var data tfmodels.DestinationResourceModel
+	var data tfmodels.Destination
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return

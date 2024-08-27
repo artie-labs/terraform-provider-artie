@@ -6,7 +6,7 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 )
 
-type SSHTunnelResourceModel struct {
+type SSHTunnel struct {
 	UUID      types.String `tfsdk:"uuid"`
 	Name      types.String `tfsdk:"name"`
 	Host      types.String `tfsdk:"host"`
@@ -15,7 +15,7 @@ type SSHTunnelResourceModel struct {
 	PublicKey types.String `tfsdk:"public_key"`
 }
 
-func (s *SSHTunnelResourceModel) UpdateFromAPIModel(apiModel artieclient.SSHTunnel) {
+func (s *SSHTunnel) UpdateFromAPIModel(apiModel artieclient.SSHTunnel) {
 	s.UUID = types.StringValue(apiModel.UUID.String())
 	s.Name = types.StringValue(apiModel.Name)
 	s.Host = types.StringValue(apiModel.Host)
@@ -24,7 +24,7 @@ func (s *SSHTunnelResourceModel) UpdateFromAPIModel(apiModel artieclient.SSHTunn
 	s.PublicKey = types.StringValue(apiModel.PublicKey)
 }
 
-func (s SSHTunnelResourceModel) ToAPIBaseModel() artieclient.BaseSSHTunnel {
+func (s SSHTunnel) ToAPIBaseModel() artieclient.BaseSSHTunnel {
 	return artieclient.BaseSSHTunnel{
 		Name:      s.Name.ValueString(),
 		Host:      s.Host.ValueString(),
@@ -34,7 +34,7 @@ func (s SSHTunnelResourceModel) ToAPIBaseModel() artieclient.BaseSSHTunnel {
 	}
 }
 
-func (s SSHTunnelResourceModel) ToAPIModel() artieclient.SSHTunnel {
+func (s SSHTunnel) ToAPIModel() artieclient.SSHTunnel {
 	return artieclient.SSHTunnel{
 		UUID:          parseUUID(s.UUID),
 		BaseSSHTunnel: s.ToAPIBaseModel(),
