@@ -33,6 +33,7 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 func (d Deployment) ToAPIModel() artieclient.Deployment {
 	return artieclient.Deployment{
 		UUID:           parseUUID(d.UUID),
+		Status:         d.Status.ValueString(),
 		BaseDeployment: d.ToAPIBaseModel(),
 	}
 }
