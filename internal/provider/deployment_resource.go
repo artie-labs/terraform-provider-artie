@@ -183,14 +183,14 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read Terraform plan data into the model
-	var data tfmodels.Deployment
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var planData tfmodels.Deployment
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Validate config before creating the deployment
-	deployment := data.ToAPIBaseModel()
+	deployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -220,38 +220,38 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Translate API response into Terraform state & save state
-	data.UpdateFromAPIModel(updatedDeployment)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	planData.UpdateFromAPIModel(updatedDeployment)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read Terraform prior state data into the model
-	var data tfmodels.Deployment
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var stateData tfmodels.Deployment
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	deployment, err := r.client.Deployments().Get(ctx, data.UUID.ValueString())
+	deployment, err := r.client.Deployments().Get(ctx, stateData.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	data.UpdateFromAPIModel(deployment)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	stateData.UpdateFromAPIModel(deployment)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateData)...)
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read Terraform plan data into the model
-	var data tfmodels.Deployment
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var planData tfmodels.Deployment
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	baseDeployment := data.ToAPIBaseModel()
+	baseDeployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -262,26 +262,26 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	updatedDeployment, err := r.client.Deployments().Update(ctx, data.ToAPIModel())
+	updatedDeployment, err := r.client.Deployments().Update(ctx, planData.ToAPIModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	data.UpdateFromAPIModel(updatedDeployment)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	planData.UpdateFromAPIModel(updatedDeployment)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
 }
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read Terraform prior state data into the model
-	var data tfmodels.Deployment
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var stateData tfmodels.Deployment
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Deployments().Delete(ctx, data.UUID.ValueString()); err != nil {
+	if err := r.client.Deployments().Delete(ctx, stateData.UUID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Deployment", err.Error())
 	}
 }
