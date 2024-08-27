@@ -6,7 +6,7 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 )
 
-func (s *SSHTunnelResourceModel) FillFromAPIModel(apiModel artieclient.SSHTunnel) {
+func (s *SSHTunnelResourceModel) UpdateFromAPIModel(apiModel artieclient.SSHTunnel) {
 	s.UUID = types.StringValue(apiModel.UUID.String())
 	s.Name = types.StringValue(apiModel.Name)
 	s.Host = types.StringValue(apiModel.Host)

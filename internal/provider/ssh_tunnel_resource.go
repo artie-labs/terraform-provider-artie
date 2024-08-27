@@ -98,7 +98,7 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Translate API response into Terraform state & save state
-	data.FillFromAPIModel(sshTunnel)
+	data.UpdateFromAPIModel(sshTunnel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -117,7 +117,7 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// Translate API response into Terraform state & save state
-	data.FillFromAPIModel(sshTunnel)
+	data.UpdateFromAPIModel(sshTunnel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -136,7 +136,7 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Translate API response into Terraform state & save state
-	data.FillFromAPIModel(sshTunnel)
+	data.UpdateFromAPIModel(sshTunnel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
