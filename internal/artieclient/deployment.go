@@ -23,10 +23,10 @@ var AllSourceTypes = []string{
 
 func SourceTypeFromString(sourceType string) SourceType {
 	switch SourceType(sourceType) {
-	case PostgreSQL:
-		return PostgreSQL
 	case MySQL:
 		return MySQL
+	case PostgreSQL:
+		return PostgreSQL
 	default:
 		panic(fmt.Sprintf("invalid source type: %s", sourceType))
 	}
