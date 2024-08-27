@@ -18,15 +18,15 @@ const (
 )
 
 func DestinationTypeFromString(destType string) DestinationType {
-	switch destType {
-	case string(Snowflake):
+	switch DestinationType(destType) {
+	case Snowflake:
 		return Snowflake
-	case string(BigQuery):
+	case BigQuery:
 		return BigQuery
-	case string(Redshift):
+	case Redshift:
 		return Redshift
 	default:
-		return ""
+		panic(fmt.Sprintf("invalid destination type: %s", destType))
 	}
 }
 

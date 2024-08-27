@@ -17,13 +17,13 @@ const (
 )
 
 func SourceTypeFromString(sourceType string) SourceType {
-	switch sourceType {
-	case string(PostgreSQL):
+	switch SourceType(sourceType) {
+	case PostgreSQL:
 		return PostgreSQL
-	case string(MySQL):
+	case MySQL:
 		return MySQL
 	default:
-		return ""
+		panic(fmt.Sprintf("invalid source type: %s", sourceType))
 	}
 }
 
