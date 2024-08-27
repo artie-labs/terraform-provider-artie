@@ -85,10 +85,10 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 	r.client = client
 }
 
-func (r *SSHTunnelResource) GetStateData(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) tfmodels.SSHTunnel {
+func (r *SSHTunnelResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) string {
 	var stateData tfmodels.SSHTunnel
 	diagnostics.Append(state.Get(ctx, &stateData)...)
-	return stateData
+	return stateData.UUID.ValueString()
 }
 
 func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) tfmodels.SSHTunnel {
@@ -118,12 +118,12 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	stateData := r.GetStateData(ctx, req.State, resp.Diagnostics)
+	tunnelUUID := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	sshTunnel, err := r.client.SSHTunnels().Get(ctx, stateData.UUID.ValueString())
+	sshTunnel, err := r.client.SSHTunnels().Get(ctx, tunnelUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read SSH Tunnel", err.Error())
 		return
@@ -148,12 +148,12 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	stateData := r.GetStateData(ctx, req.State, resp.Diagnostics)
+	tunnelUUID := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.SSHTunnels().Delete(ctx, stateData.UUID.ValueString()); err != nil {
+	if err := r.client.SSHTunnels().Delete(ctx, tunnelUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete SSH Tunnel", err.Error())
 	}
 }
