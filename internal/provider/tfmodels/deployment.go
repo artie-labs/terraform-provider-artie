@@ -23,11 +23,11 @@ type Deployment struct {
 type Source struct {
 	Type           types.String     `tfsdk:"type"`
 	Tables         map[string]Table `tfsdk:"tables"`
-	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
 	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
+	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
 }
 
-type PostgresConfig struct {
+type MySQLConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
@@ -35,7 +35,7 @@ type PostgresConfig struct {
 	Password types.String `tfsdk:"password"`
 }
 
-type MySQLConfig struct {
+type PostgresConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
@@ -88,16 +88,16 @@ func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 		Tables: tables,
 	}
 	switch apiModel.Source.Type {
-	case artieclient.PostgreSQL:
-		d.Source.PostgresConfig = &PostgresConfig{
+	case artieclient.MySQL:
+		d.Source.MySQLConfig = &MySQLConfig{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
-	case artieclient.MySQL:
-		d.Source.MySQLConfig = &MySQLConfig{
+	case artieclient.PostgreSQL:
+		d.Source.PostgresConfig = &PostgresConfig{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
@@ -154,14 +154,6 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 	}
 
 	switch sourceType {
-	case artieclient.PostgreSQL:
-		baseDeployment.Source.Config = artieclient.SourceConfig{
-			Host:     d.Source.PostgresConfig.Host.ValueString(),
-			Port:     d.Source.PostgresConfig.Port.ValueInt32(),
-			User:     d.Source.PostgresConfig.User.ValueString(),
-			Password: d.Source.PostgresConfig.Password.ValueString(),
-			Database: d.Source.PostgresConfig.Database.ValueString(),
-		}
 	case artieclient.MySQL:
 		baseDeployment.Source.Config = artieclient.SourceConfig{
 			Host:     d.Source.MySQLConfig.Host.ValueString(),
@@ -169,6 +161,14 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 			User:     d.Source.MySQLConfig.User.ValueString(),
 			Password: d.Source.MySQLConfig.Password.ValueString(),
 			Database: d.Source.MySQLConfig.Database.ValueString(),
+		}
+	case artieclient.PostgreSQL:
+		baseDeployment.Source.Config = artieclient.SourceConfig{
+			Host:     d.Source.PostgresConfig.Host.ValueString(),
+			Port:     d.Source.PostgresConfig.Port.ValueInt32(),
+			User:     d.Source.PostgresConfig.User.ValueString(),
+			Password: d.Source.PostgresConfig.Password.ValueString(),
+			Database: d.Source.PostgresConfig.Database.ValueString(),
 		}
 	default:
 		panic(fmt.Sprintf("invalid source type: %s", d.Source.Type.ValueString()))
