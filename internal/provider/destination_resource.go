@@ -46,17 +46,6 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllDestinationTypes...)},
 			},
 			"label": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this destination."},
-			"snowflake_config": schema.SingleNestedAttribute{
-				MarkdownDescription: "This should be filled out if the destination type is `snowflake`.",
-				Optional:            true,
-				Attributes: map[string]schema.Attribute{
-					"account_url": schema.StringAttribute{Required: true, MarkdownDescription: "The URL of your Snowflake account."},
-					"virtual_dwh": schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
-					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
-					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
-					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
-				},
-			},
 			"bigquery_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the destination type is `bigquery`.",
 				Optional:            true,
@@ -73,6 +62,17 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 					"endpoint": schema.StringAttribute{Required: true, MarkdownDescription: "The endpoint URL of your Redshift cluster. This should include both the host and port."},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Redshift."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the service account we should use to connect to Redshift."},
+				},
+			},
+			"snowflake_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the destination type is `snowflake`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"account_url": schema.StringAttribute{Required: true, MarkdownDescription: "The URL of your Snowflake account."},
+					"virtual_dwh": schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
+					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
+					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
+					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
 				},
 			},
 		},
