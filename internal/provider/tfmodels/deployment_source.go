@@ -39,6 +39,24 @@ func (s Source) ToAPIModel() artieclient.Source {
 	}
 }
 
+func SourceFromAPIModel(apiModel artieclient.Source) Source {
+	source := Source{
+		Type:   types.StringValue(string(apiModel.Type)),
+		Tables: TablesFromAPIModel(apiModel.Tables),
+	}
+
+	switch apiModel.Type {
+	case artieclient.MySQL:
+		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
+	case artieclient.PostgreSQL:
+		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
+	}
+
+	return source
+}
+
 type MySQLConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
@@ -57,6 +75,16 @@ func (m MySQLConfig) ToAPIModel() artieclient.SourceConfig {
 	}
 }
 
+func MySQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MySQLConfig {
+	return &MySQLConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+		Database: types.StringValue(apiModel.Database),
+	}
+}
+
 type PostgresConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
@@ -72,5 +100,15 @@ func (p PostgresConfig) ToAPIModel() artieclient.SourceConfig {
 		User:     p.User.ValueString(),
 		Password: p.Password.ValueString(),
 		Database: p.Database.ValueString(),
+	}
+}
+
+func PostgresConfigFromAPIModel(apiModel artieclient.SourceConfig) *PostgresConfig {
+	return &PostgresConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+		Database: types.StringValue(apiModel.Database),
 	}
 }
