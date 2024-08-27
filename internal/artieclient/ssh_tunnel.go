@@ -39,13 +39,7 @@ func (sc SSHTunnelClient) Get(ctx context.Context, sshTunnelUUID string) (SSHTun
 }
 
 func (sc SSHTunnelClient) Create(ctx context.Context, sshTunnel BaseSSHTunnel) (SSHTunnel, error) {
-	body := map[string]any{
-		"name":     sshTunnel.Name,
-		"host":     sshTunnel.Host,
-		"port":     sshTunnel.Port,
-		"username": sshTunnel.Username,
-	}
-	return makeRequest[SSHTunnel](ctx, sc.client, http.MethodPost, sc.basePath(), body)
+	return makeRequest[SSHTunnel](ctx, sc.client, http.MethodPost, sc.basePath(), sshTunnel)
 }
 
 func (sc SSHTunnelClient) Update(ctx context.Context, sshTunnel SSHTunnel) (SSHTunnel, error) {
