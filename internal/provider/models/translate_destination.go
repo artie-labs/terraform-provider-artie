@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (d *DestinationResourceModel) FillFromAPIModel(apiModel artieclient.Destination) {
+func (d *DestinationResourceModel) UpdateFromAPIModel(apiModel artieclient.Destination) {
 	d.UUID = types.StringValue(apiModel.UUID.String())
 	d.Type = types.StringValue(apiModel.Type)
 	d.Label = types.StringValue(apiModel.Label)
