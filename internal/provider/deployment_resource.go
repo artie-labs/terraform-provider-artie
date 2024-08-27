@@ -57,23 +57,6 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "The type of source database. This must be one of the following: `mysql` or `postgresql`.",
 						Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllSourceTypes...)},
 					},
-					"postgresql_config": schema.SingleNestedAttribute{
-						Optional:            true,
-						MarkdownDescription: "This should be filled out if the source type is `postgresql`.",
-						Attributes: map[string]schema.Attribute{
-							"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`."},
-							"port": schema.Int32Attribute{
-								Required:            true,
-								MarkdownDescription: "The default port for PostgreSQL is 5432.",
-								Validators: []validator.Int32{
-									int32validator.Between(1024, math.MaxUint16),
-								},
-							},
-							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
-							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the PostgreSQL server."},
-						},
-					},
 					"mysql_config": schema.SingleNestedAttribute{
 						Optional:            true,
 						MarkdownDescription: "This should be filled out if the source type is `mysql`.",
@@ -89,6 +72,23 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
 							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the MySQL server."},
+						},
+					},
+					"postgresql_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `postgresql`.",
+						Attributes: map[string]schema.Attribute{
+							"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`."},
+							"port": schema.Int32Attribute{
+								Required:            true,
+								MarkdownDescription: "The default port for PostgreSQL is 5432.",
+								Validators: []validator.Int32{
+									int32validator.Between(1024, math.MaxUint16),
+								},
+							},
+							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the PostgreSQL server."},
 						},
 					},
 					"tables": schema.MapNestedAttribute{
