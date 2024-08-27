@@ -22,8 +22,8 @@ type Deployment struct {
 func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 	return artieclient.BaseDeployment{
 		Name:                     d.Name.ValueString(),
-		DestinationUUID:          ParseOptionalUUID(d.DestinationUUID),
 		Source:                   d.Source.ToAPIModel(),
+		DestinationUUID:          ParseOptionalUUID(d.DestinationUUID),
 		DestinationConfig:        d.DestinationConfig.ToAPIModel(),
 		SSHTunnelUUID:            ParseOptionalUUID(d.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID: ParseOptionalUUID(d.SnowflakeEcoScheduleUUID),
