@@ -91,14 +91,14 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	sshTunnel, err := r.client.SSHTunnels().Create(ctx, data.Name.ValueString(), data.Host.ValueString(), data.Username.ValueString(), data.Port.ValueInt32())
+	sshTunnel, err := r.client.SSHTunnels().Create(ctx, data.ToAPIBaseModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create SSH Tunnel", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
+	data.UpdateFromAPIModel(sshTunnel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -117,7 +117,7 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// Translate API response into Terraform state & save state
-	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
+	data.UpdateFromAPIModel(sshTunnel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -129,15 +129,14 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	sshTunnel := models.SSHTunnelResourceToAPIModel(data)
-	sshTunnel, err := r.client.SSHTunnels().Update(ctx, sshTunnel)
+	sshTunnel, err := r.client.SSHTunnels().Update(ctx, data.ToAPIModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update SSH Tunnel", err.Error())
 		return
 	}
 
 	// Translate API response into Terraform state & save state
-	models.SSHTunnelAPIToResourceModel(sshTunnel, &data)
+	data.UpdateFromAPIModel(sshTunnel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
