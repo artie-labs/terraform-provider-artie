@@ -104,6 +104,8 @@ func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 			Password: types.StringValue(apiModel.Source.Config.Password),
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", apiModel.Source.Type))
 	}
 
 	d.DestinationConfig = &DeploymentDestinationConfig{
@@ -168,6 +170,8 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 			Password: d.Source.MySQLConfig.Password.ValueString(),
 			Database: d.Source.MySQLConfig.Database.ValueString(),
 		}
+	default:
+		panic(fmt.Sprintf("invalid source type: %s", d.Source.Type.ValueString()))
 	}
 
 	return baseDeployment

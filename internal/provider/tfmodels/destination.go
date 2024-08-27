@@ -1,6 +1,8 @@
 package tfmodels
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -66,6 +68,8 @@ func (d *Destination) UpdateFromAPIModel(apiModel artieclient.Destination) {
 			Username: types.StringValue(apiModel.Config.Username),
 			Password: types.StringValue(apiModel.Config.Password),
 		}
+	default:
+		panic(fmt.Sprintf("invalid destination type: %s", apiModel.Type))
 	}
 }
 
@@ -94,7 +98,7 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 			Password: d.RedshiftConfig.Password.ValueString(),
 		}
 	default:
-		sharedConfig = artieclient.DestinationSharedConfig{}
+		panic(fmt.Sprintf("invalid destination type: %s", d.Type.ValueString()))
 	}
 
 	return artieclient.BaseDestination{
