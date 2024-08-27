@@ -17,25 +17,25 @@ const (
 	MySQL      SourceType = "mysql"
 )
 
-type DeploymentResourceModel struct {
-	UUID                     types.String                      `tfsdk:"uuid"`
-	Name                     types.String                      `tfsdk:"name"`
-	Status                   types.String                      `tfsdk:"status"`
-	Source                   *SourceModel                      `tfsdk:"source"`
-	DestinationUUID          types.String                      `tfsdk:"destination_uuid"`
-	DestinationConfig        *DeploymentDestinationConfigModel `tfsdk:"destination_config"`
-	SSHTunnelUUID            types.String                      `tfsdk:"ssh_tunnel_uuid"`
-	SnowflakeEcoScheduleUUID types.String                      `tfsdk:"snowflake_eco_schedule_uuid"`
+type Deployment struct {
+	UUID                     types.String                 `tfsdk:"uuid"`
+	Name                     types.String                 `tfsdk:"name"`
+	Status                   types.String                 `tfsdk:"status"`
+	Source                   *Source                      `tfsdk:"source"`
+	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
+	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
+	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
+	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
 }
 
-type SourceModel struct {
-	Type           types.String          `tfsdk:"type"`
-	Tables         map[string]TableModel `tfsdk:"tables"`
-	PostgresConfig *PostgresConfigModel  `tfsdk:"postgresql_config"`
-	MySQLConfig    *MySQLConfigModel     `tfsdk:"mysql_config"`
+type Source struct {
+	Type           types.String     `tfsdk:"type"`
+	Tables         map[string]Table `tfsdk:"tables"`
+	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
+	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
 }
 
-type PostgresConfigModel struct {
+type PostgresConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
@@ -43,7 +43,7 @@ type PostgresConfigModel struct {
 	Password types.String `tfsdk:"password"`
 }
 
-type MySQLConfigModel struct {
+type MySQLConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int32  `tfsdk:"port"`
 	User     types.String `tfsdk:"user"`
@@ -51,7 +51,7 @@ type MySQLConfigModel struct {
 	Password types.String `tfsdk:"password"`
 }
 
-type TableModel struct {
+type Table struct {
 	UUID                 types.String `tfsdk:"uuid"`
 	Name                 types.String `tfsdk:"name"`
 	Schema               types.String `tfsdk:"schema"`
@@ -60,7 +60,7 @@ type TableModel struct {
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
 }
 
-type DeploymentDestinationConfigModel struct {
+type DeploymentDestinationConfig struct {
 	Dataset               types.String `tfsdk:"dataset"`
 	Database              types.String `tfsdk:"database"`
 	Schema                types.String `tfsdk:"schema"`
@@ -68,7 +68,7 @@ type DeploymentDestinationConfigModel struct {
 	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
 }
 
-func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deployment) {
+func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
 	d.UUID = types.StringValue(apiModel.UUID.String())
 	d.Name = types.StringValue(apiModel.Name)
 	d.Status = types.StringValue(apiModel.Status)
@@ -76,13 +76,13 @@ func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deploy
 	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
 	d.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
 
-	tables := map[string]TableModel{}
+	tables := map[string]Table{}
 	for _, apiTable := range apiModel.Source.Tables {
 		tableKey := apiTable.Name
 		if apiTable.Schema != "" {
 			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
 		}
-		tables[tableKey] = TableModel{
+		tables[tableKey] = Table{
 			UUID:                 types.StringValue(apiTable.UUID.String()),
 			Name:                 types.StringValue(apiTable.Name),
 			Schema:               types.StringValue(apiTable.Schema),
@@ -91,13 +91,13 @@ func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deploy
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 		}
 	}
-	d.Source = &SourceModel{
+	d.Source = &Source{
 		Type:   types.StringValue(apiModel.Source.Type),
 		Tables: tables,
 	}
 	switch strings.ToLower(d.Source.Type.ValueString()) {
 	case string(PostgreSQL):
-		d.Source.PostgresConfig = &PostgresConfigModel{
+		d.Source.PostgresConfig = &PostgresConfig{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
@@ -105,7 +105,7 @@ func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deploy
 			Database: types.StringValue(apiModel.Source.Config.Database),
 		}
 	case string(MySQL):
-		d.Source.MySQLConfig = &MySQLConfigModel{
+		d.Source.MySQLConfig = &MySQLConfig{
 			Host:     types.StringValue(apiModel.Source.Config.Host),
 			Port:     types.Int32Value(apiModel.Source.Config.Port),
 			User:     types.StringValue(apiModel.Source.Config.User),
@@ -114,7 +114,7 @@ func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deploy
 		}
 	}
 
-	d.DestinationConfig = &DeploymentDestinationConfigModel{
+	d.DestinationConfig = &DeploymentDestinationConfig{
 		Dataset:               types.StringValue(apiModel.DestinationConfig.Dataset),
 		Database:              types.StringValue(apiModel.DestinationConfig.Database),
 		Schema:                types.StringValue(apiModel.DestinationConfig.Schema),
@@ -123,7 +123,7 @@ func (d *DeploymentResourceModel) UpdateFromAPIModel(apiModel artieclient.Deploy
 	}
 }
 
-func (d DeploymentResourceModel) ToAPIBaseModel() artieclient.BaseDeployment {
+func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 	tables := []artieclient.Table{}
 	for _, table := range d.Source.Tables {
 		tableUUID := table.UUID.ValueString()
@@ -180,7 +180,7 @@ func (d DeploymentResourceModel) ToAPIBaseModel() artieclient.BaseDeployment {
 	return baseDeployment
 }
 
-func (d DeploymentResourceModel) ToAPIModel() artieclient.Deployment {
+func (d Deployment) ToAPIModel() artieclient.Deployment {
 	return artieclient.Deployment{
 		UUID:           parseUUID(d.UUID),
 		BaseDeployment: d.ToAPIBaseModel(),
