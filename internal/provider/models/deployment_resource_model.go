@@ -3,10 +3,11 @@ package models
 import (
 	"fmt"
 	"strings"
-	"terraform-provider-artie/internal/artieclient"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"terraform-provider-artie/internal/artieclient"
 )
 
 type SourceType string
