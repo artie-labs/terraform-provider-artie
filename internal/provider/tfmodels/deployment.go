@@ -36,15 +36,17 @@ func (d Deployment) ToAPIModel() artieclient.Deployment {
 	}
 }
 
-func (d *Deployment) UpdateFromAPIModel(apiModel artieclient.Deployment) {
-	d.UUID = types.StringValue(apiModel.UUID.String())
-	d.Name = types.StringValue(apiModel.Name)
-	d.Status = types.StringValue(apiModel.Status)
-	d.DestinationUUID = optionalUUIDToStringValue(apiModel.DestinationUUID)
-	d.SSHTunnelUUID = optionalUUIDToStringValue(apiModel.SSHTunnelUUID)
-	d.SnowflakeEcoScheduleUUID = optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID)
-	d.Source = SourceFromAPIModel(apiModel.Source)
-	d.DestinationConfig = DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
+func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
+	return Deployment{
+		UUID:                     types.StringValue(apiModel.UUID.String()),
+		Name:                     types.StringValue(apiModel.Name),
+		Status:                   types.StringValue(apiModel.Status),
+		Source:                   SourceFromAPIModel(apiModel.Source),
+		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
+		DestinationConfig:        DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig),
+		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
+		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
+	}
 }
 
 type DeploymentDestinationConfig struct {
