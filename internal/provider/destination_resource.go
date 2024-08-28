@@ -170,8 +170,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	fullDestination := planData.ToAPIModel()
-	updatedDestination, err := r.client.Destinations().Update(ctx, fullDestination)
+	updatedDestination, err := r.client.Destinations().Update(ctx, planData.ToAPIModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
