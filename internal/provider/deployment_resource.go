@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -176,11 +178,26 @@ func (r *DeploymentResource) Configure(ctx context.Context, req resource.Configu
 	r.client = client
 }
 
-func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Read Terraform plan data into the model
+func (r *DeploymentResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) (string, bool) {
+	var stateData tfmodels.Deployment
+	diagnostics.Append(state.Get(ctx, &stateData)...)
+	return stateData.UUID.ValueString(), diagnostics.HasError()
+}
+
+func (r *DeploymentResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) (tfmodels.Deployment, bool) {
 	var planData tfmodels.Deployment
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
-	if resp.Diagnostics.HasError() {
+	diagnostics.Append(plan.Get(ctx, &planData)...)
+	return planData, diagnostics.HasError()
+}
+
+func (r *DeploymentResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, deployment artieclient.Deployment) {
+	// Translate API response type into Terraform model and save it into state
+	diagnostics.Append(state.Set(ctx, tfmodels.DeploymentFromAPIModel(deployment))...)
+}
+
+func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
@@ -214,44 +231,36 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.DeploymentFromAPIModel(updatedDeployment))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, updatedDeployment)
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Read Terraform prior state data into the model
-	var stateData tfmodels.Deployment
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
-	if resp.Diagnostics.HasError() {
+	deploymentUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
-	deployment, err := r.client.Deployments().Get(ctx, stateData.UUID.ValueString())
+	deployment, err := r.client.Deployments().Get(ctx, deploymentUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Deployment", err.Error())
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.DeploymentFromAPIModel(deployment))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, deployment)
 }
 
 func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Read Terraform plan data into the model
-	var planData tfmodels.Deployment
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
-	if resp.Diagnostics.HasError() {
+	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
+	// Validate source & destination config before updating the deployment
 	baseDeployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
 	}
-
 	if err := r.client.Deployments().ValidateDestination(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -263,20 +272,16 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Translate API response into Terraform model and save it into state
-	diagnostics := resp.State.Set(ctx, tfmodels.DeploymentFromAPIModel(updatedDeployment))
-	resp.Diagnostics.Append(diagnostics...)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, updatedDeployment)
 }
 
 func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Read Terraform prior state data into the model
-	var stateData tfmodels.Deployment
-	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
-	if resp.Diagnostics.HasError() {
+	deploymentUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
-	if err := r.client.Deployments().Delete(ctx, stateData.UUID.ValueString()); err != nil {
+	if err := r.client.Deployments().Delete(ctx, deploymentUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Deployment", err.Error())
 	}
 }
