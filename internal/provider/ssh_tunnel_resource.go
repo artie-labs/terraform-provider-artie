@@ -85,16 +85,16 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 	r.client = client
 }
 
-func (r *SSHTunnelResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) string {
+func (r *SSHTunnelResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) (string, bool) {
 	var stateData tfmodels.SSHTunnel
 	diagnostics.Append(state.Get(ctx, &stateData)...)
-	return stateData.UUID.ValueString()
+	return stateData.UUID.ValueString(), diagnostics.HasError()
 }
 
-func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) tfmodels.SSHTunnel {
+func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) (tfmodels.SSHTunnel, bool) {
 	var planData tfmodels.SSHTunnel
 	diagnostics.Append(plan.Get(ctx, &planData)...)
-	return planData
+	return planData, diagnostics.HasError()
 }
 
 func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
@@ -103,8 +103,8 @@ func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State
 }
 
 func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	planData := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
@@ -118,8 +118,8 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tunnelUUID := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	tunnelUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
@@ -133,8 +133,8 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	planData := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
@@ -148,8 +148,8 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tunnelUUID := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	tunnelUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	if hasError {
 		return
 	}
 
