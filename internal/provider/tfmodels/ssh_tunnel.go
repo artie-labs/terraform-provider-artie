@@ -15,17 +15,6 @@ type SSHTunnel struct {
 	PublicKey types.String `tfsdk:"public_key"`
 }
 
-func SSHTunnelFromAPIModel(apiModel artieclient.SSHTunnel) SSHTunnel {
-	return SSHTunnel{
-		UUID:      types.StringValue(apiModel.UUID.String()),
-		Name:      types.StringValue(apiModel.Name),
-		Host:      types.StringValue(apiModel.Host),
-		Port:      types.Int32Value(apiModel.Port),
-		Username:  types.StringValue(apiModel.Username),
-		PublicKey: types.StringValue(apiModel.PublicKey),
-	}
-}
-
 func (s SSHTunnel) ToAPIBaseModel() artieclient.BaseSSHTunnel {
 	return artieclient.BaseSSHTunnel{
 		Name:      s.Name.ValueString(),
@@ -40,5 +29,16 @@ func (s SSHTunnel) ToAPIModel() artieclient.SSHTunnel {
 	return artieclient.SSHTunnel{
 		UUID:          parseUUID(s.UUID),
 		BaseSSHTunnel: s.ToAPIBaseModel(),
+	}
+}
+
+func SSHTunnelFromAPIModel(apiModel artieclient.SSHTunnel) SSHTunnel {
+	return SSHTunnel{
+		UUID:      types.StringValue(apiModel.UUID.String()),
+		Name:      types.StringValue(apiModel.Name),
+		Host:      types.StringValue(apiModel.Host),
+		Port:      types.Int32Value(apiModel.Port),
+		Username:  types.StringValue(apiModel.Username),
+		PublicKey: types.StringValue(apiModel.PublicKey),
 	}
 }
