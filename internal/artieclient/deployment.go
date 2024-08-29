@@ -115,8 +115,11 @@ func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (Depl
 	return response.Deployment, nil
 }
 
-func (dc DeploymentClient) Create(ctx context.Context, sourceType SourceType) (Deployment, error) {
-	body := map[string]any{"source": sourceType}
+func (dc DeploymentClient) Create(ctx context.Context, deployment BaseDeployment) (Deployment, error) {
+	body := map[string]any{
+		"deployment":      deployment,
+		"startDeployment": true,
+	}
 	return makeRequest[Deployment](ctx, dc.client, http.MethodPost, dc.basePath(), body)
 }
 

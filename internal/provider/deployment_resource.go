@@ -213,25 +213,13 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	// Our API's create endpoint only accepts the source type, so we need to send two requests:
-	// one to create the bare-bones deployment, then one to update it with the rest of the data
-	createdDeployment, err := r.client.Deployments().Create(ctx, deployment.Source.Type)
+	createdDeployment, err := r.client.Deployments().Create(ctx, deployment)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
 
-	// Fill in computed fields from the API response of the newly created deployment
-	fullDeployment := deployment.ToFullDeployment(createdDeployment.UUID, createdDeployment.Status)
-
-	// Second API request: update the newly created deployment
-	updatedDeployment, err := r.client.Deployments().Update(ctx, fullDeployment)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
-		return
-	}
-
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, updatedDeployment)
+	r.SetStateData(ctx, &resp.State, resp.Diagnostics, createdDeployment)
 }
 
 func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
