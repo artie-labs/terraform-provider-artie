@@ -36,7 +36,7 @@ type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Source                   Source            `json:"source"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
-	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
+	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 }
@@ -166,7 +166,7 @@ func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment B
 
 	body := map[string]any{
 		"destinationUUID": deployment.DestinationUUID,
-		"uniqueCfg":       deployment.DestinationConfig,
+		"specificCfg":     deployment.DestinationConfig,
 		"tables":          deployment.Source.Tables,
 		"sourceType":      deployment.Source.Type,
 	}
