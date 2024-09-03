@@ -36,7 +36,7 @@ type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Source                   Source            `json:"source"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
-	DestinationConfig        DestinationConfig `json:"uniqueConfig"`
+	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 }
