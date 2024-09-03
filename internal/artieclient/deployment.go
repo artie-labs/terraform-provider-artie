@@ -166,7 +166,7 @@ func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment B
 
 	body := map[string]any{
 		"destinationUUID": deployment.DestinationUUID,
-		"uniqueCfg":       deployment.DestinationConfig,
+		"specificCfg":     deployment.DestinationConfig,
 		"tables":          deployment.Source.Tables,
 		"sourceType":      deployment.Source.Type,
 	}
