@@ -122,9 +122,8 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 	}
 
 	body := map[string]any{
-		"deploy":           deployment,
-		"updateDeployOnly": true,
-		"startDeploy":      true,
+		"deploy":      deployment,
+		"startDeploy": true,
 	}
 
 	response, err := makeRequest[deploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)

@@ -4,6 +4,7 @@
 example.tf
 terraform.tfplan
 terraform.tfstate
+secret.tfvars
 bin/
 dist/
 modules-dev/
