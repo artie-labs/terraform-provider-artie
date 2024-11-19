@@ -39,12 +39,32 @@ type BaseDeployment struct {
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
+
+	// Advanced settings
+	DropDeletedColumns *bool `json:"dropDeletedColumns"`
+	EnableSoftDelete   *bool `json:"enableSoftDelete"`
 }
 
 type Deployment struct {
 	BaseDeployment
 	UUID   uuid.UUID `json:"uuid"`
 	Status string    `json:"status"`
+}
+
+type deploymentWithAdvSettings struct {
+	Deployment
+	AdvancedSettings advancedSettings `json:"advancedSettings"`
+}
+
+type advancedSettings struct {
+	DropDeletedColumns bool `json:"dropDeletedColumns"`
+	EnableSoftDelete   bool `json:"enableSoftDelete"`
+}
+
+func unnestAdvSettings(deployment deploymentWithAdvSettings) Deployment {
+	deployment.DropDeletedColumns = &deployment.AdvancedSettings.DropDeletedColumns
+	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
+	return deployment.Deployment
 }
 
 type Source struct {
@@ -88,7 +108,7 @@ func (DeploymentClient) basePath() string {
 }
 
 type deploymentAPIResponse struct {
-	Deployment Deployment `json:"deploy"`
+	Deployment deploymentWithAdvSettings `json:"deploy"`
 }
 
 type validationResponse struct {
@@ -104,7 +124,7 @@ func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (Depl
 	if err != nil {
 		return Deployment{}, err
 	}
-	return response.Deployment, nil
+	return unnestAdvSettings(response.Deployment), nil
 }
 
 func (dc DeploymentClient) Create(ctx context.Context, deployment BaseDeployment) (Deployment, error) {
@@ -130,7 +150,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 	if err != nil {
 		return Deployment{}, err
 	}
-	return response.Deployment, nil
+	return unnestAdvSettings(response.Deployment), nil
 }
 
 func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDeployment) error {
