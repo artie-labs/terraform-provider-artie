@@ -106,25 +106,25 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 	r.client = client
 }
 
-func (r *DestinationResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) (string, bool) {
+func (r *DestinationResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
 	var stateData tfmodels.Destination
 	diagnostics.Append(state.Get(ctx, &stateData)...)
 	return stateData.UUID.ValueString(), diagnostics.HasError()
 }
 
-func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) (tfmodels.Destination, bool) {
+func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Destination, bool) {
 	var planData tfmodels.Destination
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData, diagnostics.HasError()
 }
 
-func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, destination artieclient.Destination) {
+func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, destination artieclient.Destination) {
 	// Translate API response type into Terraform model and save it into state
 	diagnostics.Append(state.Set(ctx, tfmodels.DestinationFromAPIModel(destination))...)
 }
 
 func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
 	}
@@ -141,11 +141,11 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, destination)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, destination)
 }
 
 func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	destinationUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	destinationUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
 	if hasError {
 		return
 	}
@@ -156,11 +156,11 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, destination)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, destination)
 }
 
 func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
 	}
@@ -176,11 +176,11 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, updatedDestination)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedDestination)
 }
 
 func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	destinationUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	destinationUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
 	if hasError {
 		return
 	}

@@ -85,25 +85,25 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 	r.client = client
 }
 
-func (r *SSHTunnelResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics diag.Diagnostics) (string, bool) {
+func (r *SSHTunnelResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
 	var stateData tfmodels.SSHTunnel
 	diagnostics.Append(state.Get(ctx, &stateData)...)
 	return stateData.UUID.ValueString(), diagnostics.HasError()
 }
 
-func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics diag.Diagnostics) (tfmodels.SSHTunnel, bool) {
+func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.SSHTunnel, bool) {
 	var planData tfmodels.SSHTunnel
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData, diagnostics.HasError()
 }
 
-func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
+func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
 	// Translate API response type into Terraform model and save it into state
 	diagnostics.Append(state.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))...)
 }
 
 func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
 	}
@@ -114,11 +114,11 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, sshTunnel)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sshTunnel)
 }
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tunnelUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	tunnelUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
 	if hasError {
 		return
 	}
@@ -129,11 +129,11 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, sshTunnel)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sshTunnel)
 }
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	planData, hasError := r.GetPlanData(ctx, req.Plan, resp.Diagnostics)
+	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
 	}
@@ -144,11 +144,11 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, resp.Diagnostics, sshTunnel)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sshTunnel)
 }
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tunnelUUID, hasError := r.GetUUIDFromState(ctx, req.State, resp.Diagnostics)
+	tunnelUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
 	if hasError {
 		return
 	}
