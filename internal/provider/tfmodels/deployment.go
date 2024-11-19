@@ -7,14 +7,14 @@ import (
 )
 
 type Deployment struct {
-	UUID                     types.String                `tfsdk:"uuid"`
-	Name                     types.String                `tfsdk:"name"`
-	Status                   types.String                `tfsdk:"status"`
-	Source                   Source                      `tfsdk:"source"`
-	DestinationUUID          types.String                `tfsdk:"destination_uuid"`
-	DestinationConfig        DeploymentDestinationConfig `tfsdk:"destination_config"`
-	SSHTunnelUUID            types.String                `tfsdk:"ssh_tunnel_uuid"`
-	SnowflakeEcoScheduleUUID types.String                `tfsdk:"snowflake_eco_schedule_uuid"`
+	UUID                     types.String                 `tfsdk:"uuid"`
+	Name                     types.String                 `tfsdk:"name"`
+	Status                   types.String                 `tfsdk:"status"`
+	Source                   *Source                      `tfsdk:"source"`
+	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
+	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
+	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
+	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
 
 	// Advanced settings
 	DropDeletedColumns types.Bool `tfsdk:"drop_deleted_columns"`
@@ -43,13 +43,15 @@ func (d Deployment) ToAPIModel() artieclient.Deployment {
 }
 
 func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
+	source := SourceFromAPIModel(apiModel.Source)
+	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 	return Deployment{
 		UUID:                     types.StringValue(apiModel.UUID.String()),
 		Name:                     types.StringValue(apiModel.Name),
 		Status:                   types.StringValue(apiModel.Status),
-		Source:                   SourceFromAPIModel(apiModel.Source),
+		Source:                   &source,
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
-		DestinationConfig:        DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig),
+		DestinationConfig:        &destinationConfig,
 		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
 		DropDeletedColumns:       optionalBoolToBoolValue(apiModel.DropDeletedColumns),
