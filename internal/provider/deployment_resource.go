@@ -149,6 +149,8 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 				},
 			},
+			"drop_deleted_columns": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a column is dropped from the source it will also be dropped in the destination."},
+			"soft_delete_rows":     schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted."},
 		},
 	}
 }

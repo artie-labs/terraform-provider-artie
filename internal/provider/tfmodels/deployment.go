@@ -15,6 +15,10 @@ type Deployment struct {
 	DestinationConfig        DeploymentDestinationConfig `tfsdk:"destination_config"`
 	SSHTunnelUUID            types.String                `tfsdk:"ssh_tunnel_uuid"`
 	SnowflakeEcoScheduleUUID types.String                `tfsdk:"snowflake_eco_schedule_uuid"`
+
+	// Advanced settings
+	DropDeletedColumns types.Bool `tfsdk:"drop_deleted_columns"`
+	SoftDeleteRows     types.Bool `tfsdk:"soft_delete_rows"`
 }
 
 func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
@@ -25,6 +29,8 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 		DestinationConfig:        d.DestinationConfig.ToAPIModel(),
 		SSHTunnelUUID:            ParseOptionalUUID(d.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID: ParseOptionalUUID(d.SnowflakeEcoScheduleUUID),
+		DropDeletedColumns:       parseOptionalBool(d.DropDeletedColumns),
+		EnableSoftDelete:         parseOptionalBool(d.SoftDeleteRows),
 	}
 }
 
@@ -46,6 +52,8 @@ func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
 		DestinationConfig:        DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig),
 		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
+		DropDeletedColumns:       optionalBoolToBoolValue(apiModel.DropDeletedColumns),
+		SoftDeleteRows:           optionalBoolToBoolValue(apiModel.EnableSoftDelete),
 	}
 }
 

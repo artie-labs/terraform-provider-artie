@@ -26,3 +26,18 @@ func optionalUUIDToStringValue(value *uuid.UUID) types.String {
 	}
 	return types.StringValue(value.String())
 }
+
+func parseOptionalBool(value types.Bool) *bool {
+	if value.IsNull() {
+		return nil
+	}
+	_bool := value.ValueBool()
+	return &_bool
+}
+
+func optionalBoolToBoolValue(value *bool) types.Bool {
+	if value == nil {
+		return types.BoolValue(false)
+	}
+	return types.BoolValue(*value)
+}
