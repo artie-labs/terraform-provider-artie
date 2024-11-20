@@ -41,8 +41,10 @@ type BaseDeployment struct {
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 
 	// Advanced settings
-	DropDeletedColumns *bool `json:"dropDeletedColumns"`
-	EnableSoftDelete   *bool `json:"enableSoftDelete"`
+	DropDeletedColumns             *bool `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn"`
 }
 
 type Deployment struct {
@@ -57,13 +59,17 @@ type deploymentWithAdvSettings struct {
 }
 
 type advancedSettings struct {
-	DropDeletedColumns bool `json:"dropDeletedColumns"`
-	EnableSoftDelete   bool `json:"enableSoftDelete"`
+	DropDeletedColumns             bool `json:"dropDeletedColumns"`
+	EnableSoftDelete               bool `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    bool `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn bool `json:"includeDatabaseUpdatedAtColumn"`
 }
 
 func unnestAdvSettings(deployment deploymentWithAdvSettings) Deployment {
 	deployment.DropDeletedColumns = &deployment.AdvancedSettings.DropDeletedColumns
 	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
+	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn
+	deployment.IncludeDatabaseUpdatedAtColumn = &deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn
 	return deployment.Deployment
 }
 
