@@ -63,9 +63,9 @@ resource "artie_deployment" "postgres_to_snowflake" {
 ### Optional
 
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
-- `soft_delete_rows` (Boolean) If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted.
 - `include_artie_updated_at_column` (Boolean) If set to true, a new column to your dataset called __artie_updated_at.
 - `include_database_updated_at_column` (Boolean) If set to true, a new column to your dataset called __artie_db_updated_at.
+- `soft_delete_rows` (Boolean) If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted.
 - `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database.
 
 ### Read-Only
