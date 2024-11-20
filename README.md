@@ -62,7 +62,7 @@ TF_LOG=INFO terraform plan
 
 ### Documentation
 
-To generate or update documentation, run `go generate`. If you make changes to a resource's schema and don't run this, a CI check will fail until you run it and commit the result.
+To generate or update documentation, run `make generate`. If you make changes to a resource's schema and don't run this, a CI check will fail until you run it and commit the result.
 
 ### Testing
 
