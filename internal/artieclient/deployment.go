@@ -114,7 +114,7 @@ func (DeploymentClient) basePath() string {
 }
 
 type deploymentAPIResponse struct {
-	Deployment deploymentWithAdvSettings `json:"deploy"`
+	Deployment deploymentWithAdvSettings `json:"deployment"`
 }
 
 type validationResponse struct {
@@ -148,8 +148,8 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 	}
 
 	body := map[string]any{
-		"deploy":      deployment,
-		"startDeploy": true,
+		"deployment":      deployment,
+		"startDeployment": true,
 	}
 
 	response, err := makeRequest[deploymentAPIResponse](ctx, dc.client, http.MethodPost, path, body)
