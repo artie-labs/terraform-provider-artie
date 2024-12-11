@@ -33,10 +33,11 @@ type ArtieProviderModel struct {
 type ArtieProviderData struct {
 	Endpoint string
 	APIKey   string
+	version  string
 }
 
 func (a ArtieProviderData) NewClient() (artieclient.Client, error) {
-	return artieclient.New(a.Endpoint, a.APIKey)
+	return artieclient.New(a.Endpoint, a.APIKey, a.version)
 }
 
 func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -75,6 +76,7 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	providerData := ArtieProviderData{
 		Endpoint: endpoint,
 		APIKey:   configData.APIKey.ValueString(),
+		version:  p.version,
 	}
 
 	resp.DataSourceData = providerData

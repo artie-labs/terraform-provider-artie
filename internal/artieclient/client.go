@@ -31,14 +31,15 @@ func (he HttpError) Error() string {
 type Client struct {
 	endpoint string
 	apiKey   string
+	version  string
 }
 
-func New(endpoint string, apiKey string) (Client, error) {
+func New(endpoint string, apiKey string, version string) (Client, error) {
 	if !strings.HasPrefix(apiKey, "arsk_") {
 		return Client{}, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
 	}
 
-	return Client{endpoint: endpoint, apiKey: apiKey}, nil
+	return Client{endpoint: endpoint, apiKey: apiKey, version: version}, nil
 }
 
 func buildError(resp *http.Response) error {
@@ -78,6 +79,7 @@ func (c Client) makeRequest(ctx context.Context, method string, path string, bod
 		return fmt.Errorf("artie-client: failed to create request: %w", err)
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
+	req.Header.Set("User-Agent", "terraform-provider-artie/"+c.version)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
