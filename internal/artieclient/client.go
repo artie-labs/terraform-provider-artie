@@ -87,11 +87,11 @@ func (c Client) makeRequest(ctx context.Context, method string, path string, bod
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= 300 {
 		return buildError(resp)
 	}
 
-	if out != nil {
+	if out != nil && resp.StatusCode != http.StatusNoContent {
 		if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 			return fmt.Errorf("artie-client: failed to decode response body: %w", err)
 		}
