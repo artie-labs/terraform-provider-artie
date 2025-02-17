@@ -140,3 +140,12 @@ Required:
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for PostgreSQL is 5432.
 - `user` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.
+
+
+## Import
+
+Deployments can be imported by using the `uuid`, for example:
+
+```bash
+terraform import artie_deployment.default 123e4567-e89b-12d3-a456-426614174000
+```
