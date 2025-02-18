@@ -35,7 +35,7 @@ resource "artie_destination" "snowflake" {
 
 ### Required
 
-- `type` (String) The type of destination database. This must be one of the following: `bigquery`, `redshift`, `snowflake`, `s3`.
+- `type` (String) The type of destination database. This must be one of the following: `bigquery`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 
