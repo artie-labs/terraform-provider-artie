@@ -92,11 +92,12 @@ Optional:
 Required:
 
 - `tables` (Attributes Map) A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`. (see [below for nested schema](#nestedatt--source--tables))
-- `type` (String) The type of source database. This must be one of the following: `mysql` or `postgresql`.
+- `type` (String) The type of source database. This must be one of the following: `mysql`, `oracle`, `postgresql`.
 
 Optional:
 
 - `mysql_config` (Attributes) This should be filled out if the source type is `mysql`. (see [below for nested schema](#nestedatt--source--mysql_config))
+- `oracle_config` (Attributes) This should be filled out if the source type is `oracle`. (see [below for nested schema](#nestedatt--source--oracle_config))
 - `postgresql_config` (Attributes) This should be filled out if the source type is `postgresql`. (see [below for nested schema](#nestedatt--source--postgresql_config))
 
 <a id="nestedatt--source--tables"></a>
@@ -128,6 +129,22 @@ Required:
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for MySQL is 3306.
 - `user` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
+
+
+<a id="nestedatt--source--oracle_config"></a>
+### Nested Schema for `source.oracle_config`
+
+Required:
+
+- `host` (String) The hostname of the Oracle database. This must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for Oracle is 1521.
+- `service` (String) The name of the service in the Oracle server.
+- `user` (String) The username of the service account we will use to connect to the Oracle database.
+
+Optional:
+
+- `container` (String) The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted.
 
 
 <a id="nestedatt--source--postgresql_config"></a>
