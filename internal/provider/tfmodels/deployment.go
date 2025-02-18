@@ -21,6 +21,7 @@ type Deployment struct {
 	SoftDeleteRows                 types.Bool `tfsdk:"soft_delete_rows"`
 	IncludeArtieUpdatedAtColumn    types.Bool `tfsdk:"include_artie_updated_at_column"`
 	IncludeDatabaseUpdatedAtColumn types.Bool `tfsdk:"include_database_updated_at_column"`
+	OneTopicPerSchema              types.Bool `tfsdk:"one_topic_per_schema"`
 }
 
 func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
@@ -35,6 +36,7 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 		EnableSoftDelete:               parseOptionalBool(d.SoftDeleteRows),
 		IncludeArtieUpdatedAtColumn:    parseOptionalBool(d.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: parseOptionalBool(d.IncludeDatabaseUpdatedAtColumn),
+		OneTopicPerSchema:              parseOptionalBool(d.OneTopicPerSchema),
 	}
 }
 
@@ -62,6 +64,7 @@ func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
 		SoftDeleteRows:                 optionalBoolToBoolValue(apiModel.EnableSoftDelete),
 		IncludeArtieUpdatedAtColumn:    optionalBoolToBoolValue(apiModel.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: optionalBoolToBoolValue(apiModel.IncludeDatabaseUpdatedAtColumn),
+		OneTopicPerSchema:              optionalBoolToBoolValue(apiModel.OneTopicPerSchema),
 	}
 }
 

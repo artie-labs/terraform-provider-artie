@@ -65,6 +65,7 @@ resource "artie_deployment" "postgres_to_snowflake" {
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
 - `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_updated_at.
 - `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_db_updated_at.
+- `one_topic_per_schema` (Boolean) If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This only works if your source is Oracle and your account has this feature enabled.
 - `soft_delete_rows` (Boolean) If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted.
 - `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database.
 
