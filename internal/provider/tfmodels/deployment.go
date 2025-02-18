@@ -71,6 +71,8 @@ type DeploymentDestinationConfig struct {
 	Schema                types.String `tfsdk:"schema"`
 	UseSameSchemaAsSource types.Bool   `tfsdk:"use_same_schema_as_source"`
 	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
+	Bucket                types.String `tfsdk:"bucket"`
+	Folder                types.String `tfsdk:"folder"`
 }
 
 func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
@@ -80,6 +82,8 @@ func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig 
 		Schema:                d.Schema.ValueString(),
 		UseSameSchemaAsSource: d.UseSameSchemaAsSource.ValueBool(),
 		SchemaNamePrefix:      d.SchemaNamePrefix.ValueString(),
+		Bucket:                d.Bucket.ValueString(),
+		Folder:                d.Folder.ValueString(),
 	}
 }
 
@@ -90,5 +94,7 @@ func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationCon
 		Schema:                types.StringValue(apiModel.Schema),
 		UseSameSchemaAsSource: types.BoolValue(apiModel.UseSameSchemaAsSource),
 		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
+		Bucket:                types.StringValue(apiModel.Bucket),
+		Folder:                types.StringValue(apiModel.Folder),
 	}
 }

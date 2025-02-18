@@ -108,6 +108,8 @@ type DestinationConfig struct {
 	Schema                string `json:"schema"`
 	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
+	Bucket                string `json:"bucketName"`
+	Folder                string `json:"folderName"`
 }
 
 type DeploymentClient struct {

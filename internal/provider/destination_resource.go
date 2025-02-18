@@ -44,7 +44,7 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift."},
 			"type": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The type of destination database. This must be one of the following: `bigquery`, `redshift`, or `snowflake`.",
+				MarkdownDescription: "The type of destination database. This must be one of the following: `bigquery`, `redshift`, `snowflake`, `s3`.",
 				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllDestinationTypes...)},
 			},
 			"label": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this destination."},
@@ -75,6 +75,15 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
 					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
 					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
+				},
+			},
+			"s3_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the destination type is `s3`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your data in S3."},
 				},
 			},
 		},
