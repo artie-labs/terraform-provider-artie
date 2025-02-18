@@ -15,8 +15,8 @@ type Destination struct {
 	Label           types.String           `tfsdk:"label"`
 	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
 	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
-	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
 	S3Config        *S3SharedConfig        `tfsdk:"s3_config"`
+	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
 }
 
 func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
@@ -27,10 +27,10 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 		sharedConfig = d.BigQueryConfig.ToAPIModel()
 	case artieclient.Redshift:
 		sharedConfig = d.RedshiftConfig.ToAPIModel()
-	case artieclient.Snowflake:
-		sharedConfig = d.SnowflakeConfig.ToAPIModel()
 	case artieclient.S3:
 		sharedConfig = d.S3Config.ToAPIModel()
+	case artieclient.Snowflake:
+		sharedConfig = d.SnowflakeConfig.ToAPIModel()
 	default:
 		panic(fmt.Sprintf("invalid destination type: %s", d.Type.ValueString()))
 	}
@@ -63,10 +63,10 @@ func DestinationFromAPIModel(apiModel artieclient.Destination) Destination {
 		destination.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Redshift:
 		destination.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Snowflake:
-		destination.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.S3:
 		destination.S3Config = S3SharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.Snowflake:
+		destination.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		panic(fmt.Sprintf("invalid destination type: %s", apiModel.Type))
 	}
@@ -118,6 +118,28 @@ func RedshiftSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConf
 	}
 }
 
+type S3SharedConfig struct {
+	AccessKeyID     types.String `tfsdk:"access_key_id"`
+	SecretAccessKey types.String `tfsdk:"secret_access_key"`
+	Region          types.String `tfsdk:"region"`
+}
+
+func (s S3SharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
+	return artieclient.DestinationSharedConfig{
+		AWSAccessKeyID:     s.AccessKeyID.ValueString(),
+		AWSSecretAccessKey: s.SecretAccessKey.ValueString(),
+		AWSRegion:          s.Region.ValueString(),
+	}
+}
+
+func S3SharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *S3SharedConfig {
+	return &S3SharedConfig{
+		AccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
+		SecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
+		Region:          types.StringValue(apiModel.AWSRegion),
+	}
+}
+
 type SnowflakeSharedConfig struct {
 	AccountURL types.String `tfsdk:"account_url"`
 	VirtualDWH types.String `tfsdk:"virtual_dwh"`
@@ -143,27 +165,5 @@ func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedCon
 		PrivateKey: types.StringValue(apiModel.SnowflakePrivateKey),
 		Username:   types.StringValue(apiModel.Username),
 		Password:   types.StringValue(apiModel.Password),
-	}
-}
-
-type S3SharedConfig struct {
-	AccessKeyID     types.String `tfsdk:"access_key_id"`
-	SecretAccessKey types.String `tfsdk:"secret_access_key"`
-	Region          types.String `tfsdk:"region"`
-}
-
-func (s S3SharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
-	return artieclient.DestinationSharedConfig{
-		AWSAccessKeyID:     s.AccessKeyID.ValueString(),
-		AWSSecretAccessKey: s.SecretAccessKey.ValueString(),
-		AWSRegion:          s.Region.ValueString(),
-	}
-}
-
-func S3SharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *S3SharedConfig {
-	return &S3SharedConfig{
-		AccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
-		SecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
-		Region:          types.StringValue(apiModel.AWSRegion),
 	}
 }

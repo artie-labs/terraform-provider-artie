@@ -14,15 +14,15 @@ type DestinationType string
 const (
 	BigQuery  DestinationType = "bigquery"
 	Redshift  DestinationType = "redshift"
-	Snowflake DestinationType = "snowflake"
 	S3        DestinationType = "s3"
+	Snowflake DestinationType = "snowflake"
 )
 
 var AllDestinationTypes = []string{
 	string(BigQuery),
 	string(Redshift),
-	string(Snowflake),
 	string(S3),
+	string(Snowflake),
 }
 
 func DestinationTypeFromString(destType string) DestinationType {
@@ -31,10 +31,10 @@ func DestinationTypeFromString(destType string) DestinationType {
 		return BigQuery
 	case Redshift:
 		return Redshift
-	case Snowflake:
-		return Snowflake
 	case S3:
 		return S3
+	case Snowflake:
+		return Snowflake
 	default:
 		panic(fmt.Sprintf("invalid destination type: %s", destType))
 	}
