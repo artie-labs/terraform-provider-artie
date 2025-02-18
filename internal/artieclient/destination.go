@@ -14,12 +14,14 @@ type DestinationType string
 const (
 	BigQuery  DestinationType = "bigquery"
 	Redshift  DestinationType = "redshift"
+	S3        DestinationType = "s3"
 	Snowflake DestinationType = "snowflake"
 )
 
 var AllDestinationTypes = []string{
 	string(BigQuery),
 	string(Redshift),
+	string(S3),
 	string(Snowflake),
 }
 
@@ -29,6 +31,8 @@ func DestinationTypeFromString(destType string) DestinationType {
 		return BigQuery
 	case Redshift:
 		return Redshift
+	case S3:
+		return S3
 	case Snowflake:
 		return Snowflake
 	default:
@@ -59,6 +63,9 @@ type DestinationSharedConfig struct {
 	SnowflakeAccountURL string `json:"accountURL"`
 	SnowflakeVirtualDWH string `json:"virtualDWH"`
 	SnowflakePrivateKey string `json:"privateKey"`
+	AWSAccessKeyID      string `json:"awsAccessKeyID"`
+	AWSSecretAccessKey  string `json:"awsSecretAccessKey"`
+	AWSRegion           string `json:"awsRegion"`
 }
 
 type DestinationClient struct {

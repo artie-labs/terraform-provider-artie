@@ -35,13 +35,14 @@ resource "artie_destination" "snowflake" {
 
 ### Required
 
-- `type` (String) The type of destination database. This must be one of the following: `bigquery`, `redshift`, or `snowflake`.
+- `type` (String) The type of destination database. This must be one of the following: `bigquery`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 
 - `bigquery_config` (Attributes) This should be filled out if the destination type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
 - `label` (String) An optional human-readable label for this destination.
 - `redshift_config` (Attributes) This should be filled out if the destination type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
+- `s3_config` (Attributes) This should be filled out if the destination type is `s3`. (see [below for nested schema](#nestedatt--s3_config))
 - `snowflake_config` (Attributes) This should be filled out if the destination type is `snowflake`. (see [below for nested schema](#nestedatt--snowflake_config))
 - `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift.
 
@@ -67,6 +68,19 @@ Required:
 - `endpoint` (String) The endpoint URL of your Redshift cluster. This should include both the host and port.
 - `password` (String, Sensitive) The password for the service account we should use to connect to Redshift.
 - `username` (String) The username of the service account we should use to connect to Redshift.
+
+
+<a id="nestedatt--s3_config"></a>
+### Nested Schema for `s3_config`
+
+Required:
+
+- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to S3.
+- `region` (String) The AWS region where we should store your data in S3.
+
+Optional:
+
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--snowflake_config"></a>
