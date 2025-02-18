@@ -12,6 +12,7 @@ type Source struct {
 	Type           types.String     `tfsdk:"type"`
 	Tables         map[string]Table `tfsdk:"tables"`
 	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
+	OracleConfig   *OracleConfig    `tfsdk:"oracle_config"`
 	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
 }
 
@@ -21,6 +22,8 @@ func (s Source) ToAPIModel() artieclient.Source {
 	switch sourceType {
 	case artieclient.MySQL:
 		sourceConfig = s.MySQLConfig.ToAPIModel()
+	case artieclient.Oracle:
+		sourceConfig = s.OracleConfig.ToAPIModel()
 	case artieclient.PostgreSQL:
 		sourceConfig = s.PostgresConfig.ToAPIModel()
 	default:
@@ -48,6 +51,8 @@ func SourceFromAPIModel(apiModel artieclient.Source) Source {
 	switch apiModel.Type {
 	case artieclient.MySQL:
 		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
+	case artieclient.Oracle:
+		source.OracleConfig = OracleConfigFromAPIModel(apiModel.Config)
 	case artieclient.PostgreSQL:
 		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
 	default:
@@ -82,6 +87,37 @@ func MySQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MySQLConfig {
 		User:     types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
 		Database: types.StringValue(apiModel.Database),
+	}
+}
+
+type OracleConfig struct {
+	Host      types.String `tfsdk:"host"`
+	Port      types.Int32  `tfsdk:"port"`
+	User      types.String `tfsdk:"user"`
+	Password  types.String `tfsdk:"password"`
+	Service   types.String `tfsdk:"service"`
+	Container types.String `tfsdk:"container"`
+}
+
+func (o OracleConfig) ToAPIModel() artieclient.SourceConfig {
+	return artieclient.SourceConfig{
+		Host:      o.Host.ValueString(),
+		Port:      o.Port.ValueInt32(),
+		User:      o.User.ValueString(),
+		Password:  o.Password.ValueString(),
+		Database:  o.Service.ValueString(),
+		Container: o.Container.ValueString(),
+	}
+}
+
+func OracleConfigFromAPIModel(apiModel artieclient.SourceConfig) *OracleConfig {
+	return &OracleConfig{
+		Host:      types.StringValue(apiModel.Host),
+		Port:      types.Int32Value(apiModel.Port),
+		User:      types.StringValue(apiModel.User),
+		Password:  types.StringValue(apiModel.Password),
+		Service:   types.StringValue(apiModel.Database),
+		Container: types.StringValue(apiModel.Container),
 	}
 }
 

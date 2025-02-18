@@ -13,11 +13,13 @@ type SourceType string
 
 const (
 	MySQL      SourceType = "mysql"
+	Oracle     SourceType = "oracle"
 	PostgreSQL SourceType = "postgresql"
 )
 
 var AllSourceTypes = []string{
 	string(MySQL),
+	string(Oracle),
 	string(PostgreSQL),
 }
 
@@ -25,6 +27,8 @@ func SourceTypeFromString(sourceType string) SourceType {
 	switch SourceType(sourceType) {
 	case MySQL:
 		return MySQL
+	case Oracle:
+		return Oracle
 	case PostgreSQL:
 		return PostgreSQL
 	default:
@@ -86,6 +90,7 @@ type SourceConfig struct {
 	User         string `json:"user"`
 	Password     string `json:"password"`
 	Database     string `json:"database"`
+	Container    string `json:"containerName,omitempty"`
 }
 
 type Table struct {
