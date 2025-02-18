@@ -39,7 +39,7 @@ func parseOptionalBool(value types.Bool) *bool {
 
 func optionalBoolToBoolValue(value *bool) types.Bool {
 	if value == nil {
-		return types.BoolValue(false)
+		return types.BoolNull()
 	}
 	return types.BoolValue(*value)
 }
@@ -53,7 +53,7 @@ func parseOptionalString(value types.String) *string {
 
 func optionalStringToStringValue(value *string) types.String {
 	if value == nil {
-		return types.StringValue("")
+		return types.StringNull()
 	}
 	return types.StringValue(*value)
 }
