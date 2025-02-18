@@ -41,3 +41,19 @@ func optionalBoolToBoolValue(value *bool) types.Bool {
 	}
 	return types.BoolValue(*value)
 }
+
+func parseOptionalString(value types.String) *string {
+	if value.IsNull() {
+		return nil
+	}
+
+	_str := value.ValueString()
+	return &_str
+}
+
+func optionalStringToStringValue(value *string) types.String {
+	if value == nil {
+		return types.StringValue("")
+	}
+	return types.StringValue(*value)
+}

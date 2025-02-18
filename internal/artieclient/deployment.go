@@ -59,7 +59,8 @@ type Deployment struct {
 
 type deploymentWithAdvSettings struct {
 	Deployment
-	AdvancedSettings advancedSettings `json:"advancedSettings"`
+	AdvancedSettings advancedSettings           `json:"advancedSettings"`
+	Source           sourceWithAdvTableSettings `json:"source"`
 }
 
 type advancedSettings struct {
@@ -74,6 +75,13 @@ func unnestAdvSettings(deployment deploymentWithAdvSettings) Deployment {
 	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
 	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn
 	deployment.IncludeDatabaseUpdatedAtColumn = &deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn
+	tables := []Table{}
+	for _, table := range deployment.Source.Tables {
+		tables = append(tables, unnestTableAdvSettings(table))
+	}
+	deployment.Deployment.Source.Type = deployment.Source.Type
+	deployment.Deployment.Source.Config = deployment.Source.Config
+	deployment.Deployment.Source.Tables = tables
 	return deployment.Deployment
 }
 
@@ -81,6 +89,11 @@ type Source struct {
 	Type   SourceType   `json:"type"`
 	Config SourceConfig `json:"config"`
 	Tables []Table      `json:"tables"`
+}
+
+type sourceWithAdvTableSettings struct {
+	Source
+	Tables []tableWithAdvSettings `json:"tables"`
 }
 
 type SourceConfig struct {
@@ -100,6 +113,23 @@ type Table struct {
 	EnableHistoryMode    bool      `json:"enableHistoryMode"`
 	IndividualDeployment bool      `json:"individualDeployment"`
 	IsPartitioned        bool      `json:"isPartitioned"`
+
+	// Advanced table settings
+	Alias *string `json:"alias"`
+}
+
+type tableWithAdvSettings struct {
+	Table
+	AdvancedSettings tableAdvancedSettings `json:"advancedSettings"`
+}
+
+type tableAdvancedSettings struct {
+	Alias string `json:"alias"`
+}
+
+func unnestTableAdvSettings(table tableWithAdvSettings) Table {
+	table.Alias = &table.AdvancedSettings.Alias
+	return table.Table
 }
 
 type DestinationConfig struct {
