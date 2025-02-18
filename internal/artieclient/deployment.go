@@ -44,7 +44,7 @@ type BaseDeployment struct {
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 
-	// Advanced settings
+	// Advanced settings - these must all be nullable
 	DropDeletedColumns             *bool `json:"dropDeletedColumns"`
 	EnableSoftDelete               *bool `json:"enableSoftDelete"`
 	IncludeArtieUpdatedAtColumn    *bool `json:"includeArtieUpdatedAtColumn"`
@@ -58,11 +58,6 @@ type Deployment struct {
 	Status string    `json:"status"`
 }
 
-type deploymentWithAdvSettings struct {
-	Deployment
-	AdvancedSettings advancedSettings `json:"advancedSettings"`
-}
-
 type advancedSettings struct {
 	DropDeletedColumns             bool `json:"dropDeletedColumns"`
 	EnableSoftDelete               bool `json:"enableSoftDelete"`
@@ -71,12 +66,27 @@ type advancedSettings struct {
 	OneTopicPerSchema              bool `json:"oneTopicPerSchema"`
 }
 
-func unnestAdvSettings(deployment deploymentWithAdvSettings) Deployment {
+type deploymentWithAdvSettings struct {
+	Deployment
+	AdvancedSettings advancedSettings           `json:"advancedSettings"`
+	Source           sourceWithAdvTableSettings `json:"source"`
+}
+
+func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
 	deployment.DropDeletedColumns = &deployment.AdvancedSettings.DropDeletedColumns
 	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
 	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn
 	deployment.IncludeDatabaseUpdatedAtColumn = &deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn
 	deployment.OneTopicPerSchema = &deployment.AdvancedSettings.OneTopicPerSchema
+
+	deployment.Deployment.Source.Type = deployment.Source.Type
+	deployment.Deployment.Source.Config = deployment.Source.Config
+	tables := []Table{}
+	for _, table := range deployment.Source.Tables {
+		tables = append(tables, table.unnestTableAdvSettings())
+	}
+	deployment.Deployment.Source.Tables = tables
+
 	return deployment.Deployment
 }
 
@@ -84,6 +94,11 @@ type Source struct {
 	Type   SourceType   `json:"type"`
 	Config SourceConfig `json:"config"`
 	Tables []Table      `json:"tables"`
+}
+
+type sourceWithAdvTableSettings struct {
+	Source
+	Tables []tableWithAdvSettings `json:"tables"`
 }
 
 type SourceConfig struct {
@@ -103,6 +118,23 @@ type Table struct {
 	EnableHistoryMode    bool      `json:"enableHistoryMode"`
 	IndividualDeployment bool      `json:"individualDeployment"`
 	IsPartitioned        bool      `json:"isPartitioned"`
+
+	// Advanced table settings - these must all be nullable
+	Alias *string `json:"alias"`
+}
+
+type advancedTableSettings struct {
+	Alias string `json:"alias"`
+}
+
+type tableWithAdvSettings struct {
+	Table
+	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
+}
+
+func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
+	t.Alias = &t.AdvancedSettings.Alias
+	return t.Table
 }
 
 type DestinationConfig struct {
@@ -140,7 +172,7 @@ func (dc DeploymentClient) Get(ctx context.Context, deploymentUUID string) (Depl
 	if err != nil {
 		return Deployment{}, err
 	}
-	return unnestAdvSettings(response.Deployment), nil
+	return response.Deployment.unnestAdvSettings(), nil
 }
 
 func (dc DeploymentClient) Create(ctx context.Context, deployment BaseDeployment) (Deployment, error) {
@@ -166,7 +198,7 @@ func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (D
 	if err != nil {
 		return Deployment{}, err
 	}
-	return unnestAdvSettings(response.Deployment), nil
+	return response.Deployment.unnestAdvSettings(), nil
 }
 
 func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDeployment) error {

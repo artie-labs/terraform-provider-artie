@@ -16,6 +16,9 @@ type Table struct {
 	EnableHistoryMode    types.Bool   `tfsdk:"enable_history_mode"`
 	IndividualDeployment types.Bool   `tfsdk:"individual_deployment"`
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
+
+	// Advanced table settings
+	Alias types.String `tfsdk:"alias"`
 }
 
 func (t Table) ToAPIModel() artieclient.Table {
@@ -31,6 +34,7 @@ func (t Table) ToAPIModel() artieclient.Table {
 		EnableHistoryMode:    t.EnableHistoryMode.ValueBool(),
 		IndividualDeployment: t.IndividualDeployment.ValueBool(),
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
+		Alias:                parseOptionalString(t.Alias),
 	}
 }
 
@@ -48,6 +52,7 @@ func TablesFromAPIModel(apiModelTables []artieclient.Table) map[string]Table {
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
+			Alias:                optionalStringToStringValue(apiTable.Alias),
 		}
 	}
 

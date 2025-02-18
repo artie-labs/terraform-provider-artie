@@ -5,6 +5,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+func ToPtr[T any](v T) *T {
+	return &v
+}
+
 func parseUUID(value types.String) uuid.UUID {
 	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
 	return uuid.MustParse(value.ValueString())
@@ -16,8 +20,7 @@ func ParseOptionalUUID(value types.String) *uuid.UUID {
 	}
 
 	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
-	_uuid := uuid.MustParse(value.ValueString())
-	return &_uuid
+	return ToPtr(uuid.MustParse(value.ValueString()))
 }
 
 func optionalUUIDToStringValue(value *uuid.UUID) types.String {
@@ -31,13 +34,26 @@ func parseOptionalBool(value types.Bool) *bool {
 	if value.IsNull() {
 		return nil
 	}
-	_bool := value.ValueBool()
-	return &_bool
+	return ToPtr(value.ValueBool())
 }
 
 func optionalBoolToBoolValue(value *bool) types.Bool {
 	if value == nil {
-		return types.BoolValue(false)
+		return types.BoolNull()
 	}
 	return types.BoolValue(*value)
+}
+
+func parseOptionalString(value types.String) *string {
+	if value.IsNull() {
+		return nil
+	}
+	return ToPtr(value.ValueString())
+}
+
+func optionalStringToStringValue(value *string) types.String {
+	if value == nil {
+		return types.StringNull()
+	}
+	return types.StringValue(*value)
 }
