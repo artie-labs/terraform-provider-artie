@@ -56,7 +56,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Required:            true,
-						MarkdownDescription: "The type of source database. This must be one of the following: `mysql` or `postgresql`.",
+						MarkdownDescription: "The type of source database. This must be one of the following: `mysql`, `oracle`, `postgresql`.",
 						Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllSourceTypes...)},
 					},
 					"mysql_config": schema.SingleNestedAttribute{
@@ -74,6 +74,24 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
 							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the MySQL server."},
+						},
+					},
+					"oracle_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `oracle`.",
+						Attributes: map[string]schema.Attribute{
+							"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Oracle database. This must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled."},
+							"port": schema.Int32Attribute{
+								Required:            true,
+								MarkdownDescription: "The default port for Oracle is 1521.",
+								Validators: []validator.Int32{
+									int32validator.Between(1024, math.MaxUint16),
+								},
+							},
+							"user":      schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the Oracle database."},
+							"password":  schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"service":   schema.StringAttribute{Required: true, MarkdownDescription: "The name of the service in the Oracle server."},
+							"container": schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted."},
 						},
 					},
 					"postgresql_config": schema.SingleNestedAttribute{
