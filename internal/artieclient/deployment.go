@@ -49,6 +49,7 @@ type BaseDeployment struct {
 	EnableSoftDelete               *bool `json:"enableSoftDelete"`
 	IncludeArtieUpdatedAtColumn    *bool `json:"includeArtieUpdatedAtColumn"`
 	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool `json:"oneTopicPerSchema"`
 }
 
 type Deployment struct {
@@ -68,6 +69,7 @@ type advancedSettings struct {
 	EnableSoftDelete               bool `json:"enableSoftDelete"`
 	IncludeArtieUpdatedAtColumn    bool `json:"includeArtieUpdatedAtColumn"`
 	IncludeDatabaseUpdatedAtColumn bool `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              bool `json:"oneTopicPerSchema"`
 }
 
 func unnestAdvSettings(deployment deploymentWithAdvSettings) Deployment {
@@ -75,13 +77,16 @@ func unnestAdvSettings(deployment deploymentWithAdvSettings) Deployment {
 	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
 	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn
 	deployment.IncludeDatabaseUpdatedAtColumn = &deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn
+	deployment.OneTopicPerSchema = &deployment.AdvancedSettings.OneTopicPerSchema
+
+	deployment.Deployment.Source.Type = deployment.Source.Type
+	deployment.Deployment.Source.Config = deployment.Source.Config
 	tables := []Table{}
 	for _, table := range deployment.Source.Tables {
 		tables = append(tables, unnestTableAdvSettings(table))
 	}
-	deployment.Deployment.Source.Type = deployment.Source.Type
-	deployment.Deployment.Source.Config = deployment.Source.Config
 	deployment.Deployment.Source.Tables = tables
+
 	return deployment.Deployment
 }
 
