@@ -1,6 +1,9 @@
 package tfmodels
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -24,10 +27,15 @@ type Deployment struct {
 	OneTopicPerSchema              types.Bool `tfsdk:"one_topic_per_schema"`
 }
 
-func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
+func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
+	apiSource, diags := d.Source.ToAPIModel(ctx)
+	if diags.HasError() {
+		return artieclient.BaseDeployment{}, diags
+	}
+
 	return artieclient.BaseDeployment{
 		Name:                           d.Name.ValueString(),
-		Source:                         d.Source.ToAPIModel(),
+		Source:                         apiSource,
 		DestinationUUID:                ParseOptionalUUID(d.DestinationUUID),
 		DestinationConfig:              d.DestinationConfig.ToAPIModel(),
 		SSHTunnelUUID:                  ParseOptionalUUID(d.SSHTunnelUUID),
@@ -37,19 +45,28 @@ func (d Deployment) ToAPIBaseModel() artieclient.BaseDeployment {
 		IncludeArtieUpdatedAtColumn:    parseOptionalBool(d.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: parseOptionalBool(d.IncludeDatabaseUpdatedAtColumn),
 		OneTopicPerSchema:              parseOptionalBool(d.OneTopicPerSchema),
-	}
+	}, nil
 }
 
-func (d Deployment) ToAPIModel() artieclient.Deployment {
+func (d Deployment) ToAPIModel(ctx context.Context) (artieclient.Deployment, diag.Diagnostics) {
+	apiBaseModel, diags := d.ToAPIBaseModel(ctx)
+	if diags.HasError() {
+		return artieclient.Deployment{}, diags
+	}
+
 	return artieclient.Deployment{
 		UUID:           parseUUID(d.UUID),
 		Status:         d.Status.ValueString(),
-		BaseDeployment: d.ToAPIBaseModel(),
-	}
+		BaseDeployment: apiBaseModel,
+	}, nil
 }
 
-func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
-	source := SourceFromAPIModel(apiModel.Source)
+func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) (Deployment, diag.Diagnostics) {
+	source, diags := SourceFromAPIModel(ctx, apiModel.Source)
+	if diags.HasError() {
+		return Deployment{}, diags
+	}
+
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 	return Deployment{
 		UUID:                           types.StringValue(apiModel.UUID.String()),
@@ -65,7 +82,7 @@ func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
 		IncludeArtieUpdatedAtColumn:    optionalBoolToBoolValue(apiModel.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: optionalBoolToBoolValue(apiModel.IncludeDatabaseUpdatedAtColumn),
 		OneTopicPerSchema:              optionalBoolToBoolValue(apiModel.OneTopicPerSchema),
-	}
+	}, nil
 }
 
 type DeploymentDestinationConfig struct {

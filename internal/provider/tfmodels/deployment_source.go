@@ -1,8 +1,10 @@
 package tfmodels
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -16,7 +18,7 @@ type Source struct {
 	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
 }
 
-func (s Source) ToAPIModel() artieclient.Source {
+func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagnostics) {
 	var sourceConfig artieclient.SourceConfig
 	sourceType := artieclient.SourceTypeFromString(s.Type.ValueString())
 	switch sourceType {
@@ -27,25 +29,35 @@ func (s Source) ToAPIModel() artieclient.Source {
 	case artieclient.PostgreSQL:
 		sourceConfig = s.PostgresConfig.ToAPIModel()
 	default:
+		// TODO return an error diagnostic instead of panicking
 		panic(fmt.Sprintf("invalid source type: %s", s.Type.ValueString()))
 	}
 
 	tables := []artieclient.Table{}
 	for _, table := range s.Tables {
-		tables = append(tables, table.ToAPIModel())
+		apiTable, diags := table.ToAPIModel(ctx)
+		if diags.HasError() {
+			return artieclient.Source{}, diags
+		}
+		tables = append(tables, apiTable)
 	}
 
 	return artieclient.Source{
 		Type:   sourceType,
 		Config: sourceConfig,
 		Tables: tables,
-	}
+	}, nil
 }
 
-func SourceFromAPIModel(apiModel artieclient.Source) Source {
+func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Source, diag.Diagnostics) {
+	tables, diags := TablesFromAPIModel(ctx, apiModel.Tables)
+	if diags.HasError() {
+		return Source{}, diags
+	}
+
 	source := Source{
 		Type:   types.StringValue(string(apiModel.Type)),
-		Tables: TablesFromAPIModel(apiModel.Tables),
+		Tables: tables,
 	}
 
 	switch apiModel.Type {
@@ -56,10 +68,11 @@ func SourceFromAPIModel(apiModel artieclient.Source) Source {
 	case artieclient.PostgreSQL:
 		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
 	default:
+		// TODO return an error diagnostic instead of panicking
 		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
 	}
 
-	return source
+	return source, nil
 }
 
 type MySQLConfig struct {

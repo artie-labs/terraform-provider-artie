@@ -16,11 +16,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -123,6 +125,8 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"individual_deployment": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, we will spin up a separate Artie Transfer deployment to handle this table. This should only be used if this table has extremely high throughput (over 1M+ per hour) and has much higher throughput than other tables."},
 								"is_partitioned":        schema.BoolAttribute{Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 								"alias":                 schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional alias for the table. If set, this will be the name of the destination table."},
+								"columns_to_exclude":    schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional list of columns to exclude from syncing to the destination."},
+								"columns_to_hash":       schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash."},
 							},
 						},
 					},
@@ -228,9 +232,15 @@ func (r *DeploymentResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, d
 	return planData, diagnostics.HasError()
 }
 
-func (r *DeploymentResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, deployment artieclient.Deployment) {
+func (r *DeploymentResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiDeployment artieclient.Deployment) {
 	// Translate API response type into Terraform model and save it into state
-	diagnostics.Append(state.Set(ctx, tfmodels.DeploymentFromAPIModel(deployment))...)
+	deployment, diags := tfmodels.DeploymentFromAPIModel(ctx, apiDeployment)
+	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return
+	}
+
+	diagnostics.Append(state.Set(ctx, deployment)...)
 }
 
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -239,8 +249,13 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	deployment, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Validate config before creating the deployment
-	deployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -281,8 +296,13 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	baseDeployment, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Validate source & destination config before updating the deployment
-	baseDeployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -292,7 +312,13 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	updatedDeployment, err := r.client.Deployments().Update(ctx, planData.ToAPIModel())
+	apiModel, diags := planData.ToAPIModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updatedDeployment, err := r.client.Deployments().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return

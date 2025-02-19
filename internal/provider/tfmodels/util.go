@@ -1,7 +1,10 @@
 package tfmodels
 
 import (
+	"context"
+
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -56,4 +59,33 @@ func optionalStringToStringValue(value *string) types.String {
 		return types.StringNull()
 	}
 	return types.StringValue(*value)
+}
+
+func parseOptionalStringList(ctx context.Context, value types.List) (*[]string, diag.Diagnostics) {
+	if value.IsNull() {
+		return nil, nil
+	}
+
+	elements := make([]types.String, 0, len(value.Elements()))
+	diags := value.ElementsAs(ctx, &elements, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	out := []string{}
+	for _, el := range elements {
+		if !el.IsNull() {
+			out = append(out, el.ValueString())
+		}
+	}
+
+	return &out, nil
+}
+
+func optionalStringListToStringValue(ctx context.Context, value *[]string) (types.List, diag.Diagnostics) {
+	if value == nil {
+		return types.ListNull(types.StringType), nil
+	}
+
+	return types.ListValueFrom(ctx, types.StringType, *value)
 }

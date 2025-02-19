@@ -120,11 +120,15 @@ type Table struct {
 	IsPartitioned        bool      `json:"isPartitioned"`
 
 	// Advanced table settings - these must all be nullable
-	Alias *string `json:"alias"`
+	Alias          *string   `json:"alias"`
+	ExcludeColumns *[]string `json:"excludeColumns"`
+	ColumnsToHash  *[]string `json:"columnsToHash"`
 }
 
 type advancedTableSettings struct {
-	Alias string `json:"alias"`
+	Alias          string   `json:"alias"`
+	ExcludeColumns []string `json:"excludeColumns"`
+	ColumnsToHash  []string `json:"columnsToHash"`
 }
 
 type tableWithAdvSettings struct {
@@ -132,8 +136,19 @@ type tableWithAdvSettings struct {
 	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
 }
 
+func toSlicePtr(slice []string) *[]string {
+	if len(slice) == 0 {
+		return &[]string{}
+	}
+	return &slice
+}
+
 func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	t.Alias = &t.AdvancedSettings.Alias
+	// These arrays are omitted from the api response if empty; fallback to empty slices
+	// so terraform doesn't think a change is needed if the tf config specifies empty slices
+	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
+	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
 	return t.Table
 }
 
