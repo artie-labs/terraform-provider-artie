@@ -19,8 +19,8 @@ type Table struct {
 
 	// Advanced table settings
 	Alias          types.String `tfsdk:"alias"`
-	ExcludeColumns types.String `tfsdk:"exclude_columns"`
-	ColumnsToHash  types.String `tfsdk:"columns_to_hash"`
+	ExcludeColumns types.List   `tfsdk:"exclude_columns"`
+	ColumnsToHash  types.List   `tfsdk:"columns_to_hash"`
 }
 
 func (t Table) ToAPIModel() artieclient.Table {

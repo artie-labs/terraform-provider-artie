@@ -1,7 +1,7 @@
 package tfmodels
 
 import (
-	"strings"
+	"context"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -60,25 +60,29 @@ func optionalStringToStringValue(value *string) types.String {
 	return types.StringValue(*value)
 }
 
-func parseOptionalStringList(value types.String) *[]string {
+func parseOptionalStringList(value types.List) *[]string {
 	if value.IsNull() {
 		return nil
 	}
 
-	// out := []string{}
-	// for _, element := range value.Elements() {
-	// 	if !element.IsNull() {
-	// 		out = append(out, element.String())
-	// 	}
-	// }
-	// return &out
+	elements := make([]types.String, 0, len(value.Elements()))
+	// TODO pass real context, handle diags returned here
+	_ = value.ElementsAs(context.Background(), &elements, false)
+	out := []string{}
+	for _, el := range elements {
+		if !el.IsNull() {
+			out = append(out, el.ValueString())
+		}
+	}
 
-	return ToPtr(strings.Split(value.ValueString(), ","))
+	return &out
 }
 
-func optionalStringListToStringValue(value *[]string) types.String {
+func optionalStringListToStringValue(value *[]string) types.List {
 	if value == nil {
-		return types.StringNull()
+		return types.ListNull(types.StringType)
 	}
-	return types.StringValue(strings.Join(*value, ","))
+	// TODO pass real context, handle diags returned here
+	list, _ := types.ListValueFrom(context.Background(), types.StringType, *value)
+	return list
 }

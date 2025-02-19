@@ -136,10 +136,19 @@ type tableWithAdvSettings struct {
 	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
 }
 
+func toSlicePtr(slice []string) *[]string {
+	if len(slice) == 0 {
+		return &[]string{}
+	}
+	return &slice
+}
+
 func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	t.Alias = &t.AdvancedSettings.Alias
-	t.ExcludeColumns = &t.AdvancedSettings.ExcludeColumns
-	t.ColumnsToHash = &t.AdvancedSettings.ColumnsToHash
+	// These arrays are omitted from the api response if empty; fallback to empty slices
+	// so terraform doesn't think a change is needed if the tf config specifies empty slices
+	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
+	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
 	return t.Table
 }
 
