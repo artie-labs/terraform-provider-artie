@@ -41,8 +41,10 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	}
 
 	tables := []artieclient.Table{}
+	diags := diag.Diagnostics{}
 	for _, table := range s.Tables {
-		apiTable, diags := table.ToAPIModel(ctx)
+		apiTable, tableDiags := table.ToAPIModel(ctx)
+		diags.Append(tableDiags...)
 		if diags.HasError() {
 			return artieclient.Source{}, diags
 		}
@@ -53,7 +55,7 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 		Type:   sourceType,
 		Config: sourceConfig,
 		Tables: tables,
-	}, nil
+	}, diags
 }
 
 func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Source, diag.Diagnostics) {
@@ -75,12 +77,11 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 	case artieclient.PostgreSQL:
 		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
 	default:
-		return Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert API model to Source", fmt.Sprintf("invalid source type: %s", apiModel.Type),
-		)}
+		diags.AddError("Unable to convert API model to Source", fmt.Sprintf("invalid source type: %s", apiModel.Type))
+		return Source{}, diags
 	}
 
-	return source, nil
+	return source, diags
 }
 
 type MySQLConfig struct {
