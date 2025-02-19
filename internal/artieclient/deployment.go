@@ -120,11 +120,15 @@ type Table struct {
 	IsPartitioned        bool      `json:"isPartitioned"`
 
 	// Advanced table settings - these must all be nullable
-	Alias *string `json:"alias"`
+	Alias          *string   `json:"alias"`
+	ExcludeColumns *[]string `json:"excludeColumns"`
+	ColumnsToHash  *[]string `json:"columnsToHash"`
 }
 
 type advancedTableSettings struct {
-	Alias string `json:"alias"`
+	Alias          string   `json:"alias"`
+	ExcludeColumns []string `json:"excludeColumns"`
+	ColumnsToHash  []string `json:"columnsToHash"`
 }
 
 type tableWithAdvSettings struct {
@@ -134,6 +138,8 @@ type tableWithAdvSettings struct {
 
 func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	t.Alias = &t.AdvancedSettings.Alias
+	t.ExcludeColumns = &t.AdvancedSettings.ExcludeColumns
+	t.ColumnsToHash = &t.AdvancedSettings.ColumnsToHash
 	return t.Table
 }
 

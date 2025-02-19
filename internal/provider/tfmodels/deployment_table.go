@@ -18,7 +18,9 @@ type Table struct {
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
-	Alias types.String `tfsdk:"alias"`
+	Alias          types.String `tfsdk:"alias"`
+	ExcludeColumns types.String `tfsdk:"exclude_columns"`
+	ColumnsToHash  types.String `tfsdk:"columns_to_hash"`
 }
 
 func (t Table) ToAPIModel() artieclient.Table {
@@ -35,6 +37,8 @@ func (t Table) ToAPIModel() artieclient.Table {
 		IndividualDeployment: t.IndividualDeployment.ValueBool(),
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
 		Alias:                parseOptionalString(t.Alias),
+		ExcludeColumns:       parseOptionalStringList(t.ExcludeColumns),
+		ColumnsToHash:        parseOptionalStringList(t.ColumnsToHash),
 	}
 }
 
@@ -53,6 +57,8 @@ func TablesFromAPIModel(apiModelTables []artieclient.Table) map[string]Table {
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 			Alias:                optionalStringToStringValue(apiTable.Alias),
+			ExcludeColumns:       optionalStringListToStringValue(apiTable.ExcludeColumns),
+			ColumnsToHash:        optionalStringListToStringValue(apiTable.ColumnsToHash),
 		}
 	}
 

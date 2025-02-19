@@ -1,6 +1,8 @@
 package tfmodels
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -56,4 +58,27 @@ func optionalStringToStringValue(value *string) types.String {
 		return types.StringNull()
 	}
 	return types.StringValue(*value)
+}
+
+func parseOptionalStringList(value types.String) *[]string {
+	if value.IsNull() {
+		return nil
+	}
+
+	// out := []string{}
+	// for _, element := range value.Elements() {
+	// 	if !element.IsNull() {
+	// 		out = append(out, element.String())
+	// 	}
+	// }
+	// return &out
+
+	return ToPtr(strings.Split(value.ValueString(), ","))
+}
+
+func optionalStringListToStringValue(value *[]string) types.String {
+	if value == nil {
+		return types.StringNull()
+	}
+	return types.StringValue(strings.Join(*value, ","))
 }
