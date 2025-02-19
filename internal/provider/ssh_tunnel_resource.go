@@ -139,6 +139,7 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	apiModel, diags := planData.ToAPIModel()
+	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
