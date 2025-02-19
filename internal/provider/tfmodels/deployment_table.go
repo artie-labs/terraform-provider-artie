@@ -19,7 +19,7 @@ type Table struct {
 
 	// Advanced table settings
 	Alias          types.String `tfsdk:"alias"`
-	ExcludeColumns types.List   `tfsdk:"exclude_columns"`
+	ExcludeColumns types.List   `tfsdk:"columns_to_exclude"`
 	ColumnsToHash  types.List   `tfsdk:"columns_to_hash"`
 }
 
