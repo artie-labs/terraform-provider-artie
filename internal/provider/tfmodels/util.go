@@ -28,11 +28,11 @@ func ParseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
 	}
 
 	u, diags := parseUUID(value)
-	if diags != nil {
+	if diags.HasError() {
 		return nil, diags
 	}
 
-	return &u, nil
+	return &u, diags
 }
 
 func optionalUUIDToStringValue(value *uuid.UUID) types.String {
