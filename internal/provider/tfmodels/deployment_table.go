@@ -23,6 +23,7 @@ type Table struct {
 	Alias          types.String `tfsdk:"alias"`
 	ExcludeColumns types.List   `tfsdk:"columns_to_exclude"`
 	ColumnsToHash  types.List   `tfsdk:"columns_to_hash"`
+	SkipDeletes    types.Bool   `tfsdk:"skip_deletes"`
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -50,6 +51,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		Alias:                parseOptionalString(t.Alias),
 		ExcludeColumns:       colsToExclude,
 		ColumnsToHash:        colsToHash,
+		SkipDeletes:          parseOptionalBool(t.SkipDeletes),
 	}, nil
 }
 
@@ -80,6 +82,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			Alias:                optionalStringToStringValue(apiTable.Alias),
 			ExcludeColumns:       colsToExclude,
 			ColumnsToHash:        colsToHash,
+			SkipDeletes:          optionalBoolToBoolValue(apiTable.SkipDeletes),
 		}
 	}
 
