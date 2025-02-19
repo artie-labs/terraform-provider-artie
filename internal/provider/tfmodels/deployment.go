@@ -45,7 +45,7 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		IncludeArtieUpdatedAtColumn:    parseOptionalBool(d.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: parseOptionalBool(d.IncludeDatabaseUpdatedAtColumn),
 		OneTopicPerSchema:              parseOptionalBool(d.OneTopicPerSchema),
-	}, nil
+	}, diags
 }
 
 func (d Deployment) ToAPIModel(ctx context.Context) (artieclient.Deployment, diag.Diagnostics) {
@@ -58,7 +58,7 @@ func (d Deployment) ToAPIModel(ctx context.Context) (artieclient.Deployment, dia
 		UUID:           parseUUID(d.UUID),
 		Status:         d.Status.ValueString(),
 		BaseDeployment: apiBaseModel,
-	}, nil
+	}, diags
 }
 
 func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) (Deployment, diag.Diagnostics) {
@@ -82,7 +82,7 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		IncludeArtieUpdatedAtColumn:    optionalBoolToBoolValue(apiModel.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: optionalBoolToBoolValue(apiModel.IncludeDatabaseUpdatedAtColumn),
 		OneTopicPerSchema:              optionalBoolToBoolValue(apiModel.OneTopicPerSchema),
-	}, nil
+	}, diags
 }
 
 type DeploymentDestinationConfig struct {
