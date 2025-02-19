@@ -23,16 +23,16 @@ var AllSourceTypes = []string{
 	string(PostgreSQL),
 }
 
-func SourceTypeFromString(sourceType string) SourceType {
+func SourceTypeFromString(sourceType string) (SourceType, error) {
 	switch SourceType(sourceType) {
 	case MySQL:
-		return MySQL
+		return MySQL, nil
 	case Oracle:
-		return Oracle
+		return Oracle, nil
 	case PostgreSQL:
-		return PostgreSQL
+		return PostgreSQL, nil
 	default:
-		panic(fmt.Sprintf("invalid source type: %s", sourceType))
+		return "", fmt.Errorf("invalid source type: %s", sourceType)
 	}
 }
 

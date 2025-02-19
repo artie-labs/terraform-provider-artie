@@ -20,7 +20,13 @@ type Source struct {
 
 func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagnostics) {
 	var sourceConfig artieclient.SourceConfig
-	sourceType := artieclient.SourceTypeFromString(s.Type.ValueString())
+	sourceType, err := artieclient.SourceTypeFromString(s.Type.ValueString())
+	if err != nil {
+		return artieclient.Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+			"Unable to convert Source to API model", err.Error(),
+		)}
+	}
+
 	switch sourceType {
 	case artieclient.MySQL:
 		sourceConfig = s.MySQLConfig.ToAPIModel()
@@ -29,8 +35,9 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	case artieclient.PostgreSQL:
 		sourceConfig = s.PostgresConfig.ToAPIModel()
 	default:
-		// TODO return an error diagnostic instead of panicking
-		panic(fmt.Sprintf("invalid source type: %s", s.Type.ValueString()))
+		return artieclient.Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+			"Unable to convert Source to API model", fmt.Sprintf("unhandled source type: %s", s.Type.ValueString()),
+		)}
 	}
 
 	tables := []artieclient.Table{}
@@ -68,8 +75,9 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 	case artieclient.PostgreSQL:
 		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
 	default:
-		// TODO return an error diagnostic instead of panicking
-		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
+		return Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+			"Unable to convert API model to Source", fmt.Sprintf("invalid source type: %s", apiModel.Type),
+		)}
 	}
 
 	return source, nil
