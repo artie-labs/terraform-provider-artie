@@ -40,7 +40,7 @@ func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnos
 		sharedConfig = d.SnowflakeConfig.ToAPIModel()
 	default:
 		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert Source to API model", fmt.Sprintf("unhandled destination type: %s", d.Type.ValueString()),
+			"Unable to convert Destination to API model", fmt.Sprintf("unhandled destination type: %s", d.Type.ValueString()),
 		)}
 	}
 
