@@ -13,9 +13,13 @@ func ToPtr[T any](v T) *T {
 	return &v
 }
 
-func parseUUID(value types.String) uuid.UUID {
-	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
-	return uuid.MustParse(value.ValueString())
+func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
+	u, err := uuid.Parse(value.ValueString())
+	if err != nil {
+		return uuid.UUID{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to parse UUID", fmt.Sprintf("value: %q", value.ValueString()))}
+	}
+
+	return u, nil
 }
 
 func ParseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
@@ -23,9 +27,9 @@ func ParseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
 		return nil, nil
 	}
 
-	u, err := uuid.Parse(value.ValueString())
-	if err != nil {
-		return nil, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to parse UUID", fmt.Sprintf("value: %q", value.ValueString()))}
+	u, diags := parseUUID(value)
+	if diags != nil {
+		return nil, diags
 	}
 
 	return &u, nil

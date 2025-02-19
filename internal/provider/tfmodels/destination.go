@@ -63,8 +63,14 @@ func (d Destination) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
 		return artieclient.Destination{}, diags
 	}
 
+	uuid, uuidDiags := parseUUID(d.UUID)
+	diags.Append(uuidDiags...)
+	if diags.HasError() {
+		return artieclient.Destination{}, diags
+	}
+
 	return artieclient.Destination{
-		UUID:            parseUUID(d.UUID),
+		UUID:            uuid,
 		BaseDestination: baseModel,
 	}, diags
 }

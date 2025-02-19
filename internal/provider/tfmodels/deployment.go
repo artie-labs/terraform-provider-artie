@@ -72,8 +72,14 @@ func (d Deployment) ToAPIModel(ctx context.Context) (artieclient.Deployment, dia
 		return artieclient.Deployment{}, diags
 	}
 
+	uuid, uuidDiags := parseUUID(d.UUID)
+	diags.Append(uuidDiags...)
+	if diags.HasError() {
+		return artieclient.Deployment{}, diags
+	}
+
 	return artieclient.Deployment{
-		UUID:           parseUUID(d.UUID),
+		UUID:           uuid,
 		Status:         d.Status.ValueString(),
 		BaseDeployment: apiBaseModel,
 	}, diags
