@@ -33,13 +33,31 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		return artieclient.BaseDeployment{}, diags
 	}
 
+	destinationUUID, destDiags := ParseOptionalUUID(d.DestinationUUID)
+	diags.Append(destDiags...)
+	if diags.HasError() {
+		return artieclient.BaseDeployment{}, diags
+	}
+
+	sshTunnelUUID, sshDiags := ParseOptionalUUID(d.SSHTunnelUUID)
+	diags.Append(sshDiags...)
+	if diags.HasError() {
+		return artieclient.BaseDeployment{}, diags
+	}
+
+	snowflakeEcoScheduleUUID, snowflakeDiags := ParseOptionalUUID(d.SnowflakeEcoScheduleUUID)
+	diags.Append(snowflakeDiags...)
+	if diags.HasError() {
+		return artieclient.BaseDeployment{}, diags
+	}
+
 	return artieclient.BaseDeployment{
 		Name:                           d.Name.ValueString(),
 		Source:                         apiSource,
-		DestinationUUID:                ParseOptionalUUID(d.DestinationUUID),
+		DestinationUUID:                destinationUUID,
 		DestinationConfig:              d.DestinationConfig.ToAPIModel(),
-		SSHTunnelUUID:                  ParseOptionalUUID(d.SSHTunnelUUID),
-		SnowflakeEcoScheduleUUID:       ParseOptionalUUID(d.SnowflakeEcoScheduleUUID),
+		SSHTunnelUUID:                  sshTunnelUUID,
+		SnowflakeEcoScheduleUUID:       snowflakeEcoScheduleUUID,
 		DropDeletedColumns:             parseOptionalBool(d.DropDeletedColumns),
 		EnableSoftDelete:               parseOptionalBool(d.SoftDeleteRows),
 		IncludeArtieUpdatedAtColumn:    parseOptionalBool(d.IncludeArtieUpdatedAtColumn),
@@ -54,8 +72,14 @@ func (d Deployment) ToAPIModel(ctx context.Context) (artieclient.Deployment, dia
 		return artieclient.Deployment{}, diags
 	}
 
+	uuid, uuidDiags := parseUUID(d.UUID)
+	diags.Append(uuidDiags...)
+	if diags.HasError() {
+		return artieclient.Deployment{}, diags
+	}
+
 	return artieclient.Deployment{
-		UUID:           parseUUID(d.UUID),
+		UUID:           uuid,
 		Status:         d.Status.ValueString(),
 		BaseDeployment: apiBaseModel,
 	}, diags

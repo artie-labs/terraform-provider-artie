@@ -2,6 +2,7 @@ package tfmodels
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,18 +13,26 @@ func ToPtr[T any](v T) *T {
 	return &v
 }
 
-func parseUUID(value types.String) uuid.UUID {
-	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
-	return uuid.MustParse(value.ValueString())
-}
-
-func ParseOptionalUUID(value types.String) *uuid.UUID {
-	if value.IsNull() || len(value.ValueString()) == 0 {
-		return nil
+func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
+	u, err := uuid.Parse(value.ValueString())
+	if err != nil {
+		return uuid.UUID{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to parse UUID", fmt.Sprintf("value: %q", value.ValueString()))}
 	}
 
-	// TODO: [uuid.MustParse] will panic if it fails, we should return an error instead.
-	return ToPtr(uuid.MustParse(value.ValueString()))
+	return u, nil
+}
+
+func ParseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
+	if value.IsNull() || len(value.ValueString()) == 0 {
+		return nil, nil
+	}
+
+	u, diags := parseUUID(value)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return &u, diags
 }
 
 func optionalUUIDToStringValue(value *uuid.UUID) types.String {

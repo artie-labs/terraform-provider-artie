@@ -1,6 +1,7 @@
 package tfmodels
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -25,11 +26,16 @@ func (s SSHTunnel) ToAPIBaseModel() artieclient.BaseSSHTunnel {
 	}
 }
 
-func (s SSHTunnel) ToAPIModel() artieclient.SSHTunnel {
-	return artieclient.SSHTunnel{
-		UUID:          parseUUID(s.UUID),
-		BaseSSHTunnel: s.ToAPIBaseModel(),
+func (s SSHTunnel) ToAPIModel() (artieclient.SSHTunnel, diag.Diagnostics) {
+	uuid, diags := parseUUID(s.UUID)
+	if diags.HasError() {
+		return artieclient.SSHTunnel{}, diags
 	}
+
+	return artieclient.SSHTunnel{
+		UUID:          uuid,
+		BaseSSHTunnel: s.ToAPIBaseModel(),
+	}, diags
 }
 
 func SSHTunnelFromAPIModel(apiModel artieclient.SSHTunnel) SSHTunnel {

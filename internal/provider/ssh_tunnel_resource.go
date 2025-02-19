@@ -138,7 +138,13 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	sshTunnel, err := r.client.SSHTunnels().Update(ctx, planData.ToAPIModel())
+	apiModel, diags := planData.ToAPIModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	sshTunnel, err := r.client.SSHTunnels().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update SSH Tunnel", err.Error())
 		return
