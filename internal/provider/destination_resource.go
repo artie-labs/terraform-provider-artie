@@ -127,9 +127,15 @@ func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, 
 	return planData, diagnostics.HasError()
 }
 
-func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, destination artieclient.Destination) {
+func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiDestination artieclient.Destination) {
 	// Translate API response type into Terraform model and save it into state
-	diagnostics.Append(state.Set(ctx, tfmodels.DestinationFromAPIModel(destination))...)
+	destination, diags := tfmodels.DestinationFromAPIModel(apiDestination)
+	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return
+	}
+
+	diagnostics.Append(state.Set(ctx, destination)...)
 }
 
 func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

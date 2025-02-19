@@ -61,10 +61,10 @@ func (d Destination) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
 	return artieclient.Destination{
 		UUID:            parseUUID(d.UUID),
 		BaseDestination: baseModel,
-	}, nil
+	}, diags
 }
 
-func DestinationFromAPIModel(apiModel artieclient.Destination) Destination {
+func DestinationFromAPIModel(apiModel artieclient.Destination) (Destination, diag.Diagnostics) {
 	destination := Destination{
 		UUID:          types.StringValue(apiModel.UUID.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
@@ -82,10 +82,12 @@ func DestinationFromAPIModel(apiModel artieclient.Destination) Destination {
 	case artieclient.Snowflake:
 		destination.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
-		panic(fmt.Sprintf("invalid destination type: %s", apiModel.Type))
+		return Destination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+			"Unable to convert API model to Destination", fmt.Sprintf("invalid destination type: %s", apiModel.Type),
+		)}
 	}
 
-	return destination
+	return destination, nil
 }
 
 type BigQuerySharedConfig struct {
