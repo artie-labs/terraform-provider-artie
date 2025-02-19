@@ -53,13 +53,23 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	}, nil
 }
 
-func TablesFromAPIModel(apiModelTables []artieclient.Table) map[string]Table {
+func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table) (map[string]Table, diag.Diagnostics) {
 	tables := map[string]Table{}
 	for _, apiTable := range apiModelTables {
 		tableKey := apiTable.Name
 		if apiTable.Schema != "" {
 			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
 		}
+
+		colsToExclude, diags := optionalStringListToStringValue(ctx, apiTable.ExcludeColumns)
+		if diags.HasError() {
+			return map[string]Table{}, diags
+		}
+		colsToHash, diags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
+		if diags.HasError() {
+			return map[string]Table{}, diags
+		}
+
 		tables[tableKey] = Table{
 			UUID:                 types.StringValue(apiTable.UUID.String()),
 			Name:                 types.StringValue(apiTable.Name),
@@ -68,10 +78,10 @@ func TablesFromAPIModel(apiModelTables []artieclient.Table) map[string]Table {
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 			Alias:                optionalStringToStringValue(apiTable.Alias),
-			ExcludeColumns:       optionalStringListToStringValue(apiTable.ExcludeColumns),
-			ColumnsToHash:        optionalStringListToStringValue(apiTable.ColumnsToHash),
+			ExcludeColumns:       colsToExclude,
+			ColumnsToHash:        colsToHash,
 		}
 	}
 
-	return tables
+	return tables, nil
 }

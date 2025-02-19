@@ -61,8 +61,12 @@ func (d Deployment) ToAPIModel(ctx context.Context) (artieclient.Deployment, dia
 	}, nil
 }
 
-func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
-	source := SourceFromAPIModel(apiModel.Source)
+func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) (Deployment, diag.Diagnostics) {
+	source, diags := SourceFromAPIModel(ctx, apiModel.Source)
+	if diags.HasError() {
+		return Deployment{}, diags
+	}
+
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 	return Deployment{
 		UUID:                           types.StringValue(apiModel.UUID.String()),
@@ -78,7 +82,7 @@ func DeploymentFromAPIModel(apiModel artieclient.Deployment) Deployment {
 		IncludeArtieUpdatedAtColumn:    optionalBoolToBoolValue(apiModel.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: optionalBoolToBoolValue(apiModel.IncludeDatabaseUpdatedAtColumn),
 		OneTopicPerSchema:              optionalBoolToBoolValue(apiModel.OneTopicPerSchema),
-	}
+	}, nil
 }
 
 type DeploymentDestinationConfig struct {

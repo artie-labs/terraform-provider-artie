@@ -82,11 +82,10 @@ func parseOptionalStringList(ctx context.Context, value types.List) (*[]string, 
 	return &out, nil
 }
 
-func optionalStringListToStringValue(value *[]string) types.List {
+func optionalStringListToStringValue(ctx context.Context, value *[]string) (types.List, diag.Diagnostics) {
 	if value == nil {
-		return types.ListNull(types.StringType)
+		return types.ListNull(types.StringType), nil
 	}
-	// TODO pass real context, handle diags returned here
-	list, _ := types.ListValueFrom(context.Background(), types.StringType, *value)
-	return list
+
+	return types.ListValueFrom(ctx, types.StringType, *value)
 }

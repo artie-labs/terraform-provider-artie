@@ -29,6 +29,7 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	case artieclient.PostgreSQL:
 		sourceConfig = s.PostgresConfig.ToAPIModel()
 	default:
+		// TODO return an error diagnostic instead of panicking
 		panic(fmt.Sprintf("invalid source type: %s", s.Type.ValueString()))
 	}
 
@@ -48,10 +49,15 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	}, nil
 }
 
-func SourceFromAPIModel(apiModel artieclient.Source) Source {
+func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Source, diag.Diagnostics) {
+	tables, diags := TablesFromAPIModel(ctx, apiModel.Tables)
+	if diags.HasError() {
+		return Source{}, diags
+	}
+
 	source := Source{
 		Type:   types.StringValue(string(apiModel.Type)),
-		Tables: TablesFromAPIModel(apiModel.Tables),
+		Tables: tables,
 	}
 
 	switch apiModel.Type {
@@ -62,10 +68,11 @@ func SourceFromAPIModel(apiModel artieclient.Source) Source {
 	case artieclient.PostgreSQL:
 		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
 	default:
+		// TODO return an error diagnostic instead of panicking
 		panic(fmt.Sprintf("invalid source type: %s", apiModel.Type))
 	}
 
-	return source
+	return source, nil
 }
 
 type MySQLConfig struct {
