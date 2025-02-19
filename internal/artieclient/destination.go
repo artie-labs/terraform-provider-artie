@@ -25,18 +25,18 @@ var AllDestinationTypes = []string{
 	string(Snowflake),
 }
 
-func DestinationTypeFromString(destType string) DestinationType {
+func DestinationTypeFromString(destType string) (DestinationType, error) {
 	switch DestinationType(destType) {
 	case BigQuery:
-		return BigQuery
+		return BigQuery, nil
 	case Redshift:
-		return Redshift
+		return Redshift, nil
 	case S3:
-		return S3
+		return S3, nil
 	case Snowflake:
-		return Snowflake
+		return Snowflake, nil
 	default:
-		panic(fmt.Sprintf("invalid destination type: %s", destType))
+		return "", fmt.Errorf("invalid destination type: %s", destType)
 	}
 }
 

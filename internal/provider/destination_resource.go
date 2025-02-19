@@ -138,7 +138,12 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	baseDestination := planData.ToAPIBaseModel()
+	baseDestination, diags := planData.ToAPIBaseModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
 	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
@@ -174,12 +179,24 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	if err := r.client.Destinations().TestConnection(ctx, planData.ToAPIBaseModel()); err != nil {
+	apiBaseModel, diags := planData.ToAPIBaseModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	if err := r.client.Destinations().TestConnection(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
 
-	updatedDestination, err := r.client.Destinations().Update(ctx, planData.ToAPIModel())
+	apiModel, diags := planData.ToAPIModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	updatedDestination, err := r.client.Destinations().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return

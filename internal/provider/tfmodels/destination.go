@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -19,9 +20,15 @@ type Destination struct {
 	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
 }
 
-func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
+func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnostics) {
 	var sharedConfig artieclient.DestinationSharedConfig
-	destinationType := artieclient.DestinationTypeFromString(d.Type.ValueString())
+	destinationType, err := artieclient.DestinationTypeFromString(d.Type.ValueString())
+	if err != nil {
+		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+			"Unable to convert Destination to API model", err.Error(),
+		)}
+	}
+
 	switch destinationType {
 	case artieclient.BigQuery:
 		sharedConfig = d.BigQueryConfig.ToAPIModel()
@@ -32,7 +39,9 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 	case artieclient.Snowflake:
 		sharedConfig = d.SnowflakeConfig.ToAPIModel()
 	default:
-		panic(fmt.Sprintf("invalid destination type: %s", d.Type.ValueString()))
+		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+			"Unable to convert Source to API model", fmt.Sprintf("unhandled destination type: %s", d.Type.ValueString()),
+		)}
 	}
 
 	return artieclient.BaseDestination{
@@ -40,14 +49,19 @@ func (d Destination) ToAPIBaseModel() artieclient.BaseDestination {
 		Label:         d.Label.ValueString(),
 		Config:        sharedConfig,
 		SSHTunnelUUID: ParseOptionalUUID(d.SSHTunnelUUID),
-	}
+	}, nil
 }
 
-func (d Destination) ToAPIModel() artieclient.Destination {
+func (d Destination) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
+	baseModel, diags := d.ToAPIBaseModel()
+	if diags.HasError() {
+		return artieclient.Destination{}, diags
+	}
+
 	return artieclient.Destination{
 		UUID:            parseUUID(d.UUID),
-		BaseDestination: d.ToAPIBaseModel(),
-	}
+		BaseDestination: baseModel,
+	}, nil
 }
 
 func DestinationFromAPIModel(apiModel artieclient.Destination) Destination {
