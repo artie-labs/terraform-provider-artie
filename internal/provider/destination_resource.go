@@ -127,9 +127,15 @@ func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, 
 	return planData, diagnostics.HasError()
 }
 
-func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, destination artieclient.Destination) {
+func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiDestination artieclient.Destination) {
 	// Translate API response type into Terraform model and save it into state
-	diagnostics.Append(state.Set(ctx, tfmodels.DestinationFromAPIModel(destination))...)
+	destination, diags := tfmodels.DestinationFromAPIModel(apiDestination)
+	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return
+	}
+
+	diagnostics.Append(state.Set(ctx, destination)...)
 }
 
 func (r *DestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -138,7 +144,12 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	baseDestination := planData.ToAPIBaseModel()
+	baseDestination, diags := planData.ToAPIBaseModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
 	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
@@ -174,12 +185,24 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	if err := r.client.Destinations().TestConnection(ctx, planData.ToAPIBaseModel()); err != nil {
+	apiBaseModel, diags := planData.ToAPIBaseModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	if err := r.client.Destinations().TestConnection(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
 
-	updatedDestination, err := r.client.Destinations().Update(ctx, planData.ToAPIModel())
+	apiModel, diags := planData.ToAPIModel()
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	updatedDestination, err := r.client.Destinations().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
