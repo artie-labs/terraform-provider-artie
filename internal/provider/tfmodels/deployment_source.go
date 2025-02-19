@@ -1,8 +1,10 @@
 package tfmodels
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -16,7 +18,7 @@ type Source struct {
 	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
 }
 
-func (s Source) ToAPIModel() artieclient.Source {
+func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagnostics) {
 	var sourceConfig artieclient.SourceConfig
 	sourceType := artieclient.SourceTypeFromString(s.Type.ValueString())
 	switch sourceType {
@@ -32,14 +34,18 @@ func (s Source) ToAPIModel() artieclient.Source {
 
 	tables := []artieclient.Table{}
 	for _, table := range s.Tables {
-		tables = append(tables, table.ToAPIModel())
+		apiTable, diags := table.ToAPIModel(ctx)
+		if diags.HasError() {
+			return artieclient.Source{}, diags
+		}
+		tables = append(tables, apiTable)
 	}
 
 	return artieclient.Source{
 		Type:   sourceType,
 		Config: sourceConfig,
 		Tables: tables,
-	}
+	}, nil
 }
 
 func SourceFromAPIModel(apiModel artieclient.Source) Source {

@@ -243,8 +243,12 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	deployment, diags := planData.ToAPIBaseModel(ctx)
+	if diags.HasError() {
+		return
+	}
+
 	// Validate config before creating the deployment
-	deployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
@@ -285,8 +289,12 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	baseDeployment, diags := planData.ToAPIBaseModel(ctx)
+	if diags.HasError() {
+		return
+	}
+
 	// Validate source & destination config before updating the deployment
-	baseDeployment := planData.ToAPIBaseModel()
 	if err := r.client.Deployments().ValidateSource(ctx, baseDeployment); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return
@@ -296,7 +304,12 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	updatedDeployment, err := r.client.Deployments().Update(ctx, planData.ToAPIModel())
+	apiModel, diags := planData.ToAPIModel(ctx)
+	if diags.HasError() {
+		return
+	}
+
+	updatedDeployment, err := r.client.Deployments().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Deployment", err.Error())
 		return

@@ -1,9 +1,11 @@
 package tfmodels
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -23,10 +25,19 @@ type Table struct {
 	ColumnsToHash  types.List   `tfsdk:"columns_to_hash"`
 }
 
-func (t Table) ToAPIModel() artieclient.Table {
+func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
 	tableUUID := uuid.Nil
 	if t.UUID.ValueString() != "" {
 		tableUUID = uuid.MustParse(t.UUID.ValueString())
+	}
+
+	colsToExclude, diags := parseOptionalStringList(ctx, t.ExcludeColumns)
+	if diags.HasError() {
+		return artieclient.Table{}, diags
+	}
+	colsToHash, diags := parseOptionalStringList(ctx, t.ColumnsToHash)
+	if diags.HasError() {
+		return artieclient.Table{}, diags
 	}
 
 	return artieclient.Table{
@@ -37,9 +48,9 @@ func (t Table) ToAPIModel() artieclient.Table {
 		IndividualDeployment: t.IndividualDeployment.ValueBool(),
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
 		Alias:                parseOptionalString(t.Alias),
-		ExcludeColumns:       parseOptionalStringList(t.ExcludeColumns),
-		ColumnsToHash:        parseOptionalStringList(t.ColumnsToHash),
-	}
+		ExcludeColumns:       colsToExclude,
+		ColumnsToHash:        colsToHash,
+	}, nil
 }
 
 func TablesFromAPIModel(apiModelTables []artieclient.Table) map[string]Table {

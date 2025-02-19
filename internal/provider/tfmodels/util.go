@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -60,14 +61,17 @@ func optionalStringToStringValue(value *string) types.String {
 	return types.StringValue(*value)
 }
 
-func parseOptionalStringList(value types.List) *[]string {
+func parseOptionalStringList(ctx context.Context, value types.List) (*[]string, diag.Diagnostics) {
 	if value.IsNull() {
-		return nil
+		return nil, nil
 	}
 
 	elements := make([]types.String, 0, len(value.Elements()))
-	// TODO pass real context, handle diags returned here
-	_ = value.ElementsAs(context.Background(), &elements, false)
+	diags := value.ElementsAs(ctx, &elements, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	out := []string{}
 	for _, el := range elements {
 		if !el.IsNull() {
@@ -75,7 +79,7 @@ func parseOptionalStringList(value types.List) *[]string {
 		}
 	}
 
-	return &out
+	return &out, nil
 }
 
 func optionalStringListToStringValue(value *[]string) types.List {
