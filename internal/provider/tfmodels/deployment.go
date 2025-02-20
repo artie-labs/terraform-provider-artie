@@ -101,11 +101,11 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		DestinationConfig:              &destinationConfig,
 		SSHTunnelUUID:                  optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID:       optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
-		DropDeletedColumns:             optionalBoolToBoolValue(apiModel.DropDeletedColumns),
-		SoftDeleteRows:                 optionalBoolToBoolValue(apiModel.EnableSoftDelete),
-		IncludeArtieUpdatedAtColumn:    optionalBoolToBoolValue(apiModel.IncludeArtieUpdatedAtColumn),
-		IncludeDatabaseUpdatedAtColumn: optionalBoolToBoolValue(apiModel.IncludeDatabaseUpdatedAtColumn),
-		OneTopicPerSchema:              optionalBoolToBoolValue(apiModel.OneTopicPerSchema),
+		DropDeletedColumns:             types.BoolPointerValue(apiModel.DropDeletedColumns),
+		SoftDeleteRows:                 types.BoolPointerValue(apiModel.EnableSoftDelete),
+		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
+		IncludeDatabaseUpdatedAtColumn: types.BoolPointerValue(apiModel.IncludeDatabaseUpdatedAtColumn),
+		OneTopicPerSchema:              types.BoolPointerValue(apiModel.OneTopicPerSchema),
 	}, diags
 }
 

@@ -107,10 +107,10 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-			Alias:                optionalStringToStringValue(apiTable.Alias),
+			Alias:                types.StringPointerValue(apiTable.Alias),
 			ExcludeColumns:       colsToExclude,
 			ColumnsToHash:        colsToHash,
-			SkipDeletes:          optionalBoolToBoolValue(apiTable.SkipDeletes),
+			SkipDeletes:          types.BoolPointerValue(apiTable.SkipDeletes),
 			MergePredicates:      mergePredicates,
 		}
 	}

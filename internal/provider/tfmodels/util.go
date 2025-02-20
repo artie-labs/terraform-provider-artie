@@ -9,10 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToPtr[T any](v T) *T {
-	return &v
-}
-
 func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
 	u, err := uuid.Parse(value.ValueString())
 	if err != nil {
@@ -40,20 +36,6 @@ func optionalUUIDToStringValue(value *uuid.UUID) types.String {
 		return types.StringValue("")
 	}
 	return types.StringValue(value.String())
-}
-
-func optionalBoolToBoolValue(value *bool) types.Bool {
-	if value == nil {
-		return types.BoolNull()
-	}
-	return types.BoolValue(*value)
-}
-
-func optionalStringToStringValue(value *string) types.String {
-	if value == nil {
-		return types.StringNull()
-	}
-	return types.StringValue(*value)
 }
 
 func parseOptionalStringList(ctx context.Context, value types.List) (*[]string, diag.Diagnostics) {
