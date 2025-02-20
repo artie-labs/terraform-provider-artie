@@ -14,7 +14,7 @@ func ToPtr[T any](v T) *T {
 }
 
 func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
-	if value.IsNull() || len(value.ValueString()) == 0 {
+	if value.ValueString() == "" {
 		return uuid.UUID{}, []diag.Diagnostic{diag.NewErrorDiagnostic("UUID is empty", "")}
 	}
 
@@ -27,7 +27,7 @@ func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
 }
 
 func ParseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
-	if value.IsNull() || len(value.ValueString()) == 0 {
+	if value.ValueString() == "" {
 		return nil, nil
 	}
 
