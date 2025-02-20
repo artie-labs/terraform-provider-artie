@@ -120,21 +120,21 @@ type Table struct {
 	IsPartitioned        bool      `json:"isPartitioned"`
 
 	// Advanced table settings - these must all be nullable
-	Alias                  *string   `json:"alias"`
-	ExcludeColumns         *[]string `json:"excludeColumns"`
-	ColumnsToHash          *[]string `json:"columnsToHash"`
-	SkipDeletes            *bool     `json:"skipDelete"`
-	BQDailyPartitionColumn *string   `json:"bigqueryDailyPartitionColumn"`
+	Alias           *string   `json:"alias"`
+	ExcludeColumns  *[]string `json:"excludeColumns"`
+	ColumnsToHash   *[]string `json:"columnsToHash"`
+	SkipDeletes     *bool     `json:"skipDelete"`
+	MergePredicates *[]string `json:"mergePredicates"`
 }
 
 type advancedTableSettings struct {
-	Alias                     string   `json:"alias"`
-	ExcludeColumns            []string `json:"excludeColumns"`
-	ColumnsToHash             []string `json:"columnsToHash"`
-	SkipDeletes               bool     `json:"skipDelete"`
-	BigQueryPartitionSettings *struct {
+	Alias           string   `json:"alias"`
+	ExcludeColumns  []string `json:"excludeColumns"`
+	ColumnsToHash   []string `json:"columnsToHash"`
+	SkipDeletes     bool     `json:"skipDelete"`
+	MergePredicates []struct {
 		PartitionField string `json:"partitionField"`
-	} `json:"bigQueryPartitionSettings"`
+	} `json:"mergePredicates"`
 }
 
 type tableWithAdvSettings struct {
@@ -158,14 +158,11 @@ func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
 	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
 
-	if t.AdvancedSettings.BigQueryPartitionSettings != nil {
-		t.BQDailyPartitionColumn = &t.AdvancedSettings.BigQueryPartitionSettings.PartitionField
-	} else {
-		// Fall back to an empty string so terraform doesn't think a change is needed if the
-		// tf config specifies an empty string
-		empty := ""
-		t.BQDailyPartitionColumn = &empty
+	mergePredicateColumns := []string{}
+	for _, mp := range t.AdvancedSettings.MergePredicates {
+		mergePredicateColumns = append(mergePredicateColumns, mp.PartitionField)
 	}
+	t.MergePredicates = toSlicePtr(mergePredicateColumns)
 
 	return t.Table
 }
