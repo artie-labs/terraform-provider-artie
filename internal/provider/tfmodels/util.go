@@ -42,25 +42,11 @@ func optionalUUIDToStringValue(value *uuid.UUID) types.String {
 	return types.StringValue(value.String())
 }
 
-func parseOptionalBool(value types.Bool) *bool {
-	if value.IsNull() {
-		return nil
-	}
-	return ToPtr(value.ValueBool())
-}
-
 func optionalBoolToBoolValue(value *bool) types.Bool {
 	if value == nil {
 		return types.BoolNull()
 	}
 	return types.BoolValue(*value)
-}
-
-func parseOptionalString(value types.String) *string {
-	if value.IsNull() {
-		return nil
-	}
-	return ToPtr(value.ValueString())
 }
 
 func optionalStringToStringValue(value *string) types.String {

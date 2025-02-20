@@ -64,10 +64,10 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		EnableHistoryMode:    t.EnableHistoryMode.ValueBool(),
 		IndividualDeployment: t.IndividualDeployment.ValueBool(),
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
-		Alias:                parseOptionalString(t.Alias),
+		Alias:                t.Alias.ValueStringPointer(),
 		ExcludeColumns:       colsToExclude,
 		ColumnsToHash:        colsToHash,
-		SkipDeletes:          parseOptionalBool(t.SkipDeletes),
+		SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
 		MergePredicates:      mergePredicates,
 	}, nil
 }
