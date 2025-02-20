@@ -64,10 +64,10 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		EnableHistoryMode:    t.EnableHistoryMode.ValueBool(),
 		IndividualDeployment: t.IndividualDeployment.ValueBool(),
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
-		Alias:                parseOptionalString(t.Alias),
+		Alias:                t.Alias.ValueStringPointer(),
 		ExcludeColumns:       colsToExclude,
 		ColumnsToHash:        colsToHash,
-		SkipDeletes:          parseOptionalBool(t.SkipDeletes),
+		SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
 		MergePredicates:      mergePredicates,
 	}, diags
 }
@@ -103,10 +103,10 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
 			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-			Alias:                optionalStringToStringValue(apiTable.Alias),
+			Alias:                types.StringPointerValue(apiTable.Alias),
 			ExcludeColumns:       colsToExclude,
 			ColumnsToHash:        colsToHash,
-			SkipDeletes:          optionalBoolToBoolValue(apiTable.SkipDeletes),
+			SkipDeletes:          types.BoolPointerValue(apiTable.SkipDeletes),
 			MergePredicates:      mergePredicates,
 		}
 	}

@@ -33,19 +33,19 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	destinationUUID, destDiags := ParseOptionalUUID(d.DestinationUUID)
+	destinationUUID, destDiags := parseOptionalUUID(d.DestinationUUID)
 	diags.Append(destDiags...)
 	if diags.HasError() {
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	sshTunnelUUID, sshDiags := ParseOptionalUUID(d.SSHTunnelUUID)
+	sshTunnelUUID, sshDiags := parseOptionalUUID(d.SSHTunnelUUID)
 	diags.Append(sshDiags...)
 	if diags.HasError() {
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	snowflakeEcoScheduleUUID, snowflakeDiags := ParseOptionalUUID(d.SnowflakeEcoScheduleUUID)
+	snowflakeEcoScheduleUUID, snowflakeDiags := parseOptionalUUID(d.SnowflakeEcoScheduleUUID)
 	diags.Append(snowflakeDiags...)
 	if diags.HasError() {
 		return artieclient.BaseDeployment{}, diags
@@ -58,11 +58,11 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		DestinationConfig:              d.DestinationConfig.ToAPIModel(),
 		SSHTunnelUUID:                  sshTunnelUUID,
 		SnowflakeEcoScheduleUUID:       snowflakeEcoScheduleUUID,
-		DropDeletedColumns:             parseOptionalBool(d.DropDeletedColumns),
-		EnableSoftDelete:               parseOptionalBool(d.SoftDeleteRows),
-		IncludeArtieUpdatedAtColumn:    parseOptionalBool(d.IncludeArtieUpdatedAtColumn),
-		IncludeDatabaseUpdatedAtColumn: parseOptionalBool(d.IncludeDatabaseUpdatedAtColumn),
-		OneTopicPerSchema:              parseOptionalBool(d.OneTopicPerSchema),
+		DropDeletedColumns:             d.DropDeletedColumns.ValueBoolPointer(),
+		EnableSoftDelete:               d.SoftDeleteRows.ValueBoolPointer(),
+		IncludeArtieUpdatedAtColumn:    d.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
+		IncludeDatabaseUpdatedAtColumn: d.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
+		OneTopicPerSchema:              d.OneTopicPerSchema.ValueBoolPointer(),
 	}, diags
 }
 
@@ -101,11 +101,11 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		DestinationConfig:              &destinationConfig,
 		SSHTunnelUUID:                  optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID:       optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
-		DropDeletedColumns:             optionalBoolToBoolValue(apiModel.DropDeletedColumns),
-		SoftDeleteRows:                 optionalBoolToBoolValue(apiModel.EnableSoftDelete),
-		IncludeArtieUpdatedAtColumn:    optionalBoolToBoolValue(apiModel.IncludeArtieUpdatedAtColumn),
-		IncludeDatabaseUpdatedAtColumn: optionalBoolToBoolValue(apiModel.IncludeDatabaseUpdatedAtColumn),
-		OneTopicPerSchema:              optionalBoolToBoolValue(apiModel.OneTopicPerSchema),
+		DropDeletedColumns:             types.BoolPointerValue(apiModel.DropDeletedColumns),
+		SoftDeleteRows:                 types.BoolPointerValue(apiModel.EnableSoftDelete),
+		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
+		IncludeDatabaseUpdatedAtColumn: types.BoolPointerValue(apiModel.IncludeDatabaseUpdatedAtColumn),
+		OneTopicPerSchema:              types.BoolPointerValue(apiModel.OneTopicPerSchema),
 	}, diags
 }
 
