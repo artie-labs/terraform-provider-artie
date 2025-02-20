@@ -10,6 +10,10 @@ import (
 )
 
 func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
+	if value.ValueString() == "" {
+		return uuid.UUID{}, []diag.Diagnostic{diag.NewErrorDiagnostic("UUID is empty", "")}
+	}
+
 	u, err := uuid.Parse(value.ValueString())
 	if err != nil {
 		return uuid.UUID{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to parse UUID", fmt.Sprintf("value: %q", value.ValueString()))}
@@ -19,7 +23,7 @@ func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
 }
 
 func parseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
-	if value.IsNull() || len(value.ValueString()) == 0 {
+	if value.ValueString() == "" {
 		return nil, nil
 	}
 
