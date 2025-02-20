@@ -18,7 +18,7 @@ func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
 	return u, nil
 }
 
-func ParseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
+func parseOptionalUUID(value types.String) (*uuid.UUID, diag.Diagnostics) {
 	if value.IsNull() || len(value.ValueString()) == 0 {
 		return nil, nil
 	}

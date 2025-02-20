@@ -44,7 +44,7 @@ func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnos
 		)}
 	}
 
-	sshTunnelUUID, diags := ParseOptionalUUID(d.SSHTunnelUUID)
+	sshTunnelUUID, diags := parseOptionalUUID(d.SSHTunnelUUID)
 	if diags.HasError() {
 		return artieclient.BaseDestination{}, diags
 	}

@@ -33,19 +33,19 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	destinationUUID, destDiags := ParseOptionalUUID(d.DestinationUUID)
+	destinationUUID, destDiags := parseOptionalUUID(d.DestinationUUID)
 	diags.Append(destDiags...)
 	if diags.HasError() {
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	sshTunnelUUID, sshDiags := ParseOptionalUUID(d.SSHTunnelUUID)
+	sshTunnelUUID, sshDiags := parseOptionalUUID(d.SSHTunnelUUID)
 	diags.Append(sshDiags...)
 	if diags.HasError() {
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	snowflakeEcoScheduleUUID, snowflakeDiags := ParseOptionalUUID(d.SnowflakeEcoScheduleUUID)
+	snowflakeEcoScheduleUUID, snowflakeDiags := parseOptionalUUID(d.SnowflakeEcoScheduleUUID)
 	diags.Append(snowflakeDiags...)
 	if diags.HasError() {
 		return artieclient.BaseDeployment{}, diags
