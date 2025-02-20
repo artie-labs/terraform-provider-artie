@@ -33,11 +33,16 @@ type Table struct {
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
 	tableUUID := uuid.Nil
+	var diags diag.Diagnostics
 	if t.UUID.ValueString() != "" {
-		tableUUID = uuid.MustParse(t.UUID.ValueString())
+		tableUUID, diags = parseUUID(t.UUID)
+		if diags.HasError() {
+			return artieclient.Table{}, diags
+		}
 	}
 
-	colsToExclude, diags := parseOptionalStringList(ctx, t.ExcludeColumns)
+	colsToExclude, excludeDiags := parseOptionalStringList(ctx, t.ExcludeColumns)
+	diags.Append(excludeDiags...)
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
