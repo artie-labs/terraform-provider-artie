@@ -41,11 +41,13 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
+
 	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
+
 	var mergePredicates *[]artieclient.MergePredicate
 	if t.MergePredicates != nil {
 		preds := []artieclient.MergePredicate{}
@@ -82,6 +84,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		if diags.HasError() {
 			return map[string]Table{}, diags
 		}
+
 		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
 		diags.Append(hashDiags...)
 		if diags.HasError() {
