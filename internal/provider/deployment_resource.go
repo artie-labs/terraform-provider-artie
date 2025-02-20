@@ -128,6 +128,16 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"columns_to_exclude":    schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional list of columns to exclude from syncing to the destination."},
 								"columns_to_hash":       schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash."},
 								"skip_deletes":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, we will skip delete events for this table and only process insert and update events."},
+								"merge_predicates": schema.ListNestedAttribute{
+									Optional:            true,
+									Computed:            true,
+									PlanModifiers:       []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+									MarkdownDescription: "Optional: if the destination table is partitioned, specify the column(s) it's partitioned by. This will help with merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it must be a time column partitioned by day.",
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
+										},
+									}},
 							},
 						},
 					},

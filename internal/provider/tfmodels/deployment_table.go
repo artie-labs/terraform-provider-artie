@@ -11,6 +11,10 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 )
 
+type MergePredicate struct {
+	PartitionField string `tfsdk:"partition_field"`
+}
+
 type Table struct {
 	UUID                 types.String `tfsdk:"uuid"`
 	Name                 types.String `tfsdk:"name"`
@@ -20,10 +24,11 @@ type Table struct {
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
-	Alias          types.String `tfsdk:"alias"`
-	ExcludeColumns types.List   `tfsdk:"columns_to_exclude"`
-	ColumnsToHash  types.List   `tfsdk:"columns_to_hash"`
-	SkipDeletes    types.Bool   `tfsdk:"skip_deletes"`
+	Alias           types.String      `tfsdk:"alias"`
+	ExcludeColumns  types.List        `tfsdk:"columns_to_exclude"`
+	ColumnsToHash   types.List        `tfsdk:"columns_to_hash"`
+	SkipDeletes     types.Bool        `tfsdk:"skip_deletes"`
+	MergePredicates *[]MergePredicate `tfsdk:"merge_predicates"`
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -36,9 +41,20 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
-	colsToHash, diags := parseOptionalStringList(ctx, t.ColumnsToHash)
+
+	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
+	diags.Append(hashDiags...)
 	if diags.HasError() {
 		return artieclient.Table{}, diags
+	}
+
+	var mergePredicates *[]artieclient.MergePredicate
+	if t.MergePredicates != nil {
+		preds := []artieclient.MergePredicate{}
+		for _, mp := range *t.MergePredicates {
+			preds = append(preds, artieclient.MergePredicate{PartitionField: mp.PartitionField})
+		}
+		mergePredicates = &preds
 	}
 
 	return artieclient.Table{
@@ -52,6 +68,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		ExcludeColumns:       colsToExclude,
 		ColumnsToHash:        colsToHash,
 		SkipDeletes:          parseOptionalBool(t.SkipDeletes),
+		MergePredicates:      mergePredicates,
 	}, nil
 }
 
@@ -67,9 +84,20 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		if diags.HasError() {
 			return map[string]Table{}, diags
 		}
-		colsToHash, diags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
+
+		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
+		diags.Append(hashDiags...)
 		if diags.HasError() {
 			return map[string]Table{}, diags
+		}
+
+		var mergePredicates *[]MergePredicate
+		if apiTable.MergePredicates != nil {
+			preds := []MergePredicate{}
+			for _, mp := range *apiTable.MergePredicates {
+				preds = append(preds, MergePredicate{PartitionField: mp.PartitionField})
+			}
+			mergePredicates = &preds
 		}
 
 		tables[tableKey] = Table{
@@ -83,6 +111,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ExcludeColumns:       colsToExclude,
 			ColumnsToHash:        colsToHash,
 			SkipDeletes:          optionalBoolToBoolValue(apiTable.SkipDeletes),
+			MergePredicates:      mergePredicates,
 		}
 	}
 
