@@ -120,17 +120,21 @@ type Table struct {
 	IsPartitioned        bool      `json:"isPartitioned"`
 
 	// Advanced table settings - these must all be nullable
-	Alias          *string   `json:"alias"`
-	ExcludeColumns *[]string `json:"excludeColumns"`
-	ColumnsToHash  *[]string `json:"columnsToHash"`
-	SkipDeletes    *bool     `json:"skipDelete"`
+	Alias                  *string   `json:"alias"`
+	ExcludeColumns         *[]string `json:"excludeColumns"`
+	ColumnsToHash          *[]string `json:"columnsToHash"`
+	SkipDeletes            *bool     `json:"skipDelete"`
+	BQDailyPartitionColumn *string   `json:"bigqueryDailyPartitionColumn"`
 }
 
 type advancedTableSettings struct {
-	Alias          string   `json:"alias"`
-	ExcludeColumns []string `json:"excludeColumns"`
-	ColumnsToHash  []string `json:"columnsToHash"`
-	SkipDeletes    bool     `json:"skipDelete"`
+	Alias                     string   `json:"alias"`
+	ExcludeColumns            []string `json:"excludeColumns"`
+	ColumnsToHash             []string `json:"columnsToHash"`
+	SkipDeletes               bool     `json:"skipDelete"`
+	BigQueryPartitionSettings *struct {
+		PartitionField string `json:"partitionField"`
+	} `json:"bigQueryPartitionSettings"`
 }
 
 type tableWithAdvSettings struct {
@@ -148,10 +152,21 @@ func toSlicePtr(slice []string) *[]string {
 func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	t.Alias = &t.AdvancedSettings.Alias
 	t.SkipDeletes = &t.AdvancedSettings.SkipDeletes
+
 	// These arrays are omitted from the api response if empty; fallback to empty slices
 	// so terraform doesn't think a change is needed if the tf config specifies empty slices
 	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
 	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
+
+	if t.AdvancedSettings.BigQueryPartitionSettings != nil {
+		t.BQDailyPartitionColumn = &t.AdvancedSettings.BigQueryPartitionSettings.PartitionField
+	} else {
+		// Fall back to an empty string so terraform doesn't think a change is needed if the
+		// tf config specifies an empty string
+		empty := ""
+		t.BQDailyPartitionColumn = &empty
+	}
+
 	return t.Table
 }
 

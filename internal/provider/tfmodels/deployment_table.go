@@ -20,10 +20,11 @@ type Table struct {
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
-	Alias          types.String `tfsdk:"alias"`
-	ExcludeColumns types.List   `tfsdk:"columns_to_exclude"`
-	ColumnsToHash  types.List   `tfsdk:"columns_to_hash"`
-	SkipDeletes    types.Bool   `tfsdk:"skip_deletes"`
+	Alias                  types.String `tfsdk:"alias"`
+	ExcludeColumns         types.List   `tfsdk:"columns_to_exclude"`
+	ColumnsToHash          types.List   `tfsdk:"columns_to_hash"`
+	SkipDeletes            types.Bool   `tfsdk:"skip_deletes"`
+	BQDailyPartitionColumn types.String `tfsdk:"bigquery_daily_partition_column"`
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -42,16 +43,17 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	}
 
 	return artieclient.Table{
-		UUID:                 tableUUID,
-		Name:                 t.Name.ValueString(),
-		Schema:               t.Schema.ValueString(),
-		EnableHistoryMode:    t.EnableHistoryMode.ValueBool(),
-		IndividualDeployment: t.IndividualDeployment.ValueBool(),
-		IsPartitioned:        t.IsPartitioned.ValueBool(),
-		Alias:                parseOptionalString(t.Alias),
-		ExcludeColumns:       colsToExclude,
-		ColumnsToHash:        colsToHash,
-		SkipDeletes:          parseOptionalBool(t.SkipDeletes),
+		UUID:                   tableUUID,
+		Name:                   t.Name.ValueString(),
+		Schema:                 t.Schema.ValueString(),
+		EnableHistoryMode:      t.EnableHistoryMode.ValueBool(),
+		IndividualDeployment:   t.IndividualDeployment.ValueBool(),
+		IsPartitioned:          t.IsPartitioned.ValueBool(),
+		Alias:                  parseOptionalString(t.Alias),
+		ExcludeColumns:         colsToExclude,
+		ColumnsToHash:          colsToHash,
+		SkipDeletes:            parseOptionalBool(t.SkipDeletes),
+		BQDailyPartitionColumn: parseOptionalString(t.BQDailyPartitionColumn),
 	}, nil
 }
 
@@ -73,16 +75,17 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		}
 
 		tables[tableKey] = Table{
-			UUID:                 types.StringValue(apiTable.UUID.String()),
-			Name:                 types.StringValue(apiTable.Name),
-			Schema:               types.StringValue(apiTable.Schema),
-			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
-			IndividualDeployment: types.BoolValue(apiTable.IndividualDeployment),
-			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-			Alias:                optionalStringToStringValue(apiTable.Alias),
-			ExcludeColumns:       colsToExclude,
-			ColumnsToHash:        colsToHash,
-			SkipDeletes:          optionalBoolToBoolValue(apiTable.SkipDeletes),
+			UUID:                   types.StringValue(apiTable.UUID.String()),
+			Name:                   types.StringValue(apiTable.Name),
+			Schema:                 types.StringValue(apiTable.Schema),
+			EnableHistoryMode:      types.BoolValue(apiTable.EnableHistoryMode),
+			IndividualDeployment:   types.BoolValue(apiTable.IndividualDeployment),
+			IsPartitioned:          types.BoolValue(apiTable.IsPartitioned),
+			Alias:                  optionalStringToStringValue(apiTable.Alias),
+			ExcludeColumns:         colsToExclude,
+			ColumnsToHash:          colsToHash,
+			SkipDeletes:            optionalBoolToBoolValue(apiTable.SkipDeletes),
+			BQDailyPartitionColumn: optionalStringToStringValue(apiTable.BQDailyPartitionColumn),
 		}
 	}
 
