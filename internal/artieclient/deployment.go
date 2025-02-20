@@ -123,12 +123,14 @@ type Table struct {
 	Alias          *string   `json:"alias"`
 	ExcludeColumns *[]string `json:"excludeColumns"`
 	ColumnsToHash  *[]string `json:"columnsToHash"`
+	SkipDeletes    *bool     `json:"skipDelete"`
 }
 
 type advancedTableSettings struct {
 	Alias          string   `json:"alias"`
 	ExcludeColumns []string `json:"excludeColumns"`
 	ColumnsToHash  []string `json:"columnsToHash"`
+	SkipDeletes    bool     `json:"skipDelete"`
 }
 
 type tableWithAdvSettings struct {
@@ -145,6 +147,7 @@ func toSlicePtr(slice []string) *[]string {
 
 func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	t.Alias = &t.AdvancedSettings.Alias
+	t.SkipDeletes = &t.AdvancedSettings.SkipDeletes
 	// These arrays are omitted from the api response if empty; fallback to empty slices
 	// so terraform doesn't think a change is needed if the tf config specifies empty slices
 	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)

@@ -118,6 +118,7 @@ Optional:
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `individual_deployment` (Boolean) If set to true, we will spin up a separate Artie Transfer deployment to handle this table. This should only be used if this table has extremely high throughput (over 1M+ per hour) and has much higher throughput than other tables.
 - `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
+- `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
 
 Read-Only:
 
