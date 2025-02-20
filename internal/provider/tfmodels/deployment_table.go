@@ -33,20 +33,16 @@ type Table struct {
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
 	tableUUID := uuid.Nil
+	var diags diag.Diagnostics
 	if t.UUID.ValueString() != "" {
-		tableUUID = uuid.MustParse(t.UUID.ValueString())
+		tableUUID, diags = parseUUID(t.UUID)
 	}
 
-	colsToExclude, diags := parseOptionalStringList(ctx, t.ExcludeColumns)
-	if diags.HasError() {
-		return artieclient.Table{}, diags
-	}
+	colsToExclude, excludeDiags := parseOptionalStringList(ctx, t.ExcludeColumns)
+	diags.Append(excludeDiags...)
 
 	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
-	if diags.HasError() {
-		return artieclient.Table{}, diags
-	}
 
 	var mergePredicates *[]artieclient.MergePredicate
 	if t.MergePredicates != nil {
@@ -55,6 +51,10 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			preds = append(preds, artieclient.MergePredicate{PartitionField: mp.PartitionField})
 		}
 		mergePredicates = &preds
+	}
+
+	if diags.HasError() {
+		return artieclient.Table{}, diags
 	}
 
 	return artieclient.Table{
@@ -69,27 +69,23 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		ColumnsToHash:        colsToHash,
 		SkipDeletes:          parseOptionalBool(t.SkipDeletes),
 		MergePredicates:      mergePredicates,
-	}, nil
+	}, diags
 }
 
 func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table) (map[string]Table, diag.Diagnostics) {
 	tables := map[string]Table{}
+	var diags diag.Diagnostics
 	for _, apiTable := range apiModelTables {
 		tableKey := apiTable.Name
 		if apiTable.Schema != "" {
 			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
 		}
 
-		colsToExclude, diags := optionalStringListToStringValue(ctx, apiTable.ExcludeColumns)
-		if diags.HasError() {
-			return map[string]Table{}, diags
-		}
+		colsToExclude, excludeDiags := optionalStringListToStringValue(ctx, apiTable.ExcludeColumns)
+		diags.Append(excludeDiags...)
 
 		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
 		diags.Append(hashDiags...)
-		if diags.HasError() {
-			return map[string]Table{}, diags
-		}
 
 		var mergePredicates *[]MergePredicate
 		if apiTable.MergePredicates != nil {
@@ -115,5 +111,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		}
 	}
 
-	return tables, nil
+	if diags.HasError() {
+		return map[string]Table{}, diags
+	}
+
+	return tables, diags
 }
