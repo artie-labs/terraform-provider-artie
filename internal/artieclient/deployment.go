@@ -111,6 +111,10 @@ type SourceConfig struct {
 	Container    string `json:"containerName,omitempty"`
 }
 
+type MergePredicate struct {
+	PartitionField string `json:"partitionField"`
+}
+
 type Table struct {
 	UUID                 uuid.UUID `json:"uuid"`
 	Name                 string    `json:"name"`
@@ -120,21 +124,19 @@ type Table struct {
 	IsPartitioned        bool      `json:"isPartitioned"`
 
 	// Advanced table settings - these must all be nullable
-	Alias           *string   `json:"alias"`
-	ExcludeColumns  *[]string `json:"excludeColumns"`
-	ColumnsToHash   *[]string `json:"columnsToHash"`
-	SkipDeletes     *bool     `json:"skipDelete"`
-	MergePredicates *[]string `json:"mergePredicates"`
+	Alias           *string           `json:"alias"`
+	ExcludeColumns  *[]string         `json:"excludeColumns"`
+	ColumnsToHash   *[]string         `json:"columnsToHash"`
+	SkipDeletes     *bool             `json:"skipDelete"`
+	MergePredicates *[]MergePredicate `json:"mergePredicates"`
 }
 
 type advancedTableSettings struct {
-	Alias           string   `json:"alias"`
-	ExcludeColumns  []string `json:"excludeColumns"`
-	ColumnsToHash   []string `json:"columnsToHash"`
-	SkipDeletes     bool     `json:"skipDelete"`
-	MergePredicates []struct {
-		PartitionField string `json:"partitionField"`
-	} `json:"mergePredicates"`
+	Alias           string           `json:"alias"`
+	ExcludeColumns  []string         `json:"excludeColumns"`
+	ColumnsToHash   []string         `json:"columnsToHash"`
+	SkipDeletes     bool             `json:"skipDelete"`
+	MergePredicates []MergePredicate `json:"mergePredicates"`
 }
 
 type tableWithAdvSettings struct {
@@ -142,9 +144,9 @@ type tableWithAdvSettings struct {
 	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
 }
 
-func toSlicePtr(slice []string) *[]string {
+func toSlicePtr[T any](slice []T) *[]T {
 	if len(slice) == 0 {
-		return &[]string{}
+		return &[]T{}
 	}
 	return &slice
 }
@@ -157,12 +159,7 @@ func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
 	// so terraform doesn't think a change is needed if the tf config specifies empty slices
 	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
 	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
-
-	mergePredicateColumns := []string{}
-	for _, mp := range t.AdvancedSettings.MergePredicates {
-		mergePredicateColumns = append(mergePredicateColumns, mp.PartitionField)
-	}
-	t.MergePredicates = toSlicePtr(mergePredicateColumns)
+	t.MergePredicates = toSlicePtr[MergePredicate](t.AdvancedSettings.MergePredicates)
 
 	return t.Table
 }
