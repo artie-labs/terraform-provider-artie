@@ -64,13 +64,13 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		tableUUID, diags = parseUUID(t.UUID)
 	}
 
-	colsToExclude, excludeDiags := parseOptionalStringList(ctx, t.ExcludeColumns)
+	colsToExclude, excludeDiags := parseOptionalList[string](ctx, t.ExcludeColumns)
 	diags.Append(excludeDiags...)
 
-	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
+	colsToHash, hashDiags := parseOptionalList[string](ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
 
-	mergePredicates, mergePredDiags := parseOptionalObjectList[MergePredicate](ctx, t.MergePredicates)
+	mergePredicates, mergePredDiags := parseOptionalList[MergePredicate](ctx, t.MergePredicates)
 	diags.Append(mergePredDiags...)
 	var clientMergePreds *[]artieclient.MergePredicate
 	if mergePredicates != nil && len(*mergePredicates) > 0 {
