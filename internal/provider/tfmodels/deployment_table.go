@@ -46,8 +46,16 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
 
-	mergePredicates, mergePredDiags := parseOptionalObjectList[artieclient.MergePredicate](ctx, t.MergePredicates)
+	mergePredicates, mergePredDiags := parseOptionalObjectList[MergePredicate](ctx, t.MergePredicates)
 	diags.Append(mergePredDiags...)
+	var clientMergePreds *[]artieclient.MergePredicate
+	if mergePredicates != nil && len(*mergePredicates) > 0 {
+		clientMPs := []artieclient.MergePredicate{}
+		for _, mp := range *mergePredicates {
+			clientMPs = append(clientMPs, artieclient.MergePredicate{PartitionField: mp.PartitionField.ValueString()})
+		}
+		clientMergePreds = &clientMPs
+	}
 
 	if diags.HasError() {
 		return artieclient.Table{}, diags
@@ -64,7 +72,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		ExcludeColumns:       colsToExclude,
 		ColumnsToHash:        colsToHash,
 		SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
-		MergePredicates:      mergePredicates,
+		MergePredicates:      clientMergePreds,
 	}, diags
 }
 
