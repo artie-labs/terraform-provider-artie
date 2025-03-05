@@ -44,7 +44,7 @@ func optionalUUIDToStringValue(value *uuid.UUID) types.String {
 }
 
 func parseOptionalStringList(ctx context.Context, value types.List) (*[]string, diag.Diagnostics) {
-	if value.IsNull() {
+	if value.IsNull() || value.IsUnknown() {
 		return nil, nil
 	}
 
@@ -73,7 +73,7 @@ func optionalStringListToStringValue(ctx context.Context, value *[]string) (type
 }
 
 func parseOptionalObjectList[T any](ctx context.Context, value types.List) (*[]T, diag.Diagnostics) {
-	if value.IsNull() {
+	if value.IsNull() || value.IsUnknown() {
 		return nil, nil
 	}
 
