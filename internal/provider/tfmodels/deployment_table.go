@@ -17,6 +17,30 @@ type MergePredicate struct {
 	PartitionField types.String `tfsdk:"partition_field"`
 }
 
+func (m MergePredicate) ToAPIModel() artieclient.MergePredicate {
+	return artieclient.MergePredicate{PartitionField: m.PartitionField.ValueString()}
+}
+
+func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]artieclient.MergePredicate) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if apiMergePredicates == nil {
+		return types.List{}, diags
+	}
+
+	attrTypes := map[string]attr.Type{"partition_field": types.StringType}
+	preds := []attr.Value{}
+	for _, mp := range *apiMergePredicates {
+		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField)})
+		diags.Append(predDiags...)
+		preds = append(preds, pred)
+	}
+
+	mergePredicates, listDiags := types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, preds)
+	diags.Append(listDiags...)
+
+	return mergePredicates, diags
+}
+
 type Table struct {
 	UUID                 types.String `tfsdk:"uuid"`
 	Name                 types.String `tfsdk:"name"`
@@ -52,7 +76,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	if mergePredicates != nil && len(*mergePredicates) > 0 {
 		clientMPs := []artieclient.MergePredicate{}
 		for _, mp := range *mergePredicates {
-			clientMPs = append(clientMPs, artieclient.MergePredicate{PartitionField: mp.PartitionField.ValueString()})
+			clientMPs = append(clientMPs, mp.ToAPIModel())
 		}
 		clientMergePreds = &clientMPs
 	}
@@ -91,19 +115,8 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
 		diags.Append(hashDiags...)
 
-		var mergePredicates types.List
-		attrTypes := map[string]attr.Type{"partition_field": types.StringType}
-		if apiTable.MergePredicates != nil {
-			preds := []attr.Value{}
-			for _, mp := range *apiTable.MergePredicates {
-				pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField)})
-				diags.Append(predDiags...)
-				preds = append(preds, pred)
-			}
-			var mergePredDiags diag.Diagnostics
-			mergePredicates, mergePredDiags = types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, preds)
-			diags.Append(mergePredDiags...)
-		}
+		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.MergePredicates)
+		diags.Append(mergePredDiags...)
 
 		tables[tableKey] = Table{
 			UUID:                 types.StringValue(apiTable.UUID.String()),
