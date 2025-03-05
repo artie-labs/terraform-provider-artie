@@ -5,14 +5,16 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"terraform-provider-artie/internal/artieclient"
 )
 
 type MergePredicate struct {
-	PartitionField string `tfsdk:"partition_field"`
+	PartitionField types.String `tfsdk:"partition_field"`
 }
 
 type Table struct {
@@ -24,11 +26,11 @@ type Table struct {
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
-	Alias           types.String      `tfsdk:"alias"`
-	ExcludeColumns  types.List        `tfsdk:"columns_to_exclude"`
-	ColumnsToHash   types.List        `tfsdk:"columns_to_hash"`
-	SkipDeletes     types.Bool        `tfsdk:"skip_deletes"`
-	MergePredicates *[]MergePredicate `tfsdk:"merge_predicates"`
+	Alias           types.String `tfsdk:"alias"`
+	ExcludeColumns  types.List   `tfsdk:"columns_to_exclude"`
+	ColumnsToHash   types.List   `tfsdk:"columns_to_hash"`
+	SkipDeletes     types.Bool   `tfsdk:"skip_deletes"`
+	MergePredicates types.List   `tfsdk:"merge_predicates"`
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -44,14 +46,8 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
 
-	var mergePredicates *[]artieclient.MergePredicate
-	if t.MergePredicates != nil {
-		preds := []artieclient.MergePredicate{}
-		for _, mp := range *t.MergePredicates {
-			preds = append(preds, artieclient.MergePredicate{PartitionField: mp.PartitionField})
-		}
-		mergePredicates = &preds
-	}
+	mergePredicates, mergePredDiags := parseOptionalObjectList[artieclient.MergePredicate](ctx, t.MergePredicates)
+	diags.Append(mergePredDiags...)
 
 	if diags.HasError() {
 		return artieclient.Table{}, diags
@@ -87,13 +83,18 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
 		diags.Append(hashDiags...)
 
-		var mergePredicates *[]MergePredicate
+		var mergePredicates types.List
+		attrTypes := map[string]attr.Type{"partition_field": types.StringType}
 		if apiTable.MergePredicates != nil {
-			preds := []MergePredicate{}
+			preds := []attr.Value{}
 			for _, mp := range *apiTable.MergePredicates {
-				preds = append(preds, MergePredicate{PartitionField: mp.PartitionField})
+				pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField)})
+				diags.Append(predDiags...)
+				preds = append(preds, pred)
 			}
-			mergePredicates = &preds
+			var mergePredDiags diag.Diagnostics
+			mergePredicates, mergePredDiags = types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, preds)
+			diags.Append(mergePredDiags...)
 		}
 
 		tables[tableKey] = Table{
