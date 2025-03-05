@@ -42,25 +42,15 @@ func optionalUUIDToStringValue(value *uuid.UUID) types.String {
 	return types.StringValue(value.String())
 }
 
-func parseOptionalStringList(ctx context.Context, value types.List) (*[]string, diag.Diagnostics) {
-	if value.IsNull() {
+func parseOptionalList[T any](ctx context.Context, value types.List) (*[]T, diag.Diagnostics) {
+	if value.IsNull() || value.IsUnknown() {
 		return nil, nil
 	}
 
-	elements := make([]types.String, 0, len(value.Elements()))
+	elements := make([]T, 0, len(value.Elements()))
 	diags := value.ElementsAs(ctx, &elements, false)
-	if diags.HasError() {
-		return nil, diags
-	}
 
-	out := []string{}
-	for _, el := range elements {
-		if !el.IsNull() {
-			out = append(out, el.ValueString())
-		}
-	}
-
-	return &out, nil
+	return &elements, diags
 }
 
 func optionalStringListToStringValue(ctx context.Context, value *[]string) (types.List, diag.Diagnostics) {

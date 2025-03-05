@@ -5,14 +5,40 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"terraform-provider-artie/internal/artieclient"
 )
 
 type MergePredicate struct {
-	PartitionField string `tfsdk:"partition_field"`
+	PartitionField types.String `tfsdk:"partition_field"`
+}
+
+func (m MergePredicate) ToAPIModel() artieclient.MergePredicate {
+	return artieclient.MergePredicate{PartitionField: m.PartitionField.ValueString()}
+}
+
+func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]artieclient.MergePredicate) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if apiMergePredicates == nil {
+		return types.List{}, diags
+	}
+
+	attrTypes := map[string]attr.Type{"partition_field": types.StringType}
+	preds := []attr.Value{}
+	for _, mp := range *apiMergePredicates {
+		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField)})
+		diags.Append(predDiags...)
+		preds = append(preds, pred)
+	}
+
+	mergePredicates, listDiags := types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, preds)
+	diags.Append(listDiags...)
+
+	return mergePredicates, diags
 }
 
 type Table struct {
@@ -24,11 +50,11 @@ type Table struct {
 	IsPartitioned        types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
-	Alias           types.String      `tfsdk:"alias"`
-	ExcludeColumns  types.List        `tfsdk:"columns_to_exclude"`
-	ColumnsToHash   types.List        `tfsdk:"columns_to_hash"`
-	SkipDeletes     types.Bool        `tfsdk:"skip_deletes"`
-	MergePredicates *[]MergePredicate `tfsdk:"merge_predicates"`
+	Alias           types.String `tfsdk:"alias"`
+	ExcludeColumns  types.List   `tfsdk:"columns_to_exclude"`
+	ColumnsToHash   types.List   `tfsdk:"columns_to_hash"`
+	SkipDeletes     types.Bool   `tfsdk:"skip_deletes"`
+	MergePredicates types.List   `tfsdk:"merge_predicates"`
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -38,19 +64,21 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		tableUUID, diags = parseUUID(t.UUID)
 	}
 
-	colsToExclude, excludeDiags := parseOptionalStringList(ctx, t.ExcludeColumns)
+	colsToExclude, excludeDiags := parseOptionalList[string](ctx, t.ExcludeColumns)
 	diags.Append(excludeDiags...)
 
-	colsToHash, hashDiags := parseOptionalStringList(ctx, t.ColumnsToHash)
+	colsToHash, hashDiags := parseOptionalList[string](ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
 
-	var mergePredicates *[]artieclient.MergePredicate
-	if t.MergePredicates != nil {
-		preds := []artieclient.MergePredicate{}
-		for _, mp := range *t.MergePredicates {
-			preds = append(preds, artieclient.MergePredicate{PartitionField: mp.PartitionField})
+	mergePredicates, mergePredDiags := parseOptionalList[MergePredicate](ctx, t.MergePredicates)
+	diags.Append(mergePredDiags...)
+	var clientMergePreds *[]artieclient.MergePredicate
+	if mergePredicates != nil && len(*mergePredicates) > 0 {
+		clientMPs := []artieclient.MergePredicate{}
+		for _, mp := range *mergePredicates {
+			clientMPs = append(clientMPs, mp.ToAPIModel())
 		}
-		mergePredicates = &preds
+		clientMergePreds = &clientMPs
 	}
 
 	if diags.HasError() {
@@ -68,7 +96,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		ExcludeColumns:       colsToExclude,
 		ColumnsToHash:        colsToHash,
 		SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
-		MergePredicates:      mergePredicates,
+		MergePredicates:      clientMergePreds,
 	}, diags
 }
 
@@ -87,14 +115,8 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
 		diags.Append(hashDiags...)
 
-		var mergePredicates *[]MergePredicate
-		if apiTable.MergePredicates != nil {
-			preds := []MergePredicate{}
-			for _, mp := range *apiTable.MergePredicates {
-				preds = append(preds, MergePredicate{PartitionField: mp.PartitionField})
-			}
-			mergePredicates = &preds
-		}
+		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.MergePredicates)
+		diags.Append(mergePredDiags...)
 
 		tables[tableKey] = Table{
 			UUID:                 types.StringValue(apiTable.UUID.String()),
