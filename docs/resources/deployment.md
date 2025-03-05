@@ -95,10 +95,11 @@ Optional:
 Required:
 
 - `tables` (Attributes Map) A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`. (see [below for nested schema](#nestedatt--source--tables))
-- `type` (String) The type of source database. This must be one of the following: `mysql`, `oracle`, `postgresql`.
+- `type` (String) The type of source database. This must be one of the following: `mysql`, `mssql`, `oracle`, `postgresql`.
 
 Optional:
 
+- `mssql_config` (Attributes) This should be filled out if the source type is `mssql`. (see [below for nested schema](#nestedatt--source--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the source type is `mysql`. (see [below for nested schema](#nestedatt--source--mysql_config))
 - `oracle_config` (Attributes) This should be filled out if the source type is `oracle`. (see [below for nested schema](#nestedatt--source--oracle_config))
 - `postgresql_config` (Attributes) This should be filled out if the source type is `postgresql`. (see [below for nested schema](#nestedatt--source--postgresql_config))
@@ -133,6 +134,18 @@ Required:
 
 - `partition_field` (String) The name of the column the destination table is partitioned by.
 
+
+
+<a id="nestedatt--source--mssql_config"></a>
+### Nested Schema for `source.mssql_config`
+
+Required:
+
+- `database` (String) The name of the database in Microsoft SQL Server.
+- `host` (String) The hostname of the Microsoft SQL Server. This must point to the primary host, not a read replica.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for Microsoft SQL Server is 1433.
+- `user` (String) The username of the service account we will use to connect to the database.
 
 
 <a id="nestedatt--source--mysql_config"></a>

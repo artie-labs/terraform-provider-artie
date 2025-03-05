@@ -58,7 +58,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Required:            true,
-						MarkdownDescription: "The type of source database. This must be one of the following: `mysql`, `oracle`, `postgresql`.",
+						MarkdownDescription: "The type of source database. This must be one of the following: `mysql`, `mssql`, `oracle`, `postgresql`.",
 						Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllSourceTypes...)},
 					},
 					"mysql_config": schema.SingleNestedAttribute{
@@ -76,6 +76,23 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
 							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the MySQL server."},
+						},
+					},
+					"mssql_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `mssql`.",
+						Attributes: map[string]schema.Attribute{
+							"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Microsoft SQL Server. This must point to the primary host, not a read replica."},
+							"port": schema.Int32Attribute{
+								Required:            true,
+								MarkdownDescription: "The default port for Microsoft SQL Server is 1433.",
+								Validators: []validator.Int32{
+									int32validator.Between(1024, math.MaxUint16),
+								},
+							},
+							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the database."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in Microsoft SQL Server."},
 						},
 					},
 					"oracle_config": schema.SingleNestedAttribute{

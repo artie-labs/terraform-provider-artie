@@ -14,6 +14,7 @@ type Source struct {
 	Type           types.String     `tfsdk:"type"`
 	Tables         map[string]Table `tfsdk:"tables"`
 	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
+	MSSQLConfig    *MSSQLConfig     `tfsdk:"mssql_config"`
 	OracleConfig   *OracleConfig    `tfsdk:"oracle_config"`
 	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
 }
@@ -30,6 +31,8 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	switch sourceType {
 	case artieclient.MySQL:
 		sourceConfig = s.MySQLConfig.ToAPIModel()
+	case artieclient.MSSQL:
+		sourceConfig = s.MSSQLConfig.ToAPIModel()
 	case artieclient.Oracle:
 		sourceConfig = s.OracleConfig.ToAPIModel()
 	case artieclient.PostgreSQL:
@@ -72,6 +75,8 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 	switch apiModel.Type {
 	case artieclient.MySQL:
 		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
+	case artieclient.MSSQL:
+		source.MSSQLConfig = MSSQLConfigFromAPIModel(apiModel.Config)
 	case artieclient.Oracle:
 		source.OracleConfig = OracleConfigFromAPIModel(apiModel.Config)
 	case artieclient.PostgreSQL:
@@ -104,6 +109,34 @@ func (m MySQLConfig) ToAPIModel() artieclient.SourceConfig {
 
 func MySQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MySQLConfig {
 	return &MySQLConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+		Database: types.StringValue(apiModel.Database),
+	}
+}
+
+type MSSQLConfig struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int32  `tfsdk:"port"`
+	User     types.String `tfsdk:"user"`
+	Database types.String `tfsdk:"database"`
+	Password types.String `tfsdk:"password"`
+}
+
+func (m MSSQLConfig) ToAPIModel() artieclient.SourceConfig {
+	return artieclient.SourceConfig{
+		Host:     m.Host.ValueString(),
+		Port:     m.Port.ValueInt32(),
+		User:     m.User.ValueString(),
+		Password: m.Password.ValueString(),
+		Database: m.Database.ValueString(),
+	}
+}
+
+func MSSQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MSSQLConfig {
+	return &MSSQLConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Port:     types.Int32Value(apiModel.Port),
 		User:     types.StringValue(apiModel.User),
