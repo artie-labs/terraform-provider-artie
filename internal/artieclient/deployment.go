@@ -13,12 +13,14 @@ type SourceType string
 
 const (
 	MySQL      SourceType = "mysql"
+	MSSQL      SourceType = "mssql"
 	Oracle     SourceType = "oracle"
 	PostgreSQL SourceType = "postgresql"
 )
 
 var AllSourceTypes = []string{
 	string(MySQL),
+	string(MSSQL),
 	string(Oracle),
 	string(PostgreSQL),
 }
@@ -27,6 +29,8 @@ func SourceTypeFromString(sourceType string) (SourceType, error) {
 	switch SourceType(sourceType) {
 	case MySQL:
 		return MySQL, nil
+	case MSSQL:
+		return MSSQL, nil
 	case Oracle:
 		return Oracle, nil
 	case PostgreSQL:

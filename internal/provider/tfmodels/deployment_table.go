@@ -22,12 +22,12 @@ func (m MergePredicate) ToAPIModel() artieclient.MergePredicate {
 }
 
 func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]artieclient.MergePredicate) (types.List, diag.Diagnostics) {
-	var diags diag.Diagnostics
+	attrTypes := map[string]attr.Type{"partition_field": types.StringType}
 	if apiMergePredicates == nil {
-		return types.List{}, diags
+		return types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, []attr.Value{})
 	}
 
-	attrTypes := map[string]attr.Type{"partition_field": types.StringType}
+	var diags diag.Diagnostics
 	preds := []attr.Value{}
 	for _, mp := range *apiMergePredicates {
 		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField)})
