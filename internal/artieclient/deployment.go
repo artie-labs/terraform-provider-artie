@@ -9,37 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type SourceType string
-
-const (
-	MySQL      SourceType = "mysql"
-	MSSQL      SourceType = "mssql"
-	Oracle     SourceType = "oracle"
-	PostgreSQL SourceType = "postgresql"
-)
-
-var AllSourceTypes = []string{
-	string(MySQL),
-	string(MSSQL),
-	string(Oracle),
-	string(PostgreSQL),
-}
-
-func SourceTypeFromString(sourceType string) (SourceType, error) {
-	switch SourceType(sourceType) {
-	case MySQL:
-		return MySQL, nil
-	case MSSQL:
-		return MSSQL, nil
-	case Oracle:
-		return Oracle, nil
-	case PostgreSQL:
-		return PostgreSQL, nil
-	default:
-		return "", fmt.Errorf("invalid source type: %s", sourceType)
-	}
-}
-
 type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Source                   Source            `json:"source"`
@@ -95,9 +64,9 @@ func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
 }
 
 type Source struct {
-	Type   SourceType   `json:"type"`
-	Config SourceConfig `json:"config"`
-	Tables []Table      `json:"tables"`
+	Type   ConnectorType `json:"type"`
+	Config SourceConfig  `json:"config"`
+	Tables []Table       `json:"tables"`
 }
 
 type sourceWithAdvTableSettings struct {

@@ -3,10 +3,12 @@ package provider
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -57,13 +59,29 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
+			"mssql_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the destination type is `mssql`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of your Microsoft SQL Server."},
+					"port": schema.Int32Attribute{
+						Required:            true,
+						MarkdownDescription: "The default port for Microsoft SQL Server is 1433.",
+						Validators: []validator.Int32{
+							int32validator.Between(1024, math.MaxUint16),
+						},
+					},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the database."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the service account we will use to connect to the database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
 			"redshift_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the destination type is `redshift`.",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{Required: true, MarkdownDescription: "The endpoint URL of your Redshift cluster. This should include both the host and port."},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Redshift."},
-					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the service account we should use to connect to Redshift."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the service account we should use to connect to Redshift. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
 			"s3_config": schema.SingleNestedAttribute{

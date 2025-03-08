@@ -21,7 +21,7 @@ type Source struct {
 
 func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagnostics) {
 	var sourceConfig artieclient.SourceConfig
-	sourceType, err := artieclient.SourceTypeFromString(s.Type.ValueString())
+	sourceType, err := artieclient.ConnectorTypeFromString(s.Type.ValueString())
 	if err != nil {
 		return artieclient.Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Source to API model", err.Error(),
