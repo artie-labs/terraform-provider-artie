@@ -165,14 +165,14 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				MarkdownDescription: "This contains configuration that pertains to the destination database but is specific to this deployment. The basic connection settings for the destination, which can be shared by multiple deployments, are stored in the corresponding `artie_destination` resource.",
 				Attributes: map[string]schema.Attribute{
 					"database": schema.StringAttribute{
-						MarkdownDescription: "The name of the database that data should be synced to in the destination. This should be filled if the destination is Snowflake, unless `use_same_schema_as_source` is set to true.",
+						MarkdownDescription: "The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
 					"schema": schema.StringAttribute{
-						MarkdownDescription: "The name of the schema that data should be synced to in the destination. This should be filled if the destination is Snowflake or Redshift.",
+						MarkdownDescription: "The name of the schema that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, or Snowflake (unless `use_same_schema_as_source` is set to true).",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),
@@ -186,13 +186,13 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
 					"use_same_schema_as_source": schema.BoolAttribute{
-						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.",
+						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, etc).",
 						Optional:            true,
 						Computed:            true, Default: booldefault.StaticBool(false),
 						PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 					},
 					"schema_name_prefix": schema.StringAttribute{
-						MarkdownDescription: "If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.",
+						MarkdownDescription: "If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination.",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),

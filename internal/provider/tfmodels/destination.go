@@ -15,6 +15,7 @@ type Destination struct {
 	Type            types.String           `tfsdk:"type"`
 	Label           types.String           `tfsdk:"label"`
 	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
+	MSSQLConfig     *MSSQLSharedConfig     `tfsdk:"mssql_config"`
 	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
 	S3Config        *S3SharedConfig        `tfsdk:"s3_config"`
 	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
@@ -22,7 +23,7 @@ type Destination struct {
 
 func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnostics) {
 	var sharedConfig artieclient.DestinationSharedConfig
-	destinationType, err := artieclient.DestinationTypeFromString(d.Type.ValueString())
+	destinationType, err := artieclient.ConnectorTypeFromString(d.Type.ValueString())
 	if err != nil {
 		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Destination to API model", err.Error(),
@@ -32,6 +33,8 @@ func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnos
 	switch destinationType {
 	case artieclient.BigQuery:
 		sharedConfig = d.BigQueryConfig.ToAPIModel()
+	case artieclient.MSSQL:
+		sharedConfig = d.MSSQLConfig.ToAPIModel()
 	case artieclient.Redshift:
 		sharedConfig = d.RedshiftConfig.ToAPIModel()
 	case artieclient.S3:
@@ -86,6 +89,8 @@ func DestinationFromAPIModel(apiModel artieclient.Destination) (Destination, dia
 	switch apiModel.Type {
 	case artieclient.BigQuery:
 		destination.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.MSSQL:
+		destination.MSSQLConfig = MSSQLSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Redshift:
 		destination.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.S3:
@@ -120,6 +125,31 @@ func BigQuerySharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConf
 		ProjectID:       types.StringValue(apiModel.GCPProjectID),
 		Location:        types.StringValue(apiModel.GCPLocation),
 		CredentialsData: types.StringValue(apiModel.GCPCredentialsData),
+	}
+}
+
+type MSSQLSharedConfig struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int32  `tfsdk:"port"`
+	Username types.String `tfsdk:"username"`
+	Password types.String `tfsdk:"password"`
+}
+
+func (r MSSQLSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
+	return artieclient.DestinationSharedConfig{
+		Host:     r.Host.ValueString(),
+		Port:     r.Port.ValueInt32(),
+		Username: r.Username.ValueString(),
+		Password: r.Password.ValueString(),
+	}
+}
+
+func MSSQLSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *MSSQLSharedConfig {
+	return &MSSQLSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		Username: types.StringValue(apiModel.Username),
+		Password: types.StringValue(apiModel.Password),
 	}
 }
 

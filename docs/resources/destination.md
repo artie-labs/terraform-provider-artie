@@ -41,6 +41,7 @@ resource "artie_destination" "snowflake" {
 
 - `bigquery_config` (Attributes) This should be filled out if the destination type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
 - `label` (String) An optional human-readable label for this destination.
+- `mssql_config` (Attributes) This should be filled out if the destination type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
 - `redshift_config` (Attributes) This should be filled out if the destination type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
 - `s3_config` (Attributes) This should be filled out if the destination type is `s3`. (see [below for nested schema](#nestedatt--s3_config))
 - `snowflake_config` (Attributes) This should be filled out if the destination type is `snowflake`. (see [below for nested schema](#nestedatt--snowflake_config))
@@ -60,13 +61,24 @@ Required:
 - `project_id` (String) The ID of the Google Cloud project.
 
 
+<a id="nestedatt--mssql_config"></a>
+### Nested Schema for `mssql_config`
+
+Required:
+
+- `host` (String) The hostname of your Microsoft SQL Server.
+- `password` (String, Sensitive) The password for the service account we will use to connect to the database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for Microsoft SQL Server is 1433.
+- `username` (String) The username of the service account we will use to connect to the database.
+
+
 <a id="nestedatt--redshift_config"></a>
 ### Nested Schema for `redshift_config`
 
 Required:
 
 - `endpoint` (String) The endpoint URL of your Redshift cluster. This should include both the host and port.
-- `password` (String, Sensitive) The password for the service account we should use to connect to Redshift.
+- `password` (String, Sensitive) The password for the service account we should use to connect to Redshift. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `username` (String) The username of the service account we should use to connect to Redshift.
 
 

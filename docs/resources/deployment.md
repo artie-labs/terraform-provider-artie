@@ -81,12 +81,12 @@ resource "artie_deployment" "postgres_to_snowflake" {
 Optional:
 
 - `bucket` (String) The name of the S3 bucket that data should be synced to. This should be filled if the destination is S3.
-- `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is Snowflake, unless `use_same_schema_as_source` is set to true.
+- `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.
 - `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.
 - `folder` (String) If provided, all files will be stored under this folder inside the S3 bucket. This is optional and only applies if the destination is S3.
-- `schema` (String) The name of the schema that data should be synced to in the destination. This should be filled if the destination is Snowflake or Redshift.
-- `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.
-- `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if the source database is PostgreSQL and the destination is Snowflake or Redshift.
+- `schema` (String) The name of the schema that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, or Snowflake (unless `use_same_schema_as_source` is set to true).
+- `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this deployment's schemas in the destination.
+- `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, etc).
 
 
 <a id="nestedatt--source"></a>
