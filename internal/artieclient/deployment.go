@@ -180,7 +180,11 @@ func (dc DeploymentClient) Create(ctx context.Context, deployment BaseDeployment
 		"deployment":      deployment,
 		"startDeployment": true,
 	}
-	return makeRequest[Deployment](ctx, dc.client, http.MethodPost, dc.basePath(), body)
+	deploymentResp, err := makeRequest[deploymentWithAdvSettings](ctx, dc.client, http.MethodPost, dc.basePath(), body)
+	if err != nil {
+		return Deployment{}, err
+	}
+	return deploymentResp.unnestAdvSettings(), nil
 }
 
 func (dc DeploymentClient) Update(ctx context.Context, deployment Deployment) (Deployment, error) {
