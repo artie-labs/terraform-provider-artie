@@ -89,9 +89,6 @@ Required:
 
 - `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to S3.
 - `region` (String) The AWS region where we should store your data in S3.
-
-Optional:
-
 - `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 

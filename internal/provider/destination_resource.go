@@ -89,7 +89,7 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
 					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3."},
-					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your data in S3."},
 				},
 			},
@@ -168,9 +168,12 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
-		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
-		return
+	// S3 is the only destination we can't ping to test the connection
+	if baseDestination.Type != artieclient.S3 {
+		if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
+			resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
+			return
+		}
 	}
 
 	destination, err := r.client.Destinations().Create(ctx, baseDestination)
