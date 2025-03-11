@@ -61,6 +61,18 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "The type of source database. This must be one of the following: `mysql`, `mssql`, `oracle`, `postgresql`.",
 						Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllSourceTypes...)},
 					},
+					"dynamodb_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `dynamodb`.",
+						Attributes: map[string]schema.Attribute{
+							"stream_arn":        schema.StringAttribute{Required: true, MarkdownDescription: "The ARN (Amazon Resource Name) of the DynamoDB Stream."},
+							"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to DynamoDB."},
+							"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "Whether or not we should backfill all existing data from DynamoDB to your destination."},
+							"backfill_bucket":   schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If backfill = true, specify the S3 bucket where the DynamoDB export should be stored."},
+							"backfill_folder":   schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket."},
+						},
+					},
 					"mysql_config": schema.SingleNestedAttribute{
 						Optional:            true,
 						MarkdownDescription: "This should be filled out if the source type is `mysql`.",
@@ -137,7 +149,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"uuid":                  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 								"name":                  schema.StringAttribute{Required: true, MarkdownDescription: "The name of the table in the source database."},
-								"schema":                schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`."},
+								"schema":                schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`."},
 								"enable_history_mode":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time."},
 								"individual_deployment": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, we will spin up a separate Artie Transfer deployment to handle this table. This should only be used if this table has extremely high throughput (over 1M+ per hour) and has much higher throughput than other tables."},
 								"is_partitioned":        schema.BoolAttribute{Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},

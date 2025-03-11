@@ -75,13 +75,27 @@ type sourceWithAdvTableSettings struct {
 }
 
 type SourceConfig struct {
-	Host         string `json:"host"`
-	SnapshotHost string `json:"snapshotHost"`
-	Port         int32  `json:"port"`
-	User         string `json:"user"`
-	Password     string `json:"password"`
-	Database     string `json:"database"`
-	Container    string `json:"containerName,omitempty"`
+	Host         string          `json:"host"`
+	SnapshotHost string          `json:"snapshotHost"`
+	Port         int32           `json:"port"`
+	User         string          `json:"user"`
+	Password     string          `json:"password"`
+	Database     string          `json:"database"`
+	Container    string          `json:"containerName,omitempty"`
+	DynamoDB     *DynamoDBConfig `json:"dynamodb,omitempty"`
+}
+
+type DynamoDBConfig struct {
+	StreamsArn         string                 `json:"streamsArn"`
+	AwsAccessKeyID     string                 `json:"awsAccessKeyId"`
+	AwsSecretAccessKey string                 `json:"awsSecretAccessKey"`
+	SnapshotConfig     DynamoDBSnapshotConfig `json:"snapshotConfig"`
+}
+
+type DynamoDBSnapshotConfig struct {
+	Enabled        bool   `json:"enabled"`
+	Bucket         string `json:"bucket"`
+	OptionalFolder string `json:"optionalFolder"`
 }
 
 type MergePredicate struct {

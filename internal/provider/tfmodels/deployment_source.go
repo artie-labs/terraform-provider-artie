@@ -13,6 +13,7 @@ import (
 type Source struct {
 	Type           types.String     `tfsdk:"type"`
 	Tables         map[string]Table `tfsdk:"tables"`
+	DynamoDBConfig *DynamoDBConfig  `tfsdk:"dynamodb_config"`
 	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
 	MSSQLConfig    *MSSQLConfig     `tfsdk:"mssql_config"`
 	OracleConfig   *OracleConfig    `tfsdk:"oracle_config"`
@@ -29,6 +30,8 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	}
 
 	switch sourceType {
+	case artieclient.DynamoDB:
+		sourceConfig = s.DynamoDBConfig.ToAPIModel()
 	case artieclient.MySQL:
 		sourceConfig = s.MySQLConfig.ToAPIModel()
 	case artieclient.MSSQL:
@@ -73,6 +76,12 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 	}
 
 	switch apiModel.Type {
+	case artieclient.DynamoDB:
+		if apiModel.Config.DynamoDB == nil {
+			diags.AddError("DynamoDB config is missing", "")
+			return Source{}, diags
+		}
+		source.DynamoDBConfig = DynamoDBConfigFromAPIModel(*apiModel.Config.DynamoDB)
 	case artieclient.MySQL:
 		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
 	case artieclient.MSSQL:
@@ -87,6 +96,41 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 	}
 
 	return source, diags
+}
+
+type DynamoDBConfig struct {
+	StreamArn          types.String `tfsdk:"stream_arn"`
+	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
+	Backfill           types.Bool   `tfsdk:"backfill"`
+	BackfillBucket     types.String `tfsdk:"backfill_bucket"`
+	BackfillFolder     types.String `tfsdk:"backfill_folder"`
+}
+
+func (d DynamoDBConfig) ToAPIModel() artieclient.SourceConfig {
+	return artieclient.SourceConfig{
+		DynamoDB: &artieclient.DynamoDBConfig{
+			StreamsArn:         d.StreamArn.ValueString(),
+			AwsAccessKeyID:     d.AwsAccessKeyID.ValueString(),
+			AwsSecretAccessKey: d.AwsSecretAccessKey.ValueString(),
+			SnapshotConfig: artieclient.DynamoDBSnapshotConfig{
+				Enabled:        d.Backfill.ValueBool(),
+				Bucket:         d.BackfillBucket.ValueString(),
+				OptionalFolder: d.BackfillFolder.ValueString(),
+			},
+		},
+	}
+}
+
+func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.DynamoDBConfig) *DynamoDBConfig {
+	return &DynamoDBConfig{
+		StreamArn:          types.StringValue(apiDynamoCfg.StreamsArn),
+		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AwsAccessKeyID),
+		AwsSecretAccessKey: types.StringValue(apiDynamoCfg.AwsSecretAccessKey),
+		Backfill:           types.BoolValue(apiDynamoCfg.SnapshotConfig.Enabled),
+		BackfillBucket:     types.StringValue(apiDynamoCfg.SnapshotConfig.Bucket),
+		BackfillFolder:     types.StringValue(apiDynamoCfg.SnapshotConfig.OptionalFolder),
+	}
 }
 
 type MySQLConfig struct {
