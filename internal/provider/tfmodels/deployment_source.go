@@ -14,6 +14,7 @@ type Source struct {
 	Type           types.String     `tfsdk:"type"`
 	Tables         map[string]Table `tfsdk:"tables"`
 	DynamoDBConfig *DynamoDBConfig  `tfsdk:"dynamodb_config"`
+	MongoDBConfig  *MongoDBConfig   `tfsdk:"mongodb_config"`
 	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
 	MSSQLConfig    *MSSQLConfig     `tfsdk:"mssql_config"`
 	OracleConfig   *OracleConfig    `tfsdk:"oracle_config"`
@@ -32,6 +33,8 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 	switch sourceType {
 	case artieclient.DynamoDB:
 		sourceConfig = s.DynamoDBConfig.ToAPIModel()
+	case artieclient.MongoDB:
+		sourceConfig = s.MongoDBConfig.ToAPIModel()
 	case artieclient.MySQL:
 		sourceConfig = s.MySQLConfig.ToAPIModel()
 	case artieclient.MSSQL:
@@ -82,6 +85,8 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 			return Source{}, diags
 		}
 		source.DynamoDBConfig = DynamoDBConfigFromAPIModel(*apiModel.Config.DynamoDB)
+	case artieclient.MongoDB:
+		source.MongoDBConfig = MongoDBConfigFromAPIModel(apiModel.Config)
 	case artieclient.MySQL:
 		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
 	case artieclient.MSSQL:
@@ -130,6 +135,31 @@ func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.DynamoDBConfig) *Dynamo
 		Backfill:           types.BoolValue(apiDynamoCfg.SnapshotConfig.Enabled),
 		BackfillBucket:     types.StringValue(apiDynamoCfg.SnapshotConfig.Bucket),
 		BackfillFolder:     types.StringValue(apiDynamoCfg.SnapshotConfig.OptionalFolder),
+	}
+}
+
+type MongoDBConfig struct {
+	Host     types.String `tfsdk:"host"`
+	User     types.String `tfsdk:"user"`
+	Database types.String `tfsdk:"database"`
+	Password types.String `tfsdk:"password"`
+}
+
+func (m MongoDBConfig) ToAPIModel() artieclient.SourceConfig {
+	return artieclient.SourceConfig{
+		Host:     m.Host.ValueString(),
+		User:     m.User.ValueString(),
+		Password: m.Password.ValueString(),
+		Database: m.Database.ValueString(),
+	}
+}
+
+func MongoDBConfigFromAPIModel(apiModel artieclient.SourceConfig) *MongoDBConfig {
+	return &MongoDBConfig{
+		Host:     types.StringValue(apiModel.Host),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+		Database: types.StringValue(apiModel.Database),
 	}
 }
 

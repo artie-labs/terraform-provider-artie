@@ -7,6 +7,7 @@ type ConnectorType string
 const (
 	BigQuery   ConnectorType = "bigquery"
 	DynamoDB   ConnectorType = "dynamodb"
+	MongoDB    ConnectorType = "mongodb"
 	MySQL      ConnectorType = "mysql"
 	MSSQL      ConnectorType = "mssql"
 	Oracle     ConnectorType = "oracle"
@@ -18,6 +19,7 @@ const (
 
 var AllSourceTypes = []string{
 	string(DynamoDB),
+	string(MongoDB),
 	string(MySQL),
 	string(MSSQL),
 	string(Oracle),
@@ -38,6 +40,8 @@ func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 		return BigQuery, nil
 	case DynamoDB:
 		return DynamoDB, nil
+	case MongoDB:
+		return MongoDB, nil
 	case MySQL:
 		return MySQL, nil
 	case MSSQL:
