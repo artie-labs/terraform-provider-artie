@@ -283,6 +283,25 @@ func (r *DeploymentResource) SetStateData(ctx context.Context, state *tfsdk.Stat
 	diagnostics.Append(state.Set(ctx, deployment)...)
 }
 
+func (r *DeploymentResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var configData tfmodels.Deployment
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if configData.Source != nil {
+		for tableKey, table := range configData.Source.Tables {
+			if !table.UUID.IsNull() {
+				resp.Diagnostics.AddError("Table.uuid is Read-Only", fmt.Sprintf("%q table should not have `uuid` specified. Please remove this attribute from your config.", tableKey))
+			}
+			if !table.IsPartitioned.IsNull() {
+				resp.Diagnostics.AddError("Table.is_partitioned is Read-Only", fmt.Sprintf("%q table should not have `is_partitioned` specified. Please remove this attribute from your config.", tableKey))
+			}
+		}
+	}
+}
+
 func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
