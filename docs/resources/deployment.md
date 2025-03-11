@@ -99,6 +99,7 @@ Required:
 
 Optional:
 
+- `dynamodb_config` (Attributes) This should be filled out if the source type is `dynamodb`. (see [below for nested schema](#nestedatt--source--dynamodb_config))
 - `mssql_config` (Attributes) This should be filled out if the source type is `mssql`. (see [below for nested schema](#nestedatt--source--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the source type is `mysql`. (see [below for nested schema](#nestedatt--source--mysql_config))
 - `oracle_config` (Attributes) This should be filled out if the source type is `oracle`. (see [below for nested schema](#nestedatt--source--oracle_config))
@@ -134,6 +135,22 @@ Required:
 
 - `partition_field` (String) The name of the column the destination table is partitioned by.
 
+
+
+<a id="nestedatt--source--dynamodb_config"></a>
+### Nested Schema for `source.dynamodb_config`
+
+Required:
+
+- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to DynamoDB.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `stream_arn` (String) The ARN (Amazon Resource Name) of the DynamoDB Stream.
+
+Optional:
+
+- `backfill` (Boolean) Whether or not we should backfill all existing data from DynamoDB to your destination.
+- `backfill_bucket` (String) If backfill = true, specify the S3 bucket where the DynamoDB export should be stored.
+- `backfill_folder` (String) If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket.
 
 
 <a id="nestedatt--source--mssql_config"></a>
