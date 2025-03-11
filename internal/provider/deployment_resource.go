@@ -58,7 +58,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Required:            true,
-						MarkdownDescription: "The type of source database. This must be one of the following: `mysql`, `mssql`, `oracle`, `postgresql`.",
+						MarkdownDescription: "The type of source database. This must be one of the following: `dynamodb`, `mongodb`, `mysql`, `mssql`, `oracle`, `postgresql`.",
 						Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllSourceTypes...)},
 					},
 					"dynamodb_config": schema.SingleNestedAttribute{
@@ -71,6 +71,16 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 							"backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "Whether or not we should backfill all existing data from DynamoDB to your destination."},
 							"backfill_bucket":   schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If backfill = true, specify the S3 bucket where the DynamoDB export should be stored."},
 							"backfill_folder":   schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket."},
+						},
+					},
+					"mongodb_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "This should be filled out if the source type is `mongodb`.",
+						Attributes: map[string]schema.Attribute{
+							"host":     schema.StringAttribute{Required: true, MarkdownDescription: "The connection string for the MongoDB server. This can be either SRV or standard format."},
+							"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MongoDB database."},
+							"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+							"database": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the database in the MongoDB server."},
 						},
 					},
 					"mysql_config": schema.SingleNestedAttribute{

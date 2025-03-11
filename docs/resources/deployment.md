@@ -95,11 +95,12 @@ Optional:
 Required:
 
 - `tables` (Attributes Map) A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`. (see [below for nested schema](#nestedatt--source--tables))
-- `type` (String) The type of source database. This must be one of the following: `mysql`, `mssql`, `oracle`, `postgresql`.
+- `type` (String) The type of source database. This must be one of the following: `dynamodb`, `mongodb`, `mysql`, `mssql`, `oracle`, `postgresql`.
 
 Optional:
 
 - `dynamodb_config` (Attributes) This should be filled out if the source type is `dynamodb`. (see [below for nested schema](#nestedatt--source--dynamodb_config))
+- `mongodb_config` (Attributes) This should be filled out if the source type is `mongodb`. (see [below for nested schema](#nestedatt--source--mongodb_config))
 - `mssql_config` (Attributes) This should be filled out if the source type is `mssql`. (see [below for nested schema](#nestedatt--source--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the source type is `mysql`. (see [below for nested schema](#nestedatt--source--mysql_config))
 - `oracle_config` (Attributes) This should be filled out if the source type is `oracle`. (see [below for nested schema](#nestedatt--source--oracle_config))
@@ -151,6 +152,17 @@ Optional:
 - `backfill` (Boolean) Whether or not we should backfill all existing data from DynamoDB to your destination.
 - `backfill_bucket` (String) If backfill = true, specify the S3 bucket where the DynamoDB export should be stored.
 - `backfill_folder` (String) If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket.
+
+
+<a id="nestedatt--source--mongodb_config"></a>
+### Nested Schema for `source.mongodb_config`
+
+Required:
+
+- `database` (String) The name of the database in the MongoDB server.
+- `host` (String) The connection string for the MongoDB server. This can be either SRV or standard format.
+- `password` (String, Sensitive) The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `user` (String) The username of the service account we will use to connect to the MongoDB database.
 
 
 <a id="nestedatt--source--mssql_config"></a>
