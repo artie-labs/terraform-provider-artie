@@ -174,6 +174,7 @@ Required:
 - `host` (String) The hostname of the Microsoft SQL Server. This must point to the primary host, not a read replica.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Microsoft SQL Server is 1433.
+- `snapshot_host` (String) Optional: The host of the Microsoft SQL Server that we should use to snapshot the database. If not provided, we will use the `host` value.
 - `user` (String) The username of the service account we will use to connect to the database.
 
 
@@ -186,6 +187,7 @@ Required:
 - `host` (String) The hostname of the MySQL database. This must point to the primary host, not a read replica.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for MySQL is 3306.
+- `snapshot_host` (String) Optional: The host of the MySQL database that we should use to snapshot the database. If not provided, we will use the `host` value.
 - `user` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
 
 
@@ -198,6 +200,7 @@ Required:
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Oracle is 1521.
 - `service` (String) The name of the service in the Oracle server.
+- `snapshot_host` (String) Optional: The host of the Oracle database that we should use to snapshot the database. If not provided, we will use the `host` value.
 - `user` (String) The username of the service account we will use to connect to the Oracle database.
 
 Optional:
@@ -214,6 +217,7 @@ Required:
 - `host` (String) The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for PostgreSQL is 5432.
+- `snapshot_host` (String) Optional: The host of the PostgreSQL database that we should use to snapshot the database. If not provided, we will use the `host` value.
 - `user` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.
 
 ## Import
