@@ -164,116 +164,128 @@ func MongoDBConfigFromAPIModel(apiModel artieclient.SourceConfig) *MongoDBConfig
 }
 
 type MySQLConfig struct {
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int32  `tfsdk:"port"`
-	User     types.String `tfsdk:"user"`
-	Database types.String `tfsdk:"database"`
-	Password types.String `tfsdk:"password"`
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Database     types.String `tfsdk:"database"`
+	Password     types.String `tfsdk:"password"`
 }
 
 func (m MySQLConfig) ToAPIModel() artieclient.SourceConfig {
 	return artieclient.SourceConfig{
-		Host:     m.Host.ValueString(),
-		Port:     m.Port.ValueInt32(),
-		User:     m.User.ValueString(),
-		Password: m.Password.ValueString(),
-		Database: m.Database.ValueString(),
+		Host:         m.Host.ValueString(),
+		SnapshotHost: m.SnapshotHost.ValueString(),
+		Port:         m.Port.ValueInt32(),
+		User:         m.User.ValueString(),
+		Password:     m.Password.ValueString(),
+		Database:     m.Database.ValueString(),
 	}
 }
 
 func MySQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MySQLConfig {
 	return &MySQLConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
-		Database: types.StringValue(apiModel.Database),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		User:         types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
+		Database:     types.StringValue(apiModel.Database),
 	}
 }
 
 type MSSQLConfig struct {
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int32  `tfsdk:"port"`
-	User     types.String `tfsdk:"user"`
-	Database types.String `tfsdk:"database"`
-	Password types.String `tfsdk:"password"`
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Database     types.String `tfsdk:"database"`
+	Password     types.String `tfsdk:"password"`
 }
 
 func (m MSSQLConfig) ToAPIModel() artieclient.SourceConfig {
 	return artieclient.SourceConfig{
-		Host:     m.Host.ValueString(),
-		Port:     m.Port.ValueInt32(),
-		User:     m.User.ValueString(),
-		Password: m.Password.ValueString(),
-		Database: m.Database.ValueString(),
+		Host:         m.Host.ValueString(),
+		SnapshotHost: m.SnapshotHost.ValueString(),
+		Port:         m.Port.ValueInt32(),
+		User:         m.User.ValueString(),
+		Password:     m.Password.ValueString(),
+		Database:     m.Database.ValueString(),
 	}
 }
 
 func MSSQLConfigFromAPIModel(apiModel artieclient.SourceConfig) *MSSQLConfig {
 	return &MSSQLConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
-		Database: types.StringValue(apiModel.Database),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		User:         types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
+		Database:     types.StringValue(apiModel.Database),
 	}
 }
 
 type OracleConfig struct {
-	Host      types.String `tfsdk:"host"`
-	Port      types.Int32  `tfsdk:"port"`
-	User      types.String `tfsdk:"user"`
-	Password  types.String `tfsdk:"password"`
-	Service   types.String `tfsdk:"service"`
-	Container types.String `tfsdk:"container"`
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Password     types.String `tfsdk:"password"`
+	Service      types.String `tfsdk:"service"`
+	Container    types.String `tfsdk:"container"`
 }
 
 func (o OracleConfig) ToAPIModel() artieclient.SourceConfig {
 	return artieclient.SourceConfig{
-		Host:      o.Host.ValueString(),
-		Port:      o.Port.ValueInt32(),
-		User:      o.User.ValueString(),
-		Password:  o.Password.ValueString(),
-		Database:  o.Service.ValueString(),
-		Container: o.Container.ValueString(),
+		Host:         o.Host.ValueString(),
+		SnapshotHost: o.SnapshotHost.ValueString(),
+		Port:         o.Port.ValueInt32(),
+		User:         o.User.ValueString(),
+		Password:     o.Password.ValueString(),
+		Database:     o.Service.ValueString(),
+		Container:    o.Container.ValueString(),
 	}
 }
 
 func OracleConfigFromAPIModel(apiModel artieclient.SourceConfig) *OracleConfig {
 	return &OracleConfig{
-		Host:      types.StringValue(apiModel.Host),
-		Port:      types.Int32Value(apiModel.Port),
-		User:      types.StringValue(apiModel.User),
-		Password:  types.StringValue(apiModel.Password),
-		Service:   types.StringValue(apiModel.Database),
-		Container: types.StringValue(apiModel.Container),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		User:         types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
+		Service:      types.StringValue(apiModel.Database),
+		Container:    types.StringValue(apiModel.Container),
 	}
 }
 
 type PostgresConfig struct {
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int32  `tfsdk:"port"`
-	User     types.String `tfsdk:"user"`
-	Database types.String `tfsdk:"database"`
-	Password types.String `tfsdk:"password"`
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Database     types.String `tfsdk:"database"`
+	Password     types.String `tfsdk:"password"`
 }
 
 func (p PostgresConfig) ToAPIModel() artieclient.SourceConfig {
 	return artieclient.SourceConfig{
-		Host:     p.Host.ValueString(),
-		Port:     p.Port.ValueInt32(),
-		User:     p.User.ValueString(),
-		Password: p.Password.ValueString(),
-		Database: p.Database.ValueString(),
+		Host:         p.Host.ValueString(),
+		SnapshotHost: p.SnapshotHost.ValueString(),
+		Port:         p.Port.ValueInt32(),
+		User:         p.User.ValueString(),
+		Password:     p.Password.ValueString(),
+		Database:     p.Database.ValueString(),
 	}
 }
 
 func PostgresConfigFromAPIModel(apiModel artieclient.SourceConfig) *PostgresConfig {
 	return &PostgresConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
-		Database: types.StringValue(apiModel.Database),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		User:         types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
+		Database:     types.StringValue(apiModel.Database),
 	}
 }
