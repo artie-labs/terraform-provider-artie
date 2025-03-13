@@ -88,7 +88,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "This should be filled out if the source type is `mysql`.",
 						Attributes: map[string]schema.Attribute{
 							"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the MySQL database. This must point to the primary host, not a read replica."},
-							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The host of the MySQL database that we should use to snapshot the database. If not provided, we will use the `host` value."},
+							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value."},
 							"port": schema.Int32Attribute{
 								Required:            true,
 								MarkdownDescription: "The default port for MySQL is 3306.",
@@ -106,7 +106,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "This should be filled out if the source type is `mssql`.",
 						Attributes: map[string]schema.Attribute{
 							"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Microsoft SQL Server. This must point to the primary host, not a read replica."},
-							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The host of the Microsoft SQL Server that we should use to snapshot the database. If not provided, we will use the `host` value."},
+							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The hostname of the Microsoft SQL Server that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value."},
 							"port": schema.Int32Attribute{
 								Required:            true,
 								MarkdownDescription: "The default port for Microsoft SQL Server is 1433.",
@@ -124,7 +124,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "This should be filled out if the source type is `oracle`.",
 						Attributes: map[string]schema.Attribute{
 							"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Oracle database. This must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled."},
-							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The host of the Oracle database that we should use to snapshot the database. If not provided, we will use the `host` value."},
+							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value."},
 							"port": schema.Int32Attribute{
 								Required:            true,
 								MarkdownDescription: "The default port for Oracle is 1521.",
@@ -143,7 +143,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 						MarkdownDescription: "This should be filled out if the source type is `postgresql`.",
 						Attributes: map[string]schema.Attribute{
 							"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`."},
-							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The host of the PostgreSQL database that we should use to snapshot the database. If not provided, we will use the `host` value."},
+							"snapshot_host": schema.StringAttribute{Optional: true, MarkdownDescription: "The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value."},
 							"port": schema.Int32Attribute{
 								Required:            true,
 								MarkdownDescription: "The default port for PostgreSQL is 5432.",

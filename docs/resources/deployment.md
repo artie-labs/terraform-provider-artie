@@ -178,7 +178,7 @@ Required:
 
 Optional:
 
-- `snapshot_host` (String) The host of the Microsoft SQL Server that we should use to snapshot the database. If not provided, we will use the `host` value.
+- `snapshot_host` (String) The hostname of the Microsoft SQL Server that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 
 <a id="nestedatt--source--mysql_config"></a>
@@ -194,7 +194,7 @@ Required:
 
 Optional:
 
-- `snapshot_host` (String) The host of the MySQL database that we should use to snapshot the database. If not provided, we will use the `host` value.
+- `snapshot_host` (String) The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 
 <a id="nestedatt--source--oracle_config"></a>
@@ -211,7 +211,7 @@ Required:
 Optional:
 
 - `container` (String) The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted.
-- `snapshot_host` (String) The host of the Oracle database that we should use to snapshot the database. If not provided, we will use the `host` value.
+- `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 
 <a id="nestedatt--source--postgresql_config"></a>
@@ -227,7 +227,7 @@ Required:
 
 Optional:
 
-- `snapshot_host` (String) The host of the PostgreSQL database that we should use to snapshot the database. If not provided, we will use the `host` value.
+- `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 ## Import
 
