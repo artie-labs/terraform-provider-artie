@@ -176,6 +176,10 @@ Required:
 - `port` (Number) The default port for Microsoft SQL Server is 1433.
 - `user` (String) The username of the service account we will use to connect to the database.
 
+Optional:
+
+- `snapshot_host` (String) The hostname of the Microsoft SQL Server that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
+
 
 <a id="nestedatt--source--mysql_config"></a>
 ### Nested Schema for `source.mysql_config`
@@ -187,6 +191,10 @@ Required:
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for MySQL is 3306.
 - `user` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
+
+Optional:
+
+- `snapshot_host` (String) The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 
 <a id="nestedatt--source--oracle_config"></a>
@@ -203,6 +211,7 @@ Required:
 Optional:
 
 - `container` (String) The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted.
+- `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 
 <a id="nestedatt--source--postgresql_config"></a>
@@ -215,6 +224,10 @@ Required:
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for PostgreSQL is 5432.
 - `user` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.
+
+Optional:
+
+- `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
 
 ## Import
 
