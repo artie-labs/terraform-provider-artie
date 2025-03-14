@@ -62,7 +62,7 @@ resource "artie_deployment" "postgres_to_snowflake" {
 
 ### Optional
 
-- `data_plane_name` (String) The name of the data plane to use for this deployment. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment` or perform a GET request to `https://api.artie.com/config`
+- `data_plane_name` (String) The name of the data plane to use for this deployment. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment`
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
 - `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_updated_at.
 - `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_db_updated_at.

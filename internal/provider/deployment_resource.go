@@ -241,7 +241,7 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 				},
 			},
 			"data_plane_name": schema.StringAttribute{
-				MarkdownDescription: "The name of the data plane to use for this deployment. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment` or perform a GET request to `https://api.artie.com/config`",
+				MarkdownDescription: "The name of the data plane to use for this deployment. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment`",
 				Optional:            true,
 				Computed:            true,
 				Default:             stringdefault.StaticString(""),
