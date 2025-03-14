@@ -18,11 +18,12 @@ type BaseDeployment struct {
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 
 	// Advanced settings - these must all be nullable
-	DropDeletedColumns             *bool `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool `json:"oneTopicPerSchema"`
+	DataPlaneName                  *string `json:"dataPlaneName"`
+	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool   `json:"oneTopicPerSchema"`
 }
 
 type Deployment struct {
