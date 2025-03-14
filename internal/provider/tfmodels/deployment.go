@@ -18,6 +18,7 @@ type Deployment struct {
 	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
 	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
 	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
+	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
 
 	// Advanced settings
 	DropDeletedColumns             types.Bool `tfsdk:"drop_deleted_columns"`
@@ -52,12 +53,14 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 	}
 
 	return artieclient.BaseDeployment{
-		Name:                           d.Name.ValueString(),
-		Source:                         apiSource,
-		DestinationUUID:                destinationUUID,
-		DestinationConfig:              d.DestinationConfig.ToAPIModel(),
-		SSHTunnelUUID:                  sshTunnelUUID,
-		SnowflakeEcoScheduleUUID:       snowflakeEcoScheduleUUID,
+		Name:                     d.Name.ValueString(),
+		Source:                   apiSource,
+		DestinationUUID:          destinationUUID,
+		DestinationConfig:        d.DestinationConfig.ToAPIModel(),
+		SSHTunnelUUID:            sshTunnelUUID,
+		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
+		DataPlaneName:            d.DataPlaneName.ValueString(),
+		// Advanced settings:
 		DropDeletedColumns:             d.DropDeletedColumns.ValueBoolPointer(),
 		EnableSoftDelete:               d.SoftDeleteRows.ValueBoolPointer(),
 		IncludeArtieUpdatedAtColumn:    d.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
@@ -93,14 +96,17 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 	return Deployment{
-		UUID:                           types.StringValue(apiModel.UUID.String()),
-		Name:                           types.StringValue(apiModel.Name),
-		Status:                         types.StringValue(apiModel.Status),
-		Source:                         &source,
-		DestinationUUID:                optionalUUIDToStringValue(apiModel.DestinationUUID),
-		DestinationConfig:              &destinationConfig,
-		SSHTunnelUUID:                  optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
-		SnowflakeEcoScheduleUUID:       optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
+		UUID:                     types.StringValue(apiModel.UUID.String()),
+		Name:                     types.StringValue(apiModel.Name),
+		Status:                   types.StringValue(apiModel.Status),
+		Source:                   &source,
+		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
+		DestinationConfig:        &destinationConfig,
+		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
+		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
+		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
+
+		// Advanced settings:
 		DropDeletedColumns:             types.BoolPointerValue(apiModel.DropDeletedColumns),
 		SoftDeleteRows:                 types.BoolPointerValue(apiModel.EnableSoftDelete),
 		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
