@@ -16,14 +16,14 @@ type BaseDeployment struct {
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
+	DataPlaneName            string            `json:"dataPlaneName"`
 
 	// Advanced settings - these must all be nullable
-	DataPlaneName                  *string `json:"dataPlaneName"`
-	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool   `json:"oneTopicPerSchema"`
+	DropDeletedColumns             *bool `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool `json:"oneTopicPerSchema"`
 }
 
 type Deployment struct {
