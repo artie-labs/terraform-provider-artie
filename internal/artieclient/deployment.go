@@ -19,11 +19,13 @@ type BaseDeployment struct {
 	DataPlaneName            string            `json:"dataPlaneName"`
 
 	// Advanced settings - these must all be nullable
-	DropDeletedColumns             *bool `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool `json:"oneTopicPerSchema"`
+	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool   `json:"oneTopicPerSchema"`
+	PublicationNameOverride        *string `json:"publicationNameOverride"`
+	ReplicationSlotOverride        *string `json:"replicationSlotOverride"`
 }
 
 type Deployment struct {
@@ -33,11 +35,13 @@ type Deployment struct {
 }
 
 type advancedSettings struct {
-	DropDeletedColumns             bool `json:"dropDeletedColumns"`
-	EnableSoftDelete               bool `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    bool `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn bool `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              bool `json:"oneTopicPerSchema"`
+	DropDeletedColumns             bool   `json:"dropDeletedColumns"`
+	EnableSoftDelete               bool   `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn bool   `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              bool   `json:"oneTopicPerSchema"`
+	PublicationNameOverride        string `json:"publicationNameOverride"`
+	ReplicationSlotOverride        string `json:"replicationSlotOverride"`
 }
 
 type deploymentWithAdvSettings struct {
@@ -52,6 +56,8 @@ func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
 	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn
 	deployment.IncludeDatabaseUpdatedAtColumn = &deployment.AdvancedSettings.IncludeDatabaseUpdatedAtColumn
 	deployment.OneTopicPerSchema = &deployment.AdvancedSettings.OneTopicPerSchema
+	deployment.PublicationNameOverride = &deployment.AdvancedSettings.PublicationNameOverride
+	deployment.ReplicationSlotOverride = &deployment.AdvancedSettings.ReplicationSlotOverride
 
 	deployment.Deployment.Source.Type = deployment.Source.Type
 	deployment.Deployment.Source.Config = deployment.Source.Config
