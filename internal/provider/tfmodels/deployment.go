@@ -21,11 +21,13 @@ type Deployment struct {
 	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
 
 	// Advanced settings
-	DropDeletedColumns             types.Bool `tfsdk:"drop_deleted_columns"`
-	SoftDeleteRows                 types.Bool `tfsdk:"soft_delete_rows"`
-	IncludeArtieUpdatedAtColumn    types.Bool `tfsdk:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn types.Bool `tfsdk:"include_database_updated_at_column"`
-	OneTopicPerSchema              types.Bool `tfsdk:"one_topic_per_schema"`
+	DropDeletedColumns             types.Bool   `tfsdk:"drop_deleted_columns"`
+	SoftDeleteRows                 types.Bool   `tfsdk:"soft_delete_rows"`
+	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
+	OneTopicPerSchema              types.Bool   `tfsdk:"one_topic_per_schema"`
+	PublicationNameOverride        types.String `tfsdk:"postgres_publication_name_override"`
+	ReplicationSlotOverride        types.String `tfsdk:"postgres_replication_slot_override"`
 }
 
 func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
@@ -66,6 +68,8 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		IncludeArtieUpdatedAtColumn:    d.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
 		IncludeDatabaseUpdatedAtColumn: d.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
 		OneTopicPerSchema:              d.OneTopicPerSchema.ValueBoolPointer(),
+		PublicationNameOverride:        d.PublicationNameOverride.ValueStringPointer(),
+		ReplicationSlotOverride:        d.ReplicationSlotOverride.ValueStringPointer(),
 	}, diags
 }
 
@@ -112,6 +116,8 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
 		IncludeDatabaseUpdatedAtColumn: types.BoolPointerValue(apiModel.IncludeDatabaseUpdatedAtColumn),
 		OneTopicPerSchema:              types.BoolPointerValue(apiModel.OneTopicPerSchema),
+		PublicationNameOverride:        types.StringPointerValue(apiModel.PublicationNameOverride),
+		ReplicationSlotOverride:        types.StringPointerValue(apiModel.ReplicationSlotOverride),
 	}, diags
 }
 
