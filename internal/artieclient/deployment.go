@@ -147,9 +147,9 @@ type Table struct {
 	MergePredicates *[]MergePredicate `json:"mergePredicates"`
 }
 
-// This is used for just the validate-source endpoint for now
-// We'll spin up a separate workstream to deprecate the need to have [Table] in general (which will require us to work on nullability of advanced settings)
 func (t Table) BuildAPITable() APITable {
+	// This is used for just the validate-source endpoint for now
+	// We'll spin up a separate workstream to deprecate the need to have [Table] in general (which will require us to work on nullability of advanced settings)
 	apiTable := APITable{
 		Table: t,
 		AdvancedSettings: advancedTableSettings{
