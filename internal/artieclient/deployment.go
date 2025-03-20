@@ -194,6 +194,7 @@ func (t APITable) unnestTableAdvSettings() Table {
 	// These arrays are omitted from the api response if empty; fallback to empty slices
 	// so terraform doesn't think a change is needed if the tf config specifies empty slices
 	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
+	t.IncludeColumns = toSlicePtr(t.AdvancedSettings.IncludeColumns)
 	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
 	t.MergePredicates = toSlicePtr[MergePredicate](t.AdvancedSettings.MergePredicates)
 
