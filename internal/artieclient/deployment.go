@@ -159,22 +159,6 @@ func (t Table) BuildAPITable() APITable {
 		},
 	}
 
-	if t.Alias != nil {
-		apiTable.AdvancedSettings.Alias = *t.Alias
-	}
-	if t.ExcludeColumns != nil {
-		apiTable.AdvancedSettings.ExcludeColumns = *t.ExcludeColumns
-	}
-	if t.ColumnsToHash != nil {
-		apiTable.AdvancedSettings.ColumnsToHash = *t.ColumnsToHash
-	}
-	if t.SkipDeletes != nil {
-		apiTable.AdvancedSettings.SkipDeletes = *t.SkipDeletes
-	}
-	if t.MergePredicates != nil {
-		apiTable.AdvancedSettings.MergePredicates = *t.MergePredicates
-	}
-
 	return apiTable
 }
 
