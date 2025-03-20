@@ -7,6 +7,8 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+
+	"terraform-provider-artie/internal/lib"
 )
 
 type BaseDeployment struct {
@@ -76,9 +78,29 @@ type Source struct {
 	Tables []Table       `json:"tables"`
 }
 
+func (s Source) BuildAPISource() APISource {
+	apiSource := APISource{
+		Type:   s.Type,
+		Config: s.Config,
+		Tables: []APITable{},
+	}
+
+	for _, table := range s.Tables {
+		apiSource.Tables = append(apiSource.Tables, table.BuildAPITable())
+	}
+
+	return apiSource
+}
+
+type APISource struct {
+	Type   ConnectorType `json:"type"`
+	Config SourceConfig  `json:"config"`
+	Tables []APITable    `json:"tables"`
+}
+
 type sourceWithAdvTableSettings struct {
 	Source
-	Tables []tableWithAdvSettings `json:"tables"`
+	Tables []APITable `json:"tables"`
 }
 
 type SourceConfig struct {
@@ -125,6 +147,23 @@ type Table struct {
 	MergePredicates *[]MergePredicate `json:"mergePredicates"`
 }
 
+func (t Table) BuildAPITable() APITable {
+	// This is used for just the validate-source endpoint for now
+	// We'll spin up a separate workstream to deprecate the need to have [Table] in general (which will require us to work on nullability of advanced settings)
+	apiTable := APITable{
+		Table: t,
+		AdvancedSettings: advancedTableSettings{
+			Alias:           lib.RemovePtr(t.Alias),
+			ExcludeColumns:  lib.RemovePtr(t.ExcludeColumns),
+			ColumnsToHash:   lib.RemovePtr(t.ColumnsToHash),
+			SkipDeletes:     lib.RemovePtr(t.SkipDeletes),
+			MergePredicates: lib.RemovePtr(t.MergePredicates),
+		},
+	}
+
+	return apiTable
+}
+
 type advancedTableSettings struct {
 	Alias           string           `json:"alias"`
 	ExcludeColumns  []string         `json:"excludeColumns"`
@@ -133,7 +172,7 @@ type advancedTableSettings struct {
 	MergePredicates []MergePredicate `json:"mergePredicates"`
 }
 
-type tableWithAdvSettings struct {
+type APITable struct {
 	Table
 	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
 }
@@ -145,7 +184,7 @@ func toSlicePtr[T any](slice []T) *[]T {
 	return &slice
 }
 
-func (t tableWithAdvSettings) unnestTableAdvSettings() Table {
+func (t APITable) unnestTableAdvSettings() Table {
 	t.Alias = &t.AdvancedSettings.Alias
 	t.SkipDeletes = &t.AdvancedSettings.SkipDeletes
 
@@ -233,7 +272,7 @@ func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDe
 	}
 
 	body := map[string]any{
-		"source":         deployment.Source,
+		"source":         deployment.Source.BuildAPISource(),
 		"sshTunnelUUID":  deployment.SSHTunnelUUID,
 		"validateTables": true,
 	}
