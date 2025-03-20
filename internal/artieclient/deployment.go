@@ -142,6 +142,7 @@ type Table struct {
 	// Advanced table settings - these must all be nullable
 	Alias           *string           `json:"alias"`
 	ExcludeColumns  *[]string         `json:"excludeColumns"`
+	IncludeColumns  *[]string         `json:"includeColumns"`
 	ColumnsToHash   *[]string         `json:"columnsToHash"`
 	SkipDeletes     *bool             `json:"skipDelete"`
 	MergePredicates *[]MergePredicate `json:"mergePredicates"`
@@ -155,6 +156,7 @@ func (t Table) BuildAPITable() APITable {
 		AdvancedSettings: advancedTableSettings{
 			Alias:           lib.RemovePtr(t.Alias),
 			ExcludeColumns:  lib.RemovePtr(t.ExcludeColumns),
+			IncludeColumns:  lib.RemovePtr(t.IncludeColumns),
 			ColumnsToHash:   lib.RemovePtr(t.ColumnsToHash),
 			SkipDeletes:     lib.RemovePtr(t.SkipDeletes),
 			MergePredicates: lib.RemovePtr(t.MergePredicates),
@@ -167,6 +169,7 @@ func (t Table) BuildAPITable() APITable {
 type advancedTableSettings struct {
 	Alias           string           `json:"alias"`
 	ExcludeColumns  []string         `json:"excludeColumns"`
+	IncludeColumns  []string         `json:"includeColumns"`
 	ColumnsToHash   []string         `json:"columnsToHash"`
 	SkipDeletes     bool             `json:"skipDelete"`
 	MergePredicates []MergePredicate `json:"mergePredicates"`
