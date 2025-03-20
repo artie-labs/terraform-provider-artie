@@ -68,6 +68,9 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	colsToExclude, excludeDiags := parseOptionalList[string](ctx, t.ExcludeColumns)
 	diags.Append(excludeDiags...)
 
+	colsToInclude, includeDiags := parseOptionalList[string](ctx, t.IncludeColumns)
+	diags.Append(includeDiags...)
+
 	colsToHash, hashDiags := parseOptionalList[string](ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
 
@@ -95,6 +98,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
 		Alias:                t.Alias.ValueStringPointer(),
 		ExcludeColumns:       colsToExclude,
+		IncludeColumns:       colsToInclude,
 		ColumnsToHash:        colsToHash,
 		SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
 		MergePredicates:      clientMergePreds,
