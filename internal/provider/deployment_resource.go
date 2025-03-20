@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -339,26 +338,17 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Validate config before creating the deployment
 	if err := r.client.Deployments().ValidateSource(ctx, deployment); err != nil {
-		tflog.Error(ctx, "Unable to Create Deployment", map[string]interface{}{
-			"error": err,
-		})
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
 
 	if err := r.client.Deployments().ValidateDestination(ctx, deployment); err != nil {
-		tflog.Error(ctx, "Unable to Create Deployment", map[string]interface{}{
-			"error": err,
-		})
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
 
 	createdDeployment, err := r.client.Deployments().Create(ctx, deployment)
 	if err != nil {
-		tflog.Error(ctx, "Unable to Create Deployment", map[string]interface{}{
-			"error": err,
-		})
 		resp.Diagnostics.AddError("Unable to Create Deployment", err.Error())
 		return
 	}
