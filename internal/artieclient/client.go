@@ -50,7 +50,15 @@ func buildError(resp *http.Response) error {
 			ErrorMsg string `json:"error"`
 		}
 		errorResponse := errorBody{}
-		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err == nil {
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("artie-client: failed to read response body: %w", err)
+		}
+
+		fmt.Println("ERROR BODY", string(body))
+
+		if err := json.Unmarshal(body, &errorResponse); err == nil {
 			return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
 		}
 	}
