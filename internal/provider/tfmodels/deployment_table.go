@@ -52,6 +52,7 @@ type Table struct {
 	// Advanced table settings
 	Alias           types.String `tfsdk:"alias"`
 	ExcludeColumns  types.List   `tfsdk:"columns_to_exclude"`
+	IncludeColumns  types.List   `tfsdk:"columns_to_include"`
 	ColumnsToHash   types.List   `tfsdk:"columns_to_hash"`
 	SkipDeletes     types.Bool   `tfsdk:"skip_deletes"`
 	MergePredicates types.List   `tfsdk:"merge_predicates"`
@@ -66,6 +67,9 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 
 	colsToExclude, excludeDiags := parseOptionalList[string](ctx, t.ExcludeColumns)
 	diags.Append(excludeDiags...)
+
+	colsToInclude, includeDiags := parseOptionalList[string](ctx, t.IncludeColumns)
+	diags.Append(includeDiags...)
 
 	colsToHash, hashDiags := parseOptionalList[string](ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
@@ -94,6 +98,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		IsPartitioned:        t.IsPartitioned.ValueBool(),
 		Alias:                t.Alias.ValueStringPointer(),
 		ExcludeColumns:       colsToExclude,
+		IncludeColumns:       colsToInclude,
 		ColumnsToHash:        colsToHash,
 		SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
 		MergePredicates:      clientMergePreds,
@@ -112,6 +117,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		colsToExclude, excludeDiags := optionalStringListToStringValue(ctx, apiTable.ExcludeColumns)
 		diags.Append(excludeDiags...)
 
+		colsToInclude, includeDiags := optionalStringListToStringValue(ctx, apiTable.IncludeColumns)
+		diags.Append(includeDiags...)
+
 		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
 		diags.Append(hashDiags...)
 
@@ -127,6 +135,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 			Alias:                types.StringPointerValue(apiTable.Alias),
 			ExcludeColumns:       colsToExclude,
+			IncludeColumns:       colsToInclude,
 			ColumnsToHash:        colsToHash,
 			SkipDeletes:          types.BoolPointerValue(apiTable.SkipDeletes),
 			MergePredicates:      mergePredicates,

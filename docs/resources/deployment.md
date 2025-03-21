@@ -121,6 +121,7 @@ Optional:
 - `alias` (String) An optional alias for the table. If set, this will be the name of the destination table.
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from syncing to the destination.
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
+- `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A deployment (which includes tables) can only have one of `columns_to_include` or `columns_to_exclude` set.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `individual_deployment` (Boolean) If set to true, we will spin up a separate Artie Transfer deployment to handle this table. This should only be used if this table has extremely high throughput (over 1M+ per hour) and has much higher throughput than other tables.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the column(s) it's partitioned by. This will help with merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it must be a time column partitioned by day. (see [below for nested schema](#nestedatt--source--tables--merge_predicates))
