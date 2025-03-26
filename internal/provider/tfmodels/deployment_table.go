@@ -17,12 +17,16 @@ type MergePredicate struct {
 	PartitionField types.String `tfsdk:"partition_field"`
 }
 
+var MergePredicateAttrTypes = map[string]attr.Type{
+	"partition_field": types.StringType,
+}
+
 func (m MergePredicate) ToAPIModel() artieclient.MergePredicate {
 	return artieclient.MergePredicate{PartitionField: m.PartitionField.ValueString()}
 }
 
 func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]artieclient.MergePredicate) (types.List, diag.Diagnostics) {
-	attrTypes := map[string]attr.Type{"partition_field": types.StringType}
+	attrTypes := MergePredicateAttrTypes
 	if apiMergePredicates == nil {
 		return types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, []attr.Value{})
 	}
@@ -56,6 +60,21 @@ type Table struct {
 	ColumnsToHash   types.List   `tfsdk:"columns_to_hash"`
 	SkipDeletes     types.Bool   `tfsdk:"skip_deletes"`
 	MergePredicates types.List   `tfsdk:"merge_predicates"`
+}
+
+var TableAttrTypes = map[string]attr.Type{
+	"uuid":                  types.StringType,
+	"name":                  types.StringType,
+	"schema":                types.StringType,
+	"enable_history_mode":   types.BoolType,
+	"individual_deployment": types.BoolType,
+	"is_partitioned":        types.BoolType,
+	"alias":                 types.StringType,
+	"columns_to_exclude":    types.ListType{ElemType: types.StringType},
+	"columns_to_include":    types.ListType{ElemType: types.StringType},
+	"columns_to_hash":       types.ListType{ElemType: types.StringType},
+	"skip_deletes":          types.BoolType,
+	"merge_predicates":      types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {

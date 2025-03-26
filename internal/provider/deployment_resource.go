@@ -313,8 +313,10 @@ func (r *DeploymentResource) ValidateConfig(ctx context.Context, req resource.Va
 		return
 	}
 
-	if configData.Source != nil {
-		for tableKey, table := range configData.Source.Tables {
+	if configData.Source != nil && !configData.Source.Tables.IsNull() && !configData.Source.Tables.IsUnknown() {
+		tables := map[string]tfmodels.Table{}
+		resp.Diagnostics.Append(configData.Source.Tables.ElementsAs(ctx, &tables, false)...)
+		for tableKey, table := range tables {
 			if !table.UUID.IsNull() {
 				resp.Diagnostics.AddError("Table.uuid is Read-Only", fmt.Sprintf("%q table should not have `uuid` specified. Please remove this attribute from your config.", tableKey))
 			}
