@@ -11,14 +11,14 @@ import (
 )
 
 type Source struct {
-	Type           types.String     `tfsdk:"type"`
-	Tables         map[string]Table `tfsdk:"tables"`
-	DynamoDBConfig *DynamoDBConfig  `tfsdk:"dynamodb_config"`
-	MongoDBConfig  *MongoDBConfig   `tfsdk:"mongodb_config"`
-	MySQLConfig    *MySQLConfig     `tfsdk:"mysql_config"`
-	MSSQLConfig    *MSSQLConfig     `tfsdk:"mssql_config"`
-	OracleConfig   *OracleConfig    `tfsdk:"oracle_config"`
-	PostgresConfig *PostgresConfig  `tfsdk:"postgresql_config"`
+	Type           types.String    `tfsdk:"type"`
+	Tables         types.Map       `tfsdk:"tables"`
+	DynamoDBConfig *DynamoDBConfig `tfsdk:"dynamodb_config"`
+	MongoDBConfig  *MongoDBConfig  `tfsdk:"mongodb_config"`
+	MySQLConfig    *MySQLConfig    `tfsdk:"mysql_config"`
+	MSSQLConfig    *MSSQLConfig    `tfsdk:"mssql_config"`
+	OracleConfig   *OracleConfig   `tfsdk:"oracle_config"`
+	PostgresConfig *PostgresConfig `tfsdk:"postgresql_config"`
 }
 
 func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagnostics) {
@@ -49,21 +49,22 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 		)}
 	}
 
-	tables := []artieclient.Table{}
-	diags := diag.Diagnostics{}
-	for _, table := range s.Tables {
+	tables := map[string]Table{}
+	diags := s.Tables.ElementsAs(ctx, &tables, false)
+	apiTables := []artieclient.Table{}
+	for _, table := range tables {
 		apiTable, tableDiags := table.ToAPIModel(ctx)
 		diags.Append(tableDiags...)
 		if diags.HasError() {
 			return artieclient.Source{}, diags
 		}
-		tables = append(tables, apiTable)
+		apiTables = append(apiTables, apiTable)
 	}
 
 	return artieclient.Source{
 		Type:   sourceType,
 		Config: sourceConfig,
-		Tables: tables,
+		Tables: apiTables,
 	}, diags
 }
 
@@ -73,9 +74,12 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 		return Source{}, diags
 	}
 
+	tablesMap, mapDiags := types.MapValueFrom(ctx, types.ObjectType{AttrTypes: TableAttrTypes}, tables)
+	diags.Append(mapDiags...)
+
 	source := Source{
 		Type:   types.StringValue(string(apiModel.Type)),
-		Tables: tables,
+		Tables: tablesMap,
 	}
 
 	switch apiModel.Type {
