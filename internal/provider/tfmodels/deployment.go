@@ -60,6 +60,7 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		Source:                   apiSource,
 		DestinationUUID:          destinationUUID,
 		DestinationConfig:        d.DestinationConfig.ToAPIModel(),
+		FlushConfig:              d.FlushConfig.ToAPIModel(),
 		SSHTunnelUUID:            sshTunnelUUID,
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		DataPlaneName:            d.DataPlaneName.ValueString(),
@@ -138,6 +139,14 @@ type DeploymentFlushConfig struct {
 	FlushIntervalSeconds types.Int64 `tfsdk:"flush_interval_seconds"`
 	BufferRows           types.Int64 `tfsdk:"buffer_rows"`
 	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
+}
+
+func (d DeploymentFlushConfig) ToAPIModel() artieclient.FlushConfig {
+	return artieclient.FlushConfig{
+		FlushIntervalSeconds: d.FlushIntervalSeconds.ValueInt64(),
+		BufferRows:           d.BufferRows.ValueInt64(),
+		FlushSizeKB:          d.FlushSizeKB.ValueInt64(),
+	}
 }
 
 func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
