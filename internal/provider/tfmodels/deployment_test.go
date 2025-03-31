@@ -17,6 +17,13 @@ func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
 		assert.Nil(t, flushConfig)
 	}
 	{
+		// null object
+		nullObject := types.ObjectNull(flushAttrTypes)
+		flushConfig, diags := buildFlushConfig(t.Context(), nullObject)
+		assert.False(t, diags.HasError(), "expected no error when creating null object")
+		assert.Nil(t, flushConfig)
+	}
+	{
 		// unknown object
 		unknownObject := types.ObjectUnknown(flushAttrTypes)
 		flushConfig, diags := buildFlushConfig(t.Context(), unknownObject)
