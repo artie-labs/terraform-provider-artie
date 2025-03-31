@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,24 +12,14 @@ func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
 	{
 		// nil object
 		var object types.Object
-		var flushConfig *DeploymentFlushConfig
-		diags := object.As(t.Context(), &flushConfig, basetypes.ObjectAsOptions{
-			UnhandledNullAsEmpty:    true,
-			UnhandledUnknownAsEmpty: true,
-		})
-
+		flushConfig, diags := buildFlushConfig(t.Context(), object)
 		assert.False(t, diags.HasError(), "expected no error when creating nil object")
 		assert.Nil(t, flushConfig)
 	}
 	{
 		// unknown object
 		unknownObject := types.ObjectUnknown(flushAttrTypes)
-		var flushConfig *DeploymentFlushConfig
-		diags := unknownObject.As(t.Context(), &flushConfig, basetypes.ObjectAsOptions{
-			UnhandledNullAsEmpty:    true,
-			UnhandledUnknownAsEmpty: true,
-		})
-
+		flushConfig, diags := buildFlushConfig(t.Context(), unknownObject)
 		assert.False(t, diags.HasError(), "expected no error when creating unknown object")
 		assert.Nil(t, flushConfig)
 	}
@@ -42,15 +31,10 @@ func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
 			"flush_size_kb":          types.Int64Value(1000),
 		})
 
+		flushConfig, diags := buildFlushConfig(t.Context(), flushObject)
 		assert.False(t, diags.HasError(), "failed to create flush config")
+		assert.NotNil(t, flushConfig)
 
-		var flushConfig *DeploymentFlushConfig
-		flushConfigDiags := flushObject.As(t.Context(), &flushConfig, basetypes.ObjectAsOptions{
-			UnhandledNullAsEmpty:    true,
-			UnhandledUnknownAsEmpty: true,
-		})
-
-		assert.False(t, flushConfigDiags.HasError(), "failed to convert flush config")
 		assert.Equal(t, flushConfig.FlushIntervalSeconds.ValueInt64(), int64(100))
 		assert.Equal(t, flushConfig.BufferRows.ValueInt64(), int64(5000))
 		assert.Equal(t, flushConfig.FlushSizeKB.ValueInt64(), int64(1000))

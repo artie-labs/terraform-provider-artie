@@ -45,6 +45,20 @@ var flushAttrTypes = map[string]attr.Type{
 	"flush_size_kb":          types.Int64Type,
 }
 
+func buildFlushConfig(ctx context.Context, d types.Object) (*DeploymentFlushConfig, diag.Diagnostics) {
+	var flushConfig *DeploymentFlushConfig
+	flushConfigDiags := d.As(ctx, &flushConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+
+	if flushConfigDiags.HasError() {
+		return nil, flushConfigDiags
+	}
+
+	return flushConfig, nil
+}
+
 func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
 	apiSource, diags := d.Source.ToAPIModel(ctx)
 	if diags.HasError() {
@@ -69,17 +83,10 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		return artieclient.BaseDeployment{}, diags
 	}
 
-	var flushConfig *DeploymentFlushConfig
-	if !d.FlushConfig.IsNull() && !d.FlushConfig.IsUnknown() {
-		flushConfigDiags := d.FlushConfig.As(ctx, &flushConfig, basetypes.ObjectAsOptions{
-			UnhandledNullAsEmpty:    true,
-			UnhandledUnknownAsEmpty: true,
-		})
-
-		diags.Append(flushConfigDiags...)
-		if diags.HasError() {
-			return artieclient.BaseDeployment{}, diags
-		}
+	flushConfig, flushConfigDiags := buildFlushConfig(ctx, d.FlushConfig)
+	diags.Append(flushConfigDiags...)
+	if diags.HasError() {
+		return artieclient.BaseDeployment{}, diags
 	}
 
 	return artieclient.BaseDeployment{
