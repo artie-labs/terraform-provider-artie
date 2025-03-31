@@ -23,6 +23,18 @@ func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
 		assert.Nil(t, flushConfig)
 	}
 	{
+		// unknown object
+		unknownObject := types.ObjectUnknown(flushAttrTypes)
+		var flushConfig *DeploymentFlushConfig
+		diags := unknownObject.As(t.Context(), &flushConfig, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
+
+		assert.False(t, diags.HasError(), "expected no error when creating unknown object")
+		assert.Nil(t, flushConfig)
+	}
+	{
 		// object is set
 		flushObject, diags := types.ObjectValue(flushAttrTypes, map[string]attr.Value{
 			"flush_interval_seconds": types.Int64Value(100),
