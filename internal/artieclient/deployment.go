@@ -16,19 +16,19 @@ type BaseDeployment struct {
 	Source                   Source            `json:"source"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
-	FlushConfig              FlushConfig       `json:"flushConfig"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 	DataPlaneName            string            `json:"dataPlaneName"`
 
 	// Advanced settings - these must all be nullable
-	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool   `json:"oneTopicPerSchema"`
-	PublicationNameOverride        *string `json:"publicationNameOverride"`
-	ReplicationSlotOverride        *string `json:"replicationSlotOverride"`
+	FlushConfig                    *FlushConfig `json:"flushConfig"`
+	DropDeletedColumns             *bool        `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool        `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool        `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool        `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool        `json:"oneTopicPerSchema"`
+	PublicationNameOverride        *string      `json:"publicationNameOverride"`
+	ReplicationSlotOverride        *string      `json:"replicationSlotOverride"`
 }
 
 type Deployment struct {
@@ -38,6 +38,11 @@ type Deployment struct {
 }
 
 type advancedSettings struct {
+	// Flush rules:
+	FlushIntervalSeconds int `json:"flushIntervalSeconds"`
+	BufferRows           int `json:"bufferRows"`
+	FlushSizeKb          int `json:"flushSizeKb"`
+
 	DropDeletedColumns             bool   `json:"dropDeletedColumns"`
 	EnableSoftDelete               bool   `json:"enableSoftDelete"`
 	IncludeArtieUpdatedAtColumn    bool   `json:"includeArtieUpdatedAtColumn"`
@@ -54,6 +59,12 @@ type deploymentWithAdvSettings struct {
 }
 
 func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
+	deployment.FlushConfig = &FlushConfig{
+		FlushIntervalSeconds: int64(deployment.AdvancedSettings.FlushIntervalSeconds),
+		BufferRows:           int64(deployment.AdvancedSettings.BufferRows),
+		FlushSizeKB:          int64(deployment.AdvancedSettings.FlushSizeKb),
+	}
+
 	deployment.DropDeletedColumns = &deployment.AdvancedSettings.DropDeletedColumns
 	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
 	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn

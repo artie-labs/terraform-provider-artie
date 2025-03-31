@@ -141,8 +141,8 @@ type DeploymentFlushConfig struct {
 	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
 }
 
-func (d DeploymentFlushConfig) ToAPIModel() artieclient.FlushConfig {
-	return artieclient.FlushConfig{
+func (d DeploymentFlushConfig) ToAPIModel() *artieclient.FlushConfig {
+	return &artieclient.FlushConfig{
 		FlushIntervalSeconds: d.FlushIntervalSeconds.ValueInt64(),
 		BufferRows:           d.BufferRows.ValueInt64(),
 		FlushSizeKB:          d.FlushSizeKB.ValueInt64(),
