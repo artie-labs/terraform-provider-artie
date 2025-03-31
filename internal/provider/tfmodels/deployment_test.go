@@ -10,7 +10,7 @@ import (
 
 func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
 	{
-		// nil object
+		// zero object
 		var object types.Object
 		flushConfig, diags := buildFlushConfig(t.Context(), object)
 		assert.False(t, diags.HasError(), "expected no error when creating nil object")
