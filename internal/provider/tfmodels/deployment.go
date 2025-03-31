@@ -101,7 +101,12 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 	}
 
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
-	flushConfig := DeploymentFlushConfigFromAPIModel(apiModel.FlushConfig)
+
+	var flushConfig *DeploymentFlushConfig
+	if apiModel.FlushConfig != nil {
+		flushConfig = DeploymentFlushConfigFromAPIModel(*apiModel.FlushConfig)
+	}
+
 	return Deployment{
 		UUID:                     types.StringValue(apiModel.UUID.String()),
 		Name:                     types.StringValue(apiModel.Name),
@@ -109,12 +114,12 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		Source:                   &source,
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
 		DestinationConfig:        &destinationConfig,
-		FlushConfig:              &flushConfig,
 		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
 		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
 
 		// Advanced settings:
+		FlushConfig:                    flushConfig,
 		DropDeletedColumns:             types.BoolPointerValue(apiModel.DropDeletedColumns),
 		SoftDeleteRows:                 types.BoolPointerValue(apiModel.EnableSoftDelete),
 		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
@@ -173,8 +178,8 @@ func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationCon
 	}
 }
 
-func DeploymentFlushConfigFromAPIModel(apiModel artieclient.FlushConfig) DeploymentFlushConfig {
-	return DeploymentFlushConfig{
+func DeploymentFlushConfigFromAPIModel(apiModel artieclient.FlushConfig) *DeploymentFlushConfig {
+	return &DeploymentFlushConfig{
 		FlushIntervalSeconds: types.Int64Value(apiModel.FlushIntervalSeconds),
 		BufferRows:           types.Int64Value(apiModel.BufferRows),
 		FlushSizeKB:          types.Int64Value(apiModel.FlushSizeKB),
