@@ -16,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -184,6 +186,32 @@ func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequ
 									}},
 							},
 						},
+					},
+				},
+			},
+			"flush_config": schema.SingleNestedAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "This contains configuration that pertains to how often Artie should flush data to the destination. If not specified, Artie will provide default values.",
+				PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
+				Attributes: map[string]schema.Attribute{
+					"flush_interval_seconds": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "The flush interval in seconds for how often Artie should flush data to the destination.",
+						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+					},
+					"buffer_rows": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "The number of rows to buffer before flushing to the destination.",
+						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+					},
+					"flush_size_kb": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "The size in kb of data to buffer before flushing to the destination.",
+						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 					},
 				},
 			},

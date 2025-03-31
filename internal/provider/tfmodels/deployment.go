@@ -16,6 +16,7 @@ type Deployment struct {
 	Source                   *Source                      `tfsdk:"source"`
 	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
 	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
+	FlushConfig              *DeploymentFlushConfig       `tfsdk:"flush_config"`
 	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
 	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
 	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
@@ -99,6 +100,7 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 	}
 
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
+	flushConfig := DeploymentFlushConfigFromAPIModel(apiModel.FlushConfig)
 	return Deployment{
 		UUID:                     types.StringValue(apiModel.UUID.String()),
 		Name:                     types.StringValue(apiModel.Name),
@@ -106,6 +108,7 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		Source:                   &source,
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
 		DestinationConfig:        &destinationConfig,
+		FlushConfig:              &flushConfig,
 		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
 		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
@@ -131,6 +134,12 @@ type DeploymentDestinationConfig struct {
 	Folder                types.String `tfsdk:"folder"`
 }
 
+type DeploymentFlushConfig struct {
+	FlushIntervalSeconds types.Int64 `tfsdk:"flush_interval_seconds"`
+	BufferRows           types.Int64 `tfsdk:"buffer_rows"`
+	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
+}
+
 func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
 	return artieclient.DestinationConfig{
 		Dataset:               d.Dataset.ValueString(),
@@ -152,5 +161,13 @@ func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationCon
 		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
 		Bucket:                types.StringValue(apiModel.Bucket),
 		Folder:                types.StringValue(apiModel.Folder),
+	}
+}
+
+func DeploymentFlushConfigFromAPIModel(apiModel artieclient.FlushConfig) DeploymentFlushConfig {
+	return DeploymentFlushConfig{
+		FlushIntervalSeconds: types.Int64Value(apiModel.FlushIntervalSeconds),
+		BufferRows:           types.Int64Value(apiModel.BufferRows),
+		FlushSizeKB:          types.Int64Value(apiModel.FlushSizeKB),
 	}
 }

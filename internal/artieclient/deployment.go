@@ -16,6 +16,7 @@ type BaseDeployment struct {
 	Source                   Source            `json:"source"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
+	FlushConfig              FlushConfig       `json:"flushConfig"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 	DataPlaneName            string            `json:"dataPlaneName"`
@@ -199,6 +200,12 @@ func (t APITable) unnestTableAdvSettings() Table {
 	t.MergePredicates = toSlicePtr[MergePredicate](t.AdvancedSettings.MergePredicates)
 
 	return t.Table
+}
+
+type FlushConfig struct {
+	FlushIntervalSeconds int64 `json:"flushIntervalSeconds"`
+	BufferRows           int64 `json:"bufferRows"`
+	FlushSizeKB          int64 `json:"flushSizeKB"`
 }
 
 type DestinationConfig struct {
