@@ -16,19 +16,19 @@ type Deployment struct {
 	Source                   *Source                      `tfsdk:"source"`
 	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
 	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
-	FlushConfig              *DeploymentFlushConfig       `tfsdk:"flush_config"`
 	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
 	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
 	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
 
 	// Advanced settings
-	DropDeletedColumns             types.Bool   `tfsdk:"drop_deleted_columns"`
-	SoftDeleteRows                 types.Bool   `tfsdk:"soft_delete_rows"`
-	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
-	OneTopicPerSchema              types.Bool   `tfsdk:"one_topic_per_schema"`
-	PublicationNameOverride        types.String `tfsdk:"postgres_publication_name_override"`
-	ReplicationSlotOverride        types.String `tfsdk:"postgres_replication_slot_override"`
+	FlushConfig                    *DeploymentFlushConfig `tfsdk:"flush_config"`
+	DropDeletedColumns             types.Bool             `tfsdk:"drop_deleted_columns"`
+	SoftDeleteRows                 types.Bool             `tfsdk:"soft_delete_rows"`
+	IncludeArtieUpdatedAtColumn    types.Bool             `tfsdk:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn types.Bool             `tfsdk:"include_database_updated_at_column"`
+	OneTopicPerSchema              types.Bool             `tfsdk:"one_topic_per_schema"`
+	PublicationNameOverride        types.String           `tfsdk:"postgres_publication_name_override"`
+	ReplicationSlotOverride        types.String           `tfsdk:"postgres_replication_slot_override"`
 }
 
 func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
@@ -60,11 +60,11 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		Source:                   apiSource,
 		DestinationUUID:          destinationUUID,
 		DestinationConfig:        d.DestinationConfig.ToAPIModel(),
-		FlushConfig:              d.FlushConfig.ToAPIModel(),
 		SSHTunnelUUID:            sshTunnelUUID,
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		DataPlaneName:            d.DataPlaneName.ValueString(),
 		// Advanced settings:
+		FlushConfig:                    d.FlushConfig.ToAPIModel(),
 		DropDeletedColumns:             d.DropDeletedColumns.ValueBoolPointer(),
 		EnableSoftDelete:               d.SoftDeleteRows.ValueBoolPointer(),
 		IncludeArtieUpdatedAtColumn:    d.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
