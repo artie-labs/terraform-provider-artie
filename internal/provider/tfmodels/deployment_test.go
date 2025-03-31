@@ -31,6 +31,8 @@ func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
 			"flush_size_kb":          types.Int64Value(1000),
 		})
 
+		assert.False(t, diags.HasError(), "failed to create flush object")
+
 		flushConfig, diags := buildFlushConfig(t.Context(), flushObject)
 		assert.False(t, diags.HasError(), "failed to create flush config")
 		assert.NotNil(t, flushConfig)
