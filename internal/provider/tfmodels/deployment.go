@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -29,6 +30,18 @@ type Deployment struct {
 	OneTopicPerSchema              types.Bool             `tfsdk:"one_topic_per_schema"`
 	PublicationNameOverride        types.String           `tfsdk:"postgres_publication_name_override"`
 	ReplicationSlotOverride        types.String           `tfsdk:"postgres_replication_slot_override"`
+}
+
+type DeploymentFlushConfig struct {
+	FlushIntervalSeconds types.Int64 `tfsdk:"flush_interval_seconds"`
+	BufferRows           types.Int64 `tfsdk:"buffer_rows"`
+	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
+}
+
+var flushAttrTypes = map[string]attr.Type{
+	"flush_interval_seconds": types.Int64Type,
+	"buffer_rows":            types.Int64Type,
+	"flush_size_kb":          types.Int64Type,
 }
 
 func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
@@ -138,12 +151,6 @@ type DeploymentDestinationConfig struct {
 	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
 	Bucket                types.String `tfsdk:"bucket"`
 	Folder                types.String `tfsdk:"folder"`
-}
-
-type DeploymentFlushConfig struct {
-	FlushIntervalSeconds types.Int64 `tfsdk:"flush_interval_seconds"`
-	BufferRows           types.Int64 `tfsdk:"buffer_rows"`
-	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
 }
 
 func (d DeploymentFlushConfig) ToAPIModel() *artieclient.FlushConfig {
