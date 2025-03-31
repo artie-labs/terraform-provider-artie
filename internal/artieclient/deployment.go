@@ -21,13 +21,14 @@ type BaseDeployment struct {
 	DataPlaneName            string            `json:"dataPlaneName"`
 
 	// Advanced settings - these must all be nullable
-	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool   `json:"oneTopicPerSchema"`
-	PublicationNameOverride        *string `json:"publicationNameOverride"`
-	ReplicationSlotOverride        *string `json:"replicationSlotOverride"`
+	FlushConfig                    *FlushConfig `json:"flushConfig"`
+	DropDeletedColumns             *bool        `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool        `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool        `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool        `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool        `json:"oneTopicPerSchema"`
+	PublicationNameOverride        *string      `json:"publicationNameOverride"`
+	ReplicationSlotOverride        *string      `json:"replicationSlotOverride"`
 }
 
 type Deployment struct {
@@ -37,6 +38,11 @@ type Deployment struct {
 }
 
 type advancedSettings struct {
+	// Flush rules:
+	FlushIntervalSeconds int `json:"flushIntervalSeconds"`
+	BufferRows           int `json:"bufferRows"`
+	FlushSizeKb          int `json:"flushSizeKb"`
+
 	DropDeletedColumns             bool   `json:"dropDeletedColumns"`
 	EnableSoftDelete               bool   `json:"enableSoftDelete"`
 	IncludeArtieUpdatedAtColumn    bool   `json:"includeArtieUpdatedAtColumn"`
@@ -53,6 +59,12 @@ type deploymentWithAdvSettings struct {
 }
 
 func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
+	deployment.FlushConfig = &FlushConfig{
+		FlushIntervalSeconds: int64(deployment.AdvancedSettings.FlushIntervalSeconds),
+		BufferRows:           int64(deployment.AdvancedSettings.BufferRows),
+		FlushSizeKB:          int64(deployment.AdvancedSettings.FlushSizeKb),
+	}
+
 	deployment.DropDeletedColumns = &deployment.AdvancedSettings.DropDeletedColumns
 	deployment.EnableSoftDelete = &deployment.AdvancedSettings.EnableSoftDelete
 	deployment.IncludeArtieUpdatedAtColumn = &deployment.AdvancedSettings.IncludeArtieUpdatedAtColumn
@@ -199,6 +211,12 @@ func (t APITable) unnestTableAdvSettings() Table {
 	t.MergePredicates = toSlicePtr[MergePredicate](t.AdvancedSettings.MergePredicates)
 
 	return t.Table
+}
+
+type FlushConfig struct {
+	FlushIntervalSeconds int64 `json:"flushIntervalSeconds"`
+	BufferRows           int64 `json:"bufferRows"`
+	FlushSizeKB          int64 `json:"flushSizeKB"`
 }
 
 type DestinationConfig struct {

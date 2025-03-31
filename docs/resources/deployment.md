@@ -64,6 +64,7 @@ resource "artie_deployment" "postgres_to_snowflake" {
 
 - `data_plane_name` (String) The name of the data plane to use for this deployment. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment`
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
+- `flush_config` (Attributes) This contains configuration that pertains to how often Artie should flush data to the destination. If not specified, Artie will provide default values. (see [below for nested schema](#nestedatt--flush_config))
 - `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_updated_at.
 - `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_db_updated_at.
 - `one_topic_per_schema` (Boolean) If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This only works if your source is Oracle and your account has this feature enabled.
@@ -232,6 +233,17 @@ Required:
 Optional:
 
 - `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica, if not provided, we will use the `host` value.
+
+
+
+<a id="nestedatt--flush_config"></a>
+### Nested Schema for `flush_config`
+
+Optional:
+
+- `buffer_rows` (Number) The number of rows to buffer before flushing to the destination.
+- `flush_interval_seconds` (Number) The flush interval in seconds for how often Artie should flush data to the destination.
+- `flush_size_kb` (Number) The size in kb of data to buffer before flushing to the destination.
 
 ## Import
 

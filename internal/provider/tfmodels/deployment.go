@@ -21,13 +21,14 @@ type Deployment struct {
 	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
 
 	// Advanced settings
-	DropDeletedColumns             types.Bool   `tfsdk:"drop_deleted_columns"`
-	SoftDeleteRows                 types.Bool   `tfsdk:"soft_delete_rows"`
-	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
-	OneTopicPerSchema              types.Bool   `tfsdk:"one_topic_per_schema"`
-	PublicationNameOverride        types.String `tfsdk:"postgres_publication_name_override"`
-	ReplicationSlotOverride        types.String `tfsdk:"postgres_replication_slot_override"`
+	FlushConfig                    *DeploymentFlushConfig `tfsdk:"flush_config"`
+	DropDeletedColumns             types.Bool             `tfsdk:"drop_deleted_columns"`
+	SoftDeleteRows                 types.Bool             `tfsdk:"soft_delete_rows"`
+	IncludeArtieUpdatedAtColumn    types.Bool             `tfsdk:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn types.Bool             `tfsdk:"include_database_updated_at_column"`
+	OneTopicPerSchema              types.Bool             `tfsdk:"one_topic_per_schema"`
+	PublicationNameOverride        types.String           `tfsdk:"postgres_publication_name_override"`
+	ReplicationSlotOverride        types.String           `tfsdk:"postgres_replication_slot_override"`
 }
 
 func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
@@ -63,6 +64,7 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		DataPlaneName:            d.DataPlaneName.ValueString(),
 		// Advanced settings:
+		FlushConfig:                    d.FlushConfig.ToAPIModel(),
 		DropDeletedColumns:             d.DropDeletedColumns.ValueBoolPointer(),
 		EnableSoftDelete:               d.SoftDeleteRows.ValueBoolPointer(),
 		IncludeArtieUpdatedAtColumn:    d.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
@@ -99,6 +101,12 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 	}
 
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
+
+	var flushConfig *DeploymentFlushConfig
+	if apiModel.FlushConfig != nil {
+		flushConfig = DeploymentFlushConfigFromAPIModel(*apiModel.FlushConfig)
+	}
+
 	return Deployment{
 		UUID:                     types.StringValue(apiModel.UUID.String()),
 		Name:                     types.StringValue(apiModel.Name),
@@ -111,6 +119,7 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
 
 		// Advanced settings:
+		FlushConfig:                    flushConfig,
 		DropDeletedColumns:             types.BoolPointerValue(apiModel.DropDeletedColumns),
 		SoftDeleteRows:                 types.BoolPointerValue(apiModel.EnableSoftDelete),
 		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
@@ -129,6 +138,20 @@ type DeploymentDestinationConfig struct {
 	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
 	Bucket                types.String `tfsdk:"bucket"`
 	Folder                types.String `tfsdk:"folder"`
+}
+
+type DeploymentFlushConfig struct {
+	FlushIntervalSeconds types.Int64 `tfsdk:"flush_interval_seconds"`
+	BufferRows           types.Int64 `tfsdk:"buffer_rows"`
+	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
+}
+
+func (d DeploymentFlushConfig) ToAPIModel() *artieclient.FlushConfig {
+	return &artieclient.FlushConfig{
+		FlushIntervalSeconds: d.FlushIntervalSeconds.ValueInt64(),
+		BufferRows:           d.BufferRows.ValueInt64(),
+		FlushSizeKB:          d.FlushSizeKB.ValueInt64(),
+	}
 }
 
 func (d DeploymentDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
@@ -152,5 +175,13 @@ func DeploymentDestinationConfigFromAPIModel(apiModel artieclient.DestinationCon
 		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
 		Bucket:                types.StringValue(apiModel.Bucket),
 		Folder:                types.StringValue(apiModel.Folder),
+	}
+}
+
+func DeploymentFlushConfigFromAPIModel(apiModel artieclient.FlushConfig) *DeploymentFlushConfig {
+	return &DeploymentFlushConfig{
+		FlushIntervalSeconds: types.Int64Value(apiModel.FlushIntervalSeconds),
+		BufferRows:           types.Int64Value(apiModel.BufferRows),
+		FlushSizeKB:          types.Int64Value(apiModel.FlushSizeKB),
 	}
 }
