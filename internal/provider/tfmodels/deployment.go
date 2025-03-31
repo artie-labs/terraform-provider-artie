@@ -70,14 +70,16 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 	}
 
 	var flushConfig *DeploymentFlushConfig
-	flushConfigDiags := d.FlushConfig.As(ctx, &flushConfig, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    true,
-		UnhandledUnknownAsEmpty: true,
-	})
+	if !d.FlushConfig.IsNull() && !d.FlushConfig.IsUnknown() {
+		flushConfigDiags := d.FlushConfig.As(ctx, &flushConfig, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
 
-	diags.Append(flushConfigDiags...)
-	if diags.HasError() {
-		return artieclient.BaseDeployment{}, diags
+		diags.Append(flushConfigDiags...)
+		if diags.HasError() {
+			return artieclient.BaseDeployment{}, diags
+		}
 	}
 
 	return artieclient.BaseDeployment{
