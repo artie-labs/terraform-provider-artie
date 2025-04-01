@@ -16,6 +16,7 @@ type SourceReaderSettings struct {
 
 type BaseSourceReader struct {
 	Name          string               `json:"name"`
+	DataPlaneName string               `json:"dataPlaneName"`
 	ConnectorUUID uuid.UUID            `json:"connectorUUID"`
 	DatabaseName  string               `json:"database"`
 	ContainerName string               `json:"containerName"`

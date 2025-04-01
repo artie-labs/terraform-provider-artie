@@ -14,6 +14,7 @@ type Destination struct {
 	SSHTunnelUUID   types.String           `tfsdk:"ssh_tunnel_uuid"`
 	Type            types.String           `tfsdk:"type"`
 	Label           types.String           `tfsdk:"label"`
+	DataPlaneName   types.String           `tfsdk:"data_plane_name"`
 	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
 	MSSQLConfig     *MSSQLSharedConfig     `tfsdk:"mssql_config"`
 	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
@@ -54,6 +55,7 @@ func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnos
 
 	return artieclient.BaseDestination{
 		Type:          destinationType,
+		DataPlaneName: d.DataPlaneName.ValueString(),
 		Label:         d.Label.ValueString(),
 		Config:        sharedConfig,
 		SSHTunnelUUID: sshTunnelUUID,
@@ -82,6 +84,7 @@ func DestinationFromAPIModel(apiModel artieclient.Destination) (Destination, dia
 	destination := Destination{
 		UUID:          types.StringValue(apiModel.UUID.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
+		DataPlaneName: types.StringValue(apiModel.DataPlaneName),
 		Label:         types.StringValue(apiModel.Label),
 		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 	}

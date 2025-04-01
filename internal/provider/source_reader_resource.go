@@ -38,9 +38,15 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Source Reader resource. This represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Deployments, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.",
 		Attributes: map[string]schema.Attribute{
-			"uuid":                               schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"connector_uuid":                     schema.StringAttribute{Required: true, MarkdownDescription: "The source connector that we should read data from."},
-			"name":                               schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this source reader."},
+			"uuid":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"connector_uuid": schema.StringAttribute{Required: true, MarkdownDescription: "The source connector that we should read data from."},
+			"name":           schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this source reader."},
+			"data_plane_name": schema.StringAttribute{
+				MarkdownDescription: "The name of the data plane to deploy this source reader in. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment` in our UI.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"database_name":                      schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the database we should read data from in the source connector. This should be specified if the source connector's type is DocumentDB, MongoDB, MySQL, MS SQL, Oracle (this maps to the service name), or PostgreSQL."},
 			"oracle_container":                   schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the container (pluggable database) if the source type is Oracle and you are using a container database."},
 			"one_topic_per_schema":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This is currently only supported if your source is Oracle and your account has this feature enabled."},

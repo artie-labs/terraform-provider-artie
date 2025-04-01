@@ -10,6 +10,7 @@ import (
 type SourceReader struct {
 	UUID                            types.String `tfsdk:"uuid"`
 	Name                            types.String `tfsdk:"name"`
+	DataPlaneName                   types.String `tfsdk:"data_plane_name"`
 	ConnectorUUID                   types.String `tfsdk:"connector_uuid"`
 	DatabaseName                    types.String `tfsdk:"database_name"`
 	OracleContainerName             types.String `tfsdk:"oracle_container"`
@@ -26,6 +27,7 @@ func (s SourceReader) ToAPIBaseModel() (artieclient.BaseSourceReader, diag.Diagn
 
 	return artieclient.BaseSourceReader{
 		Name:          s.Name.ValueString(),
+		DataPlaneName: s.DataPlaneName.ValueString(),
 		ConnectorUUID: connectorUUID,
 		DatabaseName:  s.DatabaseName.ValueString(),
 		ContainerName: s.OracleContainerName.ValueString(),
@@ -58,6 +60,7 @@ func SourceReaderFromAPIModel(apiModel artieclient.SourceReader) SourceReader {
 	return SourceReader{
 		UUID:                            types.StringValue(apiModel.UUID.String()),
 		Name:                            types.StringValue(apiModel.Name),
+		DataPlaneName:                   types.StringValue(apiModel.DataPlaneName),
 		ConnectorUUID:                   types.StringValue(apiModel.ConnectorUUID.String()),
 		DatabaseName:                    types.StringValue(apiModel.DatabaseName),
 		OracleContainerName:             types.StringValue(apiModel.ContainerName),

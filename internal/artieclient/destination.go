@@ -12,6 +12,7 @@ import (
 type BaseDestination struct {
 	Type          ConnectorType           `json:"type"`
 	Label         string                  `json:"label"`
+	DataPlaneName string                  `json:"dataPlaneName"`
 	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfig `json:"sharedConfig"`
 }
@@ -58,6 +59,7 @@ func (dc DestinationClient) Create(ctx context.Context, destination BaseDestinat
 		"type":          destination.Type,
 		"label":         destination.Label,
 		"sharedConfig":  destination.Config,
+		"dataPlaneName": destination.DataPlaneName,
 		"sshTunnelUUID": destination.SSHTunnelUUID,
 	}
 	return makeRequest[Destination](ctx, dc.client, http.MethodPost, dc.basePath(), body)
@@ -81,6 +83,7 @@ func (dc DestinationClient) TestConnection(ctx context.Context, destination Base
 	body := map[string]any{
 		"type":          destination.Type,
 		"sharedConfig":  destination.Config,
+		"dataPlaneName": destination.DataPlaneName,
 		"sshTunnelUUID": destination.SSHTunnelUUID,
 	}
 
