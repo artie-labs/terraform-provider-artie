@@ -112,7 +112,7 @@ func (c Client) Deployments() DeploymentClient {
 	return DeploymentClient{client: c}
 }
 
-func (c Client) Destinations() ConnectorClient {
+func (c Client) Connectors() ConnectorClient {
 	return ConnectorClient{client: c}
 }
 

@@ -170,13 +170,13 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 
 	// S3 is the only destination we can't ping to test the connection
 	if baseDestination.Type != artieclient.S3 {
-		if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
+		if err := r.client.Connectors().TestConnection(ctx, baseDestination); err != nil {
 			resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 			return
 		}
 	}
 
-	destination, err := r.client.Destinations().Create(ctx, baseDestination)
+	destination, err := r.client.Connectors().Create(ctx, baseDestination)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
@@ -191,7 +191,7 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	destination, err := r.client.Destinations().Get(ctx, destinationUUID)
+	destination, err := r.client.Connectors().Get(ctx, destinationUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
 		return
@@ -212,7 +212,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	if err := r.client.Destinations().TestConnection(ctx, apiBaseModel); err != nil {
+	if err := r.client.Connectors().TestConnection(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
@@ -223,7 +223,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	updatedDestination, err := r.client.Destinations().Update(ctx, apiModel)
+	updatedDestination, err := r.client.Connectors().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
@@ -238,7 +238,7 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	if err := r.client.Destinations().Delete(ctx, destinationUUID); err != nil {
+	if err := r.client.Connectors().Delete(ctx, destinationUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
 		return
 	}
