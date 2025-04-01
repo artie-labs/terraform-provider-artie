@@ -40,6 +40,7 @@ resource "artie_destination" "snowflake" {
 ### Optional
 
 - `bigquery_config` (Attributes) This should be filled out if the destination type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
+- `data_plane_name` (String) The name of the data plane this destination is in (if applicable; this does not apply to cloud-based destinations like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on `Create deployment` in our UI.
 - `label` (String) An optional human-readable label for this destination.
 - `mssql_config` (Attributes) This should be filled out if the destination type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
 - `redshift_config` (Attributes) This should be filled out if the destination type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
