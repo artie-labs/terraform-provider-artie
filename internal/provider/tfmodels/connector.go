@@ -9,7 +9,7 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 )
 
-type Destination struct {
+type Connector struct {
 	UUID            types.String           `tfsdk:"uuid"`
 	SSHTunnelUUID   types.String           `tfsdk:"ssh_tunnel_uuid"`
 	Type            types.String           `tfsdk:"type"`
@@ -21,9 +21,9 @@ type Destination struct {
 	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
 }
 
-func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnostics) {
+func (c Connector) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnostics) {
 	var sharedConfig artieclient.DestinationSharedConfig
-	destinationType, err := artieclient.ConnectorTypeFromString(d.Type.ValueString())
+	destinationType, err := artieclient.ConnectorTypeFromString(c.Type.ValueString())
 	if err != nil {
 		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Destination to API model", err.Error(),
@@ -32,41 +32,41 @@ func (d Destination) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnos
 
 	switch destinationType {
 	case artieclient.BigQuery:
-		sharedConfig = d.BigQueryConfig.ToAPIModel()
+		sharedConfig = c.BigQueryConfig.ToAPIModel()
 	case artieclient.MSSQL:
-		sharedConfig = d.MSSQLConfig.ToAPIModel()
+		sharedConfig = c.MSSQLConfig.ToAPIModel()
 	case artieclient.Redshift:
-		sharedConfig = d.RedshiftConfig.ToAPIModel()
+		sharedConfig = c.RedshiftConfig.ToAPIModel()
 	case artieclient.S3:
-		sharedConfig = d.S3Config.ToAPIModel()
+		sharedConfig = c.S3Config.ToAPIModel()
 	case artieclient.Snowflake:
-		sharedConfig = d.SnowflakeConfig.ToAPIModel()
+		sharedConfig = c.SnowflakeConfig.ToAPIModel()
 	default:
 		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert Destination to API model", fmt.Sprintf("unhandled destination type: %s", d.Type.ValueString()),
+			"Unable to convert Destination to API model", fmt.Sprintf("unhandled destination type: %s", c.Type.ValueString()),
 		)}
 	}
 
-	sshTunnelUUID, diags := parseOptionalUUID(d.SSHTunnelUUID)
+	sshTunnelUUID, diags := parseOptionalUUID(c.SSHTunnelUUID)
 	if diags.HasError() {
 		return artieclient.BaseDestination{}, diags
 	}
 
 	return artieclient.BaseDestination{
 		Type:          destinationType,
-		Label:         d.Label.ValueString(),
+		Label:         c.Label.ValueString(),
 		Config:        sharedConfig,
 		SSHTunnelUUID: sshTunnelUUID,
 	}, diags
 }
 
-func (d Destination) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
-	baseModel, diags := d.ToAPIBaseModel()
+func (c Connector) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
+	baseModel, diags := c.ToAPIBaseModel()
 	if diags.HasError() {
 		return artieclient.Destination{}, diags
 	}
 
-	uuid, uuidDiags := parseUUID(d.UUID)
+	uuid, uuidDiags := parseUUID(c.UUID)
 	diags.Append(uuidDiags...)
 	if diags.HasError() {
 		return artieclient.Destination{}, diags
@@ -78,8 +78,8 @@ func (d Destination) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
 	}, diags
 }
 
-func DestinationFromAPIModel(apiModel artieclient.Destination) (Destination, diag.Diagnostics) {
-	destination := Destination{
+func DestinationFromAPIModel(apiModel artieclient.Destination) (Connector, diag.Diagnostics) {
+	destination := Connector{
 		UUID:          types.StringValue(apiModel.UUID.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
 		Label:         types.StringValue(apiModel.Label),
@@ -98,7 +98,7 @@ func DestinationFromAPIModel(apiModel artieclient.Destination) (Destination, dia
 	case artieclient.Snowflake:
 		destination.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
-		return Destination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Destination", fmt.Sprintf("invalid destination type: %s", apiModel.Type),
 		)}
 	}

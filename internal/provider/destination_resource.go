@@ -134,13 +134,13 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 }
 
 func (r *DestinationResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
-	var stateData tfmodels.Destination
+	var stateData tfmodels.Connector
 	diagnostics.Append(state.Get(ctx, &stateData)...)
 	return stateData.UUID.ValueString(), diagnostics.HasError()
 }
 
-func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Destination, bool) {
-	var planData tfmodels.Destination
+func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Connector, bool) {
+	var planData tfmodels.Connector
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData, diagnostics.HasError()
 }
