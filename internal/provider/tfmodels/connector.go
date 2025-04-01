@@ -21,11 +21,11 @@ type Connector struct {
 	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
 }
 
-func (c Connector) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnostics) {
+func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
 	var sharedConfig artieclient.DestinationSharedConfig
 	destinationType, err := artieclient.ConnectorTypeFromString(c.Type.ValueString())
 	if err != nil {
-		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Destination to API model", err.Error(),
 		)}
 	}
@@ -42,17 +42,17 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnosti
 	case artieclient.Snowflake:
 		sharedConfig = c.SnowflakeConfig.ToAPIModel()
 	default:
-		return artieclient.BaseDestination{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Destination to API model", fmt.Sprintf("unhandled destination type: %s", c.Type.ValueString()),
 		)}
 	}
 
 	sshTunnelUUID, diags := parseOptionalUUID(c.SSHTunnelUUID)
 	if diags.HasError() {
-		return artieclient.BaseDestination{}, diags
+		return artieclient.BaseConnector{}, diags
 	}
 
-	return artieclient.BaseDestination{
+	return artieclient.BaseConnector{
 		Type:          destinationType,
 		Label:         c.Label.ValueString(),
 		Config:        sharedConfig,
@@ -60,25 +60,25 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseDestination, diag.Diagnosti
 	}, diags
 }
 
-func (c Connector) ToAPIModel() (artieclient.Destination, diag.Diagnostics) {
+func (c Connector) ToAPIModel() (artieclient.Connector, diag.Diagnostics) {
 	baseModel, diags := c.ToAPIBaseModel()
 	if diags.HasError() {
-		return artieclient.Destination{}, diags
+		return artieclient.Connector{}, diags
 	}
 
 	uuid, uuidDiags := parseUUID(c.UUID)
 	diags.Append(uuidDiags...)
 	if diags.HasError() {
-		return artieclient.Destination{}, diags
+		return artieclient.Connector{}, diags
 	}
 
-	return artieclient.Destination{
-		UUID:            uuid,
-		BaseDestination: baseModel,
+	return artieclient.Connector{
+		UUID:          uuid,
+		BaseConnector: baseModel,
 	}, diags
 }
 
-func DestinationFromAPIModel(apiModel artieclient.Destination) (Connector, diag.Diagnostics) {
+func DestinationFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diagnostics) {
 	destination := Connector{
 		UUID:          types.StringValue(apiModel.UUID.String()),
 		Type:          types.StringValue(string(apiModel.Type)),

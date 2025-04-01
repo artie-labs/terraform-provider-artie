@@ -9,14 +9,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type BaseDestination struct {
+type BaseConnector struct {
 	Type          ConnectorType           `json:"type"`
 	Label         string                  `json:"label"`
 	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
 	Config        DestinationSharedConfig `json:"sharedConfig"`
 }
-type Destination struct {
-	BaseDestination
+type Connector struct {
+	BaseConnector
 	UUID uuid.UUID `json:"uuid"`
 }
 
@@ -37,54 +37,54 @@ type DestinationSharedConfig struct {
 	AWSRegion           string `json:"awsRegion"`
 }
 
-type DestinationClient struct {
+type ConnectorClient struct {
 	client Client
 }
 
-func (DestinationClient) basePath() string {
+func (ConnectorClient) basePath() string {
 	return "destinations"
 }
 
-func (dc DestinationClient) Get(ctx context.Context, destinationUUID string) (Destination, error) {
-	path, err := url.JoinPath(dc.basePath(), destinationUUID)
+func (c ConnectorClient) Get(ctx context.Context, connectorUUID string) (Connector, error) {
+	path, err := url.JoinPath(c.basePath(), connectorUUID)
 	if err != nil {
-		return Destination{}, err
+		return Connector{}, err
 	}
-	return makeRequest[Destination](ctx, dc.client, http.MethodGet, path, nil)
+	return makeRequest[Connector](ctx, c.client, http.MethodGet, path, nil)
 }
 
-func (dc DestinationClient) Create(ctx context.Context, destination BaseDestination) (Destination, error) {
+func (c ConnectorClient) Create(ctx context.Context, connector BaseConnector) (Connector, error) {
 	body := map[string]any{
-		"type":          destination.Type,
-		"label":         destination.Label,
-		"sharedConfig":  destination.Config,
-		"sshTunnelUUID": destination.SSHTunnelUUID,
+		"type":          connector.Type,
+		"label":         connector.Label,
+		"sharedConfig":  connector.Config,
+		"sshTunnelUUID": connector.SSHTunnelUUID,
 	}
-	return makeRequest[Destination](ctx, dc.client, http.MethodPost, dc.basePath(), body)
+	return makeRequest[Connector](ctx, c.client, http.MethodPost, c.basePath(), body)
 }
 
-func (dc DestinationClient) Update(ctx context.Context, destination Destination) (Destination, error) {
-	path, err := url.JoinPath(dc.basePath(), destination.UUID.String())
+func (c ConnectorClient) Update(ctx context.Context, connector Connector) (Connector, error) {
+	path, err := url.JoinPath(c.basePath(), connector.UUID.String())
 	if err != nil {
-		return Destination{}, err
+		return Connector{}, err
 	}
 
-	return makeRequest[Destination](ctx, dc.client, http.MethodPost, path, destination)
+	return makeRequest[Connector](ctx, c.client, http.MethodPost, path, connector)
 }
 
-func (dc DestinationClient) TestConnection(ctx context.Context, destination BaseDestination) error {
-	path, err := url.JoinPath(dc.basePath(), "ping")
+func (c ConnectorClient) TestConnection(ctx context.Context, connector BaseConnector) error {
+	path, err := url.JoinPath(c.basePath(), "ping")
 	if err != nil {
 		return err
 	}
 
 	body := map[string]any{
-		"type":          destination.Type,
-		"sharedConfig":  destination.Config,
-		"sshTunnelUUID": destination.SSHTunnelUUID,
+		"type":          connector.Type,
+		"sharedConfig":  connector.Config,
+		"sshTunnelUUID": connector.SSHTunnelUUID,
 	}
 
-	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
+	response, err := makeRequest[validationResponse](ctx, c.client, http.MethodPost, path, body)
 	if err != nil {
 		return err
 	}
@@ -96,12 +96,12 @@ func (dc DestinationClient) TestConnection(ctx context.Context, destination Base
 	return nil
 }
 
-func (dc DestinationClient) Delete(ctx context.Context, destinationUUID string) error {
-	path, err := url.JoinPath(dc.basePath(), destinationUUID)
+func (c ConnectorClient) Delete(ctx context.Context, connectorUUID string) error {
+	path, err := url.JoinPath(c.basePath(), connectorUUID)
 	if err != nil {
 		return err
 	}
 
-	_, err = makeRequest[any](ctx, dc.client, http.MethodDelete, path, nil)
+	_, err = makeRequest[any](ctx, c.client, http.MethodDelete, path, nil)
 	return err
 }
