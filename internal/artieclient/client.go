@@ -119,3 +119,7 @@ func (c Client) Destinations() DestinationClient {
 func (c Client) SSHTunnels() SSHTunnelClient {
 	return SSHTunnelClient{client: c}
 }
+
+func (c Client) SourceReaders() SourceReaderClient {
+	return SourceReaderClient{client: c}
+}

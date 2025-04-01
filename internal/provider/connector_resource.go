@@ -274,17 +274,6 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	apiBaseModel, diags := planData.ToAPIBaseModel()
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
-	if err := r.client.Destinations().TestConnection(ctx, apiBaseModel); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Connector", err.Error())
-		return
-	}
-
 	apiModel, diags := planData.ToAPIModel()
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
