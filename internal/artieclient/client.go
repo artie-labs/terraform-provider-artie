@@ -112,8 +112,8 @@ func (c Client) Deployments() DeploymentClient {
 	return DeploymentClient{client: c}
 }
 
-func (c Client) Destinations() DestinationClient {
-	return DestinationClient{client: c}
+func (c Client) Connectors() ConnectorClient {
+	return ConnectorClient{client: c}
 }
 
 func (c Client) SSHTunnels() SSHTunnelClient {

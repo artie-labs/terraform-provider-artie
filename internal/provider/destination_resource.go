@@ -140,18 +140,18 @@ func (r *DestinationResource) Configure(ctx context.Context, req resource.Config
 }
 
 func (r *DestinationResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
-	var stateData tfmodels.Destination
+	var stateData tfmodels.Connector
 	diagnostics.Append(state.Get(ctx, &stateData)...)
 	return stateData.UUID.ValueString(), diagnostics.HasError()
 }
 
-func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Destination, bool) {
-	var planData tfmodels.Destination
+func (r *DestinationResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Connector, bool) {
+	var planData tfmodels.Connector
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData, diagnostics.HasError()
 }
 
-func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiDestination artieclient.Destination) {
+func (r *DestinationResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiDestination artieclient.Connector) {
 	// Translate API response type into Terraform model and save it into state
 	destination, diags := tfmodels.DestinationFromAPIModel(apiDestination)
 	diagnostics.Append(diags...)
@@ -176,13 +176,13 @@ func (r *DestinationResource) Create(ctx context.Context, req resource.CreateReq
 
 	// S3 is the only destination we can't ping to test the connection
 	if baseDestination.Type != artieclient.S3 {
-		if err := r.client.Destinations().TestConnection(ctx, baseDestination); err != nil {
+		if err := r.client.Connectors().TestConnection(ctx, baseDestination); err != nil {
 			resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 			return
 		}
 	}
 
-	destination, err := r.client.Destinations().Create(ctx, baseDestination)
+	destination, err := r.client.Connectors().Create(ctx, baseDestination)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Destination", err.Error())
 		return
@@ -197,7 +197,7 @@ func (r *DestinationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	destination, err := r.client.Destinations().Get(ctx, destinationUUID)
+	destination, err := r.client.Connectors().Get(ctx, destinationUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Destination", err.Error())
 		return
@@ -218,7 +218,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	if err := r.client.Destinations().TestConnection(ctx, apiBaseModel); err != nil {
+	if err := r.client.Connectors().TestConnection(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
 	}
@@ -229,7 +229,7 @@ func (r *DestinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	updatedDestination, err := r.client.Destinations().Update(ctx, apiModel)
+	updatedDestination, err := r.client.Connectors().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Destination", err.Error())
 		return
@@ -244,7 +244,7 @@ func (r *DestinationResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	if err := r.client.Destinations().Delete(ctx, destinationUUID); err != nil {
+	if err := r.client.Connectors().Delete(ctx, destinationUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Destination", err.Error())
 		return
 	}

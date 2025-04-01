@@ -216,18 +216,18 @@ func (r *ConnectorResource) Configure(ctx context.Context, req resource.Configur
 }
 
 func (r *ConnectorResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
-	var stateData tfmodels.Destination
+	var stateData tfmodels.Connector
 	diagnostics.Append(state.Get(ctx, &stateData)...)
 	return stateData.UUID.ValueString(), diagnostics.HasError()
 }
 
-func (r *ConnectorResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Destination, bool) {
-	var planData tfmodels.Destination
+func (r *ConnectorResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, diagnostics *diag.Diagnostics) (tfmodels.Connector, bool) {
+	var planData tfmodels.Connector
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData, diagnostics.HasError()
 }
 
-func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector artieclient.Destination) {
+func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector artieclient.Connector) {
 	// Translate API response type into Terraform model and save it into state
 	connector, diags := tfmodels.DestinationFromAPIModel(apiConnector)
 	diagnostics.Append(diags...)
@@ -250,7 +250,7 @@ func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	connector, err := r.client.Destinations().Create(ctx, baseConnector)
+	connector, err := r.client.Connectors().Create(ctx, baseConnector)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Connector", err.Error())
 		return
@@ -265,7 +265,7 @@ func (r *ConnectorResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	connector, err := r.client.Destinations().Get(ctx, connectorUUID)
+	connector, err := r.client.Connectors().Get(ctx, connectorUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Connector", err.Error())
 		return
@@ -286,7 +286,7 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	updatedConnector, err := r.client.Destinations().Update(ctx, apiModel)
+	updatedConnector, err := r.client.Connectors().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Connector", err.Error())
 		return
@@ -301,7 +301,7 @@ func (r *ConnectorResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	if err := r.client.Destinations().Delete(ctx, connectorUUID); err != nil {
+	if err := r.client.Connectors().Delete(ctx, connectorUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Connector", err.Error())
 		return
 	}
