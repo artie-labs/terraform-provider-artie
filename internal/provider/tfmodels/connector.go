@@ -22,7 +22,7 @@ type Connector struct {
 }
 
 func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
-	var sharedConfig artieclient.DestinationSharedConfig
+	var sharedConfig artieclient.ConnectorConfig
 	destinationType, err := artieclient.ConnectorTypeFromString(c.Type.ValueString())
 	if err != nil {
 		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
@@ -112,15 +112,15 @@ type BigQuerySharedConfig struct {
 	CredentialsData types.String `tfsdk:"credentials_data"`
 }
 
-func (b BigQuerySharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
-	return artieclient.DestinationSharedConfig{
+func (b BigQuerySharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
 		GCPProjectID:       b.ProjectID.ValueString(),
 		GCPLocation:        b.Location.ValueString(),
 		GCPCredentialsData: b.CredentialsData.ValueString(),
 	}
 }
 
-func BigQuerySharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *BigQuerySharedConfig {
+func BigQuerySharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *BigQuerySharedConfig {
 	return &BigQuerySharedConfig{
 		ProjectID:       types.StringValue(apiModel.GCPProjectID),
 		Location:        types.StringValue(apiModel.GCPLocation),
@@ -135,8 +135,8 @@ type MSSQLSharedConfig struct {
 	Password types.String `tfsdk:"password"`
 }
 
-func (r MSSQLSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
-	return artieclient.DestinationSharedConfig{
+func (r MSSQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
 		Host:     r.Host.ValueString(),
 		Port:     r.Port.ValueInt32(),
 		Username: r.Username.ValueString(),
@@ -144,7 +144,7 @@ func (r MSSQLSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
 	}
 }
 
-func MSSQLSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *MSSQLSharedConfig {
+func MSSQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MSSQLSharedConfig {
 	return &MSSQLSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Port:     types.Int32Value(apiModel.Port),
@@ -159,15 +159,15 @@ type RedshiftSharedConfig struct {
 	Password types.String `tfsdk:"password"`
 }
 
-func (r RedshiftSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
-	return artieclient.DestinationSharedConfig{
+func (r RedshiftSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
 		Endpoint: r.Endpoint.ValueString(),
 		Username: r.Username.ValueString(),
 		Password: r.Password.ValueString(),
 	}
 }
 
-func RedshiftSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *RedshiftSharedConfig {
+func RedshiftSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *RedshiftSharedConfig {
 	return &RedshiftSharedConfig{
 		Endpoint: types.StringValue(apiModel.Endpoint),
 		Username: types.StringValue(apiModel.Username),
@@ -181,15 +181,15 @@ type S3SharedConfig struct {
 	Region          types.String `tfsdk:"region"`
 }
 
-func (s S3SharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
-	return artieclient.DestinationSharedConfig{
+func (s S3SharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
 		AWSAccessKeyID:     s.AccessKeyID.ValueString(),
 		AWSSecretAccessKey: s.SecretAccessKey.ValueString(),
 		AWSRegion:          s.Region.ValueString(),
 	}
 }
 
-func S3SharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *S3SharedConfig {
+func S3SharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *S3SharedConfig {
 	return &S3SharedConfig{
 		AccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
 		SecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
@@ -205,8 +205,8 @@ type SnowflakeSharedConfig struct {
 	PrivateKey types.String `tfsdk:"private_key"`
 }
 
-func (s SnowflakeSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig {
-	return artieclient.DestinationSharedConfig{
+func (s SnowflakeSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
 		SnowflakeAccountURL: s.AccountURL.ValueString(),
 		SnowflakeVirtualDWH: s.VirtualDWH.ValueString(),
 		SnowflakePrivateKey: s.PrivateKey.ValueString(),
@@ -215,7 +215,7 @@ func (s SnowflakeSharedConfig) ToAPIModel() artieclient.DestinationSharedConfig 
 	}
 }
 
-func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.DestinationSharedConfig) *SnowflakeSharedConfig {
+func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *SnowflakeSharedConfig {
 	return &SnowflakeSharedConfig{
 		AccountURL: types.StringValue(apiModel.SnowflakeAccountURL),
 		VirtualDWH: types.StringValue(apiModel.SnowflakeVirtualDWH),

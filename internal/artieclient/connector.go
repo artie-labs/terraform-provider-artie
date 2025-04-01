@@ -10,17 +10,17 @@ import (
 )
 
 type BaseConnector struct {
-	Type          ConnectorType           `json:"type"`
-	Label         string                  `json:"label"`
-	SSHTunnelUUID *uuid.UUID              `json:"sshTunnelUUID"`
-	Config        DestinationSharedConfig `json:"sharedConfig"`
+	Type          ConnectorType   `json:"type"`
+	Label         string          `json:"label"`
+	SSHTunnelUUID *uuid.UUID      `json:"sshTunnelUUID"`
+	Config        ConnectorConfig `json:"sharedConfig"`
 }
 type Connector struct {
 	BaseConnector
 	UUID uuid.UUID `json:"uuid"`
 }
 
-type DestinationSharedConfig struct {
+type ConnectorConfig struct {
 	Host                string `json:"host"`
 	Port                int32  `json:"port"`
 	Endpoint            string `json:"endpoint"`
