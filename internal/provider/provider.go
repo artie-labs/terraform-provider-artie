@@ -89,6 +89,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewDestinationResource,
 		NewSSHTunnelResource,
 		NewConnectorResource,
+		NewSourceReaderResource,
 	}
 }
 
