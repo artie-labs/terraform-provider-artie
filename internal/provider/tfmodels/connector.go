@@ -16,7 +16,12 @@ type Connector struct {
 	Label           types.String           `tfsdk:"label"`
 	DataPlaneName   types.String           `tfsdk:"data_plane_name"`
 	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
+	DynamoDBConfig  *DynamoDBConfig        `tfsdk:"dynamodb_config"`
+	MongoDBConfig   *MongoDBSharedConfig   `tfsdk:"mongodb_config"`
 	MSSQLConfig     *MSSQLSharedConfig     `tfsdk:"mssql_config"`
+	MySQLConfig     *MySQLSharedConfig     `tfsdk:"mysql_config"`
+	OracleConfig    *OracleSharedConfig    `tfsdk:"oracle_config"`
+	PostgresConfig  *PostgresSharedConfig  `tfsdk:"postgresql_config"`
 	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
 	S3Config        *S3SharedConfig        `tfsdk:"s3_config"`
 	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
@@ -24,18 +29,28 @@ type Connector struct {
 
 func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
 	var sharedConfig artieclient.ConnectorConfig
-	destinationType, err := artieclient.ConnectorTypeFromString(c.Type.ValueString())
+	connectorType, err := artieclient.ConnectorTypeFromString(c.Type.ValueString())
 	if err != nil {
 		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert Destination to API model", err.Error(),
+			"Unable to convert Connector to API model", err.Error(),
 		)}
 	}
 
-	switch destinationType {
+	switch connectorType {
 	case artieclient.BigQuery:
 		sharedConfig = c.BigQueryConfig.ToAPIModel()
+	case artieclient.DynamoDB:
+		sharedConfig = c.DynamoDBConfig.ToAPIModel()
+	case artieclient.MongoDB:
+		sharedConfig = c.MongoDBConfig.ToAPIModel()
 	case artieclient.MSSQL:
 		sharedConfig = c.MSSQLConfig.ToAPIModel()
+	case artieclient.MySQL:
+		sharedConfig = c.MySQLConfig.ToAPIModel()
+	case artieclient.Oracle:
+		sharedConfig = c.OracleConfig.ToAPIModel()
+	case artieclient.PostgreSQL:
+		sharedConfig = c.PostgresConfig.ToAPIModel()
 	case artieclient.Redshift:
 		sharedConfig = c.RedshiftConfig.ToAPIModel()
 	case artieclient.S3:
@@ -44,7 +59,7 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		sharedConfig = c.SnowflakeConfig.ToAPIModel()
 	default:
 		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert Destination to API model", fmt.Sprintf("unhandled destination type: %s", c.Type.ValueString()),
+			"Unable to convert Connector to API model", fmt.Sprintf("unhandled connector type: %s", c.Type.ValueString()),
 		)}
 	}
 
@@ -54,7 +69,7 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 	}
 
 	return artieclient.BaseConnector{
-		Type:          destinationType,
+		Type:          connectorType,
 		DataPlaneName: c.DataPlaneName.ValueString(),
 		Label:         c.Label.ValueString(),
 		Config:        sharedConfig,
@@ -80,8 +95,8 @@ func (c Connector) ToAPIModel() (artieclient.Connector, diag.Diagnostics) {
 	}, diags
 }
 
-func DestinationFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diagnostics) {
-	destination := Connector{
+func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diagnostics) {
+	connector := Connector{
 		UUID:          types.StringValue(apiModel.UUID.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
 		DataPlaneName: types.StringValue(apiModel.DataPlaneName),
@@ -91,22 +106,32 @@ func DestinationFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Di
 
 	switch apiModel.Type {
 	case artieclient.BigQuery:
-		destination.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
+		connector.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.DynamoDB:
+		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(apiModel.Config)
+	case artieclient.MongoDB:
+		connector.MongoDBConfig = MongoDBSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.MSSQL:
-		destination.MSSQLConfig = MSSQLSharedConfigFromAPIModel(apiModel.Config)
+		connector.MSSQLConfig = MSSQLSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.MySQL:
+		connector.MySQLConfig = MySQLSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.Oracle:
+		connector.OracleConfig = OracleSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.PostgreSQL:
+		connector.PostgresConfig = PostgresSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Redshift:
-		destination.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
+		connector.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.S3:
-		destination.S3Config = S3SharedConfigFromAPIModel(apiModel.Config)
+		connector.S3Config = S3SharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Snowflake:
-		destination.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
+		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert API model to Destination", fmt.Sprintf("invalid destination type: %s", apiModel.Type),
+			"Unable to convert API model to Connector", fmt.Sprintf("invalid destination type: %s", apiModel.Type),
 		)}
 	}
 
-	return destination, nil
+	return connector, nil
 }
 
 type BigQuerySharedConfig struct {
@@ -131,27 +156,133 @@ func BigQuerySharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Big
 	}
 }
 
-type MSSQLSharedConfig struct {
+type MongoDBSharedConfig struct {
 	Host     types.String `tfsdk:"host"`
-	Port     types.Int32  `tfsdk:"port"`
-	Username types.String `tfsdk:"username"`
+	User     types.String `tfsdk:"user"`
 	Password types.String `tfsdk:"password"`
+}
+
+func (m MongoDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:     m.Host.ValueString(),
+		User:     m.User.ValueString(),
+		Password: m.Password.ValueString(),
+	}
+}
+
+func MongoDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MongoDBSharedConfig {
+	return &MongoDBSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+	}
+}
+
+type MSSQLSharedConfig struct {
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	Username     types.String `tfsdk:"username"`
+	Password     types.String `tfsdk:"password"`
 }
 
 func (r MSSQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	return artieclient.ConnectorConfig{
-		Host:     r.Host.ValueString(),
-		Port:     r.Port.ValueInt32(),
-		Username: r.Username.ValueString(),
-		Password: r.Password.ValueString(),
+		Host:         r.Host.ValueString(),
+		SnapshotHost: r.SnapshotHost.ValueString(),
+		Port:         r.Port.ValueInt32(),
+		Username:     r.Username.ValueString(),
+		Password:     r.Password.ValueString(),
 	}
 }
 
 func MSSQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MSSQLSharedConfig {
 	return &MSSQLSharedConfig{
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		Username:     types.StringValue(apiModel.Username),
+		Password:     types.StringValue(apiModel.Password),
+	}
+}
+
+type MySQLSharedConfig struct {
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Password     types.String `tfsdk:"password"`
+}
+
+func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:         m.Host.ValueString(),
+		SnapshotHost: m.SnapshotHost.ValueString(),
+		Port:         m.Port.ValueInt32(),
+		User:         m.User.ValueString(),
+		Password:     m.Password.ValueString(),
+	}
+}
+
+func MySQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MySQLSharedConfig {
+	return &MySQLSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Port:     types.Int32Value(apiModel.Port),
-		Username: types.StringValue(apiModel.Username),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+	}
+}
+
+type OracleSharedConfig struct {
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Password     types.String `tfsdk:"password"`
+}
+
+func (o OracleSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:         o.Host.ValueString(),
+		SnapshotHost: o.SnapshotHost.ValueString(),
+		Port:         o.Port.ValueInt32(),
+		User:         o.User.ValueString(),
+		Password:     o.Password.ValueString(),
+	}
+}
+
+func OracleSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *OracleSharedConfig {
+	return &OracleSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+	}
+}
+
+type PostgresSharedConfig struct {
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Password     types.String `tfsdk:"password"`
+}
+
+func (p PostgresSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:         p.Host.ValueString(),
+		SnapshotHost: p.SnapshotHost.ValueString(),
+		Port:         p.Port.ValueInt32(),
+		User:         p.User.ValueString(),
+		Password:     p.Password.ValueString(),
+	}
+}
+
+func PostgresSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *PostgresSharedConfig {
+	return &PostgresSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
 	}
 }
