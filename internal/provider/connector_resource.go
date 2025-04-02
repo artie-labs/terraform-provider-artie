@@ -229,7 +229,7 @@ func (r *ConnectorResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, di
 
 func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector artieclient.Connector) {
 	// Translate API response type into Terraform model and save it into state
-	connector, diags := tfmodels.DestinationFromAPIModel(apiConnector)
+	connector, diags := tfmodels.ConnectorFromAPIModel(apiConnector)
 	diagnostics.Append(diags...)
 	if diagnostics.HasError() {
 		return
