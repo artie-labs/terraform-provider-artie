@@ -50,12 +50,6 @@ func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaReq
 				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllDestinationTypes...)},
 			},
 			"label": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this destination."},
-			"data_plane_name": schema.StringAttribute{
-				MarkdownDescription: "The name of the data plane this destination is in (if applicable; this does not apply to cloud-based destinations like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New deployment' in our UI.",
-				Optional:            true,
-				Computed:            true,
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-			},
 			"bigquery_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the destination type is `bigquery`.",
 				Optional:            true,
