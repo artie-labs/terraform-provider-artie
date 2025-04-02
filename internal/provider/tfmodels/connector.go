@@ -18,8 +18,8 @@ type Connector struct {
 	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
 	DynamoDBConfig  *DynamoDBConfig        `tfsdk:"dynamodb_config"`
 	MongoDBConfig   *MongoDBSharedConfig   `tfsdk:"mongodb_config"`
-	MSSQLConfig     *MSSQLSharedConfig     `tfsdk:"mssql_config"`
 	MySQLConfig     *MySQLSharedConfig     `tfsdk:"mysql_config"`
+	MSSQLConfig     *MSSQLSharedConfig     `tfsdk:"mssql_config"`
 	OracleConfig    *OracleSharedConfig    `tfsdk:"oracle_config"`
 	PostgresConfig  *PostgresSharedConfig  `tfsdk:"postgresql_config"`
 	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
@@ -43,10 +43,10 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		sharedConfig = c.DynamoDBConfig.ToAPIModel()
 	case artieclient.MongoDB:
 		sharedConfig = c.MongoDBConfig.ToAPIModel()
-	case artieclient.MSSQL:
-		sharedConfig = c.MSSQLConfig.ToAPIModel()
 	case artieclient.MySQL:
 		sharedConfig = c.MySQLConfig.ToAPIModel()
+	case artieclient.MSSQL:
+		sharedConfig = c.MSSQLConfig.ToAPIModel()
 	case artieclient.Oracle:
 		sharedConfig = c.OracleConfig.ToAPIModel()
 	case artieclient.PostgreSQL:
@@ -111,10 +111,10 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(apiModel.Config)
 	case artieclient.MongoDB:
 		connector.MongoDBConfig = MongoDBSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.MSSQL:
-		connector.MSSQLConfig = MSSQLSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.MySQL:
 		connector.MySQLConfig = MySQLSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.MSSQL:
+		connector.MSSQLConfig = MSSQLSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Oracle:
 		connector.OracleConfig = OracleSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.PostgreSQL:
@@ -178,6 +178,33 @@ func MongoDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Mong
 	}
 }
 
+type MySQLSharedConfig struct {
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	Port         types.Int32  `tfsdk:"port"`
+	User         types.String `tfsdk:"user"`
+	Password     types.String `tfsdk:"password"`
+}
+
+func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:         m.Host.ValueString(),
+		SnapshotHost: m.SnapshotHost.ValueString(),
+		Port:         m.Port.ValueInt32(),
+		User:         m.User.ValueString(),
+		Password:     m.Password.ValueString(),
+	}
+}
+
+func MySQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MySQLSharedConfig {
+	return &MySQLSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		User:     types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+	}
+}
+
 type MSSQLSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
@@ -203,33 +230,6 @@ func MSSQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MSSQLS
 		Port:         types.Int32Value(apiModel.Port),
 		Username:     types.StringValue(apiModel.Username),
 		Password:     types.StringValue(apiModel.Password),
-	}
-}
-
-type MySQLSharedConfig struct {
-	Host         types.String `tfsdk:"host"`
-	SnapshotHost types.String `tfsdk:"snapshot_host"`
-	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"user"`
-	Password     types.String `tfsdk:"password"`
-}
-
-func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
-		Host:         m.Host.ValueString(),
-		SnapshotHost: m.SnapshotHost.ValueString(),
-		Port:         m.Port.ValueInt32(),
-		User:         m.User.ValueString(),
-		Password:     m.Password.ValueString(),
-	}
-}
-
-func MySQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MySQLSharedConfig {
-	return &MySQLSharedConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
 	}
 }
 
