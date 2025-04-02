@@ -13,7 +13,7 @@ type Connector struct {
 	UUID            types.String           `tfsdk:"uuid"`
 	SSHTunnelUUID   types.String           `tfsdk:"ssh_tunnel_uuid"`
 	Type            types.String           `tfsdk:"type"`
-	Label           types.String           `tfsdk:"label"`
+	Name            types.String           `tfsdk:"name"`
 	DataPlaneName   types.String           `tfsdk:"data_plane_name"`
 	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
 	DynamoDBConfig  *DynamoDBConfig        `tfsdk:"dynamodb_config"`
@@ -71,7 +71,7 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 	return artieclient.BaseConnector{
 		Type:          connectorType,
 		DataPlaneName: c.DataPlaneName.ValueString(),
-		Label:         c.Label.ValueString(),
+		Label:         c.Name.ValueString(),
 		Config:        sharedConfig,
 		SSHTunnelUUID: sshTunnelUUID,
 	}, diags
@@ -100,7 +100,7 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		UUID:          types.StringValue(apiModel.UUID.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
 		DataPlaneName: types.StringValue(apiModel.DataPlaneName),
-		Label:         types.StringValue(apiModel.Label),
+		Name:          types.StringValue(apiModel.Label),
 		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
 	}
 
