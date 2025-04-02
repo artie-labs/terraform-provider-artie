@@ -13,7 +13,7 @@ type SourceReader struct {
 	DataPlaneName                   types.String `tfsdk:"data_plane_name"`
 	ConnectorUUID                   types.String `tfsdk:"connector_uuid"`
 	DatabaseName                    types.String `tfsdk:"database_name"`
-	OracleContainerName             types.String `tfsdk:"oracle_container"`
+	OracleContainerName             types.String `tfsdk:"oracle_container_name"`
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`

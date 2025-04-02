@@ -34,7 +34,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 - `database_name` (String) The name of the database we should read data from in the source connector. This should be specified if the source connector's type is DocumentDB, MongoDB, MySQL, MS SQL, Oracle (this maps to the service name), or PostgreSQL.
 - `name` (String) An optional human-readable label for this source reader.
 - `one_topic_per_schema` (Boolean) If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This is currently only supported if your source is Oracle and your account has this feature enabled.
-- `oracle_container` (String) The name of the container (pluggable database) if the source type is Oracle and you are using a container database.
+- `oracle_container_name` (String) The name of the container (pluggable database) if the source type is Oracle and you are using a container database.
 - `postgres_publication_name_override` (String) If set, this will override the name of the PostgreSQL publication. Otherwise, we will use our default value, `dbz_publication`. This is only applicable if the source type is PostgreSQL.
 - `postgres_replication_slot_override` (String) If set, this will override the name of the PostgreSQL replication slot. Otherwise, we will use our default value, `artie`. This is only applicable if the source type is PostgreSQL.
 
