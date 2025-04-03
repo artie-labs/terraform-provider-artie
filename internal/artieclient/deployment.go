@@ -14,6 +14,7 @@ import (
 type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Source                   Source            `json:"source"`
+	SourceReaderUUID         *uuid.UUID        `json:"sourceReaderUUID"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
@@ -86,7 +87,7 @@ func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
 
 type Source struct {
 	Type   ConnectorType `json:"type"`
-	Config SourceConfig  `json:"config"`
+	Config *SourceConfig `json:"config,omitempty"`
 	Tables []Table       `json:"tables"`
 }
 
@@ -106,7 +107,7 @@ func (s Source) BuildAPISource() APISource {
 
 type APISource struct {
 	Type   ConnectorType `json:"type"`
-	Config SourceConfig  `json:"config"`
+	Config *SourceConfig `json:"config,omitempty"`
 	Tables []APITable    `json:"tables"`
 }
 
@@ -293,6 +294,7 @@ func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDe
 		return err
 	}
 
+	// TODO include source reader uuid
 	body := map[string]any{
 		"source":         deployment.Source.BuildAPISource(),
 		"sshTunnelUUID":  deployment.SSHTunnelUUID,

@@ -10,8 +10,8 @@ import (
 
 type SourceReaderSettings struct {
 	OneTopicPerSchema               bool   `json:"oneTopicPerSchema"`
-	PostgresPublicationNameOverride string `json:"postgresPublicationNameOverride"`
-	PostgresReplicationSlotOverride string `json:"postgresReplicationSlotOverride"`
+	PostgresPublicationNameOverride string `json:"publicationNameOverride"`
+	PostgresReplicationSlotOverride string `json:"replicationSlotOverride"`
 }
 
 type BaseSourceReader struct {

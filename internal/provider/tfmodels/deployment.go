@@ -16,6 +16,7 @@ type Deployment struct {
 	Name                     types.String                 `tfsdk:"name"`
 	Status                   types.String                 `tfsdk:"status"`
 	Source                   *Source                      `tfsdk:"source"`
+	SourceReaderUUID         types.String                 `tfsdk:"source_reader_uuid"`
 	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
 	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
 	SSHTunnelUUID            types.String                 `tfsdk:"ssh_tunnel_uuid"`
@@ -65,6 +66,12 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 		return artieclient.BaseDeployment{}, diags
 	}
 
+	sourceReaderUUID, sourceReaderDiags := parseOptionalUUID(d.SourceReaderUUID)
+	diags.Append(sourceReaderDiags...)
+	if diags.HasError() {
+		return artieclient.BaseDeployment{}, diags
+	}
+
 	destinationUUID, destDiags := parseOptionalUUID(d.DestinationUUID)
 	diags.Append(destDiags...)
 	if diags.HasError() {
@@ -92,6 +99,7 @@ func (d Deployment) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploym
 	return artieclient.BaseDeployment{
 		Name:                     d.Name.ValueString(),
 		Source:                   apiSource,
+		SourceReaderUUID:         sourceReaderUUID,
 		DestinationUUID:          destinationUUID,
 		DestinationConfig:        d.DestinationConfig.ToAPIModel(),
 		SSHTunnelUUID:            sshTunnelUUID,
@@ -151,6 +159,7 @@ func DeploymentFromAPIModel(ctx context.Context, apiModel artieclient.Deployment
 		Name:                     types.StringValue(apiModel.Name),
 		Status:                   types.StringValue(apiModel.Status),
 		Source:                   &source,
+		SourceReaderUUID:         optionalUUIDToStringValue(apiModel.SourceReaderUUID),
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
 		DestinationConfig:        &destinationConfig,
 		SSHTunnelUUID:            optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
