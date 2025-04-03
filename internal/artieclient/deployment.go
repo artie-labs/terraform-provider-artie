@@ -294,11 +294,11 @@ func (dc DeploymentClient) ValidateSource(ctx context.Context, deployment BaseDe
 		return err
 	}
 
-	// TODO include source reader uuid
 	body := map[string]any{
-		"source":         deployment.Source.BuildAPISource(),
-		"sshTunnelUUID":  deployment.SSHTunnelUUID,
-		"validateTables": true,
+		"sourceReaderUUID": deployment.SourceReaderUUID,
+		"source":           deployment.Source.BuildAPISource(),
+		"sshTunnelUUID":    deployment.SSHTunnelUUID,
+		"validateTables":   true,
 	}
 
 	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
