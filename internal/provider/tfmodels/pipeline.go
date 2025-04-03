@@ -102,10 +102,13 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (artieclient.Deployment, diag.
 }
 
 func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) (Pipeline, diag.Diagnostics) {
-	source, diags := SourceFromAPIModel(ctx, apiModel.Source)
+	tables, diags := TablesFromAPIModel(ctx, apiModel.Source.Tables)
 	if diags.HasError() {
 		return Pipeline{}, diags
 	}
+
+	tablesMap, mapDiags := types.MapValueFrom(ctx, types.ObjectType{AttrTypes: TableAttrTypes}, tables)
+	diags.Append(mapDiags...)
 
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 
@@ -123,7 +126,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) 
 		UUID:                     types.StringValue(apiModel.UUID.String()),
 		Name:                     types.StringValue(apiModel.Name),
 		Status:                   types.StringValue(apiModel.Status),
-		Tables:                   source.Tables,
+		Tables:                   tablesMap,
 		SourceReaderUUID:         optionalUUIDToStringValue(apiModel.SourceReaderUUID),
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
 		DestinationConfig:        &destinationConfig,

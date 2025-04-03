@@ -21,11 +21,8 @@ type Source struct {
 	PostgresConfig *PostgresConfig `tfsdk:"postgresql_config"`
 }
 
-func ToPtr[T any](v T) *T {
-	return &v
-}
-
 func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagnostics) {
+	var sourceConfig artieclient.SourceConfig
 	sourceType, err := artieclient.ConnectorTypeFromString(s.Type.ValueString())
 	if err != nil {
 		return artieclient.Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
@@ -33,32 +30,19 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 		)}
 	}
 
-	var sourceConfig *artieclient.SourceConfig
 	switch sourceType {
 	case artieclient.DynamoDB:
-		if s.DynamoDBConfig != nil {
-			sourceConfig = ToPtr(s.DynamoDBConfig.ToAPISourceConfigModel())
-		}
+		sourceConfig = s.DynamoDBConfig.ToAPISourceConfigModel()
 	case artieclient.MongoDB:
-		if s.MongoDBConfig != nil {
-			sourceConfig = ToPtr(s.MongoDBConfig.ToAPIModel())
-		}
+		sourceConfig = s.MongoDBConfig.ToAPIModel()
 	case artieclient.MySQL:
-		if s.MySQLConfig != nil {
-			sourceConfig = ToPtr(s.MySQLConfig.ToAPIModel())
-		}
+		sourceConfig = s.MySQLConfig.ToAPIModel()
 	case artieclient.MSSQL:
-		if s.MSSQLConfig != nil {
-			sourceConfig = ToPtr(s.MSSQLConfig.ToAPIModel())
-		}
+		sourceConfig = s.MSSQLConfig.ToAPIModel()
 	case artieclient.Oracle:
-		if s.OracleConfig != nil {
-			sourceConfig = ToPtr(s.OracleConfig.ToAPIModel())
-		}
+		sourceConfig = s.OracleConfig.ToAPIModel()
 	case artieclient.PostgreSQL:
-		if s.PostgresConfig != nil {
-			sourceConfig = ToPtr(s.PostgresConfig.ToAPIModel())
-		}
+		sourceConfig = s.PostgresConfig.ToAPIModel()
 	default:
 		return artieclient.Source{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Source to API model", fmt.Sprintf("unhandled source type: %s", s.Type.ValueString()),
@@ -98,36 +82,25 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 		Tables: tablesMap,
 	}
 
-	if apiModel.Config != nil {
-		switch apiModel.Type {
-		case artieclient.DynamoDB:
-			if apiModel.Config.DynamoDB != nil {
-				source.DynamoDBConfig = DynamoDBConfigFromAPISourceConfigModel(*apiModel.Config.DynamoDB)
-			}
-		case artieclient.MongoDB:
-			if apiModel.Config != nil {
-				source.MongoDBConfig = MongoDBConfigFromAPIModel(*apiModel.Config)
-			}
-		case artieclient.MySQL:
-			if apiModel.Config != nil {
-				source.MySQLConfig = MySQLConfigFromAPIModel(*apiModel.Config)
-			}
-		case artieclient.MSSQL:
-			if apiModel.Config != nil {
-				source.MSSQLConfig = MSSQLConfigFromAPIModel(*apiModel.Config)
-			}
-		case artieclient.Oracle:
-			if apiModel.Config != nil {
-				source.OracleConfig = OracleConfigFromAPIModel(*apiModel.Config)
-			}
-		case artieclient.PostgreSQL:
-			if apiModel.Config != nil {
-				source.PostgresConfig = PostgresConfigFromAPIModel(*apiModel.Config)
-			}
-		default:
-			diags.AddError("Unable to convert API model to Source", fmt.Sprintf("invalid source type: %s", apiModel.Type))
+	switch apiModel.Type {
+	case artieclient.DynamoDB:
+		if apiModel.Config.DynamoDB == nil {
+			diags.AddError("DynamoDB config is missing", "")
 			return Source{}, diags
 		}
+	case artieclient.MongoDB:
+		source.MongoDBConfig = MongoDBConfigFromAPIModel(apiModel.Config)
+	case artieclient.MySQL:
+		source.MySQLConfig = MySQLConfigFromAPIModel(apiModel.Config)
+	case artieclient.MSSQL:
+		source.MSSQLConfig = MSSQLConfigFromAPIModel(apiModel.Config)
+	case artieclient.Oracle:
+		source.OracleConfig = OracleConfigFromAPIModel(apiModel.Config)
+	case artieclient.PostgreSQL:
+		source.PostgresConfig = PostgresConfigFromAPIModel(apiModel.Config)
+	default:
+		diags.AddError("Unable to convert API model to Source", fmt.Sprintf("invalid source type: %s", apiModel.Type))
+		return Source{}, diags
 	}
 
 	return source, diags

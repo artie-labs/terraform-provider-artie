@@ -87,7 +87,7 @@ func (deployment deploymentWithAdvSettings) unnestAdvSettings() Deployment {
 
 type Source struct {
 	Type   ConnectorType `json:"type"`
-	Config *SourceConfig `json:"config,omitempty"`
+	Config SourceConfig  `json:"config"`
 	Tables []Table       `json:"tables"`
 }
 
@@ -107,7 +107,7 @@ func (s Source) BuildAPISource() APISource {
 
 type APISource struct {
 	Type   ConnectorType `json:"type"`
-	Config *SourceConfig `json:"config,omitempty"`
+	Config SourceConfig  `json:"config"`
 	Tables []APITable    `json:"tables"`
 }
 
