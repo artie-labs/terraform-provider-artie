@@ -71,6 +71,7 @@ resource "artie_deployment" "postgres_to_snowflake" {
 - `postgres_publication_name_override` (String) If set, this will override the name of the PostgreSQL publication. Otherwise, we will use our default value, `dbz_publication`. This is only applicable if the source type is PostgreSQL.
 - `postgres_replication_slot_override` (String) If set, this will override the name of the PostgreSQL replication slot. Otherwise, we will use our default value, `artie`. This is only applicable if the source type is PostgreSQL.
 - `soft_delete_rows` (Boolean) If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted.
+- `source_reader_uuid` (String) This should point to an `artie_source_reader` resource if you have one configured for the source database.
 - `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your source database.
 
 ### Read-Only
