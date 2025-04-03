@@ -88,6 +88,7 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 			diags.AddError("DynamoDB config is missing", "")
 			return Source{}, diags
 		}
+		source.DynamoDBConfig = DynamoDBConfigFromAPISourceConfigModel(*apiModel.Config.DynamoDB)
 	case artieclient.MongoDB:
 		source.MongoDBConfig = MongoDBConfigFromAPIModel(apiModel.Config)
 	case artieclient.MySQL:
