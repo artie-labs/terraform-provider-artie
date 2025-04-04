@@ -14,7 +14,7 @@ type Pipeline struct {
 	Name                     types.String                 `tfsdk:"name"`
 	Status                   types.String                 `tfsdk:"status"`
 	SourceReaderUUID         types.String                 `tfsdk:"source_reader_uuid"`
-	DestinationUUID          types.String                 `tfsdk:"destination_uuid"`
+	DestinationUUID          types.String                 `tfsdk:"destination_connector_uuid"`
 	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
 	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
 	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
@@ -67,8 +67,8 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploymen
 
 	return artieclient.BaseDeployment{
 		Name:                     p.Name.ValueString(),
-		Source:                   artieclient.Source{Tables: apiTables},
 		SourceReaderUUID:         sourceReaderUUID,
+		Tables:                   apiTables,
 		DestinationUUID:          destinationUUID,
 		DestinationConfig:        p.DestinationConfig.ToAPIModel(),
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,

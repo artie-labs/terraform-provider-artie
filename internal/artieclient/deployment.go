@@ -15,6 +15,7 @@ type BaseDeployment struct {
 	Name                     string            `json:"name"`
 	Source                   Source            `json:"source"`
 	SourceReaderUUID         *uuid.UUID        `json:"sourceReaderUUID"`
+	Tables                   []Table           `json:"tables"`
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SSHTunnelUUID            *uuid.UUID        `json:"sshTunnelUUID"`
@@ -320,10 +321,11 @@ func (dc DeploymentClient) ValidateDestination(ctx context.Context, deployment B
 	}
 
 	body := map[string]any{
-		"destinationUUID": deployment.DestinationUUID,
-		"specificCfg":     deployment.DestinationConfig,
-		"tables":          deployment.Source.Tables,
-		"sourceType":      deployment.Source.Type,
+		"sourceReaderUUID": deployment.SourceReaderUUID,
+		"destinationUUID":  deployment.DestinationUUID,
+		"specificCfg":      deployment.DestinationConfig,
+		"tables":           deployment.Source.Tables,
+		"sourceType":       deployment.Source.Type,
 	}
 
 	response, err := makeRequest[validationResponse](ctx, dc.client, http.MethodPost, path, body)
