@@ -1,8 +1,3 @@
-variable "postgres_password" {
-  type      = string
-  sensitive = true
-}
-
 resource "artie_pipeline" "postgres_to_snowflake" {
   name               = "PostgreSQL to Snowflake"
   source_reader_uuid = artie_source_reader.postgres.uuid
