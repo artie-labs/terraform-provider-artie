@@ -86,6 +86,7 @@ Optional:
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
 - `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
+- `individual_deployment` (Boolean) If set to true, we will spin up a separate Artie Transfer deployment to handle this table. This should only be used if this table has extremely high throughput (over 1M+ per hour) and has much higher throughput than other tables.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the column(s) it's partitioned by. This will help with merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it must be a time column partitioned by day. (see [below for nested schema](#nestedatt--tables--merge_predicates))
 - `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
