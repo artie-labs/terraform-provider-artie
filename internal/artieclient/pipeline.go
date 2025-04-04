@@ -75,11 +75,16 @@ func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pip
 }
 
 func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipeline, error) {
+	path, err := url.JoinPath(pc.basePath(), pipeline.UUID.String())
+	if err != nil {
+		return Pipeline{}, err
+	}
+
 	body := map[string]any{
 		"pipeline":       pipeline,
 		"deployPipeline": true,
 	}
-	updatedPipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodPut, pc.basePath(), body)
+	updatedPipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodPost, path, body)
 	if err != nil {
 		return Pipeline{}, err
 	}
