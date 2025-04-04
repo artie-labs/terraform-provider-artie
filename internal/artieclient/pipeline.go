@@ -10,14 +10,16 @@ import (
 )
 
 type AdvancedSettings struct {
-	FlushConfig                    *FlushConfig `json:"flushConfig"`
-	DropDeletedColumns             *bool        `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool        `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool        `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool        `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool        `json:"oneTopicPerSchema"`
-	PublicationNameOverride        *string      `json:"publicationNameOverride"`
-	ReplicationSlotOverride        *string      `json:"replicationSlotOverride"`
+	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
+	OneTopicPerSchema              *bool   `json:"oneTopicPerSchema"`
+	PublicationNameOverride        *string `json:"publicationNameOverride"`
+	ReplicationSlotOverride        *string `json:"replicationSlotOverride"`
+	FlushIntervalSeconds           *int64  `json:"flushIntervalSeconds"`
+	BufferRows                     *int64  `json:"bufferRows"`
+	FlushSizeKB                    *int64  `json:"flushSizeKb"`
 }
 
 type BasePipeline struct {

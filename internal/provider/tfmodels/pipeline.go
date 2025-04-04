@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -65,6 +66,18 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		return artieclient.BasePipeline{}, diags
 	}
 
+	advancedSettings := artieclient.AdvancedSettings{
+		DropDeletedColumns:             p.DropDeletedColumns.ValueBoolPointer(),
+		EnableSoftDelete:               p.SoftDeleteRows.ValueBoolPointer(),
+		IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
+		IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
+	}
+	if flushConfig != nil {
+		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
+		advancedSettings.BufferRows = flushConfig.BufferRows.ValueInt64Pointer()
+		advancedSettings.FlushSizeKB = flushConfig.FlushSizeKB.ValueInt64Pointer()
+	}
+
 	return artieclient.BasePipeline{
 		Name:                     p.Name.ValueString(),
 		SourceReaderUUID:         sourceReaderUUID,
@@ -73,13 +86,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		DestinationConfig:        p.DestinationConfig.ToAPIModel(),
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		DataPlaneName:            p.DataPlaneName.ValueString(),
-		AdvancedSettings: &artieclient.AdvancedSettings{
-			FlushConfig:                    flushConfig.ToAPIModel(),
-			DropDeletedColumns:             p.DropDeletedColumns.ValueBoolPointer(),
-			EnableSoftDelete:               p.SoftDeleteRows.ValueBoolPointer(),
-			IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
-			IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
-		},
+		AdvancedSettings:         &advancedSettings,
 	}, diags
 }
 
@@ -119,14 +126,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeArtieUpdatedAtColumn types.Bool
 	var includeDatabaseUpdatedAtColumn types.Bool
 	if apiModel.AdvancedSettings != nil {
-		if apiModel.AdvancedSettings.FlushConfig != nil {
-			flushConfigObj, flushConfigDiags := DeploymentFlushConfigFromAPIModel(ctx, *apiModel.AdvancedSettings.FlushConfig)
-			diags.Append(flushConfigDiags...)
-			if diags.HasError() {
-				return Pipeline{}, diags
-			}
-			flushConfig = flushConfigObj
-		}
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
 		}
@@ -138,6 +137,25 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn != nil {
 			includeDatabaseUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn)
+		}
+
+		flushConfigMap := map[string]attr.Value{}
+		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
+			flushConfigMap["flush_interval_seconds"] = types.Int64Value(*apiModel.AdvancedSettings.FlushIntervalSeconds)
+		}
+		if apiModel.AdvancedSettings.BufferRows != nil {
+			flushConfigMap["buffer_rows"] = types.Int64Value(*apiModel.AdvancedSettings.BufferRows)
+		}
+		if apiModel.AdvancedSettings.FlushSizeKB != nil {
+			flushConfigMap["flush_size_kb"] = types.Int64Value(*apiModel.AdvancedSettings.FlushSizeKB)
+		}
+		if len(flushConfigMap) > 0 {
+			var flushConfigDiags diag.Diagnostics
+			flushConfig, flushConfigDiags = types.ObjectValue(flushAttrTypes, flushConfigMap)
+			diags.Append(flushConfigDiags...)
+			if diags.HasError() {
+				return Pipeline{}, diags
+			}
 		}
 	}
 
@@ -153,10 +171,10 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
 
 		// Advanced settings:
-		FlushConfig:                    flushConfig,
 		DropDeletedColumns:             dropDeletedColumns,
 		SoftDeleteRows:                 softDeleteRows,
 		IncludeArtieUpdatedAtColumn:    includeArtieUpdatedAtColumn,
 		IncludeDatabaseUpdatedAtColumn: includeDatabaseUpdatedAtColumn,
+		FlushConfig:                    flushConfig,
 	}, diags
 }
