@@ -123,3 +123,7 @@ func (c Client) SSHTunnels() SSHTunnelClient {
 func (c Client) SourceReaders() SourceReaderClient {
 	return SourceReaderClient{client: c}
 }
+
+func (c Client) Pipelines() PipelineClient {
+	return PipelineClient{client: c}
+}

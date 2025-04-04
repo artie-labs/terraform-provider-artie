@@ -210,7 +210,7 @@ func (r *PipelineResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, dia
 	return planData, diagnostics.HasError()
 }
 
-func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.Deployment) {
+func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.Pipeline) {
 	// Translate API response type into Terraform model and save it into state
 	pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, apiModel)
 	diagnostics.Append(diags...)
@@ -255,17 +255,17 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	// Validate config before creating the pipeline
-	if err := r.client.Deployments().ValidateSource(ctx, pipeline); err != nil {
+	if err := r.client.Pipelines().ValidateSource(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
 		return
 	}
 
-	if err := r.client.Deployments().ValidateDestination(ctx, pipeline); err != nil {
+	if err := r.client.Pipelines().ValidateDestination(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
 		return
 	}
 
-	createdPipeline, err := r.client.Deployments().Create(ctx, pipeline)
+	createdPipeline, err := r.client.Pipelines().Create(ctx, pipeline)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
 		return
@@ -280,7 +280,7 @@ func (r *PipelineResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	pipeline, err := r.client.Deployments().Get(ctx, pipelineUUID)
+	pipeline, err := r.client.Pipelines().Get(ctx, pipelineUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Pipeline", err.Error())
 		return
@@ -302,11 +302,11 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	// Validate source & destination config before updating the pipeline
-	if err := r.client.Deployments().ValidateSource(ctx, basePipeline); err != nil {
+	if err := r.client.Pipelines().ValidateSource(ctx, basePipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Pipeline", err.Error())
 		return
 	}
-	if err := r.client.Deployments().ValidateDestination(ctx, basePipeline); err != nil {
+	if err := r.client.Pipelines().ValidateDestination(ctx, basePipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to Update Pipeline", err.Error())
 		return
 	}
@@ -317,7 +317,7 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	updatedPipeline, err := r.client.Deployments().Update(ctx, apiModel)
+	updatedPipeline, err := r.client.Pipelines().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Pipeline", err.Error())
 		return
@@ -332,7 +332,7 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	if err := r.client.Deployments().Delete(ctx, pipelineUUID); err != nil {
+	if err := r.client.Pipelines().Delete(ctx, pipelineUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Pipeline", err.Error())
 	}
 }

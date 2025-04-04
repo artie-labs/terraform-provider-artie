@@ -28,7 +28,7 @@ type Pipeline struct {
 	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
 }
 
-func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeployment, diag.Diagnostics) {
+func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
 	tables := map[string]Table{}
 	diags := p.Tables.ElementsAs(ctx, &tables, false)
 	apiTables := []artieclient.Table{}
@@ -36,7 +36,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploymen
 		apiTable, tableDiags := table.ToAPIModel(ctx)
 		diags.Append(tableDiags...)
 		if diags.HasError() {
-			return artieclient.BaseDeployment{}, diags
+			return artieclient.BasePipeline{}, diags
 		}
 		apiTables = append(apiTables, apiTable)
 	}
@@ -44,28 +44,28 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploymen
 	sourceReaderUUID, sourceReaderDiags := parseOptionalUUID(p.SourceReaderUUID)
 	diags.Append(sourceReaderDiags...)
 	if diags.HasError() {
-		return artieclient.BaseDeployment{}, diags
+		return artieclient.BasePipeline{}, diags
 	}
 
 	destinationUUID, destDiags := parseOptionalUUID(p.DestinationUUID)
 	diags.Append(destDiags...)
 	if diags.HasError() {
-		return artieclient.BaseDeployment{}, diags
+		return artieclient.BasePipeline{}, diags
 	}
 
 	snowflakeEcoScheduleUUID, snowflakeDiags := parseOptionalUUID(p.SnowflakeEcoScheduleUUID)
 	diags.Append(snowflakeDiags...)
 	if diags.HasError() {
-		return artieclient.BaseDeployment{}, diags
+		return artieclient.BasePipeline{}, diags
 	}
 
 	flushConfig, flushConfigDiags := buildFlushConfig(ctx, p.FlushConfig)
 	diags.Append(flushConfigDiags...)
 	if diags.HasError() {
-		return artieclient.BaseDeployment{}, diags
+		return artieclient.BasePipeline{}, diags
 	}
 
-	return artieclient.BaseDeployment{
+	return artieclient.BasePipeline{
 		Name:                     p.Name.ValueString(),
 		SourceReaderUUID:         sourceReaderUUID,
 		Tables:                   apiTables,
@@ -73,36 +73,37 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BaseDeploymen
 		DestinationConfig:        p.DestinationConfig.ToAPIModel(),
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		DataPlaneName:            p.DataPlaneName.ValueString(),
-		// Advanced settings:
-		FlushConfig:                    flushConfig.ToAPIModel(),
-		DropDeletedColumns:             p.DropDeletedColumns.ValueBoolPointer(),
-		EnableSoftDelete:               p.SoftDeleteRows.ValueBoolPointer(),
-		IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
-		IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
+		AdvancedSettings: &artieclient.AdvancedSettings{
+			FlushConfig:                    flushConfig.ToAPIModel(),
+			DropDeletedColumns:             p.DropDeletedColumns.ValueBoolPointer(),
+			EnableSoftDelete:               p.SoftDeleteRows.ValueBoolPointer(),
+			IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
+			IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
+		},
 	}, diags
 }
 
-func (p Pipeline) ToAPIModel(ctx context.Context) (artieclient.Deployment, diag.Diagnostics) {
+func (p Pipeline) ToAPIModel(ctx context.Context) (artieclient.Pipeline, diag.Diagnostics) {
 	apiBaseModel, diags := p.ToAPIBaseModel(ctx)
 	if diags.HasError() {
-		return artieclient.Deployment{}, diags
+		return artieclient.Pipeline{}, diags
 	}
 
 	uuid, uuidDiags := parseUUID(p.UUID)
 	diags.Append(uuidDiags...)
 	if diags.HasError() {
-		return artieclient.Deployment{}, diags
+		return artieclient.Pipeline{}, diags
 	}
 
-	return artieclient.Deployment{
-		UUID:           uuid,
-		Status:         p.Status.ValueString(),
-		BaseDeployment: apiBaseModel,
+	return artieclient.Pipeline{
+		UUID:         uuid,
+		Status:       p.Status.ValueString(),
+		BasePipeline: apiBaseModel,
 	}, diags
 }
 
-func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) (Pipeline, diag.Diagnostics) {
-	tables, diags := TablesFromAPIModel(ctx, apiModel.Source.Tables)
+func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (Pipeline, diag.Diagnostics) {
+	tables, diags := TablesFromAPIModel(ctx, apiModel.Tables)
 	if diags.HasError() {
 		return Pipeline{}, diags
 	}
@@ -113,13 +114,31 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) 
 	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 
 	var flushConfig types.Object
-	if apiModel.FlushConfig != nil {
-		flushConfigObj, flushConfigDiags := DeploymentFlushConfigFromAPIModel(ctx, *apiModel.FlushConfig)
-		diags.Append(flushConfigDiags...)
-		if diags.HasError() {
-			return Pipeline{}, diags
+	var dropDeletedColumns types.Bool
+	var softDeleteRows types.Bool
+	var includeArtieUpdatedAtColumn types.Bool
+	var includeDatabaseUpdatedAtColumn types.Bool
+	if apiModel.AdvancedSettings != nil {
+		if apiModel.AdvancedSettings.FlushConfig != nil {
+			flushConfigObj, flushConfigDiags := DeploymentFlushConfigFromAPIModel(ctx, *apiModel.AdvancedSettings.FlushConfig)
+			diags.Append(flushConfigDiags...)
+			if diags.HasError() {
+				return Pipeline{}, diags
+			}
+			flushConfig = flushConfigObj
 		}
-		flushConfig = flushConfigObj
+		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
+			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
+		}
+		if apiModel.AdvancedSettings.EnableSoftDelete != nil {
+			softDeleteRows = types.BoolValue(*apiModel.AdvancedSettings.EnableSoftDelete)
+		}
+		if apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn != nil {
+			includeArtieUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn)
+		}
+		if apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn != nil {
+			includeDatabaseUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn)
+		}
 	}
 
 	return Pipeline{
@@ -135,9 +154,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Deployment) 
 
 		// Advanced settings:
 		FlushConfig:                    flushConfig,
-		DropDeletedColumns:             types.BoolPointerValue(apiModel.DropDeletedColumns),
-		SoftDeleteRows:                 types.BoolPointerValue(apiModel.EnableSoftDelete),
-		IncludeArtieUpdatedAtColumn:    types.BoolPointerValue(apiModel.IncludeArtieUpdatedAtColumn),
-		IncludeDatabaseUpdatedAtColumn: types.BoolPointerValue(apiModel.IncludeDatabaseUpdatedAtColumn),
+		DropDeletedColumns:             dropDeletedColumns,
+		SoftDeleteRows:                 softDeleteRows,
+		IncludeArtieUpdatedAtColumn:    includeArtieUpdatedAtColumn,
+		IncludeDatabaseUpdatedAtColumn: includeDatabaseUpdatedAtColumn,
 	}, diags
 }
