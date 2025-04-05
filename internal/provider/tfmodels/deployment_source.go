@@ -32,7 +32,7 @@ func (s Source) ToAPIModel(ctx context.Context) (artieclient.Source, diag.Diagno
 
 	switch sourceType {
 	case artieclient.DynamoDB:
-		sourceConfig = s.DynamoDBConfig.ToAPIModel()
+		sourceConfig = s.DynamoDBConfig.ToAPISourceConfigModel()
 	case artieclient.MongoDB:
 		sourceConfig = s.MongoDBConfig.ToAPIModel()
 	case artieclient.MySQL:
@@ -88,7 +88,7 @@ func SourceFromAPIModel(ctx context.Context, apiModel artieclient.Source) (Sourc
 			diags.AddError("DynamoDB config is missing", "")
 			return Source{}, diags
 		}
-		source.DynamoDBConfig = DynamoDBConfigFromAPIModel(*apiModel.Config.DynamoDB)
+		source.DynamoDBConfig = DynamoDBConfigFromAPISourceConfigModel(*apiModel.Config.DynamoDB)
 	case artieclient.MongoDB:
 		source.MongoDBConfig = MongoDBConfigFromAPIModel(apiModel.Config)
 	case artieclient.MySQL:
@@ -116,7 +116,7 @@ type DynamoDBConfig struct {
 	BackfillFolder     types.String `tfsdk:"backfill_folder"`
 }
 
-func (d DynamoDBConfig) ToAPIModel() artieclient.SourceConfig {
+func (d DynamoDBConfig) ToAPISourceConfigModel() artieclient.SourceConfig {
 	return artieclient.SourceConfig{
 		DynamoDB: &artieclient.DynamoDBConfig{
 			StreamsArn:         d.StreamArn.ValueString(),
@@ -131,7 +131,20 @@ func (d DynamoDBConfig) ToAPIModel() artieclient.SourceConfig {
 	}
 }
 
-func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.DynamoDBConfig) *DynamoDBConfig {
+func (d DynamoDBConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		DynamoStreamArn:    d.StreamArn.ValueString(),
+		AWSAccessKeyID:     d.AwsAccessKeyID.ValueString(),
+		AWSSecretAccessKey: d.AwsSecretAccessKey.ValueString(),
+		DynamoSnapshotConfig: artieclient.DynamoDBSnapshotConfig{
+			Enabled:        d.Backfill.ValueBool(),
+			Bucket:         d.BackfillBucket.ValueString(),
+			OptionalFolder: d.BackfillFolder.ValueString(),
+		},
+	}
+}
+
+func DynamoDBConfigFromAPISourceConfigModel(apiDynamoCfg artieclient.DynamoDBConfig) *DynamoDBConfig {
 	return &DynamoDBConfig{
 		StreamArn:          types.StringValue(apiDynamoCfg.StreamsArn),
 		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AwsAccessKeyID),
@@ -139,6 +152,17 @@ func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.DynamoDBConfig) *Dynamo
 		Backfill:           types.BoolValue(apiDynamoCfg.SnapshotConfig.Enabled),
 		BackfillBucket:     types.StringValue(apiDynamoCfg.SnapshotConfig.Bucket),
 		BackfillFolder:     types.StringValue(apiDynamoCfg.SnapshotConfig.OptionalFolder),
+	}
+}
+
+func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.ConnectorConfig) *DynamoDBConfig {
+	return &DynamoDBConfig{
+		StreamArn:          types.StringValue(apiDynamoCfg.DynamoStreamArn),
+		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AWSAccessKeyID),
+		AwsSecretAccessKey: types.StringValue(apiDynamoCfg.AWSSecretAccessKey),
+		Backfill:           types.BoolValue(apiDynamoCfg.DynamoSnapshotConfig.Enabled),
+		BackfillBucket:     types.StringValue(apiDynamoCfg.DynamoSnapshotConfig.Bucket),
+		BackfillFolder:     types.StringValue(apiDynamoCfg.DynamoSnapshotConfig.OptionalFolder),
 	}
 }
 

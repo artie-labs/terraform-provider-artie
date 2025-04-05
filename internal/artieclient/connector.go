@@ -12,6 +12,7 @@ import (
 type BaseConnector struct {
 	Type          ConnectorType   `json:"type"`
 	Label         string          `json:"label"`
+	DataPlaneName string          `json:"dataPlaneName"`
 	SSHTunnelUUID *uuid.UUID      `json:"sshTunnelUUID"`
 	Config        ConnectorConfig `json:"sharedConfig"`
 }
@@ -21,20 +22,24 @@ type Connector struct {
 }
 
 type ConnectorConfig struct {
-	Host                string `json:"host"`
-	Port                int32  `json:"port"`
-	Endpoint            string `json:"endpoint"`
-	Username            string `json:"username"`
-	Password            string `json:"password"`
-	GCPProjectID        string `json:"projectID"`
-	GCPLocation         string `json:"location"`
-	GCPCredentialsData  string `json:"credentialsData"`
-	SnowflakeAccountURL string `json:"accountURL"`
-	SnowflakeVirtualDWH string `json:"virtualDWH"`
-	SnowflakePrivateKey string `json:"privateKey"`
-	AWSAccessKeyID      string `json:"awsAccessKeyID"`
-	AWSSecretAccessKey  string `json:"awsSecretAccessKey"`
-	AWSRegion           string `json:"awsRegion"`
+	Host                 string                 `json:"host"`
+	SnapshotHost         string                 `json:"snapshotHost"`
+	Port                 int32                  `json:"port"`
+	Endpoint             string                 `json:"endpoint"`
+	User                 string                 `json:"user"`
+	Username             string                 `json:"username"`
+	Password             string                 `json:"password"`
+	GCPProjectID         string                 `json:"projectID"`
+	GCPLocation          string                 `json:"location"`
+	GCPCredentialsData   string                 `json:"credentialsData"`
+	SnowflakeAccountURL  string                 `json:"accountURL"`
+	SnowflakeVirtualDWH  string                 `json:"virtualDWH"`
+	SnowflakePrivateKey  string                 `json:"privateKey"`
+	AWSAccessKeyID       string                 `json:"awsAccessKeyID"`
+	AWSSecretAccessKey   string                 `json:"awsSecretAccessKey"`
+	AWSRegion            string                 `json:"awsRegion"`
+	DynamoStreamArn      string                 `json:"streamsArn"`
+	DynamoSnapshotConfig DynamoDBSnapshotConfig `json:"snapshotConfig"`
 }
 
 type ConnectorClient struct {
@@ -58,6 +63,7 @@ func (c ConnectorClient) Create(ctx context.Context, connector BaseConnector) (C
 		"type":          connector.Type,
 		"label":         connector.Label,
 		"sharedConfig":  connector.Config,
+		"dataPlaneName": connector.DataPlaneName,
 		"sshTunnelUUID": connector.SSHTunnelUUID,
 	}
 	return makeRequest[Connector](ctx, c.client, http.MethodPost, c.basePath(), body)
@@ -81,6 +87,7 @@ func (c ConnectorClient) TestConnection(ctx context.Context, connector BaseConne
 	body := map[string]any{
 		"type":          connector.Type,
 		"sharedConfig":  connector.Config,
+		"dataPlaneName": connector.DataPlaneName,
 		"sshTunnelUUID": connector.SSHTunnelUUID,
 	}
 
