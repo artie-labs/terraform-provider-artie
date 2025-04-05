@@ -198,11 +198,7 @@ func (r *ConnectorResource) Configure(ctx context.Context, req resource.Configur
 
 	providerData, ok := req.ProviderData.(ArtieProviderData)
 	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected ArtieProviderData, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
+		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected ArtieProviderData, got: %T. Please report this issue to the provider developers.", req.ProviderData))
 		return
 	}
 
