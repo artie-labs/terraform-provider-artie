@@ -39,6 +39,21 @@ type Pipeline struct {
 	Status string    `json:"status"`
 }
 
+type pipelineWithAPITables struct {
+	Pipeline
+	Tables []APITable `json:"tables"`
+}
+
+func (p pipelineWithAPITables) unnestAdvTableSettings() Pipeline {
+	tables := []Table{}
+	for _, table := range p.Tables {
+		tables = append(tables, table.unnestTableAdvSettings())
+	}
+
+	p.Pipeline.Tables = tables
+	return p.Pipeline
+}
+
 type PipelineClient struct {
 	client Client
 }
@@ -53,12 +68,12 @@ func (pc PipelineClient) Get(ctx context.Context, pipelineUUID string) (Pipeline
 		return Pipeline{}, err
 	}
 
-	pipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodGet, path, nil)
+	pipeline, err := makeRequest[pipelineWithAPITables](ctx, pc.client, http.MethodGet, path, nil)
 	if err != nil {
 		return Pipeline{}, err
 	}
 
-	return pipeline, nil
+	return pipeline.unnestAdvTableSettings(), nil
 }
 
 func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pipeline, error) {
@@ -66,12 +81,12 @@ func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pip
 		"pipeline":       pipeline,
 		"deployPipeline": true,
 	}
-	createdPipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodPost, pc.basePath(), body)
+	createdPipeline, err := makeRequest[pipelineWithAPITables](ctx, pc.client, http.MethodPost, pc.basePath(), body)
 	if err != nil {
 		return Pipeline{}, err
 	}
 
-	return createdPipeline, nil
+	return createdPipeline.unnestAdvTableSettings(), nil
 }
 
 func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipeline, error) {
@@ -84,12 +99,12 @@ func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipelin
 		"pipeline":       pipeline,
 		"deployPipeline": true,
 	}
-	updatedPipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodPost, path, body)
+	updatedPipeline, err := makeRequest[pipelineWithAPITables](ctx, pc.client, http.MethodPost, path, body)
 	if err != nil {
 		return Pipeline{}, err
 	}
 
-	return updatedPipeline, nil
+	return updatedPipeline.unnestAdvTableSettings(), nil
 }
 
 func (pc PipelineClient) Delete(ctx context.Context, pipelineUUID string) error {
@@ -108,10 +123,15 @@ func (pc PipelineClient) ValidateSource(ctx context.Context, pipeline BasePipeli
 		return err
 	}
 
+	apiTables := []APITable{}
+	for _, table := range pipeline.Tables {
+		apiTables = append(apiTables, table.BuildAPITable())
+	}
+
 	body := map[string]any{
 		"sourceReaderUUID": pipeline.SourceReaderUUID,
 		"validateTables":   true,
-		"tables":           pipeline.Tables,
+		"tables":           apiTables,
 	}
 
 	response, err := makeRequest[validationResponse](ctx, pc.client, http.MethodPost, path, body)
