@@ -32,6 +32,10 @@ type Pipeline struct {
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
 	tables := map[string]Table{}
 	diags := p.Tables.ElementsAs(ctx, &tables, false)
+	if diags.HasError() {
+		return artieclient.BasePipeline{}, diags
+	}
+
 	apiTables := []artieclient.Table{}
 	for _, table := range tables {
 		apiTable, tableDiags := table.ToAPIModel(ctx)
