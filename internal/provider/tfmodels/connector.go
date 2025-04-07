@@ -127,7 +127,7 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert API model to Connector", fmt.Sprintf("invalid destination type: %s", apiModel.Type),
+			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
 		)}
 	}
 
@@ -158,14 +158,14 @@ func BigQuerySharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Big
 
 type MongoDBSharedConfig struct {
 	Host     types.String `tfsdk:"host"`
-	User     types.String `tfsdk:"username"`
+	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }
 
 func (m MongoDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	return artieclient.ConnectorConfig{
 		Host:     m.Host.ValueString(),
-		User:     m.User.ValueString(),
+		User:     m.Username.ValueString(),
 		Password: m.Password.ValueString(),
 	}
 }
@@ -173,7 +173,7 @@ func (m MongoDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 func MongoDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MongoDBSharedConfig {
 	return &MongoDBSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
-		User:     types.StringValue(apiModel.User),
+		Username: types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
 	}
 }
@@ -182,7 +182,7 @@ type MySQLSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
 	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"username"`
+	Username     types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
 }
 
@@ -191,7 +191,7 @@ func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 		Host:         m.Host.ValueString(),
 		SnapshotHost: m.SnapshotHost.ValueString(),
 		Port:         m.Port.ValueInt32(),
-		User:         m.User.ValueString(),
+		User:         m.Username.ValueString(),
 		Password:     m.Password.ValueString(),
 	}
 }
@@ -200,7 +200,7 @@ func MySQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MySQLS
 	return &MySQLSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
+		Username: types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
 	}
 }
@@ -237,7 +237,7 @@ type OracleSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
 	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"username"`
+	Username     types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
 }
 
@@ -246,7 +246,7 @@ func (o OracleSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 		Host:         o.Host.ValueString(),
 		SnapshotHost: o.SnapshotHost.ValueString(),
 		Port:         o.Port.ValueInt32(),
-		User:         o.User.ValueString(),
+		User:         o.Username.ValueString(),
 		Password:     o.Password.ValueString(),
 	}
 }
@@ -255,7 +255,7 @@ func OracleSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Oracl
 	return &OracleSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
+		Username: types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
 	}
 }
@@ -264,7 +264,7 @@ type PostgresSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
 	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"username"`
+	Username     types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
 }
 
@@ -273,7 +273,7 @@ func (p PostgresSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 		Host:         p.Host.ValueString(),
 		SnapshotHost: p.SnapshotHost.ValueString(),
 		Port:         p.Port.ValueInt32(),
-		User:         p.User.ValueString(),
+		User:         p.Username.ValueString(),
 		Password:     p.Password.ValueString(),
 	}
 }
@@ -282,7 +282,7 @@ func PostgresSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Pos
 	return &PostgresSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Port:     types.Int32Value(apiModel.Port),
-		User:     types.StringValue(apiModel.User),
+		Username: types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
 	}
 }
