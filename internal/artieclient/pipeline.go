@@ -78,8 +78,8 @@ func (pc PipelineClient) Get(ctx context.Context, pipelineUUID string) (Pipeline
 
 func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pipeline, error) {
 	body := map[string]any{
-		"pipeline":       pipeline,
-		"deployPipeline": true,
+		"pipeline": pipeline,
+		"deploy":   true,
 	}
 	createdPipeline, err := makeRequest[apiPipeline](ctx, pc.client, http.MethodPost, pc.basePath(), body)
 	if err != nil {
@@ -96,8 +96,8 @@ func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipelin
 	}
 
 	body := map[string]any{
-		"pipeline":       pipeline,
-		"deployPipeline": true,
+		"pipeline": pipeline,
+		"deploy":   true,
 	}
 	updatedPipeline, err := makeRequest[apiPipeline](ctx, pc.client, http.MethodPost, path, body)
 	if err != nil {
