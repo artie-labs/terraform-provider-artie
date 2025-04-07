@@ -79,10 +79,10 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 					},
 				},
 			},
-			"flush_config": schema.SingleNestedAttribute{
+			"flush_rules": schema.SingleNestedAttribute{
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "This contains configuration that pertains to how often Artie should flush data to the destination. If not specified, Artie will provide default values.",
+				MarkdownDescription: "This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data).",
 				PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
 				Attributes: map[string]schema.Attribute{
 					"flush_interval_seconds": schema.Int64Attribute{

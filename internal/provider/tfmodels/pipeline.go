@@ -22,7 +22,7 @@ type Pipeline struct {
 	Tables                   types.Map                    `tfsdk:"tables"`
 
 	// Advanced settings
-	FlushConfig                    types.Object `tfsdk:"flush_config"`
+	FlushConfig                    types.Object `tfsdk:"flush_rules"`
 	DropDeletedColumns             types.Bool   `tfsdk:"drop_deleted_columns"`
 	SoftDeleteRows                 types.Bool   `tfsdk:"soft_delete_rows"`
 	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
