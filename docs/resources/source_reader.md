@@ -3,12 +3,12 @@
 page_title: "artie_source_reader Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
-  Artie Source Reader resource. This represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Deployments, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.
+  Artie Source Reader resource. This represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Pipelines, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.
 ---
 
 # artie_source_reader (Resource)
 
-Artie Source Reader resource. This represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Deployments, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.
+Artie Source Reader resource. This represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Pipelines, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.
 
 ## Example Usage
 
