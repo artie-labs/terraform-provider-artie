@@ -3,12 +3,12 @@
 page_title: "artie_connector Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
-  Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Deployments and Source Readers.
+  Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.
 ---
 
 # artie_connector (Resource)
 
-Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Deployments and Source Readers.
+Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.
 
 ## Example Usage
 
@@ -90,7 +90,7 @@ Required:
 
 - `host` (String) The connection string for the MongoDB server. This can be either SRV or standard format.
 - `password` (String, Sensitive) The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
-- `user` (String) The username of the service account we will use to connect to the MongoDB database.
+- `username` (String) The username of the service account we will use to connect to the MongoDB database.
 
 
 <a id="nestedatt--mssql_config"></a>
@@ -101,7 +101,7 @@ Required:
 - `host` (String) The hostname of the Microsoft SQL Server. This must point to the primary host, not a read replica.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Microsoft SQL Server is 1433.
-- `user` (String) The username of the service account we will use to connect to the database.
+- `username` (String) The username of the service account we will use to connect to the database.
 
 Optional:
 
@@ -116,7 +116,7 @@ Required:
 - `host` (String) The hostname of the MySQL database. This must point to the primary host, not a read replica.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for MySQL is 3306.
-- `user` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
+- `username` (String) The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs.
 
 Optional:
 
@@ -132,7 +132,7 @@ Required:
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Oracle is 1521.
 - `service` (String) The name of the service in the Oracle server.
-- `user` (String) The username of the service account we will use to connect to the Oracle database.
+- `username` (String) The username of the service account we will use to connect to the Oracle database.
 
 Optional:
 
@@ -148,7 +148,7 @@ Required:
 - `host` (String) The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for PostgreSQL is 5432.
-- `user` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.
+- `username` (String) The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot.
 
 Optional:
 

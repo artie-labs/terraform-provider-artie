@@ -158,7 +158,7 @@ func BigQuerySharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Big
 
 type MongoDBSharedConfig struct {
 	Host     types.String `tfsdk:"host"`
-	User     types.String `tfsdk:"user"`
+	User     types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }
 
@@ -182,7 +182,7 @@ type MySQLSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
 	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"user"`
+	User         types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
 }
 
@@ -237,7 +237,7 @@ type OracleSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
 	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"user"`
+	User         types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
 }
 
@@ -264,7 +264,7 @@ type PostgresSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
 	Port         types.Int32  `tfsdk:"port"`
-	User         types.String `tfsdk:"user"`
+	User         types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
 }
 

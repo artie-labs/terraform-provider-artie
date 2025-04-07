@@ -41,7 +41,7 @@ func (r *ConnectorResource) Metadata(ctx context.Context, req resource.MetadataR
 
 func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Deployments and Source Readers.",
+		MarkdownDescription: "Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect."},
@@ -83,7 +83,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				MarkdownDescription: "This should be filled out if the connector type is `mongodb`.",
 				Attributes: map[string]schema.Attribute{
 					"host":     schema.StringAttribute{Required: true, MarkdownDescription: "The connection string for the MongoDB server. This can be either SRV or standard format."},
-					"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MongoDB database."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MongoDB database."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
@@ -100,7 +100,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 							int32validator.Between(1024, math.MaxUint16),
 						},
 					},
-					"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
@@ -117,7 +117,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 							int32validator.Between(1024, math.MaxUint16),
 						},
 					},
-					"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the database."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the database."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
@@ -134,7 +134,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 							int32validator.Between(1024, math.MaxUint16),
 						},
 					},
-					"user":      schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the Oracle database."},
+					"username":  schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the Oracle database."},
 					"password":  schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"service":   schema.StringAttribute{Required: true, MarkdownDescription: "The name of the service in the Oracle server."},
 					"container": schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted."},
@@ -153,7 +153,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 							int32validator.Between(1024, math.MaxUint16),
 						},
 					},
-					"user":     schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
