@@ -47,7 +47,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"uuid":                        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                        schema.StringAttribute{Required: true, MarkdownDescription: "The human-readable name of the pipeline. This is used only as a label and can contain any characters."},
 			"status":                      schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"source_reader_uuid":          schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_source_reader` resource."},
+			"source_reader_uuid":          schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_source_reader` resource."},
 			"destination_connector_uuid":  schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_connector` resource that represents the destination database."},
 			"snowflake_eco_schedule_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"tables": schema.MapNestedAttribute{
