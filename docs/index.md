@@ -3,12 +3,12 @@
 page_title: "artie Provider"
 subcategory: ""
 description: |-
-  The Artie provider is used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.
+  The Artie Terraform provider can be used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.
 ---
 
 # artie Provider
 
-The Artie provider is used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.
+The Artie Terraform provider can be used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.
 
 ## Example Usage
 
