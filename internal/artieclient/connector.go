@@ -47,7 +47,7 @@ type ConnectorClient struct {
 }
 
 func (ConnectorClient) basePath() string {
-	return "destinations"
+	return "connectors"
 }
 
 func (c ConnectorClient) Get(ctx context.Context, connectorUUID string) (Connector, error) {
