@@ -5,7 +5,11 @@ subcategory: ""
 description: |-
   The Artie Terraform provider can be used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.
   To set up a new data pipeline, you'll need to create a few resources:
-  Source Connector: this holds connection information for the source database.Destination Connector: this holds connection information for the destination database or data warehouse.Source Reader: this represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Pipelines, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.Pipeline: this represents a data pipeline that syncs data from a single source (e.g., PostgreSQL) to a single destination (e.g., Snowflake).
+  
+  Source Connector: this holds connection information for the source database.
+  Destination Connector: this holds connection information for the destination database or data warehouse.
+  Source Reader: this represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Pipelines, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.
+  Pipeline: this represents a data pipeline that syncs data from a single source (e.g., PostgreSQL) to a single destination (e.g., Snowflake).
 ---
 
 # artie Provider
@@ -13,9 +17,13 @@ description: |-
 The Artie Terraform provider can be used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.
 
 To set up a new data pipeline, you'll need to create a few resources:
+
 - Source Connector: this holds connection information for the source database.
+
 - Destination Connector: this holds connection information for the destination database or data warehouse.
+
 - Source Reader: this represents a process that reads data from a source connector and inserts it info Kafka. A Source Reader can be used by multiple Pipelines, e.g. to read from a single PostgreSQL replication slot and copy the data to multiple destinations.
+
 - Pipeline: this represents a data pipeline that syncs data from a single source (e.g., PostgreSQL) to a single destination (e.g., Snowflake).
 
 ## Example Usage
