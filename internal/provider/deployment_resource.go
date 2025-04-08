@@ -46,7 +46,8 @@ func (r *DeploymentResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).",
+		DeprecationMessage:  "Use `artie_pipeline` instead of `artie_deployment`.",
+		MarkdownDescription: "This resource is deprecated and will be removed in the next major version. Please use `artie_pipeline` instead.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":                        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                        schema.StringAttribute{Required: true, MarkdownDescription: "The human-readable name of the deployment. This is used only as a label and can contain any characters."},

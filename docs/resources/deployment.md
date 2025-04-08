@@ -3,12 +3,12 @@
 page_title: "artie_deployment Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
-  Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).
+  This resource is deprecated and will be removed in the next major version. Please use artie_pipeline instead.
 ---
 
 # artie_deployment (Resource)
 
-Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).
+This resource is deprecated and will be removed in the next major version. Please use `artie_pipeline` instead.
 
 ## Example Usage
 

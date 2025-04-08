@@ -40,7 +40,8 @@ func (r *DestinationResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie Destination resource. This represents a database or data warehouse that you want to replicate data to. Destinations are used by Deployments.",
+		DeprecationMessage:  "Use `artie_connector` instead of `artie_destination`.",
+		MarkdownDescription: "This resource is deprecated and will be removed in the next major version. Please use `artie_connector` instead.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect to your destination database. This can only be used if the destination is Redshift."},
