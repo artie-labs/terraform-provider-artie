@@ -53,14 +53,14 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New deployment' in our UI.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
-- `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_updated_at.
-- `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_db_updated_at.
-- `soft_delete_rows` (Boolean) If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted.
+- `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column called `__artie_updated_at` to the destination table to indicate when the row was last updated by Artie.
+- `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column called `__artie_db_updated_at` to the destination table to indicate when the row was last updated by the source database.
+- `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 
 ### Read-Only
 
-- `snowflake_eco_schedule_uuid` (String)
-- `status` (String)
+- `snowflake_eco_schedule_uuid` (String) If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. This can currently only be configured via our UI.
+- `status` (String) The status of the pipeline. This is set automatically when you update a pipeline via Terraform. Pipelines can currently only be paused via our UI.
 - `uuid` (String)
 
 <a id="nestedatt--destination_config"></a>
