@@ -45,6 +45,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `destination_config` (Attributes) This contains configuration that pertains to the destination database but is specific to this pipeline. The basic connection settings for the destination, which can be shared by multiple pipelines, are stored in the corresponding `artie_connector` resource. (see [below for nested schema](#nestedatt--destination_config))
 - `destination_connector_uuid` (String) This must point to an `artie_connector` resource that represents the destination database.
 - `name` (String) The human-readable name of the pipeline. This is used only as a label and can contain any characters.
+- `source_reader_uuid` (String) This must point to an `artie_source_reader` resource.
 - `tables` (Attributes Map) A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`. (see [below for nested schema](#nestedatt--tables))
 
 ### Optional
@@ -55,7 +56,6 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_updated_at.
 - `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column to your dataset called __artie_db_updated_at.
 - `soft_delete_rows` (Boolean) If set to true, a new boolean column called __artie_delete will be added to your destination to indicate if the row has been deleted.
-- `source_reader_uuid` (String) This must point to an `artie_source_reader` resource.
 
 ### Read-Only
 
