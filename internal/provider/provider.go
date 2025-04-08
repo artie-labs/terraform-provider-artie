@@ -47,6 +47,7 @@ func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataReque
 
 func (p *ArtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "The Artie provider is used to manage your data pipelines in Artie. You must already have an Artie account to use this provider. If you don't have one, you can request access at https://www.artie.com/.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				MarkdownDescription: "Artie API endpoint. This defaults to https://api.artie.com and should not need to be changed except when developing the provider.",
