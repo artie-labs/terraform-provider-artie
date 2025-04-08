@@ -34,6 +34,8 @@ var AllDestinationTypes = []string{
 	string(Snowflake),
 }
 
+var AllConnectorTypes = append(AllSourceTypes, AllDestinationTypes...)
+
 func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 	switch ConnectorType(connType) {
 	case BigQuery:
