@@ -3,12 +3,12 @@
 page_title: "artie_destination Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
-  Artie Destination resource. This represents a database or data warehouse that you want to replicate data to. Destinations are used by Deployments.
+  This resource is deprecated and will be removed in the next major version. Please use artie_connector instead.
 ---
 
 # artie_destination (Resource)
 
-Artie Destination resource. This represents a database or data warehouse that you want to replicate data to. Destinations are used by Deployments.
+This resource is deprecated and will be removed in the next major version. Please use `artie_connector` instead.
 
 ## Example Usage
 
