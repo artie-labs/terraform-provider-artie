@@ -59,7 +59,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 ### Read-Only
 
-- `snowflake_eco_schedule_uuid` (String) If the destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. This can currently only be configured in our UI.
+- `snowflake_eco_schedule_uuid` (String) If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. This can currently only be configured via our UI.
 - `status` (String) The status of the pipeline. This is set automatically when you update a pipeline via Terraform. Pipelines can currently only be paused via our UI.
 - `uuid` (String)
 
