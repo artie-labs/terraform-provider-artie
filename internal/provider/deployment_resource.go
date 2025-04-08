@@ -46,6 +46,7 @@ func (r *DeploymentResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *DeploymentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		DeprecationMessage:  "Use `artie_pipeline` instead of `artie_deployment`.",
 		MarkdownDescription: "Artie Deployment resource. This represents a connection that syncs data from a single source (e.g., Postgres) to a single destination (e.g., Snowflake).",
 		Attributes: map[string]schema.Attribute{
 			"uuid":                        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},

@@ -40,6 +40,7 @@ func (r *DestinationResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *DestinationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		DeprecationMessage:  "Use `artie_connector` instead of `artie_destination`.",
 		MarkdownDescription: "Artie Destination resource. This represents a database or data warehouse that you want to replicate data to. Destinations are used by Deployments.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
