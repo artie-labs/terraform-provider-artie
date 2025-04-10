@@ -12,6 +12,7 @@ type SourceReader struct {
 	Name                            types.String `tfsdk:"name"`
 	DataPlaneName                   types.String `tfsdk:"data_plane_name"`
 	ConnectorUUID                   types.String `tfsdk:"connector_uuid"`
+	IsShared                        types.Bool   `tfsdk:"is_shared"`
 	DatabaseName                    types.String `tfsdk:"database_name"`
 	OracleContainerName             types.String `tfsdk:"oracle_container_name"`
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
@@ -31,6 +32,7 @@ func (s SourceReader) ToAPIBaseModel() (artieclient.BaseSourceReader, diag.Diagn
 		ConnectorUUID: connectorUUID,
 		DatabaseName:  s.DatabaseName.ValueString(),
 		ContainerName: s.OracleContainerName.ValueString(),
+		IsShared:      s.IsShared.ValueBool(),
 		Settings: artieclient.SourceReaderSettings{
 			OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
 			PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
@@ -62,6 +64,7 @@ func SourceReaderFromAPIModel(apiModel artieclient.SourceReader) SourceReader {
 		Name:                            types.StringValue(apiModel.Name),
 		DataPlaneName:                   types.StringValue(apiModel.DataPlaneName),
 		ConnectorUUID:                   types.StringValue(apiModel.ConnectorUUID.String()),
+		IsShared:                        types.BoolValue(apiModel.IsShared),
 		DatabaseName:                    types.StringValue(apiModel.DatabaseName),
 		OracleContainerName:             types.StringValue(apiModel.ContainerName),
 		OneTopicPerSchema:               types.BoolValue(apiModel.Settings.OneTopicPerSchema),
