@@ -12,10 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -54,6 +56,18 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"one_topic_per_schema":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This is currently only supported if your source is Oracle and your account has this feature enabled."},
 			"postgres_publication_name_override": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, this will override the name of the PostgreSQL publication. Otherwise, we will use our default value, `dbz_publication`. This is only applicable if the source type is PostgreSQL."},
 			"postgres_replication_slot_override": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, this will override the name of the PostgreSQL replication slot. Otherwise, we will use our default value, `artie`. This is only applicable if the source type is PostgreSQL."},
+			"tables": schema.MapNestedAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "A map of tables from the source database that you want this source reader to include CDC events for. This should be specified if the source reader is shared by multiple pipelines, and it must include all tables that are specified in the `tables` attribute of those pipelines. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"columns_to_exclude":          schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional list of columns to exclude from CDC events. This cannot be used if `columns_to_include` is also specified."},
+						"columns_to_include":          schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional list of columns to include in CDC events. If not provided, all columns will be included. This cannot be used if `columns_to_exclude` is also specified."},
+						"child_partition_schema_name": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If the source table is partitioned and its child partitions are in a different schema, this should specify the name of that schema."},
+					},
+				},
+			},
 		},
 	}
 }
@@ -93,7 +107,9 @@ func (r *SourceReaderResource) GetPlanData(ctx context.Context, plan tfsdk.Plan,
 
 func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiSourceReader artieclient.SourceReader) {
 	// Translate API response type into Terraform model and save it into state
-	diagnostics.Append(state.Set(ctx, tfmodels.SourceReaderFromAPIModel(apiSourceReader))...)
+	sourceReader, diags := tfmodels.SourceReaderFromAPIModel(ctx, apiSourceReader)
+	diagnostics.Append(diags...)
+	diagnostics.Append(state.Set(ctx, sourceReader)...)
 }
 
 func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -102,7 +118,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	baseSourceReader, diags := planData.ToAPIBaseModel()
+	baseSourceReader, diags := planData.ToAPIBaseModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
@@ -138,7 +154,7 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	apiModel, diags := planData.ToAPIModel()
+	apiModel, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return

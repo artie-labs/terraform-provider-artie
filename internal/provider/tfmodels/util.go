@@ -53,6 +53,17 @@ func parseOptionalList[T any](ctx context.Context, value types.List) (*[]T, diag
 	return &elements, diags
 }
 
+func parseList[T any](ctx context.Context, value types.List) ([]T, diag.Diagnostics) {
+	if value.IsNull() || value.IsUnknown() {
+		return nil, nil
+	}
+
+	elements := make([]T, 0, len(value.Elements()))
+	diags := value.ElementsAs(ctx, &elements, false)
+
+	return elements, diags
+}
+
 func optionalStringListToStringValue(ctx context.Context, value *[]string) (types.List, diag.Diagnostics) {
 	if value == nil {
 		return types.ListNull(types.StringType), nil

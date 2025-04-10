@@ -1,11 +1,57 @@
 package tfmodels
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
 )
+
+type SourceReaderTable struct {
+	ColumnsToExclude         types.List   `tfsdk:"columns_to_exclude"`
+	ColumnsToInclude         types.List   `tfsdk:"columns_to_include"`
+	ChildPartitionSchemaName types.String `tfsdk:"child_partition_schema_name"`
+}
+
+var SourceReaderTableAttrTypes = map[string]attr.Type{
+	"columns_to_exclude":          types.ListType{ElemType: types.StringType},
+	"columns_to_include":          types.ListType{ElemType: types.StringType},
+	"child_partition_schema_name": types.StringType,
+}
+
+func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceReaderTable, diag.Diagnostics) {
+	colsToExclude, diags := parseList[string](ctx, s.ColumnsToExclude)
+	colsToInclude, includeDiags := parseList[string](ctx, s.ColumnsToInclude)
+	diags.Append(includeDiags...)
+
+	return artieclient.SourceReaderTable{
+		ColumnsToExclude:         colsToExclude,
+		ColumnsToInclude:         colsToInclude,
+		ChildPartitionSchemaName: s.ChildPartitionSchemaName.ValueString(),
+	}, diags
+}
+
+func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string]artieclient.SourceReaderTable) (map[string]SourceReaderTable, diag.Diagnostics) {
+	tables := map[string]SourceReaderTable{}
+	var diags diag.Diagnostics
+	for key, apiTable := range apiTablesMap {
+		colsToExclude, excludeDiags := optionalStringListToStringValue(ctx, &apiTable.ColumnsToExclude)
+		diags.Append(excludeDiags...)
+
+		colsToInclude, includeDiags := optionalStringListToStringValue(ctx, &apiTable.ColumnsToInclude)
+		diags.Append(includeDiags...)
+		tables[key] = SourceReaderTable{
+			ColumnsToExclude:         colsToExclude,
+			ColumnsToInclude:         colsToInclude,
+			ChildPartitionSchemaName: types.StringValue(apiTable.ChildPartitionSchemaName),
+		}
+	}
+
+	return tables, diags
+}
 
 type SourceReader struct {
 	UUID                            types.String `tfsdk:"uuid"`
@@ -18,12 +64,26 @@ type SourceReader struct {
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
+	Tables                          types.Map    `tfsdk:"tables"`
 }
 
-func (s SourceReader) ToAPIBaseModel() (artieclient.BaseSourceReader, diag.Diagnostics) {
+func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourceReader, diag.Diagnostics) {
 	connectorUUID, diags := parseUUID(s.ConnectorUUID)
 	if diags.HasError() {
 		return artieclient.BaseSourceReader{}, diags
+	}
+
+	tablesMap := map[string]SourceReaderTable{}
+	tablesDiags := s.Tables.ElementsAs(ctx, &tablesMap, false)
+	if tablesDiags.HasError() {
+		return artieclient.BaseSourceReader{}, tablesDiags
+	}
+
+	apiTablesMap := map[string]artieclient.SourceReaderTable{}
+	for key, table := range tablesMap {
+		apiTable, tableDiags := table.ToAPIModel(ctx)
+		diags.Append(tableDiags...)
+		apiTablesMap[key] = apiTable
 	}
 
 	return artieclient.BaseSourceReader{
@@ -38,16 +98,17 @@ func (s SourceReader) ToAPIBaseModel() (artieclient.BaseSourceReader, diag.Diagn
 			PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
 			PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
 		},
-	}, nil
+		Tables: apiTablesMap,
+	}, diags
 }
 
-func (s SourceReader) ToAPIModel() (artieclient.SourceReader, diag.Diagnostics) {
+func (s SourceReader) ToAPIModel(ctx context.Context) (artieclient.SourceReader, diag.Diagnostics) {
 	uuid, diags := parseUUID(s.UUID)
 	if diags.HasError() {
 		return artieclient.SourceReader{}, diags
 	}
 
-	baseSourceReader, diags := s.ToAPIBaseModel()
+	baseSourceReader, diags := s.ToAPIBaseModel(ctx)
 	if diags.HasError() {
 		return artieclient.SourceReader{}, diags
 	}
@@ -55,10 +116,21 @@ func (s SourceReader) ToAPIModel() (artieclient.SourceReader, diag.Diagnostics) 
 	return artieclient.SourceReader{
 		UUID:             uuid,
 		BaseSourceReader: baseSourceReader,
-	}, nil
+	}, diags
 }
 
-func SourceReaderFromAPIModel(apiModel artieclient.SourceReader) SourceReader {
+func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceReader) (SourceReader, diag.Diagnostics) {
+	tables, diags := SourceReaderTablesFromAPIModel(ctx, apiModel.Tables)
+	if diags.HasError() {
+		return SourceReader{}, diags
+	}
+
+	tablesMap, mapDiags := types.MapValueFrom(ctx, types.ObjectType{AttrTypes: SourceReaderTableAttrTypes}, tables)
+	diags.Append(mapDiags...)
+	if diags.HasError() {
+		return SourceReader{}, diags
+	}
+
 	return SourceReader{
 		UUID:                            types.StringValue(apiModel.UUID.String()),
 		Name:                            types.StringValue(apiModel.Name),
@@ -70,5 +142,6 @@ func SourceReaderFromAPIModel(apiModel artieclient.SourceReader) SourceReader {
 		OneTopicPerSchema:               types.BoolValue(apiModel.Settings.OneTopicPerSchema),
 		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
-	}
+		Tables:                          tablesMap,
+	}, diags
 }
