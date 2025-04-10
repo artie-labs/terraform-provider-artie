@@ -11,12 +11,16 @@ import (
 )
 
 type SourceReaderTable struct {
+	Name                     types.String `tfsdk:"name"`
+	Schema                   types.String `tfsdk:"schema"`
 	ColumnsToExclude         types.List   `tfsdk:"columns_to_exclude"`
 	ColumnsToInclude         types.List   `tfsdk:"columns_to_include"`
 	ChildPartitionSchemaName types.String `tfsdk:"child_partition_schema_name"`
 }
 
 var SourceReaderTableAttrTypes = map[string]attr.Type{
+	"name":                        types.StringType,
+	"schema":                      types.StringType,
 	"columns_to_exclude":          types.ListType{ElemType: types.StringType},
 	"columns_to_include":          types.ListType{ElemType: types.StringType},
 	"child_partition_schema_name": types.StringType,
@@ -28,6 +32,8 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceRe
 	diags.Append(includeDiags...)
 
 	return artieclient.SourceReaderTable{
+		Name:                     s.Name.ValueString(),
+		Schema:                   s.Schema.ValueString(),
 		ColumnsToExclude:         colsToExclude,
 		ColumnsToInclude:         colsToInclude,
 		ChildPartitionSchemaName: s.ChildPartitionSchemaName.ValueString(),
@@ -44,6 +50,8 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string
 		colsToInclude, includeDiags := optionalStringListToStringValue(ctx, &apiTable.ColumnsToInclude)
 		diags.Append(includeDiags...)
 		tables[key] = SourceReaderTable{
+			Name:                     types.StringValue(apiTable.Name),
+			Schema:                   types.StringValue(apiTable.Schema),
 			ColumnsToExclude:         colsToExclude,
 			ColumnsToInclude:         colsToInclude,
 			ChildPartitionSchemaName: types.StringValue(apiTable.ChildPartitionSchemaName),
