@@ -88,19 +88,19 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		return artieclient.BaseSourceReader{}, diags
 	}
 
-	tablesMap := map[string]SourceReaderTable{}
-	if !s.Tables.IsNull() && !s.Tables.IsUnknown() {
-		tablesDiags := s.Tables.ElementsAs(ctx, &tablesMap, false)
-		if tablesDiags.HasError() {
-			return artieclient.BaseSourceReader{}, tablesDiags
-		}
-	}
-
 	apiTablesMap := map[string]artieclient.SourceReaderTable{}
-	for key, table := range tablesMap {
-		apiTable, tableDiags := table.ToAPIModel(ctx)
-		diags.Append(tableDiags...)
-		apiTablesMap[key] = apiTable
+	if !s.Tables.IsNull() && !s.Tables.IsUnknown() {
+		tablesMap := map[string]SourceReaderTable{}
+		diags.Append(s.Tables.ElementsAs(ctx, &tablesMap, false)...)
+		if diags.HasError() {
+			return artieclient.BaseSourceReader{}, diags
+		}
+
+		for key, table := range tablesMap {
+			apiTable, tableDiags := table.ToAPIModel(ctx)
+			diags.Append(tableDiags...)
+			apiTablesMap[key] = apiTable
+		}
 	}
 
 	return artieclient.BaseSourceReader{
