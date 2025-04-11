@@ -114,6 +114,28 @@ func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.St
 	diagnostics.Append(state.Set(ctx, sourceReader)...)
 }
 
+func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var configData tfmodels.SourceReader
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+		tables := map[string]tfmodels.SourceReaderTable{}
+		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
+		for tableKey, table := range tables {
+			expectedKey := table.Name.ValueString()
+			if table.Schema.ValueString() != "" {
+				expectedKey = fmt.Sprintf("%s.%s", table.Schema.ValueString(), table.Name.ValueString())
+			}
+			if tableKey != expectedKey {
+				resp.Diagnostics.AddError("Table key mismatch", fmt.Sprintf("Table key %q should be %q instead.", tableKey, expectedKey))
+			}
+		}
+	}
+}
+
 func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
