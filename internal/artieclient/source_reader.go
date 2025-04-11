@@ -17,6 +17,7 @@ type SourceReaderSettings struct {
 type SourceReaderTable struct {
 	Name                     string   `json:"name"`
 	Schema                   string   `json:"schema"`
+	IsPartitioned            bool     `json:"isPartitioned"`
 	ColumnsToExclude         []string `json:"excludeColumns"`
 	ColumnsToInclude         []string `json:"includeColumns"`
 	ChildPartitionSchemaName string   `json:"childPartitionSchemaName,omitempty"`
