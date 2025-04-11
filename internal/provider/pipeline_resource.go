@@ -224,10 +224,17 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 		return
 	}
 
-	if configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.Table{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
 		for tableKey, table := range tables {
+			expectedKey := table.Name.ValueString()
+			if table.Schema.ValueString() != "" {
+				expectedKey = fmt.Sprintf("%s.%s", table.Schema.ValueString(), table.Name.ValueString())
+			}
+			if tableKey != expectedKey {
+				resp.Diagnostics.AddError("Table key mismatch", fmt.Sprintf("Table key %q should be %q instead.", tableKey, expectedKey))
+			}
 			if !table.UUID.IsNull() {
 				resp.Diagnostics.AddError("Table.uuid is Read-Only", fmt.Sprintf("%q table should not have `uuid` specified. Please remove this attribute from your config.", tableKey))
 			}

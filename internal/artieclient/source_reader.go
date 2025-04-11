@@ -14,14 +14,24 @@ type SourceReaderSettings struct {
 	PostgresReplicationSlotOverride string `json:"replicationSlotOverride"`
 }
 
+type SourceReaderTable struct {
+	Name                     string   `json:"name"`
+	Schema                   string   `json:"schema"`
+	IsPartitioned            bool     `json:"isPartitioned"`
+	ColumnsToExclude         []string `json:"excludeColumns"`
+	ColumnsToInclude         []string `json:"includeColumns"`
+	ChildPartitionSchemaName string   `json:"childPartitionSchemaName,omitempty"`
+}
+
 type BaseSourceReader struct {
-	Name          string               `json:"name"`
-	DataPlaneName string               `json:"dataPlaneName"`
-	ConnectorUUID uuid.UUID            `json:"connectorUUID"`
-	IsShared      bool                 `json:"isShared"`
-	DatabaseName  string               `json:"database"`
-	ContainerName string               `json:"containerName"`
-	Settings      SourceReaderSettings `json:"settings"`
+	Name          string                       `json:"name"`
+	DataPlaneName string                       `json:"dataPlaneName"`
+	ConnectorUUID uuid.UUID                    `json:"connectorUUID"`
+	IsShared      bool                         `json:"isShared"`
+	DatabaseName  string                       `json:"database"`
+	ContainerName string                       `json:"containerName"`
+	Settings      SourceReaderSettings         `json:"settings"`
+	Tables        map[string]SourceReaderTable `json:"tablesConfig"`
 }
 
 type SourceReader struct {
