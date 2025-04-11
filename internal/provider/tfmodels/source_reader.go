@@ -43,7 +43,7 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceRe
 	}, diags
 }
 
-func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string]artieclient.SourceReaderTable) (map[string]SourceReaderTable, diag.Diagnostics) {
+func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string]artieclient.SourceReaderTable) (types.Map, diag.Diagnostics) {
 	tables := map[string]SourceReaderTable{}
 	var diags diag.Diagnostics
 	for key, apiTable := range apiTablesMap {
@@ -62,7 +62,10 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string
 		}
 	}
 
-	return tables, diags
+	tablesMap, mapDiags := types.MapValueFrom(ctx, types.ObjectType{AttrTypes: SourceReaderTableAttrTypes}, tables)
+	diags.Append(mapDiags...)
+
+	return tablesMap, diags
 }
 
 type SourceReader struct {
@@ -85,17 +88,19 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		return artieclient.BaseSourceReader{}, diags
 	}
 
-	tablesMap := map[string]SourceReaderTable{}
-	tablesDiags := s.Tables.ElementsAs(ctx, &tablesMap, false)
-	if tablesDiags.HasError() {
-		return artieclient.BaseSourceReader{}, tablesDiags
-	}
-
 	apiTablesMap := map[string]artieclient.SourceReaderTable{}
-	for key, table := range tablesMap {
-		apiTable, tableDiags := table.ToAPIModel(ctx)
-		diags.Append(tableDiags...)
-		apiTablesMap[key] = apiTable
+	if !s.Tables.IsNull() && !s.Tables.IsUnknown() {
+		tablesMap := map[string]SourceReaderTable{}
+		diags.Append(s.Tables.ElementsAs(ctx, &tablesMap, false)...)
+		if diags.HasError() {
+			return artieclient.BaseSourceReader{}, diags
+		}
+
+		for key, table := range tablesMap {
+			apiTable, tableDiags := table.ToAPIModel(ctx)
+			diags.Append(tableDiags...)
+			apiTablesMap[key] = apiTable
+		}
 	}
 
 	return artieclient.BaseSourceReader{
@@ -132,13 +137,7 @@ func (s SourceReader) ToAPIModel(ctx context.Context) (artieclient.SourceReader,
 }
 
 func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceReader) (SourceReader, diag.Diagnostics) {
-	tables, diags := SourceReaderTablesFromAPIModel(ctx, apiModel.Tables)
-	if diags.HasError() {
-		return SourceReader{}, diags
-	}
-
-	tablesMap, mapDiags := types.MapValueFrom(ctx, types.ObjectType{AttrTypes: SourceReaderTableAttrTypes}, tables)
-	diags.Append(mapDiags...)
+	tablesMap, diags := SourceReaderTablesFromAPIModel(ctx, apiModel.Tables)
 	if diags.HasError() {
 		return SourceReader{}, diags
 	}
