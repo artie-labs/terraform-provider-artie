@@ -49,6 +49,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 
 Required:
 
+- `is_partitioned` (Boolean) Set this to true if the source table is partitioned.
 - `name` (String) The name of the table in the source database.
 
 Optional:
