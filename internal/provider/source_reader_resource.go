@@ -58,7 +58,7 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"tables": schema.MapNestedAttribute{
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "A map of tables from the source database that you want this source reader to include CDC events for. This should be specified if the source reader is shared by multiple pipelines, and it must include all tables that are specified in the `tables` attribute of those pipelines. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`.",
+				MarkdownDescription: "A map of tables from the source database that you want this source reader to include CDC events for. This should be specified if (and only if) the source reader has `is_shared` set to true, and it must include all tables that are specified in the `tables` attribute of any pipeline that uses this source reader. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name":                        schema.StringAttribute{Required: true, MarkdownDescription: "The name of the table in the source database."},
