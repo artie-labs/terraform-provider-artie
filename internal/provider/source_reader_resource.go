@@ -159,6 +159,12 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	// Validate config before creating the source reader
+	if err := r.client.SourceReaders().Validate(ctx, baseSourceReader); err != nil {
+		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
+		return
+	}
+
 	sourceReader, err := r.client.SourceReaders().Create(ctx, baseSourceReader)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
@@ -186,6 +192,18 @@ func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadReques
 func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
+		return
+	}
+
+	baseAPIModel, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	// Validate config before updating the source reader
+	if err := r.client.SourceReaders().Validate(ctx, baseAPIModel); err != nil {
+		resp.Diagnostics.AddError("Unable to Update Source Reader", err.Error())
 		return
 	}
 
