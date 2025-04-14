@@ -124,6 +124,8 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.SourceReaderTable{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
+		var usesIncludeColumns bool
+		var usesExcludeColumns bool
 		for tableKey, table := range tables {
 			expectedKey := table.Name.ValueString()
 			if table.Schema.ValueString() != "" {
@@ -131,6 +133,15 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 			}
 			if tableKey != expectedKey {
 				resp.Diagnostics.AddError("Table key mismatch", fmt.Sprintf("Table key %q should be %q instead.", tableKey, expectedKey))
+			}
+			if !table.ColumnsToInclude.IsNull() && len(table.ColumnsToInclude.Elements()) > 0 {
+				usesIncludeColumns = true
+			}
+			if !table.ColumnsToExclude.IsNull() && len(table.ColumnsToExclude.Elements()) > 0 {
+				usesExcludeColumns = true
+			}
+			if usesIncludeColumns && usesExcludeColumns {
+				resp.Diagnostics.AddError("Invalid table configuration", "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
 			}
 		}
 	}
