@@ -123,6 +123,10 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 		return
 	}
 
+	if configData.BackfillBatchSize.ValueInt64() > 50000 {
+		resp.Diagnostics.AddError("Invalid backfill batch size", "The maximum allowed value for `backfill_batch_size` is 50,000.")
+	}
+
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.SourceReaderTable{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
