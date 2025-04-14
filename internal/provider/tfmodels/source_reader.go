@@ -75,6 +75,7 @@ type SourceReader struct {
 	ConnectorUUID                   types.String `tfsdk:"connector_uuid"`
 	IsShared                        types.Bool   `tfsdk:"is_shared"`
 	DatabaseName                    types.String `tfsdk:"database_name"`
+	BackfillBatchSize               types.Int64  `tfsdk:"backfill_batch_size"`
 	OracleContainerName             types.String `tfsdk:"oracle_container_name"`
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
@@ -111,6 +112,7 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		ContainerName: s.OracleContainerName.ValueString(),
 		IsShared:      s.IsShared.ValueBool(),
 		Settings: artieclient.SourceReaderSettings{
+			BackfillBatchSize:               s.BackfillBatchSize.ValueInt64(),
 			OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
 			PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
 			PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
@@ -150,6 +152,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		IsShared:                        types.BoolValue(apiModel.IsShared),
 		DatabaseName:                    types.StringValue(apiModel.DatabaseName),
 		OracleContainerName:             types.StringValue(apiModel.ContainerName),
+		BackfillBatchSize:               types.Int64Value(apiModel.Settings.BackfillBatchSize),
 		OneTopicPerSchema:               types.BoolValue(apiModel.Settings.OneTopicPerSchema),
 		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
