@@ -13,8 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-var ErrNotFound = fmt.Errorf("artie-client: not found")
-
 type HttpError struct {
 	StatusCode int
 	message    string
@@ -44,7 +42,7 @@ func New(endpoint string, apiKey string, version string) (Client, error) {
 
 func buildError(resp *http.Response) error {
 	if resp.StatusCode == http.StatusNotFound {
-		return ErrNotFound
+		return fmt.Errorf("artie-client: not found, request: %q, method: %q", resp.Request.URL.String(), resp.Request.Method)
 	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
 		type errorBody struct {
 			ErrorMsg string `json:"error"`
