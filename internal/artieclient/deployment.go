@@ -144,12 +144,11 @@ type MergePredicate struct {
 }
 
 type Table struct {
-	UUID                 uuid.UUID `json:"uuid"`
-	Name                 string    `json:"name"`
-	Schema               string    `json:"schema"`
-	EnableHistoryMode    bool      `json:"enableHistoryMode"`
-	IndividualDeployment bool      `json:"individualDeployment"`
-	IsPartitioned        bool      `json:"isPartitioned"`
+	UUID              uuid.UUID `json:"uuid"`
+	Name              string    `json:"name"`
+	Schema            string    `json:"schema"`
+	EnableHistoryMode bool      `json:"enableHistoryMode"`
+	IsPartitioned     bool      `json:"isPartitioned"`
 
 	// Advanced table settings - these must all be nullable
 	Alias           *string           `json:"alias"`
