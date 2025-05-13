@@ -124,9 +124,9 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 	}
 
 	if configData.IsShared.ValueBool() {
-		if configData.Tables.IsNull() || configData.Tables.IsUnknown() {
+		if configData.Tables.IsNull() {
 			diags.AddError("Invalid table configuration", "You must specify a `tables` block if `is_shared` is set to true.")
-		} else if len(configData.Tables.Elements()) == 0 {
+		} else if !configData.Tables.IsUnknown() && len(configData.Tables.Elements()) == 0 {
 			diags.AddError("Invalid table configuration", "You must specify at least one table in the `tables` block if `is_shared` is set to true.")
 		}
 	} else {
