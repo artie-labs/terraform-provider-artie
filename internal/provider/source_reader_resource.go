@@ -116,20 +116,28 @@ func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.St
 	diagnostics.Append(state.Set(ctx, sourceReader)...)
 }
 
-func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var configData tfmodels.SourceReader
-	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceReader) diag.Diagnostics {
+	var diags diag.Diagnostics
 
 	if configData.BackfillBatchSize.ValueInt64() > 50000 {
-		resp.Diagnostics.AddError("Invalid backfill batch size", "The maximum allowed value for `backfill_batch_size` is 50,000.")
+		diags.AddError("Invalid backfill batch size", "The maximum allowed value for `backfill_batch_size` is 50,000.")
+	}
+
+	if configData.IsShared.ValueBool() {
+		if configData.Tables.IsNull() || configData.Tables.IsUnknown() {
+			diags.AddError("Invalid table configuration", "You must specify a `tables` block if `is_shared` is set to true.")
+		} else if len(configData.Tables.Elements()) == 0 {
+			diags.AddError("Invalid table configuration", "You must specify at least one table in the `tables` block if `is_shared` is set to true.")
+		}
+	} else {
+		if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+			diags.AddError("Invalid table configuration", "You should not specify a `tables` block if `is_shared` is set to false.")
+		}
 	}
 
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.SourceReaderTable{}
-		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
+		diags.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
 		var usesIncludeColumns bool
 		var usesExcludeColumns bool
 		for tableKey, table := range tables {
@@ -138,7 +146,7 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 				expectedKey = fmt.Sprintf("%s.%s", table.Schema.ValueString(), table.Name.ValueString())
 			}
 			if tableKey != expectedKey {
-				resp.Diagnostics.AddError("Table key mismatch", fmt.Sprintf("Table key %q should be %q instead.", tableKey, expectedKey))
+				diags.AddError("Table key mismatch", fmt.Sprintf("Table key %q should be %q instead.", tableKey, expectedKey))
 			}
 			if !table.ColumnsToInclude.IsNull() && len(table.ColumnsToInclude.Elements()) > 0 {
 				usesIncludeColumns = true
@@ -147,10 +155,21 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 				usesExcludeColumns = true
 			}
 			if usesIncludeColumns && usesExcludeColumns {
-				resp.Diagnostics.AddError("Invalid table configuration", "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
+				diags.AddError("Invalid table configuration", "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
 			}
 		}
 	}
+	return diags
+}
+
+func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var configData tfmodels.SourceReader
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(validateSourceReaderConfig(ctx, configData)...)
 }
 
 func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -165,12 +184,6 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	// Validate config before creating the source reader
-	if err := r.client.SourceReaders().Validate(ctx, baseSourceReader); err != nil {
-		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
-		return
-	}
-
 	sourceReader, err := r.client.SourceReaders().Create(ctx, baseSourceReader)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
@@ -178,6 +191,12 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sourceReader)
+
+	if sourceReader.IsShared {
+		if err := r.client.SourceReaders().Deploy(ctx, sourceReader.UUID.String()); err != nil {
+			resp.Diagnostics.AddWarning("Unable to deploy Source Reader", err.Error())
+		}
+	}
 }
 
 func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -201,18 +220,6 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	baseAPIModel, diags := planData.ToAPIBaseModel(ctx)
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
-	// Validate config before updating the source reader
-	if err := r.client.SourceReaders().Validate(ctx, baseAPIModel); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Source Reader", err.Error())
-		return
-	}
-
 	apiModel, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
@@ -226,6 +233,12 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedSourceReader)
+
+	if updatedSourceReader.IsShared {
+		if err := r.client.SourceReaders().Deploy(ctx, updatedSourceReader.UUID.String()); err != nil {
+			resp.Diagnostics.AddWarning("Unable to deploy Source Reader", err.Error())
+		}
+	}
 }
 
 func (r *SourceReaderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
