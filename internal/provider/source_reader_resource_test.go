@@ -55,6 +55,17 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		assert.Contains(t, diags.Errors()[0].Detail(), "You must specify a `tables` block if `is_shared` is set to true.")
 	}
 	{
+		// no validation error if tables is unknown
+		config := tfmodels.SourceReader{
+			ConnectorUUID: types.StringValue(connectorUUID),
+			IsShared:      types.BoolValue(true),
+			Tables:        types.MapUnknown(tableType),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.False(t, diags.HasError())
+	}
+	{
 		config := tfmodels.SourceReader{
 			ConnectorUUID: types.StringValue(connectorUUID),
 			IsShared:      types.BoolValue(false),
