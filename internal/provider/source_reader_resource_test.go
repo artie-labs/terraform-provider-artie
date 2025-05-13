@@ -1,0 +1,136 @@
+package provider
+
+import (
+	"context"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/stretchr/testify/assert"
+
+	"terraform-provider-artie/internal/provider/tfmodels"
+)
+
+func TestSourceReaderResource_ValidateConfig(t *testing.T) {
+	connectorUUID := uuid.New().String()
+	tableType := types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"name":                        types.StringType,
+			"schema":                      types.StringType,
+			"is_partitioned":              types.BoolType,
+			"columns_to_exclude":          types.ListType{ElemType: types.StringType},
+			"columns_to_include":          types.ListType{ElemType: types.StringType},
+			"child_partition_schema_name": types.StringType,
+		},
+	}
+
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID: types.StringValue(connectorUUID),
+			IsShared:      types.BoolValue(false),
+		}
+
+		diags := validateSourceReaderConfig(context.Background(), config)
+		assert.False(t, diags.HasError())
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID:     types.StringValue(connectorUUID),
+			IsShared:          types.BoolValue(false),
+			BackfillBatchSize: types.Int64Value(60000),
+		}
+
+		diags := validateSourceReaderConfig(context.Background(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "The maximum allowed value for `backfill_batch_size` is 50,000.")
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID: types.StringValue(connectorUUID),
+			IsShared:      types.BoolValue(true),
+		}
+
+		diags := validateSourceReaderConfig(context.Background(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "You must specify a `tables` block if `is_shared` is set to true.")
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID: types.StringValue(connectorUUID),
+			IsShared:      types.BoolValue(false),
+			Tables: types.MapValueMust(
+				tableType,
+				map[string]attr.Value{
+					"test_table": types.ObjectValueMust(
+						tableType.AttrTypes,
+						map[string]attr.Value{
+							"name":                        types.StringValue("test_table"),
+							"schema":                      types.StringValue(""),
+							"is_partitioned":              types.BoolValue(false),
+							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
+							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
+							"child_partition_schema_name": types.StringValue(""),
+						},
+					),
+				},
+			),
+		}
+
+		diags := validateSourceReaderConfig(context.Background(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "You should not specify a `tables` block if `is_shared` is set to false.")
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID: types.StringValue(connectorUUID),
+			IsShared:      types.BoolValue(true),
+			Tables: types.MapValueMust(
+				tableType,
+				map[string]attr.Value{
+					"wrong_key": types.ObjectValueMust(
+						tableType.AttrTypes,
+						map[string]attr.Value{
+							"name":                        types.StringValue("test_table"),
+							"schema":                      types.StringValue("public"),
+							"is_partitioned":              types.BoolValue(false),
+							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
+							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
+							"child_partition_schema_name": types.StringValue(""),
+						},
+					),
+				},
+			),
+		}
+
+		diags := validateSourceReaderConfig(context.Background(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "Table key \"wrong_key\" should be \"public.test_table\" instead.")
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID: types.StringValue(connectorUUID),
+			IsShared:      types.BoolValue(true),
+			Tables: types.MapValueMust(
+				tableType,
+				map[string]attr.Value{
+					"public.test_table": types.ObjectValueMust(
+						tableType.AttrTypes,
+						map[string]attr.Value{
+							"name":                        types.StringValue("test_table"),
+							"schema":                      types.StringValue("public"),
+							"is_partitioned":              types.BoolValue(false),
+							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col1")}),
+							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col2")}),
+							"child_partition_schema_name": types.StringValue(""),
+						},
+					),
+				},
+			),
+		}
+
+		diags := validateSourceReaderConfig(context.Background(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
+	}
+}
