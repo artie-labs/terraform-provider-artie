@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -31,7 +30,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 			IsShared:      types.BoolValue(false),
 		}
 
-		diags := validateSourceReaderConfig(context.Background(), config)
+		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.False(t, diags.HasError())
 	}
 	{
@@ -41,7 +40,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 			BackfillBatchSize: types.Int64Value(60000),
 		}
 
-		diags := validateSourceReaderConfig(context.Background(), config)
+		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "The maximum allowed value for `backfill_batch_size` is 50,000.")
 	}
@@ -51,7 +50,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 			IsShared:      types.BoolValue(true),
 		}
 
-		diags := validateSourceReaderConfig(context.Background(), config)
+		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "You must specify a `tables` block if `is_shared` is set to true.")
 	}
@@ -77,7 +76,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 			),
 		}
 
-		diags := validateSourceReaderConfig(context.Background(), config)
+		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "You should not specify a `tables` block if `is_shared` is set to false.")
 	}
@@ -103,7 +102,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 			),
 		}
 
-		diags := validateSourceReaderConfig(context.Background(), config)
+		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "Table key \"wrong_key\" should be \"public.test_table\" instead.")
 	}
@@ -129,7 +128,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 			),
 		}
 
-		diags := validateSourceReaderConfig(context.Background(), config)
+		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
 	}
