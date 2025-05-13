@@ -2,7 +2,6 @@ package artieclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -81,20 +80,12 @@ func (sc SourceReaderClient) Delete(ctx context.Context, sourceReaderUUID string
 	return err
 }
 
-func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader BaseSourceReader) error {
-	path, err := url.JoinPath(sc.basePath(), "validate")
+func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string) error {
+	path, err := url.JoinPath(sc.basePath(), sourceReaderUUID, "deploy")
 	if err != nil {
 		return err
 	}
 
-	response, err := makeRequest[validationResponse](ctx, sc.client, http.MethodPost, path, sourceReader)
-	if err != nil {
-		return err
-	}
-
-	if response.Error != "" {
-		return fmt.Errorf("source reader validation failed: %s", response.Error)
-	}
-
-	return nil
+	_, err = makeRequest[any](ctx, sc.client, http.MethodPost, path, nil)
+	return err
 }

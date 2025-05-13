@@ -127,6 +127,18 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 		resp.Diagnostics.AddError("Invalid backfill batch size", "The maximum allowed value for `backfill_batch_size` is 50,000.")
 	}
 
+	if configData.IsShared.ValueBool() {
+		if configData.Tables.IsNull() || configData.Tables.IsUnknown() {
+			resp.Diagnostics.AddError("Invalid table configuration", "You must specify a `tables` block if `is_shared` is set to true.")
+		} else if len(configData.Tables.Elements()) == 0 {
+			resp.Diagnostics.AddError("Invalid table configuration", "You must specify at least one table in the `tables` block if `is_shared` is set to true.")
+		}
+	} else {
+		if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+			resp.Diagnostics.AddError("Invalid table configuration", "You should not specify a `tables` block if `is_shared` is set to false.")
+		}
+	}
+
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.SourceReaderTable{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
@@ -165,12 +177,6 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	// Validate config before creating the source reader
-	if err := r.client.SourceReaders().Validate(ctx, baseSourceReader); err != nil {
-		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
-		return
-	}
-
 	sourceReader, err := r.client.SourceReaders().Create(ctx, baseSourceReader)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
@@ -178,6 +184,12 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sourceReader)
+
+	if sourceReader.IsShared {
+		if err := r.client.SourceReaders().Deploy(ctx, sourceReader.UUID.String()); err != nil {
+			resp.Diagnostics.AddWarning("Unable to deploy Source Reader", err.Error())
+		}
+	}
 }
 
 func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -201,18 +213,6 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	baseAPIModel, diags := planData.ToAPIBaseModel(ctx)
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
-	// Validate config before updating the source reader
-	if err := r.client.SourceReaders().Validate(ctx, baseAPIModel); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Source Reader", err.Error())
-		return
-	}
-
 	apiModel, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
@@ -226,6 +226,12 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedSourceReader)
+
+	if updatedSourceReader.IsShared {
+		if err := r.client.SourceReaders().Deploy(ctx, updatedSourceReader.UUID.String()); err != nil {
+			resp.Diagnostics.AddWarning("Unable to deploy Source Reader", err.Error())
+		}
+	}
 }
 
 func (r *SourceReaderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
