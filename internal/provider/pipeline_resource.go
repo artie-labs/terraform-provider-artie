@@ -267,17 +267,6 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	// Validate config before creating the pipeline
-	if err := r.client.Pipelines().ValidateSource(ctx, pipeline); err != nil {
-		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
-		return
-	}
-
-	if err := r.client.Pipelines().ValidateDestination(ctx, pipeline); err != nil {
-		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
-		return
-	}
-
 	createdPipeline, err := r.client.Pipelines().Create(ctx, pipeline)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
@@ -285,6 +274,10 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline)
+
+	if err := r.client.Pipelines().StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
+		resp.Diagnostics.AddWarning("Unable to start Pipeline", err.Error())
+	}
 }
 
 func (r *PipelineResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -315,22 +308,6 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	basePipeline, diags := planData.ToAPIBaseModel(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Validate source & destination config before updating the pipeline
-	if err := r.client.Pipelines().ValidateSource(ctx, basePipeline); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Pipeline", err.Error())
-		return
-	}
-	if err := r.client.Pipelines().ValidateDestination(ctx, basePipeline); err != nil {
-		resp.Diagnostics.AddError("Unable to Update Pipeline", err.Error())
-		return
-	}
-
 	apiModel, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -344,6 +321,10 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedPipeline)
+
+	if err := r.client.Pipelines().StartPipeline(ctx, updatedPipeline.UUID.String()); err != nil {
+		resp.Diagnostics.AddWarning("Unable to start Pipeline", err.Error())
+	}
 }
 
 func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
