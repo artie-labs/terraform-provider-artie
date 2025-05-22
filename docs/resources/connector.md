@@ -78,9 +78,9 @@ Required:
 
 Optional:
 
-- `backfill` (Boolean) Whether or not we should backfill all existing data from DynamoDB to your destination.
-- `backfill_bucket` (String) If backfill = true, specify the S3 bucket where the DynamoDB export should be stored.
-- `backfill_folder` (String) If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket.
+- `backfill` (Boolean, Deprecated) Whether or not we should backfill all existing data from DynamoDB to your destination.
+- `backfill_bucket` (String, Deprecated) If backfill = true, specify the S3 bucket where the DynamoDB export should be stored.
+- `backfill_folder` (String, Deprecated) If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket.
 
 
 <a id="nestedatt--mongodb_config"></a>
