@@ -80,7 +80,7 @@ type SourceReader struct {
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
-	PartitionRegexPattern           types.String `tfsdk:"partition_regex_pattern"`
+	PartitionRegexPattern           types.String `tfsdk:"partition_suffix_regex_pattern"`
 	Tables                          types.Map    `tfsdk:"tables"`
 }
 
