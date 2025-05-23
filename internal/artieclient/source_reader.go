@@ -9,10 +9,15 @@ import (
 )
 
 type SourceReaderSettings struct {
-	BackfillBatchSize               int64  `json:"backfillBatchSize"`
-	OneTopicPerSchema               bool   `json:"oneTopicPerSchema"`
-	PostgresPublicationNameOverride string `json:"publicationNameOverride"`
-	PostgresReplicationSlotOverride string `json:"replicationSlotOverride"`
+	BackfillBatchSize               int64           `json:"backfillBatchSize"`
+	OneTopicPerSchema               bool            `json:"oneTopicPerSchema"`
+	PostgresPublicationNameOverride string          `json:"publicationNameOverride"`
+	PostgresReplicationSlotOverride string          `json:"replicationSlotOverride"`
+	PartitionRegex                  *PartitionRegex `json:"partitionRegex,omitempty"`
+}
+
+type PartitionRegex struct {
+	Pattern string `json:"pattern"`
 }
 
 type SourceReaderTable struct {
