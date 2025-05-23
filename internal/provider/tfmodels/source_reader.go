@@ -80,6 +80,7 @@ type SourceReader struct {
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
+	PartitionRegexPattern           types.String `tfsdk:"partition_regex_pattern"`
 	Tables                          types.Map    `tfsdk:"tables"`
 }
 
@@ -104,6 +105,19 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		}
 	}
 
+	settings := artieclient.SourceReaderSettings{
+		BackfillBatchSize:               s.BackfillBatchSize.ValueInt64(),
+		OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
+		PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
+		PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
+	}
+
+	if !s.PartitionRegexPattern.IsNull() && !s.PartitionRegexPattern.IsUnknown() {
+		settings.PartitionRegex = &artieclient.PartitionRegex{
+			Pattern: s.PartitionRegexPattern.ValueString(),
+		}
+	}
+
 	return artieclient.BaseSourceReader{
 		Name:          s.Name.ValueString(),
 		DataPlaneName: s.DataPlaneName.ValueString(),
@@ -111,13 +125,8 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		DatabaseName:  s.DatabaseName.ValueString(),
 		ContainerName: s.OracleContainerName.ValueString(),
 		IsShared:      s.IsShared.ValueBool(),
-		Settings: artieclient.SourceReaderSettings{
-			BackfillBatchSize:               s.BackfillBatchSize.ValueInt64(),
-			OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
-			PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
-			PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
-		},
-		Tables: apiTablesMap,
+		Settings:      settings,
+		Tables:        apiTablesMap,
 	}, diags
 }
 
@@ -144,7 +153,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		return SourceReader{}, diags
 	}
 
-	return SourceReader{
+	sourceReader := SourceReader{
 		UUID:                            types.StringValue(apiModel.UUID.String()),
 		Name:                            types.StringValue(apiModel.Name),
 		DataPlaneName:                   types.StringValue(apiModel.DataPlaneName),
@@ -157,5 +166,11 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
 		Tables:                          tablesMap,
-	}, diags
+	}
+
+	if apiModel.Settings.PartitionRegex != nil {
+		sourceReader.PartitionRegexPattern = types.StringValue(apiModel.Settings.PartitionRegex.Pattern)
+	}
+
+	return sourceReader, diags
 }
