@@ -156,6 +156,39 @@ func BigQuerySharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Big
 	}
 }
 
+type DynamoDBConfig struct {
+	StreamArn          types.String `tfsdk:"stream_arn"`
+	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
+	Backfill           types.Bool   `tfsdk:"backfill"`
+	BackfillBucket     types.String `tfsdk:"backfill_bucket"`
+	BackfillFolder     types.String `tfsdk:"backfill_folder"`
+}
+
+func (d DynamoDBConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		DynamoStreamArn:    d.StreamArn.ValueString(),
+		AWSAccessKeyID:     d.AwsAccessKeyID.ValueString(),
+		AWSSecretAccessKey: d.AwsSecretAccessKey.ValueString(),
+		DynamoSnapshotConfig: artieclient.DynamoDBSnapshotConfig{
+			Enabled:        d.Backfill.ValueBool(),
+			Bucket:         d.BackfillBucket.ValueString(),
+			OptionalFolder: d.BackfillFolder.ValueString(),
+		},
+	}
+}
+
+func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.ConnectorConfig) *DynamoDBConfig {
+	return &DynamoDBConfig{
+		StreamArn:          types.StringValue(apiDynamoCfg.DynamoStreamArn),
+		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AWSAccessKeyID),
+		AwsSecretAccessKey: types.StringValue(apiDynamoCfg.AWSSecretAccessKey),
+		Backfill:           types.BoolValue(apiDynamoCfg.DynamoSnapshotConfig.Enabled),
+		BackfillBucket:     types.StringValue(apiDynamoCfg.DynamoSnapshotConfig.Bucket),
+		BackfillFolder:     types.StringValue(apiDynamoCfg.DynamoSnapshotConfig.OptionalFolder),
+	}
+}
+
 type MongoDBSharedConfig struct {
 	Host     types.String `tfsdk:"host"`
 	Username types.String `tfsdk:"username"`
