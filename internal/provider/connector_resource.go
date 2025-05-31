@@ -134,10 +134,8 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 							int32validator.Between(1024, math.MaxUint16),
 						},
 					},
-					"username":  schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the Oracle database."},
-					"password":  schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-					"service":   schema.StringAttribute{Required: true, MarkdownDescription: "The name of the service in the Oracle server."},
-					"container": schema.StringAttribute{Optional: true, MarkdownDescription: "The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the Oracle database."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
 			"postgresql_config": schema.SingleNestedAttribute{
