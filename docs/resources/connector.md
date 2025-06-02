@@ -131,12 +131,10 @@ Required:
 - `host` (String) The hostname of the Oracle database. This must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Oracle is 1521.
-- `service` (String) The name of the service in the Oracle server.
 - `username` (String) The username of the service account we will use to connect to the Oracle database.
 
 Optional:
 
-- `container` (String) The name of the container (pluggable database). Required if you are using a container database; otherwise this should be omitted.
 - `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
 
 
