@@ -50,7 +50,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 ### Optional
 
-- `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New deployment' in our UI.
+- `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
 - `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column called `__artie_updated_at` to the destination table to indicate when the row was last updated by Artie.
@@ -123,8 +123,8 @@ Import is supported using the following syntax:
 
 ```shell
 # Import a pipeline by using its UUID, which you can find in
-# the URL of the deployment overview page in the Artie UI, e.g.:
-# https://app.artie.com/deployments/<pipeline_uuid>/overview
+# the URL of the pipeline overview page in the Artie UI, e.g.:
+# https://app.artie.com/pipelines/<pipeline_uuid>/overview
 terraform import artie_pipeline.my_pipeline <pipeline_uuid>
 
 # Then print the state and copy it into your terraform config file

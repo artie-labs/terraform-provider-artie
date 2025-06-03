@@ -1,6 +1,6 @@
 # Import a pipeline by using its UUID, which you can find in
-# the URL of the deployment overview page in the Artie UI, e.g.:
-# https://app.artie.com/deployments/<pipeline_uuid>/overview
+# the URL of the pipeline overview page in the Artie UI, e.g.:
+# https://app.artie.com/pipelines/<pipeline_uuid>/overview
 terraform import artie_pipeline.my_pipeline <pipeline_uuid>
 
 # Then print the state and copy it into your terraform config file
