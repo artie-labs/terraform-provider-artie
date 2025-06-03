@@ -60,7 +60,6 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 ### Read-Only
 
 - `snowflake_eco_schedule_uuid` (String) If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. This can currently only be configured via our UI.
-- `status` (String) The status of the pipeline. This is set automatically when you update a pipeline via Terraform. Pipelines can currently only be paused via our UI.
 - `uuid` (String)
 
 <a id="nestedatt--destination_config"></a>
@@ -129,7 +128,7 @@ Import is supported using the following syntax:
 terraform import artie_pipeline.my_pipeline <pipeline_uuid>
 
 # Then print the state and copy it into your terraform config file
-# (be sure to remove all read-only fields, like `uuid`, `status`, etc.):
+# (be sure to remove all read-only fields, like `uuid`):
 terraform state show artie_pipeline.my_pipeline
 
 # Then you can find the UUIDs of the objects your pipeline depends on and import those too:

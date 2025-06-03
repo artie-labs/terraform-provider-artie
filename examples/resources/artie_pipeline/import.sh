@@ -4,7 +4,7 @@
 terraform import artie_pipeline.my_pipeline <pipeline_uuid>
 
 # Then print the state and copy it into your terraform config file
-# (be sure to remove all read-only fields, like `uuid`, `status`, etc.):
+# (be sure to remove all read-only fields, like `uuid`):
 terraform state show artie_pipeline.my_pipeline
 
 # Then you can find the UUIDs of the objects your pipeline depends on and import those too:
