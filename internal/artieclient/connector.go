@@ -22,30 +22,23 @@ type Connector struct {
 }
 
 type ConnectorConfig struct {
-	Host                 string                 `json:"host"`
-	SnapshotHost         string                 `json:"snapshotHost"`
-	Port                 int32                  `json:"port"`
-	Endpoint             string                 `json:"endpoint"`
-	User                 string                 `json:"user"`
-	Username             string                 `json:"username"`
-	Password             string                 `json:"password"`
-	GCPProjectID         string                 `json:"projectID"`
-	GCPLocation          string                 `json:"location"`
-	GCPCredentialsData   string                 `json:"credentialsData"`
-	SnowflakeAccountURL  string                 `json:"accountURL"`
-	SnowflakeVirtualDWH  string                 `json:"virtualDWH"`
-	SnowflakePrivateKey  string                 `json:"privateKey"`
-	AWSAccessKeyID       string                 `json:"awsAccessKeyID"`
-	AWSSecretAccessKey   string                 `json:"awsSecretAccessKey"`
-	AWSRegion            string                 `json:"awsRegion"`
-	DynamoStreamArn      string                 `json:"streamsArn"`
-	DynamoSnapshotConfig DynamoDBSnapshotConfig `json:"snapshotConfig"`
-}
-
-type DynamoDBSnapshotConfig struct {
-	Enabled        bool   `json:"enabled"`
-	Bucket         string `json:"bucket"`
-	OptionalFolder string `json:"optionalFolder"`
+	Host                string `json:"host"`
+	SnapshotHost        string `json:"snapshotHost"`
+	Port                int32  `json:"port"`
+	Endpoint            string `json:"endpoint"`
+	User                string `json:"user"`
+	Username            string `json:"username"`
+	Password            string `json:"password"`
+	GCPProjectID        string `json:"projectID"`
+	GCPLocation         string `json:"location"`
+	GCPCredentialsData  string `json:"credentialsData"`
+	SnowflakeAccountURL string `json:"accountURL"`
+	SnowflakeVirtualDWH string `json:"virtualDWH"`
+	SnowflakePrivateKey string `json:"privateKey"`
+	AWSAccessKeyID      string `json:"awsAccessKeyID"`
+	AWSSecretAccessKey  string `json:"awsSecretAccessKey"`
+	AWSRegion           string `json:"awsRegion"`
+	DynamoStreamArn     string `json:"streamsArn"`
 }
 
 type validationResponse struct {
