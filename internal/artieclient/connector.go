@@ -42,6 +42,16 @@ type ConnectorConfig struct {
 	DynamoSnapshotConfig DynamoDBSnapshotConfig `json:"snapshotConfig"`
 }
 
+type DynamoDBSnapshotConfig struct {
+	Enabled        bool   `json:"enabled"`
+	Bucket         string `json:"bucket"`
+	OptionalFolder string `json:"optionalFolder"`
+}
+
+type validationResponse struct {
+	Error string `json:"error"`
+}
+
 type ConnectorClient struct {
 	client Client
 }

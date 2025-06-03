@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"terraform-provider-artie/internal/lib"
 
 	"github.com/google/uuid"
 )
@@ -51,6 +52,95 @@ func (p apiPipeline) toPipeline() Pipeline {
 
 	p.Pipeline.Tables = tables
 	return p.Pipeline
+}
+
+type Table struct {
+	UUID              uuid.UUID `json:"uuid"`
+	Name              string    `json:"name"`
+	Schema            string    `json:"schema"`
+	EnableHistoryMode bool      `json:"enableHistoryMode"`
+	IsPartitioned     bool      `json:"isPartitioned"`
+
+	// Advanced table settings - these must all be nullable
+	Alias           *string           `json:"alias"`
+	ExcludeColumns  *[]string         `json:"excludeColumns"`
+	IncludeColumns  *[]string         `json:"includeColumns"`
+	ColumnsToHash   *[]string         `json:"columnsToHash"`
+	SkipDeletes     *bool             `json:"skipDelete"`
+	MergePredicates *[]MergePredicate `json:"mergePredicates"`
+}
+
+func (t Table) BuildAPITable() APITable {
+	// This is used for just the validate-source endpoint for now
+	// We'll spin up a separate workstream to deprecate the need to have [Table] in general (which will require us to work on nullability of advanced settings)
+	apiTable := APITable{
+		Table: t,
+		AdvancedSettings: advancedTableSettings{
+			Alias:           lib.RemovePtr(t.Alias),
+			ExcludeColumns:  lib.RemovePtr(t.ExcludeColumns),
+			IncludeColumns:  lib.RemovePtr(t.IncludeColumns),
+			ColumnsToHash:   lib.RemovePtr(t.ColumnsToHash),
+			SkipDeletes:     lib.RemovePtr(t.SkipDeletes),
+			MergePredicates: lib.RemovePtr(t.MergePredicates),
+		},
+	}
+
+	return apiTable
+}
+
+type MergePredicate struct {
+	PartitionField string `json:"partitionField"`
+}
+
+type advancedTableSettings struct {
+	Alias           string           `json:"alias"`
+	ExcludeColumns  []string         `json:"excludeColumns"`
+	IncludeColumns  []string         `json:"includeColumns"`
+	ColumnsToHash   []string         `json:"columnsToHash"`
+	SkipDeletes     bool             `json:"skipDelete"`
+	MergePredicates []MergePredicate `json:"mergePredicates"`
+}
+
+type APITable struct {
+	Table
+	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
+}
+
+func toSlicePtr[T any](slice []T) *[]T {
+	if len(slice) == 0 {
+		return &[]T{}
+	}
+	return &slice
+}
+
+func (t APITable) unnestTableAdvSettings() Table {
+	t.Alias = &t.AdvancedSettings.Alias
+	t.SkipDeletes = &t.AdvancedSettings.SkipDeletes
+
+	// These arrays are omitted from the api response if empty; fallback to empty slices
+	// so terraform doesn't think a change is needed if the tf config specifies empty slices
+	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
+	t.IncludeColumns = toSlicePtr(t.AdvancedSettings.IncludeColumns)
+	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
+	t.MergePredicates = toSlicePtr(t.AdvancedSettings.MergePredicates)
+
+	return t.Table
+}
+
+type FlushConfig struct {
+	FlushIntervalSeconds int64 `json:"flushIntervalSeconds"`
+	BufferRows           int64 `json:"bufferRows"`
+	FlushSizeKB          int64 `json:"flushSizeKB"`
+}
+
+type DestinationConfig struct {
+	Dataset               string `json:"dataset"`
+	Database              string `json:"database"`
+	Schema                string `json:"schema"`
+	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
+	SchemaNamePrefix      string `json:"schemaNamePrefix"`
+	Bucket                string `json:"bucketName"`
+	Folder                string `json:"folderName"`
 }
 
 type PipelineClient struct {

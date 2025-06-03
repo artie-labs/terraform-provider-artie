@@ -106,10 +106,6 @@ func makeRequest[Out any](ctx context.Context, client Client, method string, pat
 	return *respBody, nil
 }
 
-func (c Client) Deployments() DeploymentClient {
-	return DeploymentClient{client: c}
-}
-
 func (c Client) Connectors() ConnectorClient {
 	return ConnectorClient{client: c}
 }
