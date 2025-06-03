@@ -64,9 +64,11 @@ func parseList[T any](ctx context.Context, value types.List) ([]T, diag.Diagnost
 	return elements, diags
 }
 
-func optionalStringListToStringValue(ctx context.Context, value *[]string) (types.List, diag.Diagnostics) {
+// optionalStringListToListValue converts a pointer to a slice of strings to a Terraform List value.
+// If the pointer is nil, it returns an empty list rather than a null list.
+func optionalStringListToListValue(ctx context.Context, value *[]string) (types.List, diag.Diagnostics) {
 	if value == nil {
-		return types.ListNull(types.StringType), nil
+		return types.ListValueFrom(ctx, types.StringType, []types.String{})
 	}
 
 	return types.ListValueFrom(ctx, types.StringType, *value)

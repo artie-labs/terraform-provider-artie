@@ -47,10 +47,10 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string
 	tables := map[string]SourceReaderTable{}
 	var diags diag.Diagnostics
 	for key, apiTable := range apiTablesMap {
-		colsToExclude, excludeDiags := optionalStringListToStringValue(ctx, &apiTable.ColumnsToExclude)
+		colsToExclude, excludeDiags := types.ListValueFrom(ctx, types.StringType, apiTable.ColumnsToExclude)
 		diags.Append(excludeDiags...)
 
-		colsToInclude, includeDiags := optionalStringListToStringValue(ctx, &apiTable.ColumnsToInclude)
+		colsToInclude, includeDiags := types.ListValueFrom(ctx, types.StringType, apiTable.ColumnsToInclude)
 		diags.Append(includeDiags...)
 		tables[key] = SourceReaderTable{
 			Name:                     types.StringValue(apiTable.Name),
