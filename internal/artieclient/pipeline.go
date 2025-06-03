@@ -38,74 +38,26 @@ type Pipeline struct {
 	Status string    `json:"status"`
 }
 
-type apiPipeline struct {
-	Pipeline
-	Tables []APITable `json:"tables"`
-}
-
-func (p apiPipeline) toPipeline() Pipeline {
-	tables := []Table{}
-	for _, table := range p.Tables {
-		tables = append(tables, table.unnestTableAdvSettings())
-	}
-
-	p.Pipeline.Tables = tables
-	return p.Pipeline
-}
-
 type Table struct {
-	UUID              uuid.UUID `json:"uuid"`
-	Name              string    `json:"name"`
-	Schema            string    `json:"schema"`
-	EnableHistoryMode bool      `json:"enableHistoryMode"`
-	IsPartitioned     bool      `json:"isPartitioned"`
-
-	// Advanced table settings - these must all be nullable
-	Alias           *string           `json:"alias"`
-	ExcludeColumns  *[]string         `json:"excludeColumns"`
-	IncludeColumns  *[]string         `json:"includeColumns"`
-	ColumnsToHash   *[]string         `json:"columnsToHash"`
-	SkipDeletes     *bool             `json:"skipDelete"`
-	MergePredicates *[]MergePredicate `json:"mergePredicates"`
+	UUID              uuid.UUID             `json:"uuid"`
+	Name              string                `json:"name"`
+	Schema            string                `json:"schema"`
+	EnableHistoryMode bool                  `json:"enableHistoryMode"`
+	IsPartitioned     bool                  `json:"isPartitioned"`
+	AdvancedSettings  AdvancedTableSettings `json:"advancedSettings"`
 }
 
 type MergePredicate struct {
 	PartitionField string `json:"partitionField"`
 }
 
-type advancedTableSettings struct {
-	Alias           string           `json:"alias"`
-	ExcludeColumns  []string         `json:"excludeColumns"`
-	IncludeColumns  []string         `json:"includeColumns"`
-	ColumnsToHash   []string         `json:"columnsToHash"`
-	SkipDeletes     bool             `json:"skipDelete"`
-	MergePredicates []MergePredicate `json:"mergePredicates"`
-}
-
-type APITable struct {
-	Table
-	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
-}
-
-func toSlicePtr[T any](slice []T) *[]T {
-	if len(slice) == 0 {
-		return &[]T{}
-	}
-	return &slice
-}
-
-func (t APITable) unnestTableAdvSettings() Table {
-	t.Alias = &t.AdvancedSettings.Alias
-	t.SkipDeletes = &t.AdvancedSettings.SkipDeletes
-
-	// These arrays are omitted from the api response if empty; fallback to empty slices
-	// so terraform doesn't think a change is needed if the tf config specifies empty slices
-	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
-	t.IncludeColumns = toSlicePtr(t.AdvancedSettings.IncludeColumns)
-	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
-	t.MergePredicates = toSlicePtr(t.AdvancedSettings.MergePredicates)
-
-	return t.Table
+type AdvancedTableSettings struct {
+	Alias           *string           `json:"alias"`
+	ExcludeColumns  *[]string         `json:"excludeColumns"`
+	IncludeColumns  *[]string         `json:"includeColumns"`
+	ColumnsToHash   *[]string         `json:"columnsToHash"`
+	SkipDeletes     *bool             `json:"skipDelete"`
+	MergePredicates *[]MergePredicate `json:"mergePredicates"`
 }
 
 type FlushConfig struct {
@@ -138,24 +90,15 @@ func (pc PipelineClient) Get(ctx context.Context, pipelineUUID string) (Pipeline
 		return Pipeline{}, err
 	}
 
-	pipeline, err := makeRequest[apiPipeline](ctx, pc.client, http.MethodGet, path, nil)
-	if err != nil {
-		return Pipeline{}, err
-	}
-
-	return pipeline.toPipeline(), nil
+	return makeRequest[Pipeline](ctx, pc.client, http.MethodGet, path, nil)
 }
 
 func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pipeline, error) {
 	body := map[string]any{
 		"pipeline": pipeline,
 	}
-	createdPipeline, err := makeRequest[apiPipeline](ctx, pc.client, http.MethodPost, pc.basePath(), body)
-	if err != nil {
-		return Pipeline{}, err
-	}
 
-	return createdPipeline.toPipeline(), nil
+	return makeRequest[Pipeline](ctx, pc.client, http.MethodPost, pc.basePath(), body)
 }
 
 func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipeline, error) {
@@ -167,12 +110,8 @@ func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipelin
 	body := map[string]any{
 		"pipeline": pipeline,
 	}
-	updatedPipeline, err := makeRequest[apiPipeline](ctx, pc.client, http.MethodPost, path, body)
-	if err != nil {
-		return Pipeline{}, err
-	}
 
-	return updatedPipeline.toPipeline(), nil
+	return makeRequest[Pipeline](ctx, pc.client, http.MethodPost, path, body)
 }
 
 func (pc PipelineClient) Delete(ctx context.Context, pipelineUUID string) error {

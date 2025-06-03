@@ -112,12 +112,14 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		Schema:            t.Schema.ValueString(),
 		EnableHistoryMode: t.EnableHistoryMode.ValueBool(),
 		IsPartitioned:     t.IsPartitioned.ValueBool(),
-		Alias:             t.Alias.ValueStringPointer(),
-		ExcludeColumns:    colsToExclude,
-		IncludeColumns:    colsToInclude,
-		ColumnsToHash:     colsToHash,
-		SkipDeletes:       t.SkipDeletes.ValueBoolPointer(),
-		MergePredicates:   clientMergePreds,
+		AdvancedSettings: artieclient.AdvancedTableSettings{
+			Alias:           t.Alias.ValueStringPointer(),
+			ExcludeColumns:  colsToExclude,
+			IncludeColumns:  colsToInclude,
+			ColumnsToHash:   colsToHash,
+			SkipDeletes:     t.SkipDeletes.ValueBoolPointer(),
+			MergePredicates: clientMergePreds,
+		},
 	}, diags
 }
 
@@ -130,16 +132,16 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
 		}
 
-		colsToExclude, excludeDiags := optionalStringListToStringValue(ctx, apiTable.ExcludeColumns)
+		colsToExclude, excludeDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ExcludeColumns)
 		diags.Append(excludeDiags...)
 
-		colsToInclude, includeDiags := optionalStringListToStringValue(ctx, apiTable.IncludeColumns)
+		colsToInclude, includeDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.IncludeColumns)
 		diags.Append(includeDiags...)
 
-		colsToHash, hashDiags := optionalStringListToStringValue(ctx, apiTable.ColumnsToHash)
+		colsToHash, hashDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToHash)
 		diags.Append(hashDiags...)
 
-		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.MergePredicates)
+		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.AdvancedSettings.MergePredicates)
 		diags.Append(mergePredDiags...)
 
 		tables[tableKey] = Table{
@@ -148,11 +150,11 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			Schema:            types.StringValue(apiTable.Schema),
 			EnableHistoryMode: types.BoolValue(apiTable.EnableHistoryMode),
 			IsPartitioned:     types.BoolValue(apiTable.IsPartitioned),
-			Alias:             types.StringPointerValue(apiTable.Alias),
+			Alias:             types.StringPointerValue(apiTable.AdvancedSettings.Alias),
 			ExcludeColumns:    colsToExclude,
 			IncludeColumns:    colsToInclude,
 			ColumnsToHash:     colsToHash,
-			SkipDeletes:       types.BoolPointerValue(apiTable.SkipDeletes),
+			SkipDeletes:       types.BoolPointerValue(apiTable.AdvancedSettings.SkipDeletes),
 			MergePredicates:   mergePredicates,
 		}
 	}
