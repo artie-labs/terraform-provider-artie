@@ -95,7 +95,6 @@ func buildFlushConfig(ctx context.Context, d types.Object) (*FlushConfig, diag.D
 type Pipeline struct {
 	UUID                     types.String               `tfsdk:"uuid"`
 	Name                     types.String               `tfsdk:"name"`
-	Status                   types.String               `tfsdk:"status"`
 	SourceReaderUUID         types.String               `tfsdk:"source_reader_uuid"`
 	DestinationUUID          types.String               `tfsdk:"destination_connector_uuid"`
 	DestinationConfig        *PipelineDestinationConfig `tfsdk:"destination_config"`
@@ -190,7 +189,6 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (artieclient.Pipeline, diag.Di
 
 	return artieclient.Pipeline{
 		UUID:         uuid,
-		Status:       p.Status.ValueString(),
 		BasePipeline: apiBaseModel,
 	}, diags
 }
@@ -251,7 +249,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	return Pipeline{
 		UUID:                     types.StringValue(apiModel.UUID.String()),
 		Name:                     types.StringValue(apiModel.Name),
-		Status:                   types.StringValue(apiModel.Status),
 		Tables:                   tablesMap,
 		SourceReaderUUID:         optionalUUIDToStringValue(apiModel.SourceReaderUUID),
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
