@@ -76,12 +76,6 @@ Required:
 - `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `stream_arn` (String) The ARN (Amazon Resource Name) of the DynamoDB Stream.
 
-Optional:
-
-- `backfill` (Boolean, Deprecated) Whether or not we should backfill all existing data from DynamoDB to your destination.
-- `backfill_bucket` (String, Deprecated) If backfill = true, specify the S3 bucket where the DynamoDB export should be stored.
-- `backfill_folder` (String, Deprecated) If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket.
-
 
 <a id="nestedatt--mongodb_config"></a>
 ### Nested Schema for `mongodb_config`

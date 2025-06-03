@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -73,9 +72,6 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"stream_arn":        schema.StringAttribute{Required: true, MarkdownDescription: "The ARN (Amazon Resource Name) of the DynamoDB Stream."},
 					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to DynamoDB."},
 					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-					"backfill":          schema.BoolAttribute{DeprecationMessage: "This field is deprecated and will be removed in the next major version. Backfills for DynamoDB will need to be initiated via the Artie UI.", Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "Whether or not we should backfill all existing data from DynamoDB to your destination."},
-					"backfill_bucket":   schema.StringAttribute{DeprecationMessage: "This field is deprecated and will be removed in the next major version. Backfills for DynamoDB will need to be initiated via the Artie UI.", Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If backfill = true, specify the S3 bucket where the DynamoDB export should be stored."},
-					"backfill_folder":   schema.StringAttribute{DeprecationMessage: "This field is deprecated and will be removed in the next major version. Backfills for DynamoDB will need to be initiated via the Artie UI.", Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If backfill = true, optionally specify the folder where the DynamoDB export should be stored within the specified S3 bucket."},
 				},
 			},
 			"mongodb_config": schema.SingleNestedAttribute{

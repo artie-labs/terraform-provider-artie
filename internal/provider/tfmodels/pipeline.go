@@ -6,20 +6,102 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"terraform-provider-artie/internal/artieclient"
 )
 
+type PipelineDestinationConfig struct {
+	Dataset               types.String `tfsdk:"dataset"`
+	Database              types.String `tfsdk:"database"`
+	Schema                types.String `tfsdk:"schema"`
+	UseSameSchemaAsSource types.Bool   `tfsdk:"use_same_schema_as_source"`
+	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
+	Bucket                types.String `tfsdk:"bucket"`
+	Folder                types.String `tfsdk:"folder"`
+}
+
+func (d PipelineDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
+	return artieclient.DestinationConfig{
+		Dataset:               d.Dataset.ValueString(),
+		Database:              d.Database.ValueString(),
+		Schema:                d.Schema.ValueString(),
+		UseSameSchemaAsSource: d.UseSameSchemaAsSource.ValueBool(),
+		SchemaNamePrefix:      d.SchemaNamePrefix.ValueString(),
+		Bucket:                d.Bucket.ValueString(),
+		Folder:                d.Folder.ValueString(),
+	}
+}
+
+func PipelineDestinationConfigFromAPIModel(apiModel artieclient.DestinationConfig) PipelineDestinationConfig {
+	return PipelineDestinationConfig{
+		Dataset:               types.StringValue(apiModel.Dataset),
+		Database:              types.StringValue(apiModel.Database),
+		Schema:                types.StringValue(apiModel.Schema),
+		UseSameSchemaAsSource: types.BoolValue(apiModel.UseSameSchemaAsSource),
+		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
+		Bucket:                types.StringValue(apiModel.Bucket),
+		Folder:                types.StringValue(apiModel.Folder),
+	}
+}
+
+type FlushConfig struct {
+	FlushIntervalSeconds types.Int64 `tfsdk:"flush_interval_seconds"`
+	BufferRows           types.Int64 `tfsdk:"buffer_rows"`
+	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
+}
+
+func (f *FlushConfig) ToAPIModel() *artieclient.FlushConfig {
+	if f == nil {
+		// Support unknown.
+		return nil
+	}
+
+	return &artieclient.FlushConfig{
+		FlushIntervalSeconds: f.FlushIntervalSeconds.ValueInt64(),
+		BufferRows:           f.BufferRows.ValueInt64(),
+		FlushSizeKB:          f.FlushSizeKB.ValueInt64(),
+	}
+}
+
+var flushAttrTypes = map[string]attr.Type{
+	"flush_interval_seconds": types.Int64Type,
+	"buffer_rows":            types.Int64Type,
+	"flush_size_kb":          types.Int64Type,
+}
+
+func FlushConfigFromAPIModel(ctx context.Context, apiModel artieclient.FlushConfig) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, flushAttrTypes, FlushConfig{
+		FlushIntervalSeconds: types.Int64Value(apiModel.FlushIntervalSeconds),
+		BufferRows:           types.Int64Value(apiModel.BufferRows),
+		FlushSizeKB:          types.Int64Value(apiModel.FlushSizeKB),
+	})
+}
+
+func buildFlushConfig(ctx context.Context, d types.Object) (*FlushConfig, diag.Diagnostics) {
+	var flushConfig *FlushConfig
+	flushConfigDiags := d.As(ctx, &flushConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+
+	if flushConfigDiags.HasError() {
+		return nil, flushConfigDiags
+	}
+
+	return flushConfig, nil
+}
+
 type Pipeline struct {
-	UUID                     types.String                 `tfsdk:"uuid"`
-	Name                     types.String                 `tfsdk:"name"`
-	Status                   types.String                 `tfsdk:"status"`
-	SourceReaderUUID         types.String                 `tfsdk:"source_reader_uuid"`
-	DestinationUUID          types.String                 `tfsdk:"destination_connector_uuid"`
-	DestinationConfig        *DeploymentDestinationConfig `tfsdk:"destination_config"`
-	SnowflakeEcoScheduleUUID types.String                 `tfsdk:"snowflake_eco_schedule_uuid"`
-	DataPlaneName            types.String                 `tfsdk:"data_plane_name"`
-	Tables                   types.Map                    `tfsdk:"tables"`
+	UUID                     types.String               `tfsdk:"uuid"`
+	Name                     types.String               `tfsdk:"name"`
+	Status                   types.String               `tfsdk:"status"`
+	SourceReaderUUID         types.String               `tfsdk:"source_reader_uuid"`
+	DestinationUUID          types.String               `tfsdk:"destination_connector_uuid"`
+	DestinationConfig        *PipelineDestinationConfig `tfsdk:"destination_config"`
+	SnowflakeEcoScheduleUUID types.String               `tfsdk:"snowflake_eco_schedule_uuid"`
+	DataPlaneName            types.String               `tfsdk:"data_plane_name"`
+	Tables                   types.Map                  `tfsdk:"tables"`
 
 	// Advanced settings
 	FlushConfig                    types.Object `tfsdk:"flush_rules"`
@@ -125,7 +207,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		return Pipeline{}, diags
 	}
 
-	destinationConfig := DeploymentDestinationConfigFromAPIModel(apiModel.DestinationConfig)
+	destinationConfig := PipelineDestinationConfigFromAPIModel(apiModel.DestinationConfig)
 
 	var flushConfig types.Object
 	var dropDeletedColumns types.Bool

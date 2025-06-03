@@ -53,6 +53,77 @@ func (p apiPipeline) toPipeline() Pipeline {
 	return p.Pipeline
 }
 
+type Table struct {
+	UUID              uuid.UUID `json:"uuid"`
+	Name              string    `json:"name"`
+	Schema            string    `json:"schema"`
+	EnableHistoryMode bool      `json:"enableHistoryMode"`
+	IsPartitioned     bool      `json:"isPartitioned"`
+
+	// Advanced table settings - these must all be nullable
+	Alias           *string           `json:"alias"`
+	ExcludeColumns  *[]string         `json:"excludeColumns"`
+	IncludeColumns  *[]string         `json:"includeColumns"`
+	ColumnsToHash   *[]string         `json:"columnsToHash"`
+	SkipDeletes     *bool             `json:"skipDelete"`
+	MergePredicates *[]MergePredicate `json:"mergePredicates"`
+}
+
+type MergePredicate struct {
+	PartitionField string `json:"partitionField"`
+}
+
+type advancedTableSettings struct {
+	Alias           string           `json:"alias"`
+	ExcludeColumns  []string         `json:"excludeColumns"`
+	IncludeColumns  []string         `json:"includeColumns"`
+	ColumnsToHash   []string         `json:"columnsToHash"`
+	SkipDeletes     bool             `json:"skipDelete"`
+	MergePredicates []MergePredicate `json:"mergePredicates"`
+}
+
+type APITable struct {
+	Table
+	AdvancedSettings advancedTableSettings `json:"advancedSettings"`
+}
+
+func toSlicePtr[T any](slice []T) *[]T {
+	if len(slice) == 0 {
+		return &[]T{}
+	}
+	return &slice
+}
+
+func (t APITable) unnestTableAdvSettings() Table {
+	t.Alias = &t.AdvancedSettings.Alias
+	t.SkipDeletes = &t.AdvancedSettings.SkipDeletes
+
+	// These arrays are omitted from the api response if empty; fallback to empty slices
+	// so terraform doesn't think a change is needed if the tf config specifies empty slices
+	t.ExcludeColumns = toSlicePtr(t.AdvancedSettings.ExcludeColumns)
+	t.IncludeColumns = toSlicePtr(t.AdvancedSettings.IncludeColumns)
+	t.ColumnsToHash = toSlicePtr(t.AdvancedSettings.ColumnsToHash)
+	t.MergePredicates = toSlicePtr(t.AdvancedSettings.MergePredicates)
+
+	return t.Table
+}
+
+type FlushConfig struct {
+	FlushIntervalSeconds int64 `json:"flushIntervalSeconds"`
+	BufferRows           int64 `json:"bufferRows"`
+	FlushSizeKB          int64 `json:"flushSizeKB"`
+}
+
+type DestinationConfig struct {
+	Dataset               string `json:"dataset"`
+	Database              string `json:"database"`
+	Schema                string `json:"schema"`
+	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
+	SchemaNamePrefix      string `json:"schemaNamePrefix"`
+	Bucket                string `json:"bucketName"`
+	Folder                string `json:"folderName"`
+}
+
 type PipelineClient struct {
 	client Client
 }

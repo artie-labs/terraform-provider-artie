@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDeploymentFlushConfigFromAPIModel(t *testing.T) {
+func TestFlushConfigFromAPIModel(t *testing.T) {
 	{
 		// zero object
 		var object types.Object
