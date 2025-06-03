@@ -34,8 +34,17 @@ func TestOptionalStringListToListValue(t *testing.T) {
 		assert.False(t, listValue.IsNull(), "expected list value to be not null")
 		assert.False(t, listValue.IsUnknown(), "expected list value to be not unknown")
 		assert.Equal(t, 3, len(listValue.Elements()), "expected list value to have 3 elements")
-		assert.Equal(t, "a", listValue.Elements()[0].(types.String).ValueString(), "expected list value to have 'a' as first element")
-		assert.Equal(t, "b", listValue.Elements()[1].(types.String).ValueString(), "expected list value to have 'b' as second element")
-		assert.Equal(t, "c", listValue.Elements()[2].(types.String).ValueString(), "expected list value to have 'c' as third element")
+
+		val1, ok := listValue.Elements()[0].(types.String)
+		assert.True(t, ok, "expected first element to be a string")
+		assert.Equal(t, "a", val1.ValueString(), "expected list value to have 'a' as first element")
+
+		val2, ok := listValue.Elements()[1].(types.String)
+		assert.True(t, ok, "expected second element to be a string")
+		assert.Equal(t, "b", val2.ValueString(), "expected list value to have 'b' as second element")
+
+		val3, ok := listValue.Elements()[2].(types.String)
+		assert.True(t, ok, "expected third element to be a string")
+		assert.Equal(t, "c", val3.ValueString(), "expected list value to have 'c' as third element")
 	}
 }
