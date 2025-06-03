@@ -34,8 +34,7 @@ type BasePipeline struct {
 
 type Pipeline struct {
 	BasePipeline
-	UUID   uuid.UUID `json:"uuid"`
-	Status string    `json:"status"`
+	UUID uuid.UUID `json:"uuid"`
 }
 
 type Table struct {
