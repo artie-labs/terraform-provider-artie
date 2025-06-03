@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"terraform-provider-artie/internal/lib"
 
 	"github.com/google/uuid"
 )
@@ -68,24 +67,6 @@ type Table struct {
 	ColumnsToHash   *[]string         `json:"columnsToHash"`
 	SkipDeletes     *bool             `json:"skipDelete"`
 	MergePredicates *[]MergePredicate `json:"mergePredicates"`
-}
-
-func (t Table) BuildAPITable() APITable {
-	// This is used for just the validate-source endpoint for now
-	// We'll spin up a separate workstream to deprecate the need to have [Table] in general (which will require us to work on nullability of advanced settings)
-	apiTable := APITable{
-		Table: t,
-		AdvancedSettings: advancedTableSettings{
-			Alias:           lib.RemovePtr(t.Alias),
-			ExcludeColumns:  lib.RemovePtr(t.ExcludeColumns),
-			IncludeColumns:  lib.RemovePtr(t.IncludeColumns),
-			ColumnsToHash:   lib.RemovePtr(t.ColumnsToHash),
-			SkipDeletes:     lib.RemovePtr(t.SkipDeletes),
-			MergePredicates: lib.RemovePtr(t.MergePredicates),
-		},
-	}
-
-	return apiTable
 }
 
 type MergePredicate struct {
