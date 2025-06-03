@@ -90,24 +90,15 @@ func (pc PipelineClient) Get(ctx context.Context, pipelineUUID string) (Pipeline
 		return Pipeline{}, err
 	}
 
-	pipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodGet, path, nil)
-	if err != nil {
-		return Pipeline{}, err
-	}
-
-	return pipeline, nil
+	return makeRequest[Pipeline](ctx, pc.client, http.MethodGet, path, nil)
 }
 
 func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pipeline, error) {
 	body := map[string]any{
 		"pipeline": pipeline,
 	}
-	createdPipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodPost, pc.basePath(), body)
-	if err != nil {
-		return Pipeline{}, err
-	}
 
-	return createdPipeline, nil
+	return makeRequest[Pipeline](ctx, pc.client, http.MethodPost, pc.basePath(), body)
 }
 
 func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipeline, error) {
@@ -119,12 +110,8 @@ func (pc PipelineClient) Update(ctx context.Context, pipeline Pipeline) (Pipelin
 	body := map[string]any{
 		"pipeline": pipeline,
 	}
-	updatedPipeline, err := makeRequest[Pipeline](ctx, pc.client, http.MethodPost, path, body)
-	if err != nil {
-		return Pipeline{}, err
-	}
 
-	return updatedPipeline, nil
+	return makeRequest[Pipeline](ctx, pc.client, http.MethodPost, path, body)
 }
 
 func (pc PipelineClient) Delete(ctx context.Context, pipelineUUID string) error {
