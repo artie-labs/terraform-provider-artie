@@ -39,7 +39,7 @@ export TF_VAR_artie_api_key=<yoursecretkey>
 
 Create an `example.tf` file in the top level directory (it will be git-ignored) to hold the Terraform config you want to develop against. Ping Dana for an example of what to put in it.
 
-To test managing an Artie deployment with this provider:
+To test managing an Artie pipeline with this provider:
 
 ```shell
 go install

@@ -40,7 +40,7 @@ resource "artie_connector" "postgres_dev" {
 ### Optional
 
 - `bigquery_config` (Attributes) This should be filled out if the connector type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
-- `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New deployment' in our UI.
+- `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. (see [below for nested schema](#nestedatt--dynamodb_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
 - `mssql_config` (Attributes) This should be filled out if the connector type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
