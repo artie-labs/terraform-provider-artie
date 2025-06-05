@@ -69,7 +69,7 @@ To set up a new data pipeline, you'll need to create a few resources:
 				Optional:            true,
 			},
 			"api_key": schema.StringAttribute{
-				MarkdownDescription: "Artie API key to authenticate requests to the Artie API. Generate an API key in the Artie web app at https://app.artie.com/settings. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.",
+				MarkdownDescription: "Artie API key to authenticate requests to the Artie API. Generate an API key in the Artie web app at https://app.artie.com/settings?tab=authentication (only company admins can create API keys). We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.",
 				Required:            true,
 				Sensitive:           true,
 			},
