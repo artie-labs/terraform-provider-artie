@@ -7,7 +7,7 @@
 
 ## Using the Provider
 
-To use this Terraform provider, you must already be an Artie customer and have an account in our web app. Once you're logged in, you can create an API key at [app.artie.com/settings](https://app.artie.com/settings) which you'll use to authenticate requests from this provider. See the `examples/` and `docs/` directories for guidance on how to set up your Terraform config for Artie.
+To use this Terraform provider, you must already be an Artie customer and have an account in our web app. Once you're logged in, you can create an API key at [app.artie.com/settings](https://app.artie.com/settings?tab=authentication) which you'll use to authenticate requests from this provider. See the `examples/` and `docs/` directories for guidance on how to set up your Terraform config for Artie.
 
 ## Developing the Provider (internal to Artie)
 
