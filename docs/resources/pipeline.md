@@ -121,6 +121,8 @@ Optional:
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 # Import a pipeline by using its UUID, which you can find in
 # the URL of the pipeline overview page in the Artie UI, e.g.:
