@@ -12,6 +12,7 @@ type SourceReaderSettings struct {
 	BackfillBatchSize               int64           `json:"backfillBatchSize"`
 	OneTopicPerSchema               bool            `json:"oneTopicPerSchema"`
 	PostgresPublicationNameOverride string          `json:"publicationNameOverride"`
+	PostgresPublicationMode         string          `json:"publicationAutoCreateMode"`
 	PostgresReplicationSlotOverride string          `json:"replicationSlotOverride"`
 	PartitionRegex                  *PartitionRegex `json:"partitionRegex,omitempty"`
 }
