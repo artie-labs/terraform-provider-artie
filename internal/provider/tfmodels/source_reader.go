@@ -79,6 +79,7 @@ type SourceReader struct {
 	OracleContainerName             types.String `tfsdk:"oracle_container_name"`
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
+	PostgresPublicationMode         types.String `tfsdk:"postgres_publication_mode"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
 	PartitionRegexPattern           types.String `tfsdk:"partition_suffix_regex_pattern"`
 	Tables                          types.Map    `tfsdk:"tables"`
@@ -109,6 +110,7 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		BackfillBatchSize:               s.BackfillBatchSize.ValueInt64(),
 		OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
 		PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
+		PostgresPublicationMode:         s.PostgresPublicationMode.ValueString(),
 		PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
 	}
 
@@ -164,6 +166,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		BackfillBatchSize:               types.Int64Value(apiModel.Settings.BackfillBatchSize),
 		OneTopicPerSchema:               types.BoolValue(apiModel.Settings.OneTopicPerSchema),
 		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
+		PostgresPublicationMode:         types.StringValue(apiModel.Settings.PostgresPublicationMode),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
 		Tables:                          tablesMap,
 	}
