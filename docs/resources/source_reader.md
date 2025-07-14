@@ -55,6 +55,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 - `backfill_batch_size` (Number) The number of rows to read from the source database in each batch while backfilling. Maximum allowed value is 50,000. Default is 5,000.
 - `data_plane_name` (String) The name of the data plane to deploy this source reader in. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `database_name` (String) The name of the database we should read data from in the source connector. This should be specified if the source connector's type is DocumentDB, MongoDB, MySQL, MS SQL, Oracle (this maps to the service name), or PostgreSQL.
+- `enable_heartbeats` (Boolean) If the source database is a very low-traffic PostgreSQL database (e.g., a dev database) and is running on Amazon RDS, we recommend setting this to true to prevent WAL growth issues. This is only applicable if the source type is PostgreSQL.
 - `is_shared` (Boolean) If set to true, this source reader can be used by multiple pipelines.
 - `name` (String) An optional human-readable label for this source reader.
 - `one_topic_per_schema` (Boolean) If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This is currently only supported if your source is Oracle and your account has this feature enabled.

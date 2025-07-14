@@ -10,6 +10,7 @@ import (
 
 type SourceReaderSettings struct {
 	BackfillBatchSize               int64           `json:"backfillBatchSize"`
+	EnableHeartbeats                bool            `json:"enableHeartbeats"`
 	OneTopicPerSchema               bool            `json:"oneTopicPerSchema"`
 	PostgresPublicationNameOverride string          `json:"publicationNameOverride"`
 	PostgresPublicationMode         string          `json:"publicationAutoCreateMode"`
