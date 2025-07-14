@@ -77,6 +77,7 @@ type SourceReader struct {
 	DatabaseName                    types.String `tfsdk:"database_name"`
 	BackfillBatchSize               types.Int64  `tfsdk:"backfill_batch_size"`
 	OracleContainerName             types.String `tfsdk:"oracle_container_name"`
+	EnableHeartbeats                types.Bool   `tfsdk:"enable_heartbeats"`
 	OneTopicPerSchema               types.Bool   `tfsdk:"one_topic_per_schema"`
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresPublicationMode         types.String `tfsdk:"postgres_publication_mode"`
@@ -108,6 +109,7 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 
 	settings := artieclient.SourceReaderSettings{
 		BackfillBatchSize:               s.BackfillBatchSize.ValueInt64(),
+		EnableHeartbeats:                s.EnableHeartbeats.ValueBool(),
 		OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
 		PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
 		PostgresPublicationMode:         s.PostgresPublicationMode.ValueString(),
@@ -164,6 +166,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		DatabaseName:                    types.StringValue(apiModel.DatabaseName),
 		OracleContainerName:             types.StringValue(apiModel.ContainerName),
 		BackfillBatchSize:               types.Int64Value(apiModel.Settings.BackfillBatchSize),
+		EnableHeartbeats:                types.BoolValue(apiModel.Settings.EnableHeartbeats),
 		OneTopicPerSchema:               types.BoolValue(apiModel.Settings.OneTopicPerSchema),
 		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
 		PostgresPublicationMode:         types.StringValue(apiModel.Settings.PostgresPublicationMode),
