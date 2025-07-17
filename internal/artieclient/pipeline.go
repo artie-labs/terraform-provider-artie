@@ -13,7 +13,6 @@ type AdvancedSettings struct {
 	EnableSoftDelete               *bool  `json:"enableSoftDelete"`
 	IncludeArtieUpdatedAtColumn    *bool  `json:"includeArtieUpdatedAtColumn"`
 	IncludeDatabaseUpdatedAtColumn *bool  `json:"includeDatabaseUpdatedAtColumn"`
-	OneTopicPerSchema              *bool  `json:"oneTopicPerSchema"`
 	FlushIntervalSeconds           *int64 `json:"flushIntervalSeconds"`
 	BufferRows                     *int64 `json:"bufferRows"`
 	FlushSizeKB                    *int64 `json:"flushSizeKb"`
