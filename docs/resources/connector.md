@@ -180,3 +180,20 @@ Optional:
 
 - `password` (String, Sensitive) The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided.
 - `private_key` (String, Sensitive) The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# Import a connector by using its UUID, which you can find by:
+# 1. Go to the pipeline overview page in the Artie UI
+# 2. Click on the "View UUIDs" button to see all related resource UUIDs
+terraform import artie_connector.my_connector <connector_uuid>
+
+# Then print the state and copy it into your terraform config file
+# (be sure to remove all read-only fields, like `uuid`):
+terraform state show artie_connector.my_connector
+```
