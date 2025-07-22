@@ -35,3 +35,20 @@ resource "artie_ssh_tunnel" "ssh_tunnel" {
 
 - `public_key` (String, Sensitive) When you create an SSH tunnel in Artie, we generate a public/private key pair. Once generated, you'll need to add this public key to `~/.ssh/authorized_keys` on your SSH server.
 - `uuid` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# Import an SSH tunnel by using its UUID, which you can find by:
+# 1. Go to the pipeline overview page in the Artie UI
+# 2. Click on the "View UUIDs" button to see all related resource UUIDs
+terraform import artie_ssh_tunnel.my_ssh_tunnel <ssh_tunnel_uuid>
+
+# Then print the state and copy it into your terraform config file
+# (be sure to remove all read-only fields, like `uuid`):
+terraform state show artie_ssh_tunnel.my_ssh_tunnel
+```

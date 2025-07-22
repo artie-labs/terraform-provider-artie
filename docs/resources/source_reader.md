@@ -84,3 +84,20 @@ Optional:
 - `columns_to_include` (List of String) An optional list of columns to include in CDC events. If not provided, all columns will be included. This cannot be used if `columns_to_exclude` is also specified.
 - `is_partitioned` (Boolean) If the source table is partitioned, set this to true and we will ingest data from all of its partitions. You may also need to customize `partition_suffix_regex_pattern` on the source reader.
 - `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# Import a source reader by using its UUID, which you can find by:
+# 1. Go to the pipeline overview page in the Artie UI
+# 2. Click on the "View UUIDs" button to see all related resource UUIDs
+terraform import artie_source_reader.my_source_reader <source_reader_uuid>
+
+# Then print the state and copy it into your terraform config file
+# (be sure to remove all read-only fields, like `uuid`):
+terraform state show artie_source_reader.my_source_reader
+```
