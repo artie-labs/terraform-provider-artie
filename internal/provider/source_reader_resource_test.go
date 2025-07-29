@@ -143,4 +143,39 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
 	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID:              types.StringValue(connectorUUID),
+			DatabaseName:               types.StringValue("test_db"),
+			EnableUnifyAcrossDatabases: types.BoolValue(true),
+			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{}),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "You must specify `databases_to_unify` if `enable_unify_across_databases` is set to true.")
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID:              types.StringValue(connectorUUID),
+			DatabaseName:               types.StringValue("test_db"),
+			EnableUnifyAcrossDatabases: types.BoolValue(true),
+			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db2")}),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "`databases_to_unify` should include the database you specified for `database_name`.")
+	}
+	{
+		config := tfmodels.SourceReader{
+			ConnectorUUID:              types.StringValue(connectorUUID),
+			DatabaseName:               types.StringValue("test_db"),
+			EnableUnifyAcrossDatabases: types.BoolValue(true),
+			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db")}),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.False(t, diags.HasError())
+	}
 }
