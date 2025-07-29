@@ -32,6 +32,8 @@ type SourceReaderTable struct {
 	ColumnsToExclude         []string `json:"excludeColumns"`
 	ColumnsToInclude         []string `json:"includeColumns"`
 	ChildPartitionSchemaName string   `json:"childPartitionSchemaName,omitempty"`
+	UnifyAcrossSchemas       bool     `json:"unifyAcrossSchemas"`
+	UnifyAcrossDatabases     bool     `json:"unifyAcrossDatabases"`
 }
 
 type BaseSourceReader struct {

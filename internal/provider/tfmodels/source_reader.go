@@ -17,6 +17,8 @@ type SourceReaderTable struct {
 	ColumnsToExclude         types.List   `tfsdk:"columns_to_exclude"`
 	ColumnsToInclude         types.List   `tfsdk:"columns_to_include"`
 	ChildPartitionSchemaName types.String `tfsdk:"child_partition_schema_name"`
+	UnifyAcrossSchemas       types.Bool   `tfsdk:"unify_across_schemas"`
+	UnifyAcrossDatabases     types.Bool   `tfsdk:"unify_across_databases"`
 }
 
 var SourceReaderTableAttrTypes = map[string]attr.Type{
@@ -26,6 +28,8 @@ var SourceReaderTableAttrTypes = map[string]attr.Type{
 	"columns_to_exclude":          types.ListType{ElemType: types.StringType},
 	"columns_to_include":          types.ListType{ElemType: types.StringType},
 	"child_partition_schema_name": types.StringType,
+	"unify_across_schemas":        types.BoolType,
+	"unify_across_databases":      types.BoolType,
 }
 
 func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceReaderTable, diag.Diagnostics) {
@@ -40,6 +44,8 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceRe
 		ColumnsToExclude:         colsToExclude,
 		ColumnsToInclude:         colsToInclude,
 		ChildPartitionSchemaName: s.ChildPartitionSchemaName.ValueString(),
+		UnifyAcrossSchemas:       s.UnifyAcrossSchemas.ValueBool(),
+		UnifyAcrossDatabases:     s.UnifyAcrossDatabases.ValueBool(),
 	}, diags
 }
 
@@ -59,6 +65,8 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string
 			ColumnsToExclude:         colsToExclude,
 			ColumnsToInclude:         colsToInclude,
 			ChildPartitionSchemaName: types.StringValue(apiTable.ChildPartitionSchemaName),
+			UnifyAcrossSchemas:       types.BoolValue(apiTable.UnifyAcrossSchemas),
+			UnifyAcrossDatabases:     types.BoolValue(apiTable.UnifyAcrossDatabases),
 		}
 	}
 
