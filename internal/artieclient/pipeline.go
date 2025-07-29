@@ -48,13 +48,14 @@ type MergePredicate struct {
 }
 
 type AdvancedTableSettings struct {
-	Alias              *string           `json:"alias"`
-	ExcludeColumns     *[]string         `json:"excludeColumns"`
-	IncludeColumns     *[]string         `json:"includeColumns"`
-	ColumnsToHash      *[]string         `json:"columnsToHash"`
-	SkipDeletes        *bool             `json:"skipDelete"`
-	UnifyAcrossSchemas *bool             `json:"unifyAcrossSchemas"`
-	MergePredicates    *[]MergePredicate `json:"mergePredicates"`
+	Alias                *string           `json:"alias"`
+	ExcludeColumns       *[]string         `json:"excludeColumns"`
+	IncludeColumns       *[]string         `json:"includeColumns"`
+	ColumnsToHash        *[]string         `json:"columnsToHash"`
+	SkipDeletes          *bool             `json:"skipDelete"`
+	UnifyAcrossSchemas   *bool             `json:"unifyAcrossSchemas"`
+	UnifyAcrossDatabases *bool             `json:"unifyAcrossDatabases"`
+	MergePredicates      *[]MergePredicate `json:"mergePredicates"`
 }
 
 type FlushConfig struct {

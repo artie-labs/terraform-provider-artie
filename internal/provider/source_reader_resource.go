@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/tfmodels"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -62,6 +64,8 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"postgres_replication_slot_override": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, this will override the name of the PostgreSQL replication slot. Otherwise, we will use our default value, `artie`. This is only applicable if the source type is PostgreSQL."},
 			"partition_suffix_regex_pattern":     schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If this source reader is reading any partitioned tables, this regex pattern should describe the expected suffix of each partition's name so that we can consume data from all partitions. If not set, this defaults to `_((default)|([0-9]{4})_(0[1-9]|1[012]))$` - meaning that for a table called `my_table` that's partitioned by month, we will detect partitions such as `my_table_default`, `my_table_2025_01`, `my_table_2025_02`, etc."},
 			"enable_unify_across_schemas":        schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify tables that should be generalized to all schemas, meaning we will sync all tables with the same name into the same destination table. This is useful if you have multiple identical schemas and want to fan-in the data. This is only applicable if the source type is PostgreSQL."},
+			"enable_unify_across_databases":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify multiple databases within your Microsoft SQL Server that we should sync data from, and we will unify tables with the same name and schema into a single destination table. This is useful if you have multiple identical databases and want to fan-in the data. This is only applicable if the source type is Microsoft SQL Server."},
+			"databases_to_unify":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If `enable_unify_across_databases` is set to true, this should be a list of databases within your Microsoft SQL Server that we should sync data from. All tables that you opt into being unified should exist in each of these databases. This is only applicable if the source type is Microsoft SQL Server."},
 			"tables": schema.MapNestedAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -164,6 +168,19 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 			}
 		}
 	}
+
+	if configData.EnableUnifyAcrossDatabases.ValueBool() {
+		if configData.DatabasesToUnify.IsNull() || len(configData.DatabasesToUnify.Elements()) == 0 {
+			diags.AddError("Invalid configuration", "You must specify `databases_to_unify` if `enable_unify_across_databases` is set to true.")
+		} else if !configData.DatabaseName.IsUnknown() {
+			databasesToUnify := []string{}
+			diags.Append(configData.DatabasesToUnify.ElementsAs(ctx, &databasesToUnify, false)...)
+			if !slices.Contains(databasesToUnify, configData.DatabaseName.ValueString()) {
+				diags.AddError("Invalid configuration", "`databases_to_unify` should include the database you specified for `database_name`.")
+			}
+		}
+	}
+
 	return diags
 }
 
