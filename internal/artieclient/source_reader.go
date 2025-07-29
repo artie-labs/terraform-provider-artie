@@ -16,6 +16,7 @@ type SourceReaderSettings struct {
 	PostgresPublicationMode         string          `json:"publicationAutoCreateMode"`
 	PostgresReplicationSlotOverride string          `json:"replicationSlotOverride"`
 	PartitionRegex                  *PartitionRegex `json:"partitionRegex,omitempty"`
+	EnableUnifyAcrossSchemas        bool            `json:"unifyAcrossSchemas"`
 }
 
 type PartitionRegex struct {
