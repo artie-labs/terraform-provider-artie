@@ -84,6 +84,8 @@ type SourceReader struct {
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
 	PartitionRegexPattern           types.String `tfsdk:"partition_suffix_regex_pattern"`
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
+	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
+	DatabasesToUnify                types.List   `tfsdk:"databases_to_unify"`
 	Tables                          types.Map    `tfsdk:"tables"`
 }
 
@@ -116,12 +118,19 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		PostgresPublicationMode:         s.PostgresPublicationMode.ValueString(),
 		PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
 		EnableUnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBool(),
+		EnableUnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBool(),
 	}
 
 	if !s.PartitionRegexPattern.IsNull() && !s.PartitionRegexPattern.IsUnknown() {
 		settings.PartitionRegex = &artieclient.PartitionRegex{
 			Pattern: s.PartitionRegexPattern.ValueString(),
 		}
+	}
+
+	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
+		databasesToUnify, diags := parseList[string](ctx, s.DatabasesToUnify)
+		diags.Append(diags...)
+		settings.DatabasesToUnify = databasesToUnify
 	}
 
 	return artieclient.BaseSourceReader{
@@ -159,6 +168,11 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		return SourceReader{}, diags
 	}
 
+	databasesToUnify, diags := types.ListValueFrom(ctx, types.StringType, apiModel.Settings.DatabasesToUnify)
+	if diags.HasError() {
+		return SourceReader{}, diags
+	}
+
 	sourceReader := SourceReader{
 		UUID:                            types.StringValue(apiModel.UUID.String()),
 		Name:                            types.StringValue(apiModel.Name),
@@ -174,6 +188,8 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		PostgresPublicationMode:         types.StringValue(apiModel.Settings.PostgresPublicationMode),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
 		EnableUnifyAcrossSchemas:        types.BoolValue(apiModel.Settings.EnableUnifyAcrossSchemas),
+		EnableUnifyAcrossDatabases:      types.BoolValue(apiModel.Settings.EnableUnifyAcrossDatabases),
+		DatabasesToUnify:                databasesToUnify,
 		Tables:                          tablesMap,
 	}
 

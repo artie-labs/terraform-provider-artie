@@ -17,6 +17,8 @@ type SourceReaderSettings struct {
 	PostgresReplicationSlotOverride string          `json:"replicationSlotOverride"`
 	PartitionRegex                  *PartitionRegex `json:"partitionRegex,omitempty"`
 	EnableUnifyAcrossSchemas        bool            `json:"unifyAcrossSchemas"`
+	EnableUnifyAcrossDatabases      bool            `json:"unifyAcrossDatabases"`
+	DatabasesToUnify                []string        `json:"databasesToSync"`
 }
 
 type PartitionRegex struct {
