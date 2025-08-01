@@ -211,9 +211,14 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	if err := r.client.SourceReaders().Validate(ctx, baseSourceReader); err != nil {
+		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
+		return
+	}
+
 	sourceReader, err := r.client.SourceReaders().Create(ctx, baseSourceReader)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Source Reader", err.Error())
+		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
 	}
 
@@ -234,7 +239,7 @@ func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadReques
 
 	sourceReader, err := r.client.SourceReaders().Get(ctx, sourceReaderUUID)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to Read Source Reader", err.Error())
+		resp.Diagnostics.AddError("Unable to read Source Reader", err.Error())
 		return
 	}
 
@@ -247,6 +252,17 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
+	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	if err := r.client.SourceReaders().Validate(ctx, apiBaseModel); err != nil {
+		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
+		return
+	}
+
 	apiModel, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
@@ -255,7 +271,7 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 
 	updatedSourceReader, err := r.client.SourceReaders().Update(ctx, apiModel)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Source Reader", err.Error())
+		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
 		return
 	}
 
@@ -275,7 +291,7 @@ func (r *SourceReaderResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 
 	if err := r.client.SourceReaders().Delete(ctx, sourceReaderUUID); err != nil {
-		resp.Diagnostics.AddError("Unable to Delete Source Reader", err.Error())
+		resp.Diagnostics.AddError("Unable to delete Source Reader", err.Error())
 		return
 	}
 }
