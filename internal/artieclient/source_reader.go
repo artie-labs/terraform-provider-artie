@@ -2,6 +2,7 @@ package artieclient
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -68,6 +69,27 @@ func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (
 	}
 
 	return makeRequest[SourceReader](ctx, sc.client, http.MethodGet, path, nil)
+}
+
+func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader BaseSourceReader) error {
+	body := map[string]any{
+		"sourceReader": sourceReader,
+	}
+	path, err := url.JoinPath(sc.basePath(), "validate-unsaved")
+	if err != nil {
+		return err
+	}
+
+	response, err := makeRequest[validationResponse](ctx, sc.client, http.MethodPost, path, body)
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return fmt.Errorf("source reader validation failed: %s", response.Error)
+	}
+
+	return err
 }
 
 func (sc SourceReaderClient) Create(ctx context.Context, sourceReader BaseSourceReader) (SourceReader, error) {
