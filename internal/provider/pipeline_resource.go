@@ -251,7 +251,6 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 	defer r.semaphore.Release(1)
-
 	tflog.Info(ctx, "Acquired semaphore")
 
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
@@ -265,9 +264,19 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	if err := r.client.Pipelines().ValidateSource(ctx, pipeline); err != nil {
+		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
+		return
+	}
+
+	if err := r.client.Pipelines().ValidateDestination(ctx, pipeline); err != nil {
+		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
+		return
+	}
+
 	createdPipeline, err := r.client.Pipelines().Create(ctx, pipeline)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to Create Pipeline", err.Error())
+		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
@@ -299,10 +308,26 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 	defer r.semaphore.Release(1)
-
 	tflog.Info(ctx, "Acquired semaphore")
+
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
+		return
+	}
+
+	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if err := r.client.Pipelines().ValidateSource(ctx, apiBaseModel); err != nil {
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
+		return
+	}
+
+	if err := r.client.Pipelines().ValidateDestination(ctx, apiBaseModel); err != nil {
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 
@@ -314,7 +339,7 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 
 	updatedPipeline, err := r.client.Pipelines().Update(ctx, apiModel)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to Update Pipeline", err.Error())
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 

@@ -2,6 +2,7 @@ package artieclient
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -89,6 +90,55 @@ func (pc PipelineClient) Get(ctx context.Context, pipelineUUID string) (Pipeline
 	}
 
 	return makeRequest[Pipeline](ctx, pc.client, http.MethodGet, path, nil)
+}
+
+func (pc PipelineClient) ValidateSource(ctx context.Context, pipeline BasePipeline) error {
+	body := map[string]any{
+		"sourceReaderUUID": pipeline.SourceReaderUUID,
+		"validateTables":   true,
+		"tables":           pipeline.Tables,
+		"dataPlaneName":    pipeline.DataPlaneName,
+	}
+	path, err := url.JoinPath(pc.basePath(), "validate-unsaved-source")
+	if err != nil {
+		return err
+	}
+
+	response, err := makeRequest[validationResponse](ctx, pc.client, http.MethodPost, path, body)
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return fmt.Errorf("source validation failed: %s", response.Error)
+	}
+
+	return err
+}
+
+func (pc PipelineClient) ValidateDestination(ctx context.Context, pipeline BasePipeline) error {
+	body := map[string]any{
+		"destinationUUID":  pipeline.DestinationUUID,
+		"sourceReaderUUID": pipeline.SourceReaderUUID,
+		"specificCfg":      pipeline.DestinationConfig,
+		"tables":           pipeline.Tables,
+	}
+
+	path, err := url.JoinPath(pc.basePath(), "validate-unsaved-destination")
+	if err != nil {
+		return err
+	}
+
+	response, err := makeRequest[validationResponse](ctx, pc.client, http.MethodPost, path, body)
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return fmt.Errorf("destination validation failed: %s", response.Error)
+	}
+
+	return err
 }
 
 func (pc PipelineClient) Create(ctx context.Context, pipeline BasePipeline) (Pipeline, error) {
