@@ -21,8 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"golang.org/x/sync/semaphore"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -30,13 +28,12 @@ var _ resource.Resource = &PipelineResource{}
 var _ resource.ResourceWithConfigure = &PipelineResource{}
 var _ resource.ResourceWithImportState = &PipelineResource{}
 
-func NewPipelineResource(semaphore *semaphore.Weighted) resource.Resource {
-	return &PipelineResource{semaphore: semaphore}
+func NewPipelineResource() resource.Resource {
+	return &PipelineResource{}
 }
 
 type PipelineResource struct {
-	client    artieclient.Client
-	semaphore *semaphore.Weighted
+	client artieclient.Client
 }
 
 func (r *PipelineResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -246,13 +243,6 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 }
 
 func (r *PipelineResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	if err := r.semaphore.Acquire(ctx, 1); err != nil {
-		resp.Diagnostics.AddError("Unable to acquire semaphore", err.Error())
-		return
-	}
-	defer r.semaphore.Release(1)
-	tflog.Info(ctx, "Acquired semaphore")
-
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
@@ -303,13 +293,6 @@ func (r *PipelineResource) Read(ctx context.Context, req resource.ReadRequest, r
 }
 
 func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	if err := r.semaphore.Acquire(ctx, 1); err != nil {
-		resp.Diagnostics.AddError("Unable to acquire semaphore", err.Error())
-		return
-	}
-	defer r.semaphore.Release(1)
-	tflog.Info(ctx, "Acquired semaphore")
-
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
@@ -351,14 +334,6 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 }
 
 func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	if err := r.semaphore.Acquire(ctx, 1); err != nil {
-		resp.Diagnostics.AddError("Unable to acquire semaphore", err.Error())
-		return
-	}
-	defer r.semaphore.Release(1)
-
-	tflog.Info(ctx, "Acquired semaphore")
-
 	pipelineUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
 	if hasError {
 		return
