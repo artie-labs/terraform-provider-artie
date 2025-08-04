@@ -10,12 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"golang.org/x/sync/semaphore"
 )
 
 const (
-	DEFAULT_API_ENDPOINT     = "https://api.artie.com"
-	MAX_CONCURRENT_PIPELINES = 1
+	DEFAULT_API_ENDPOINT = "https://api.artie.com"
 )
 
 // Ensure ArtieProvider satisfies various provider interfaces.
@@ -100,16 +98,11 @@ func (p *ArtieProvider) Configure(ctx context.Context, req provider.ConfigureReq
 }
 
 func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resource {
-	semaphore := semaphore.NewWeighted(MAX_CONCURRENT_PIPELINES)
-	newPipelineResourceFunc := func() resource.Resource {
-		return NewPipelineResource(semaphore)
-	}
-
 	return []func() resource.Resource{
 		NewSSHTunnelResource,
 		NewConnectorResource,
 		NewSourceReaderResource,
-		newPipelineResourceFunc,
+		NewPipelineResource,
 	}
 }
 
