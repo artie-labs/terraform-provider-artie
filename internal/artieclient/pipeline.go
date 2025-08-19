@@ -122,6 +122,7 @@ func (pc PipelineClient) ValidateDestination(ctx context.Context, pipeline BaseP
 		"sourceReaderUUID": pipeline.SourceReaderUUID,
 		"specificCfg":      pipeline.DestinationConfig,
 		"tables":           pipeline.Tables,
+		"advancedSettings": pipeline.AdvancedSettings,
 	}
 
 	path, err := url.JoinPath(pc.basePath(), "validate-unsaved-destination")
