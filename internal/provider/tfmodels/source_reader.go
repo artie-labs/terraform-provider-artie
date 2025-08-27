@@ -128,6 +128,7 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		PostgresPublicationMode:         s.PostgresPublicationMode.ValueString(),
 		PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
 		EnableUnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBool(),
+		UnifyAcrossSchemasRegex:         s.UnifyAcrossSchemasRegex.ValueStringPointer(),
 		MSSQLReplicationMethod:          s.MSSQLReplicationMethod.ValueString(),
 		EnableUnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBool(),
 	}
