@@ -92,6 +92,7 @@ type SourceReader struct {
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
 	PartitionRegexPattern           types.String `tfsdk:"partition_suffix_regex_pattern"`
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
+	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
 	MSSQLReplicationMethod          types.String `tfsdk:"mssql_replication_method"`
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
 	DatabasesToUnify                types.List   `tfsdk:"databases_to_unify"`
@@ -198,6 +199,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		PostgresPublicationMode:         types.StringValue(apiModel.Settings.PostgresPublicationMode),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
 		EnableUnifyAcrossSchemas:        types.BoolValue(apiModel.Settings.EnableUnifyAcrossSchemas),
+		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
 		MSSQLReplicationMethod:          types.StringValue(apiModel.Settings.MSSQLReplicationMethod),
 		EnableUnifyAcrossDatabases:      types.BoolValue(apiModel.Settings.EnableUnifyAcrossDatabases),
 		DatabasesToUnify:                databasesToUnify,
