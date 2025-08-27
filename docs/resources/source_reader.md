@@ -69,7 +69,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 - `postgres_publication_name_override` (String) If set, this will override the name of the PostgreSQL publication. Otherwise, we will use our default value, `dbz_publication`. This is only applicable if the source type is PostgreSQL.
 - `postgres_replication_slot_override` (String) If set, this will override the name of the PostgreSQL replication slot. Otherwise, we will use our default value, `artie`. This is only applicable if the source type is PostgreSQL.
 - `tables` (Attributes Map) A map of tables from the source database that you want this source reader to include CDC events for. This should be specified if (and only if) the source reader has `is_shared` set to true, and it must include all tables that are specified in the `tables` attribute of any pipeline that uses this source reader. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`. (see [below for nested schema](#nestedatt--tables))
-- `unify_across_schemas_regex` (String) If unify across schemas is enabled, This is an additional regex pattern that you can use to filter which schemas should be unified. This is only applicable if the source type is PostgreSQL.
+- `unify_across_schemas_regex` (String) If unify across schemas is enabled, this is an additional regex pattern that you can use to filter which schemas should be unified. This is only applicable if the source type is PostgreSQL.
 
 ### Read-Only
 
