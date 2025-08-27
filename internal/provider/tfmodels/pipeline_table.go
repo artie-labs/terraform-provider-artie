@@ -53,30 +53,32 @@ type Table struct {
 	IsPartitioned     types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
-	Alias                types.String `tfsdk:"alias"`
-	ExcludeColumns       types.List   `tfsdk:"columns_to_exclude"`
-	IncludeColumns       types.List   `tfsdk:"columns_to_include"`
-	ColumnsToHash        types.List   `tfsdk:"columns_to_hash"`
-	SkipDeletes          types.Bool   `tfsdk:"skip_deletes"`
-	UnifyAcrossSchemas   types.Bool   `tfsdk:"unify_across_schemas"`
-	UnifyAcrossDatabases types.Bool   `tfsdk:"unify_across_databases"`
-	MergePredicates      types.List   `tfsdk:"merge_predicates"`
+	Alias                   types.String `tfsdk:"alias"`
+	ExcludeColumns          types.List   `tfsdk:"columns_to_exclude"`
+	IncludeColumns          types.List   `tfsdk:"columns_to_include"`
+	ColumnsToHash           types.List   `tfsdk:"columns_to_hash"`
+	SkipDeletes             types.Bool   `tfsdk:"skip_deletes"`
+	UnifyAcrossSchemas      types.Bool   `tfsdk:"unify_across_schemas"`
+	UnifyAcrossSchemasRegex types.String `tfsdk:"unify_across_schemas_regex"`
+	UnifyAcrossDatabases    types.Bool   `tfsdk:"unify_across_databases"`
+	MergePredicates         types.List   `tfsdk:"merge_predicates"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
-	"uuid":                   types.StringType,
-	"name":                   types.StringType,
-	"schema":                 types.StringType,
-	"enable_history_mode":    types.BoolType,
-	"is_partitioned":         types.BoolType,
-	"alias":                  types.StringType,
-	"columns_to_exclude":     types.ListType{ElemType: types.StringType},
-	"columns_to_include":     types.ListType{ElemType: types.StringType},
-	"columns_to_hash":        types.ListType{ElemType: types.StringType},
-	"skip_deletes":           types.BoolType,
-	"unify_across_schemas":   types.BoolType,
-	"unify_across_databases": types.BoolType,
-	"merge_predicates":       types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
+	"uuid":                       types.StringType,
+	"name":                       types.StringType,
+	"schema":                     types.StringType,
+	"enable_history_mode":        types.BoolType,
+	"is_partitioned":             types.BoolType,
+	"alias":                      types.StringType,
+	"columns_to_exclude":         types.ListType{ElemType: types.StringType},
+	"columns_to_include":         types.ListType{ElemType: types.StringType},
+	"columns_to_hash":            types.ListType{ElemType: types.StringType},
+	"skip_deletes":               types.BoolType,
+	"unify_across_schemas":       types.BoolType,
+	"unify_across_schemas_regex": types.StringType,
+	"unify_across_databases":     types.BoolType,
+	"merge_predicates":           types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -151,19 +153,20 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		diags.Append(mergePredDiags...)
 
 		tables[tableKey] = Table{
-			UUID:                 types.StringValue(apiTable.UUID.String()),
-			Name:                 types.StringValue(apiTable.Name),
-			Schema:               types.StringValue(apiTable.Schema),
-			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
-			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
-			Alias:                types.StringPointerValue(apiTable.AdvancedSettings.Alias),
-			ExcludeColumns:       colsToExclude,
-			IncludeColumns:       colsToInclude,
-			ColumnsToHash:        colsToHash,
-			SkipDeletes:          types.BoolPointerValue(apiTable.AdvancedSettings.SkipDeletes),
-			UnifyAcrossSchemas:   types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemas),
-			UnifyAcrossDatabases: types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
-			MergePredicates:      mergePredicates,
+			UUID:                    types.StringValue(apiTable.UUID.String()),
+			Name:                    types.StringValue(apiTable.Name),
+			Schema:                  types.StringValue(apiTable.Schema),
+			EnableHistoryMode:       types.BoolValue(apiTable.EnableHistoryMode),
+			IsPartitioned:           types.BoolValue(apiTable.IsPartitioned),
+			Alias:                   types.StringPointerValue(apiTable.AdvancedSettings.Alias),
+			ExcludeColumns:          colsToExclude,
+			IncludeColumns:          colsToInclude,
+			ColumnsToHash:           colsToHash,
+			SkipDeletes:             types.BoolPointerValue(apiTable.AdvancedSettings.SkipDeletes),
+			UnifyAcrossSchemas:      types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemas),
+			UnifyAcrossSchemasRegex: types.StringPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemasRegex),
+			UnifyAcrossDatabases:    types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
+			MergePredicates:         mergePredicates,
 		}
 	}
 
