@@ -72,6 +72,7 @@ type DestinationConfig struct {
 	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
 	SchemaNamePrefix      string `json:"schemaNamePrefix"`
 	Bucket                string `json:"bucketName"`
+	TableNameSeparator    string `json:"tableNameSeparator"`
 	Folder                string `json:"folderName"`
 }
 

@@ -150,6 +150,13 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						Default:             stringdefault.StaticString(""),
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
+					"table_name_separator": schema.StringAttribute{
+						MarkdownDescription: "If provided, this is the separator between database, schema and table name. This is only applicable if the destination is S3.",
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
 					"folder": schema.StringAttribute{
 						MarkdownDescription: "If provided, all files will be stored under this folder inside the S3 bucket. This is optional and only applies if the destination is S3.",
 						Optional:            true,
