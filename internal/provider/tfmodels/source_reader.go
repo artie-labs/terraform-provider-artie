@@ -96,6 +96,7 @@ type SourceReader struct {
 	MSSQLReplicationMethod          types.String `tfsdk:"mssql_replication_method"`
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
 	DatabasesToUnify                types.List   `tfsdk:"databases_to_unify"`
+	DisableAutoFetchTables          types.Bool   `tfsdk:"disable_auto_fetch_tables"`
 	Tables                          types.Map    `tfsdk:"tables"`
 }
 
@@ -131,6 +132,7 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		UnifyAcrossSchemasRegex:         s.UnifyAcrossSchemasRegex.ValueStringPointer(),
 		MSSQLReplicationMethod:          s.MSSQLReplicationMethod.ValueString(),
 		EnableUnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBool(),
+		DisableAutoFetchTables:          s.DisableAutoFetchTables.ValueBool(),
 	}
 
 	if !s.PartitionRegexPattern.IsNull() && !s.PartitionRegexPattern.IsUnknown() {
@@ -204,6 +206,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		MSSQLReplicationMethod:          types.StringValue(apiModel.Settings.MSSQLReplicationMethod),
 		EnableUnifyAcrossDatabases:      types.BoolValue(apiModel.Settings.EnableUnifyAcrossDatabases),
 		DatabasesToUnify:                databasesToUnify,
+		DisableAutoFetchTables:          types.BoolValue(apiModel.Settings.DisableAutoFetchTables),
 		Tables:                          tablesMap,
 	}
 
