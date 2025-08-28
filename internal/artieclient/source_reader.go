@@ -22,6 +22,7 @@ type SourceReaderSettings struct {
 	MSSQLReplicationMethod          string          `json:"mssqlReplicationMethod"`
 	EnableUnifyAcrossDatabases      bool            `json:"unifyAcrossDatabases"`
 	DatabasesToUnify                []string        `json:"databasesToSync"`
+	DisableAutoFetchTables          bool            `json:"disableAutoFetchTables"`
 }
 
 type PartitionRegex struct {
