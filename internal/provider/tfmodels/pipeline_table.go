@@ -45,6 +45,34 @@ func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]arti
 	return mergePredicates, diags
 }
 
+type SoftPartitioning struct {
+	Enabled            types.Bool   `tfsdk:"enabled"`
+	PartitionFrequency types.String `tfsdk:"partition_frequency"`
+	PartitionColumn    types.String `tfsdk:"partition_column"`
+	MaxPartitions      types.Int64  `tfsdk:"max_partitions"`
+}
+
+var SoftPartitioningAttrTypes = map[string]attr.Type{
+	"enabled":             types.BoolType,
+	"partition_frequency": types.StringType,
+	"partition_column":    types.StringType,
+	"max_partitions":      types.Int32Type,
+}
+
+func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *artieclient.SoftPartitioning) (types.Object, diag.Diagnostics) {
+	attrTypes := SoftPartitioningAttrTypes
+	if apiSoftPartitioning == nil {
+		return types.ObjectValue(attrTypes, map[string]attr.Value{})
+	}
+
+	return types.ObjectValue(attrTypes, map[string]attr.Value{
+		"enabled":             types.BoolValue(apiSoftPartitioning.Enabled),
+		"partition_frequency": types.StringValue(string(apiSoftPartitioning.PartitionFrequency)),
+		"partition_column":    types.StringValue(apiSoftPartitioning.PartitionColumn),
+		"max_partitions":      types.Int64Value(int64(apiSoftPartitioning.MaxPartitions)),
+	})
+}
+
 type Table struct {
 	UUID              types.String `tfsdk:"uuid"`
 	Name              types.String `tfsdk:"name"`
@@ -61,6 +89,7 @@ type Table struct {
 	UnifyAcrossSchemas   types.Bool   `tfsdk:"unify_across_schemas"`
 	UnifyAcrossDatabases types.Bool   `tfsdk:"unify_across_databases"`
 	MergePredicates      types.List   `tfsdk:"merge_predicates"`
+	SoftPartitioning     types.Object `tfsdk:"soft_partitioning"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
@@ -77,6 +106,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"unify_across_schemas":   types.BoolType,
 	"unify_across_databases": types.BoolType,
 	"merge_predicates":       types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
+	"soft_partitioning":       types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -106,6 +136,9 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		clientMergePreds = &clientMPs
 	}
 
+	softPartitioning, softPartitioningDiags := parseOptionalObject[artieclient.SoftPartitioning](ctx, &t.SoftPartitioning)
+	diags.Append(softPartitioningDiags...)
+
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
@@ -125,6 +158,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			UnifyAcrossSchemas:   t.UnifyAcrossSchemas.ValueBoolPointer(),
 			UnifyAcrossDatabases: t.UnifyAcrossDatabases.ValueBoolPointer(),
 			MergePredicates:      clientMergePreds,
+			SoftPartitioning:     softPartitioning,
 		},
 	}, diags
 }
@@ -150,6 +184,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.AdvancedSettings.MergePredicates)
 		diags.Append(mergePredDiags...)
 
+		softPartitioning, softPartitioningDiags := SoftPartitioningFromAPIModel(ctx, apiTable.AdvancedSettings.SoftPartitioning)
+		diags.Append(softPartitioningDiags...)
+
 		tables[tableKey] = Table{
 			UUID:                 types.StringValue(apiTable.UUID.String()),
 			Name:                 types.StringValue(apiTable.Name),
@@ -164,6 +201,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			UnifyAcrossSchemas:   types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemas),
 			UnifyAcrossDatabases: types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
 			MergePredicates:      mergePredicates,
+			SoftPartitioning:     softPartitioning,
 		}
 	}
 

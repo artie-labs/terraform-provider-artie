@@ -53,7 +53,6 @@ type SoftPartitioning struct {
 	Enabled            bool                        `json:"enabled"`
 	PartitionFrequency kafkalib.PartitionFrequency `json:"partitionFrequency"`
 	PartitionColumn    string                      `json:"partitionColumn"`
-	PartitionSchema    string                      `json:"partitionSchema"`
 	MaxPartitions      int                         `json:"maxPartitions"`
 }
 
