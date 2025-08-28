@@ -49,7 +49,7 @@ type SoftPartitioning struct {
 	Enabled            types.Bool   `tfsdk:"enabled"`
 	PartitionFrequency types.String `tfsdk:"partition_frequency"`
 	PartitionColumn    types.String `tfsdk:"partition_column"`
-	MaxPartitions      types.Int64  `tfsdk:"max_partitions"`
+	MaxPartitions      types.Int32  `tfsdk:"max_partitions"`
 }
 
 var SoftPartitioningAttrTypes = map[string]attr.Type{
@@ -69,7 +69,7 @@ func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *arti
 		"enabled":             types.BoolValue(apiSoftPartitioning.Enabled),
 		"partition_frequency": types.StringValue(string(apiSoftPartitioning.PartitionFrequency)),
 		"partition_column":    types.StringValue(apiSoftPartitioning.PartitionColumn),
-		"max_partitions":      types.Int64Value(int64(apiSoftPartitioning.MaxPartitions)),
+		"max_partitions":      types.Int32Value(int32(apiSoftPartitioning.MaxPartitions)),
 	})
 }
 
@@ -106,7 +106,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"unify_across_schemas":   types.BoolType,
 	"unify_across_databases": types.BoolType,
 	"merge_predicates":       types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
-	"soft_partitioning":       types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
+	"soft_partitioning":      types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {

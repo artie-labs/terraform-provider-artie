@@ -76,6 +76,29 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 									"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
 								},
 							}},
+						"soft_partitioning": schema.SingleNestedAttribute{
+							Optional:            true,
+							Computed:            true,
+							MarkdownDescription: "Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column.",
+							Attributes: map[string]schema.Attribute{
+								"enabled": schema.BoolAttribute{
+									Required:            true,
+									MarkdownDescription: "Whether soft partitioning is enabled for this table.",
+								},
+								"partition_column": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "The column to use for soft partitioning.",
+								},
+								"partition_frequency": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "The frequency of partitioning ('monthly' and 'daily' are supported).",
+								},
+								"max_partitions": schema.Int32Attribute{
+									Required:            true,
+									MarkdownDescription: "The maximum number of partitions to maintain.",
+								},
+							},
+						},
 					},
 				},
 			},
