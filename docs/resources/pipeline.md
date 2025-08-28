@@ -97,6 +97,8 @@ Optional:
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
 - `unify_across_databases` (Boolean) If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled.
 - `unify_across_schemas` (Boolean) If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration.
+- `soft_partitioning` (Attributes) Optional: advanced settings for soft partitioning of the destination table. This is useful for partitioning tables in the destination even if the source table is not partitioned, or for customizing partitioning behavior. (see [below for nested schema](#nestedatt--tables--soft_partitioning))
+
 
 Read-Only:
 
@@ -108,6 +110,16 @@ Read-Only:
 Required:
 
 - `partition_field` (String) The name of the column the destination table is partitioned by.
+
+<a id="nestedatt--tables--soft_partitioning"></a>
+### Nested Schema for `tables.soft_partitioning`
+
+Optional:
+
+- `enabled` (Boolean) Whether soft partitioning is enabled for the destination table.
+- `partition_column` (String) The name of the column to use for partitioning in the destination table. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.
+- `partition_frequency` (String) The frequency of partitioning ('monthly' and 'daily' are supported)..
+- `max_partitions` (Number) The maximum number of partitions to retain in the destination table. Older partitions will be compacted.
 
 
 

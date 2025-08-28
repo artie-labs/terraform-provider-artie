@@ -87,7 +87,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 								},
 								"partition_column": schema.StringAttribute{
 									Required:            true,
-									MarkdownDescription: "The column to use for soft partitioning.",
+									MarkdownDescription: "The column to use for soft partitioning. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.",
 								},
 								"partition_frequency": schema.StringAttribute{
 									Required:            true,
