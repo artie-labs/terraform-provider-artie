@@ -95,10 +95,9 @@ Optional:
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the column(s) it's partitioned by. This will help with merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it must be a time column partitioned by day. (see [below for nested schema](#nestedatt--tables--merge_predicates))
 - `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
+- `soft_partitioning` (Attributes) Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column. (see [below for nested schema](#nestedatt--tables--soft_partitioning))
 - `unify_across_databases` (Boolean) If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled.
 - `unify_across_schemas` (Boolean) If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration.
-- `soft_partitioning` (Attributes) Optional: advanced settings for soft partitioning of the destination table. This is useful for partitioning tables in the destination even if the source table is not partitioned, or for customizing partitioning behavior. (see [below for nested schema](#nestedatt--tables--soft_partitioning))
-
 
 Read-Only:
 
@@ -111,15 +110,16 @@ Required:
 
 - `partition_field` (String) The name of the column the destination table is partitioned by.
 
+
 <a id="nestedatt--tables--soft_partitioning"></a>
 ### Nested Schema for `tables.soft_partitioning`
 
-Optional:
+Required:
 
-- `enabled` (Boolean) Whether soft partitioning is enabled for the destination table.
-- `partition_column` (String) The name of the column to use for partitioning in the destination table. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.
-- `partition_frequency` (String) The frequency of partitioning ('monthly' and 'daily' are supported)..
-- `max_partitions` (Number) The maximum number of partitions to retain in the destination table. Older partitions will be compacted.
+- `enabled` (Boolean) Whether soft partitioning is enabled for this table.
+- `max_partitions` (Number) The maximum number of partitions to maintain.
+- `partition_column` (String) The column to use for soft partitioning. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.
+- `partition_frequency` (String) The frequency of partitioning ('monthly' and 'daily' are supported).
 
 
 
