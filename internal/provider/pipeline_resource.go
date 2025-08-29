@@ -7,6 +7,7 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -96,6 +98,9 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 								"max_partitions": schema.Int32Attribute{
 									Required:            true,
 									MarkdownDescription: "The maximum number of partitions to maintain.",
+									Validators: []validator.Int32{
+										int32validator.Between(1, 30),
+									},
 								},
 							},
 						},
