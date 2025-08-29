@@ -81,6 +81,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"soft_partitioning": schema.SingleNestedAttribute{
 							Optional:            true,
 							Computed:            true,
+							PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
 							MarkdownDescription: "Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column.",
 							Attributes: map[string]schema.Attribute{
 								"enabled": schema.BoolAttribute{
