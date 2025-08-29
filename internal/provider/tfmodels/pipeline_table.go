@@ -62,7 +62,7 @@ var SoftPartitioningAttrTypes = map[string]attr.Type{
 func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *artieclient.SoftPartitioning) (types.Object, diag.Diagnostics) {
 	attrTypes := SoftPartitioningAttrTypes
 	if apiSoftPartitioning == nil {
-		return types.ObjectValue(attrTypes, map[string]attr.Value{})
+		return types.ObjectNull(attrTypes), nil
 	}
 
 	return types.ObjectValue(attrTypes, map[string]attr.Value{
