@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/artie-labs/transfer/lib/kafkalib"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -50,6 +51,15 @@ type SoftPartitioning struct {
 	PartitionFrequency types.String `tfsdk:"partition_frequency"`
 	PartitionColumn    types.String `tfsdk:"partition_column"`
 	MaxPartitions      types.Int32  `tfsdk:"max_partitions"`
+}
+
+func (s SoftPartitioning) ToAPIModel() *artieclient.SoftPartitioning {
+	return &artieclient.SoftPartitioning{
+		Enabled:            s.Enabled.ValueBool(),
+		PartitionFrequency: kafkalib.PartitionFrequency(s.PartitionFrequency.ValueString()),
+		PartitionColumn:    s.PartitionColumn.ValueString(),
+		MaxPartitions:      int(s.MaxPartitions.ValueInt32()),
+	}
 }
 
 var SoftPartitioningAttrTypes = map[string]attr.Type{
@@ -136,7 +146,11 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		clientMergePreds = &clientMPs
 	}
 
-	softPartitioning, softPartitioningDiags := parseOptionalObject[artieclient.SoftPartitioning](ctx, &t.SoftPartitioning)
+	softPartitioning, softPartitioningDiags := parseOptionalObject[SoftPartitioning](ctx, &t.SoftPartitioning)
+	var clientSoftPartitioning *artieclient.SoftPartitioning
+	if softPartitioning != nil {
+		clientSoftPartitioning = softPartitioning.ToAPIModel()
+	}
 	diags.Append(softPartitioningDiags...)
 
 	if diags.HasError() {
@@ -158,7 +172,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			UnifyAcrossSchemas:   t.UnifyAcrossSchemas.ValueBoolPointer(),
 			UnifyAcrossDatabases: t.UnifyAcrossDatabases.ValueBoolPointer(),
 			MergePredicates:      clientMergePreds,
-			SoftPartitioning:     softPartitioning,
+			SoftPartitioning:     clientSoftPartitioning,
 		},
 	}, diags
 }
