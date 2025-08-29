@@ -7,6 +7,7 @@ import (
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -76,6 +78,33 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 									"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
 								},
 							}},
+						"soft_partitioning": schema.SingleNestedAttribute{
+							Optional:            true,
+							Computed:            true,
+							PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
+							MarkdownDescription: "Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column.",
+							Attributes: map[string]schema.Attribute{
+								"enabled": schema.BoolAttribute{
+									Required:            true,
+									MarkdownDescription: "Whether soft partitioning is enabled for this table.",
+								},
+								"partition_column": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "The column to use for soft partitioning. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.",
+								},
+								"partition_frequency": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "The frequency of partitioning ('monthly' and 'daily' are supported).",
+								},
+								"max_partitions": schema.Int32Attribute{
+									Required:            true,
+									MarkdownDescription: "The maximum number of partitions to maintain.",
+									Validators: []validator.Int32{
+										int32validator.Between(1, 30),
+									},
+								},
+							},
+						},
 					},
 				},
 			},

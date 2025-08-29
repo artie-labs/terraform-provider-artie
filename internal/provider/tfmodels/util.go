@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
@@ -72,4 +73,18 @@ func optionalStringListToListValue(ctx context.Context, value *[]string) (types.
 	}
 
 	return types.ListValueFrom(ctx, types.StringType, *value)
+}
+
+func parseOptionalObject[T any](ctx context.Context, value *types.Object) (*T, diag.Diagnostics) {
+	if value.IsNull() || value.IsUnknown() {
+		return nil, nil
+	}
+
+	var t T
+	diags := value.As(ctx, &t, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+
+	return &t, diags
 }

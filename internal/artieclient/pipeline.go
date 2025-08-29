@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/artie-labs/transfer/lib/kafkalib"
 	"github.com/google/uuid"
 )
 
@@ -48,6 +49,13 @@ type MergePredicate struct {
 	PartitionField string `json:"partitionField"`
 }
 
+type SoftPartitioning struct {
+	Enabled            bool                        `json:"enabled"`
+	PartitionFrequency kafkalib.PartitionFrequency `json:"partitionFrequency"`
+	PartitionColumn    string                      `json:"partitionColumn"`
+	MaxPartitions      int                         `json:"maxPartitions"`
+}
+
 type AdvancedTableSettings struct {
 	Alias                *string           `json:"alias"`
 	ExcludeColumns       *[]string         `json:"excludeColumns"`
@@ -57,6 +65,7 @@ type AdvancedTableSettings struct {
 	UnifyAcrossSchemas   *bool             `json:"unifyAcrossSchemas"`
 	UnifyAcrossDatabases *bool             `json:"unifyAcrossDatabases"`
 	MergePredicates      *[]MergePredicate `json:"mergePredicates"`
+	SoftPartitioning     *SoftPartitioning `json:"softPartitioning,omitempty"`
 }
 
 type FlushConfig struct {
