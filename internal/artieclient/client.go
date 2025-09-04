@@ -46,8 +46,7 @@ func buildError(resp *http.Response) error {
 		return fmt.Errorf("artie-client: failed to read response body: %w", err)
 	}
 
-	resp.Body.Close()
-
+	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotFound {
 		return fmt.Errorf("artie-client: not found, request: %q, method: %q, response: %q", resp.Request.URL.String(), resp.Request.Method, string(body))
 	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
