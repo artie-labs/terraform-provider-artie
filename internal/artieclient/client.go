@@ -40,17 +40,19 @@ func New(endpoint string, apiKey string, version string) (Client, error) {
 	return Client{endpoint: endpoint, apiKey: apiKey, version: version}, nil
 }
 
-func buildError(resp *http.Response) error {
+func buildError(body []byte, resp *http.Response) error {
 	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("artie-client: not found, request: %q, method: %q", resp.Request.URL.String(), resp.Request.Method)
+		return fmt.Errorf("artie-client: not found, request: %q, method: %q, response: %q", resp.Request.URL.String(), resp.Request.Method, string(body))
 	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
 		type errorBody struct {
 			ErrorMsg string `json:"error"`
 		}
-		errorResponse := errorBody{}
-		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err == nil {
+
+		var errorResponse errorBody
+		if err := json.Unmarshal(body, &errorResponse); err == nil {
 			return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
 		}
+
 	}
 	return HttpError{StatusCode: resp.StatusCode}
 }
@@ -83,14 +85,20 @@ func (c Client) makeRequest(ctx context.Context, method string, path string, bod
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
+
 	defer resp.Body.Close()
 
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("artie-client: failed to read response body: %w", err)
+	}
+
 	if resp.StatusCode >= 300 {
-		return buildError(resp)
+		return buildError(respBody, resp)
 	}
 
 	if out != nil && resp.StatusCode != http.StatusNoContent {
-		if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		if err := json.Unmarshal(respBody, &out); err != nil {
 			return fmt.Errorf("artie-client: failed to decode response body: %w", err)
 		}
 	}
