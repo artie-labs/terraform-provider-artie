@@ -86,12 +86,12 @@ func (c Client) makeRequest(ctx context.Context, method string, path string, bod
 		return fmt.Errorf("request failed: %w", err)
 	}
 
+	defer resp.Body.Close()
+
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("artie-client: failed to read response body: %w", err)
 	}
-
-	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
 		return buildError(respBody, resp)
