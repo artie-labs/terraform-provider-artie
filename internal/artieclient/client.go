@@ -41,16 +41,26 @@ func New(endpoint string, apiKey string, version string) (Client, error) {
 }
 
 func buildError(resp *http.Response) error {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("artie-client: failed to read response body: %w", err)
+	}
+
+	resp.Body.Close()
+
 	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("artie-client: not found, request: %q, method: %q", resp.Request.URL.String(), resp.Request.Method)
+		return fmt.Errorf("artie-client: not found, request: %q, method: %q, response: %q", resp.Request.URL.String(), resp.Request.Method, string(body))
 	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
 		type errorBody struct {
 			ErrorMsg string `json:"error"`
 		}
-		errorResponse := errorBody{}
-		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err == nil {
-			return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
+
+		var errorResponse errorBody
+		if err = json.Unmarshal(body, &errorResponse); err != nil {
+			return fmt.Errorf("artie-client: failed to unmarshal error response: %w, body: %q", err, string(body))
 		}
+
+		return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
 	}
 	return HttpError{StatusCode: resp.StatusCode}
 }
