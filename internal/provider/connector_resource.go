@@ -138,7 +138,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `postgresql`.",
 				Attributes: map[string]schema.Attribute{
-					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This must point to the primary host, not a read replica. This database must also have its `WAL_LEVEL` set to `logical`."},
+					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This can point to a read replica if you are using PostgreSQL 16 or higher, not on Amazon Aurora, and `hot_standby_feedback` is enabled; otherwise it must point to the primary host. This database must also have its `WAL_LEVEL` set to `logical`."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"port": schema.Int32Attribute{
 						Required:            true,
