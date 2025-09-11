@@ -173,11 +173,12 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				MarkdownDescription: "This should be filled out if the connector type is `snowflake`.",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"account_url": schema.StringAttribute{Required: true, MarkdownDescription: "The URL of your Snowflake account."},
-					"virtual_dwh": schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
-					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
-					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
-					"private_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided."},
+					"account_identifier": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "The [account identifier](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using this instead of `account_url`."},
+					"account_url":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "(Legacy) The [URL](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using `account_identifier` instead."},
+					"virtual_dwh":        schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
+					"username":           schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
+					"password":           schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "(Legacy) The password for the service account we should use to connect to Snowflake. We recommend using `private_key` instead."},
+					"private_key":        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. We recommend using this instead of `password`."},
 				},
 			},
 		},
@@ -226,6 +227,26 @@ func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State
 	}
 
 	diagnostics.Append(state.Set(ctx, connector)...)
+}
+
+func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var configData tfmodels.Connector
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if configData.Type.ValueString() == string(artieclient.Snowflake) {
+		// For snowflake, either account_identifier or account_url must be provided
+		if configData.SnowflakeConfig.AccountIdentifier.IsNull() && configData.SnowflakeConfig.AccountURL.IsNull() {
+			resp.Diagnostics.AddError("Either account_identifier or account_url must be provided", "Please provide either `account_identifier` or `account_url` inside `snowflake_config`. We recommend using `account_identifier`.")
+		}
+
+		// Either password or private_key must be provided
+		if configData.SnowflakeConfig.Password.IsNull() && configData.SnowflakeConfig.PrivateKey.IsNull() {
+			resp.Diagnostics.AddError("Either password or private_key must be provided", "Please provide either `password` or `private_key` inside `snowflake_config`. We recommend using `private_key`.")
+		}
+	}
 }
 
 func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
