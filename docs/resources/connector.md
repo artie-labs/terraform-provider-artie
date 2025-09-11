@@ -172,14 +172,15 @@ Required:
 
 Required:
 
-- `account_url` (String) The URL of your Snowflake account.
 - `username` (String) The username of the service account we should use to connect to Snowflake.
 - `virtual_dwh` (String) The name of your Snowflake virtual data warehouse.
 
 Optional:
 
-- `password` (String, Sensitive) The password for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided.
-- `private_key` (String, Sensitive) The private key for the service account we should use to connect to Snowflake. Either `password` or `private_key` must be provided.
+- `account_identifier` (String) The [account identifier](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using this instead of `account_url`.
+- `account_url` (String) (Legacy) The [URL](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using `account_identifier` instead.
+- `password` (String, Sensitive) (Legacy) The password for the service account we should use to connect to Snowflake. We recommend using `private_key` instead.
+- `private_key` (String, Sensitive) The private key for the service account we should use to connect to Snowflake. We recommend using this instead of `password`.
 
 ## Import
 

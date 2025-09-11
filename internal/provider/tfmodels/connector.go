@@ -354,29 +354,32 @@ func S3SharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *S3SharedC
 }
 
 type SnowflakeSharedConfig struct {
-	AccountURL types.String `tfsdk:"account_url"`
-	VirtualDWH types.String `tfsdk:"virtual_dwh"`
-	Username   types.String `tfsdk:"username"`
-	Password   types.String `tfsdk:"password"`
-	PrivateKey types.String `tfsdk:"private_key"`
+	AccountIdentifier types.String `tfsdk:"account_identifier"`
+	AccountURL        types.String `tfsdk:"account_url"`
+	VirtualDWH        types.String `tfsdk:"virtual_dwh"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PrivateKey        types.String `tfsdk:"private_key"`
 }
 
 func (s SnowflakeSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	return artieclient.ConnectorConfig{
-		SnowflakeAccountURL: s.AccountURL.ValueString(),
-		SnowflakeVirtualDWH: s.VirtualDWH.ValueString(),
-		SnowflakePrivateKey: s.PrivateKey.ValueString(),
-		Username:            s.Username.ValueString(),
-		Password:            s.Password.ValueString(),
+		SnowflakeAccountIdentifier: s.AccountIdentifier.ValueString(),
+		SnowflakeAccountURL:        s.AccountURL.ValueString(),
+		SnowflakeVirtualDWH:        s.VirtualDWH.ValueString(),
+		SnowflakePrivateKey:        s.PrivateKey.ValueString(),
+		Username:                   s.Username.ValueString(),
+		Password:                   s.Password.ValueString(),
 	}
 }
 
 func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *SnowflakeSharedConfig {
 	return &SnowflakeSharedConfig{
-		AccountURL: types.StringValue(apiModel.SnowflakeAccountURL),
-		VirtualDWH: types.StringValue(apiModel.SnowflakeVirtualDWH),
-		PrivateKey: types.StringValue(apiModel.SnowflakePrivateKey),
-		Username:   types.StringValue(apiModel.Username),
-		Password:   types.StringValue(apiModel.Password),
+		AccountIdentifier: types.StringValue(apiModel.SnowflakeAccountIdentifier),
+		AccountURL:        types.StringValue(apiModel.SnowflakeAccountURL),
+		VirtualDWH:        types.StringValue(apiModel.SnowflakeVirtualDWH),
+		PrivateKey:        types.StringValue(apiModel.SnowflakePrivateKey),
+		Username:          types.StringValue(apiModel.Username),
+		Password:          types.StringValue(apiModel.Password),
 	}
 }
