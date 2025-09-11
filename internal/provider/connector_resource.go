@@ -236,7 +236,58 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		return
 	}
 
-	if configData.Type.ValueString() == string(artieclient.Snowflake) {
+	switch configData.Type.ValueString() {
+	case string(artieclient.BigQuery):
+		if configData.BigQueryConfig == nil {
+			resp.Diagnostics.AddError("bigquery_config is required", "Please provide `bigquery_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.DynamoDB):
+		if configData.DynamoDBConfig == nil {
+			resp.Diagnostics.AddError("dynamodb_config is required", "Please provide `dynamodb_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.MongoDB):
+		if configData.MongoDBConfig == nil {
+			resp.Diagnostics.AddError("mongodb_config is required", "Please provide `mongodb_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.MySQL):
+		if configData.MySQLConfig == nil {
+			resp.Diagnostics.AddError("mysql_config is required", "Please provide `mysql_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.MSSQL):
+		if configData.MSSQLConfig == nil {
+			resp.Diagnostics.AddError("mssql_config is required", "Please provide `mssql_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.Oracle):
+		if configData.OracleConfig == nil {
+			resp.Diagnostics.AddError("oracle_config is required", "Please provide `oracle_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.PostgreSQL):
+		if configData.PostgresConfig == nil {
+			resp.Diagnostics.AddError("postgresql_config is required", "Please provide `postgresql_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.Redshift):
+		if configData.RedshiftConfig == nil {
+			resp.Diagnostics.AddError("redshift_config is required", "Please provide `redshift_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.S3):
+		if configData.S3Config == nil {
+			resp.Diagnostics.AddError("s3_config is required", "Please provide `s3_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.Snowflake):
+		if configData.SnowflakeConfig == nil {
+			resp.Diagnostics.AddError("snowflake_config is required", "Please provide `snowflake_config` inside `connector`.")
+			return
+		}
+
 		// For snowflake, either account_identifier or account_url must be provided
 		if configData.SnowflakeConfig.AccountIdentifier.IsNull() && configData.SnowflakeConfig.AccountURL.IsNull() {
 			resp.Diagnostics.AddError("Either account_identifier or account_url must be provided", "Please provide either `account_identifier` or `account_url` inside `snowflake_config`. We recommend using `account_identifier`.")
