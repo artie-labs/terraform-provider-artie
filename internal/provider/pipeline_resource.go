@@ -309,7 +309,7 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline)
 
 	if err := r.client.Pipelines().StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
-		resp.Diagnostics.AddWarning("Unable to start Pipeline", err.Error())
+		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
 
@@ -365,7 +365,7 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedPipeline)
 
 	if err := r.client.Pipelines().StartPipeline(ctx, updatedPipeline.UUID.String()); err != nil {
-		resp.Diagnostics.AddWarning("Unable to start Pipeline", err.Error())
+		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
 

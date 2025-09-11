@@ -228,7 +228,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 
 	if sourceReader.IsShared {
 		if err := r.client.SourceReaders().Deploy(ctx, sourceReader.UUID.String()); err != nil {
-			resp.Diagnostics.AddWarning("Unable to deploy Source Reader", err.Error())
+			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	}
 }
@@ -281,7 +281,7 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 
 	if updatedSourceReader.IsShared {
 		if err := r.client.SourceReaders().Deploy(ctx, updatedSourceReader.UUID.String()); err != nil {
-			resp.Diagnostics.AddWarning("Unable to deploy Source Reader", err.Error())
+			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	}
 }
