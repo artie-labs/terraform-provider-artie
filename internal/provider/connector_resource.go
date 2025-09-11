@@ -173,8 +173,8 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				MarkdownDescription: "This should be filled out if the connector type is `snowflake`.",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"account_identifier": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "The [account identifier](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using this instead of `account_url`."},
-					"account_url":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "(Legacy) The [URL](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using `account_identifier` instead."},
+					"account_identifier": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The [account identifier](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using this instead of `account_url`."},
+					"account_url":        schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "(Legacy) The [URL](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using `account_identifier` instead."},
 					"virtual_dwh":        schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
 					"username":           schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
 					"password":           schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "(Legacy) The password for the service account we should use to connect to Snowflake. We recommend using `private_key` instead."},
