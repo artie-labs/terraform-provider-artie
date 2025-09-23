@@ -35,7 +35,7 @@ resource "artie_connector" "postgres_dev" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `bigquery`, `dynamodb`, `mongodb`, `mysql`, `mssql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `bigquery`, `databricks`, `dynamodb`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"slices"
+	"strings"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/tfmodels"
@@ -39,6 +41,18 @@ func (r *ConnectorResource) Metadata(ctx context.Context, req resource.MetadataR
 }
 
 func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	var quotedConnectorTypes []string
+	dedupe := make(map[string]bool)
+	for _, connectorType := range artieclient.AllConnectorTypes {
+		if dedupe[connectorType] {
+			continue
+		}
+		dedupe[connectorType] = true
+		quotedConnectorTypes = append(quotedConnectorTypes, fmt.Sprintf("`%s`", connectorType))
+	}
+
+	slices.Sort(quotedConnectorTypes)
+
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.",
 		Attributes: map[string]schema.Attribute{
@@ -46,7 +60,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect."},
 			"type": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The type of connector. This must be one of the following: `bigquery`, `dynamodb`, `mongodb`, `mysql`, `mssql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.",
+				MarkdownDescription: fmt.Sprintf("The type of connector. This must be one of the following: %s.", strings.Join(quotedConnectorTypes, ", ")),
 				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllConnectorTypes...)},
 			},
 			"name": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this connector."},
