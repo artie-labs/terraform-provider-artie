@@ -1,10 +1,9 @@
 # Changes
-- 
+
 
 # Why Changes are Needed
 *Links to design doc, Trello card, etc*
 
-- 
 
 # Tests To Pass Before Release
 
