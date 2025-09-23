@@ -10,21 +10,22 @@ import (
 )
 
 type Connector struct {
-	UUID            types.String           `tfsdk:"uuid"`
-	SSHTunnelUUID   types.String           `tfsdk:"ssh_tunnel_uuid"`
-	Type            types.String           `tfsdk:"type"`
-	Name            types.String           `tfsdk:"name"`
-	DataPlaneName   types.String           `tfsdk:"data_plane_name"`
-	BigQueryConfig  *BigQuerySharedConfig  `tfsdk:"bigquery_config"`
-	DynamoDBConfig  *DynamoDBConfig        `tfsdk:"dynamodb_config"`
-	MongoDBConfig   *MongoDBSharedConfig   `tfsdk:"mongodb_config"`
-	MySQLConfig     *MySQLSharedConfig     `tfsdk:"mysql_config"`
-	MSSQLConfig     *MSSQLSharedConfig     `tfsdk:"mssql_config"`
-	OracleConfig    *OracleSharedConfig    `tfsdk:"oracle_config"`
-	PostgresConfig  *PostgresSharedConfig  `tfsdk:"postgresql_config"`
-	RedshiftConfig  *RedshiftSharedConfig  `tfsdk:"redshift_config"`
-	S3Config        *S3SharedConfig        `tfsdk:"s3_config"`
-	SnowflakeConfig *SnowflakeSharedConfig `tfsdk:"snowflake_config"`
+	UUID             types.String            `tfsdk:"uuid"`
+	SSHTunnelUUID    types.String            `tfsdk:"ssh_tunnel_uuid"`
+	Type             types.String            `tfsdk:"type"`
+	Name             types.String            `tfsdk:"name"`
+	DataPlaneName    types.String            `tfsdk:"data_plane_name"`
+	BigQueryConfig   *BigQuerySharedConfig   `tfsdk:"bigquery_config"`
+	DynamoDBConfig   *DynamoDBConfig         `tfsdk:"dynamodb_config"`
+	MongoDBConfig    *MongoDBSharedConfig    `tfsdk:"mongodb_config"`
+	MySQLConfig      *MySQLSharedConfig      `tfsdk:"mysql_config"`
+	MSSQLConfig      *MSSQLSharedConfig      `tfsdk:"mssql_config"`
+	OracleConfig     *OracleSharedConfig     `tfsdk:"oracle_config"`
+	PostgresConfig   *PostgresSharedConfig   `tfsdk:"postgresql_config"`
+	RedshiftConfig   *RedshiftSharedConfig   `tfsdk:"redshift_config"`
+	S3Config         *S3SharedConfig         `tfsdk:"s3_config"`
+	SnowflakeConfig  *SnowflakeSharedConfig  `tfsdk:"snowflake_config"`
+	DatabricksConfig *DatabricksSharedConfig `tfsdk:"databricks_config"`
 }
 
 func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
@@ -57,6 +58,8 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		sharedConfig = c.S3Config.ToAPIModel()
 	case artieclient.Snowflake:
 		sharedConfig = c.SnowflakeConfig.ToAPIModel()
+	case artieclient.Databricks:
+		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	default:
 		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Connector to API model", fmt.Sprintf("unhandled connector type: %s", c.Type.ValueString()),
@@ -125,6 +128,8 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		connector.S3Config = S3SharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Snowflake:
 		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.Databricks:
+		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -381,5 +386,30 @@ func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Sn
 		PrivateKey:        types.StringValue(apiModel.SnowflakePrivateKey),
 		Username:          types.StringValue(apiModel.Username),
 		Password:          types.StringValue(apiModel.Password),
+	}
+}
+
+type DatabricksSharedConfig struct {
+	Host                types.String `tfsdk:"host"`
+	HttpPath            types.String `tfsdk:"http_path"`
+	PersonalAccessToken types.String `tfsdk:"personal_access_token"`
+	Volume              types.String `tfsdk:"volume"`
+}
+
+func (d DatabricksSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:                          d.Host.ValueString(),
+		DatabricksHttpPath:            d.HttpPath.ValueString(),
+		DatabricksPersonalAccessToken: d.PersonalAccessToken.ValueString(),
+		DatabricksVolume:              d.Volume.ValueString(),
+	}
+}
+
+func DatabricksSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *DatabricksSharedConfig {
+	return &DatabricksSharedConfig{
+		Host:                types.StringValue(apiModel.Host),
+		HttpPath:            types.StringValue(apiModel.DatabricksHttpPath),
+		PersonalAccessToken: types.StringValue(apiModel.DatabricksPersonalAccessToken),
+		Volume:              types.StringValue(apiModel.DatabricksVolume),
 	}
 }

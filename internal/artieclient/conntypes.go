@@ -15,6 +15,7 @@ const (
 	Redshift   ConnectorType = "redshift"
 	S3         ConnectorType = "s3"
 	Snowflake  ConnectorType = "snowflake"
+	Databricks ConnectorType = "databricks"
 )
 
 var AllSourceTypes = []string{
@@ -32,6 +33,7 @@ var AllDestinationTypes = []string{
 	string(Redshift),
 	string(S3),
 	string(Snowflake),
+	string(Databricks),
 }
 
 var AllConnectorTypes = append(AllSourceTypes, AllDestinationTypes...)
@@ -58,6 +60,8 @@ func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 		return S3, nil
 	case Snowflake:
 		return Snowflake, nil
+	case Databricks:
+		return Databricks, nil
 	default:
 		return "", fmt.Errorf("invalid connector type: %s", connType)
 	}

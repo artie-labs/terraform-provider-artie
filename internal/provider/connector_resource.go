@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"slices"
+	"strings"
 
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/provider/tfmodels"
@@ -39,6 +41,20 @@ func (r *ConnectorResource) Metadata(ctx context.Context, req resource.MetadataR
 }
 
 func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	var quotedConnectorTypes []string
+	dedupe := make(map[string]bool)
+	for _, connectorType := range artieclient.AllConnectorTypes {
+		// Dedupe here because some connectors can be sources and destinations
+		if dedupe[connectorType] {
+			continue
+		}
+		dedupe[connectorType] = true
+		quotedConnectorTypes = append(quotedConnectorTypes, fmt.Sprintf("`%s`", connectorType))
+	}
+
+	// Alphabetical order
+	slices.Sort(quotedConnectorTypes)
+
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.",
 		Attributes: map[string]schema.Attribute{
@@ -46,7 +62,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect."},
 			"type": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The type of connector. This must be one of the following: `bigquery`, `dynamodb`, `mongodb`, `mysql`, `mssql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.",
+				MarkdownDescription: fmt.Sprintf("The type of connector. This must be one of the following: %s.", strings.Join(quotedConnectorTypes, ", ")),
 				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllConnectorTypes...)},
 			},
 			"name": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this connector."},
@@ -181,6 +197,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"private_key":        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. We recommend using this instead of `password`."},
 				},
 			},
+			"databricks_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `databricks`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":                  schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Databricks cluster."},
+					"http_path":             schema.StringAttribute{Required: true, MarkdownDescription: "The HTTP path of the Databricks cluster."},
+					"personal_access_token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks."},
+					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
+				},
+			},
 		},
 	}
 }
@@ -296,6 +322,11 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		// Either password or private_key must be provided
 		if configData.SnowflakeConfig.Password.IsNull() && configData.SnowflakeConfig.PrivateKey.IsNull() {
 			resp.Diagnostics.AddError("Either password or private_key must be provided", "Please provide either `password` or `private_key` inside `snowflake_config`. We recommend using `private_key`.")
+		}
+	case string(artieclient.Databricks):
+		if configData.DatabricksConfig == nil {
+			resp.Diagnostics.AddError("databricks_config is required", "Please provide `databricks_config` inside `connector`.")
+			return
 		}
 	}
 }
