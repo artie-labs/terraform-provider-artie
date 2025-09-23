@@ -307,6 +307,16 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.SnowflakeConfig.Password.IsNull() && configData.SnowflakeConfig.PrivateKey.IsNull() {
 			resp.Diagnostics.AddError("Either password or private_key must be provided", "Please provide either `password` or `private_key` inside `snowflake_config`. We recommend using `private_key`.")
 		}
+	case string(artieclient.Databricks):
+		if configData.DatabricksConfig == nil {
+			resp.Diagnostics.AddError("databricks_config is required", "Please provide `databricks_config` inside `connector`.")
+			return
+		}
+
+		if msg := configData.DatabricksConfig.Validate(); msg != "" {
+			resp.Diagnostics.AddError(msg, "Please make sure the value is correctly set inside `databricks_config`.")
+			return
+		}
 	}
 }
 
