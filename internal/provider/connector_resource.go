@@ -330,7 +330,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 
 		if msg := configData.DatabricksConfig.Validate(); msg != "" {
-			resp.Diagnostics.AddError(msg, "Please make sure the value is correctly set inside `databricks_config`.")
+			resp.Diagnostics.AddError("Invalid databricks_config", msg)
 			return
 		}
 	}
