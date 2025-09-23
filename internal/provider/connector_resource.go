@@ -44,6 +44,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 	var quotedConnectorTypes []string
 	dedupe := make(map[string]bool)
 	for _, connectorType := range artieclient.AllConnectorTypes {
+		// Dedupe here because some connectors can be sources and destinations
 		if dedupe[connectorType] {
 			continue
 		}
@@ -51,6 +52,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 		quotedConnectorTypes = append(quotedConnectorTypes, fmt.Sprintf("`%s`", connectorType))
 	}
 
+	// Alphabetical order
 	slices.Sort(quotedConnectorTypes)
 
 	resp.Schema = schema.Schema{
