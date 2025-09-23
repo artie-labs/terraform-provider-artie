@@ -328,11 +328,6 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			resp.Diagnostics.AddError("databricks_config is required", "Please provide `databricks_config` inside `connector`.")
 			return
 		}
-
-		if msg := configData.DatabricksConfig.Validate(); msg != "" {
-			resp.Diagnostics.AddError("Invalid databricks_config", msg)
-			return
-		}
 	}
 }
 

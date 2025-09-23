@@ -396,26 +396,6 @@ type DatabricksSharedConfig struct {
 	Volume              types.String `tfsdk:"volume"`
 }
 
-func (d DatabricksSharedConfig) Validate() string {
-	if d.Host.IsNull() {
-		return "host is required"
-	}
-
-	if d.HttpPath.IsNull() {
-		return "http_path is required"
-	}
-
-	if d.PersonalAccessToken.IsNull() {
-		return "personal_access_token is required"
-	}
-
-	if d.Volume.IsNull() {
-		return "volume is required"
-	}
-
-	return ""
-}
-
 func (d DatabricksSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	return artieclient.ConnectorConfig{
 		Host:                          d.Host.ValueString(),
