@@ -41,6 +41,7 @@ resource "artie_connector" "postgres_dev" {
 
 - `bigquery_config` (Attributes) This should be filled out if the connector type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
+- `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. (see [below for nested schema](#nestedatt--databricks_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. (see [below for nested schema](#nestedatt--dynamodb_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
 - `mssql_config` (Attributes) This should be filled out if the connector type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
@@ -65,6 +66,17 @@ Required:
 - `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `location` (String) The location of the BigQuery dataset. This must be either `US` or `EU`.
 - `project_id` (String) The ID of the Google Cloud project.
+
+
+<a id="nestedatt--databricks_config"></a>
+### Nested Schema for `databricks_config`
+
+Required:
+
+- `host` (String) The hostname of the Databricks cluster.
+- `http_path` (String) The HTTP path of the Databricks cluster.
+- `personal_access_token` (String, Sensitive) The personal access token for the service account we should use to connect to Databricks.
+- `volume` (String) The volume of the Databricks cluster.
 
 
 <a id="nestedatt--dynamodb_config"></a>

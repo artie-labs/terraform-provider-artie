@@ -181,6 +181,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"private_key":        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. We recommend using this instead of `password`."},
 				},
 			},
+			"databricks_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `databricks`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":                  schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Databricks cluster."},
+					"http_path":             schema.StringAttribute{Required: true, MarkdownDescription: "The HTTP path of the Databricks cluster."},
+					"personal_access_token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks."},
+					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
+				},
+			},
 		},
 	}
 }
