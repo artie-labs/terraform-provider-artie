@@ -3,7 +3,7 @@ module terraform-provider-artie
 go 1.24.0
 
 require (
-	github.com/artie-labs/transfer v1.27.163
+	github.com/artie-labs/transfer v1.27.164
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-docs v0.23.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
@@ -19,6 +19,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
+	github.com/apache/arrow/go/v17 v17.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.3 // indirect
@@ -37,9 +38,12 @@ require (
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.9.1 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
+	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/flatbuffers v25.2.10+incompatible // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
@@ -85,12 +89,15 @@ require (
 	github.com/yuin/goldmark-meta v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.17.0 // indirect
 	go.abhg.dev/goldmark/frontmatter v0.2.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/mod v0.27.0 // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/tools v0.36.0 // indirect
+	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.72.1 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
