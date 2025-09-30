@@ -3,7 +3,7 @@ module terraform-provider-artie
 go 1.24.0
 
 require (
-	github.com/artie-labs/transfer v1.27.164
+	github.com/artie-labs/transfer v1.27.167
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-docs v0.23.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
@@ -65,6 +65,7 @@ require (
 	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
