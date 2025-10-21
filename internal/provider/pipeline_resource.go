@@ -8,6 +8,7 @@ import (
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -72,10 +73,11 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 							Optional:            true,
 							Computed:            true,
 							PlanModifiers:       []planmodifier.List{listplanmodifier.UseStateForUnknown()},
-							MarkdownDescription: "Optional: if the destination table is partitioned, specify the column(s) it's partitioned by. This will help with merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it must be a time column partitioned by day.",
+							MarkdownDescription: "Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range–partitioned column; set `partition_type` to 'time' or 'integer' accordingly.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
+									"partition_type":  schema.StringAttribute{Optional: true, MarkdownDescription: "The type of partition to use. One of 'time' or 'integer'. Required for BigQuery.", Validators: []validator.String{stringvalidator.OneOf("time", "integer")}},
 								},
 							}},
 						"soft_partitioning": schema.SingleNestedAttribute{
