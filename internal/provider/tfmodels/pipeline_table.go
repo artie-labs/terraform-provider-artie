@@ -16,14 +16,16 @@ import (
 
 type MergePredicate struct {
 	PartitionField types.String `tfsdk:"partition_field"`
+	PartitionType  types.String `tfsdk:"partition_type"`
 }
 
 var MergePredicateAttrTypes = map[string]attr.Type{
 	"partition_field": types.StringType,
+	"partition_type":  types.StringType,
 }
 
 func (m MergePredicate) ToAPIModel() artieclient.MergePredicate {
-	return artieclient.MergePredicate{PartitionField: m.PartitionField.ValueString()}
+	return artieclient.MergePredicate{PartitionField: m.PartitionField.ValueString(), PartitionType: m.PartitionType.ValueString()}
 }
 
 func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]artieclient.MergePredicate) (types.List, diag.Diagnostics) {
@@ -35,7 +37,7 @@ func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]arti
 	var diags diag.Diagnostics
 	preds := []attr.Value{}
 	for _, mp := range *apiMergePredicates {
-		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField)})
+		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField), PartitionType: types.StringValue(mp.PartitionType)})
 		diags.Append(predDiags...)
 		preds = append(preds, pred)
 	}
@@ -139,10 +141,11 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	diags.Append(mergePredDiags...)
 	var clientMergePreds *[]artieclient.MergePredicate
 	if mergePredicates != nil && len(*mergePredicates) > 0 {
-		clientMPs := []artieclient.MergePredicate{}
+		var clientMPs []artieclient.MergePredicate
 		for _, mp := range *mergePredicates {
 			clientMPs = append(clientMPs, mp.ToAPIModel())
 		}
+
 		clientMergePreds = &clientMPs
 	}
 

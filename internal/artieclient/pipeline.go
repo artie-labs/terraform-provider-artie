@@ -47,6 +47,7 @@ type Table struct {
 
 type MergePredicate struct {
 	PartitionField string `json:"partitionField"`
+	PartitionType  string `json:"partitionType"`
 }
 
 type SoftPartitioning struct {
