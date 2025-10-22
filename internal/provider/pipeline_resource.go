@@ -73,7 +73,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 							Optional:            true,
 							Computed:            true,
 							PlanModifiers:       []planmodifier.List{listplanmodifier.UseStateForUnknown()},
-							MarkdownDescription: "Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range–partitioned column; set `partition_type` to 'time' or 'integer' accordingly.",
+							MarkdownDescription: "Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range-partitioned column; set `partition_type` to 'time' or 'integer' accordingly.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
@@ -82,7 +82,6 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 							}},
 						"soft_partitioning": schema.SingleNestedAttribute{
 							Optional:            true,
-							Computed:            true,
 							PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
 							MarkdownDescription: "Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column.",
 							Attributes: map[string]schema.Attribute{
