@@ -37,7 +37,14 @@ func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]arti
 	var diags diag.Diagnostics
 	preds := []attr.Value{}
 	for _, mp := range *apiMergePredicates {
-		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField), PartitionType: types.StringValue(mp.PartitionType)})
+		var partitionType types.String
+		if mp.PartitionType == "" {
+			partitionType = types.StringNull()
+		} else {
+			partitionType = types.StringValue(mp.PartitionType)
+		}
+
+		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField), PartitionType: partitionType})
 		diags.Append(predDiags...)
 		preds = append(preds, pred)
 	}
