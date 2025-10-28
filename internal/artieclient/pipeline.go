@@ -11,13 +11,14 @@ import (
 )
 
 type AdvancedSettings struct {
-	DropDeletedColumns             *bool  `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool  `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool  `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool  `json:"includeDatabaseUpdatedAtColumn"`
-	FlushIntervalSeconds           *int64 `json:"flushIntervalSeconds"`
-	BufferRows                     *int64 `json:"bufferRows"`
-	FlushSizeKB                    *int64 `json:"flushSizeKb"`
+	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
+	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
+	FlushIntervalSeconds           *int64  `json:"flushIntervalSeconds"`
+	BufferRows                     *int64  `json:"bufferRows"`
+	FlushSizeKB                    *int64  `json:"flushSizeKb"`
+	DefaultSourceSchema            *string `json:"defaultSourceSchema"`
 }
 
 type BasePipeline struct {

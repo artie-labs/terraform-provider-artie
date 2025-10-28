@@ -111,6 +111,7 @@ type Pipeline struct {
 	SoftDeleteRows                 types.Bool   `tfsdk:"soft_delete_rows"`
 	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
 	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
+	DefaultSourceSchema            types.String `tfsdk:"default_source_schema"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -159,6 +160,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		EnableSoftDelete:               p.SoftDeleteRows.ValueBoolPointer(),
 		IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
 		IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
+		DefaultSourceSchema:            p.DefaultSourceSchema.ValueStringPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -215,6 +217,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var softDeleteRows types.Bool
 	var includeArtieUpdatedAtColumn types.Bool
 	var includeDatabaseUpdatedAtColumn types.Bool
+	var defaultSourceSchema types.String
 	if apiModel.AdvancedSettings != nil {
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
@@ -228,7 +231,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		if apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn != nil {
 			includeDatabaseUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn)
 		}
-
+		if apiModel.AdvancedSettings.DefaultSourceSchema != nil {
+			defaultSourceSchema = types.StringValue(*apiModel.AdvancedSettings.DefaultSourceSchema)
+		}
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
 			flushConfigMap["flush_interval_seconds"] = types.Int64Value(*apiModel.AdvancedSettings.FlushIntervalSeconds)
@@ -265,5 +270,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		IncludeArtieUpdatedAtColumn:    includeArtieUpdatedAtColumn,
 		IncludeDatabaseUpdatedAtColumn: includeDatabaseUpdatedAtColumn,
 		FlushConfig:                    flushConfig,
+		DefaultSourceSchema:            defaultSourceSchema,
 	}, diags
 }
