@@ -85,7 +85,7 @@ Required:
 
 Optional:
 
-- `child_partition_schema_name` (String) If the source table is partitioned and its child partitions are in a different schema, this should specify the name of that schema.
+- `child_partition_schema_name` (String, Deprecated) If the source table is partitioned and its child partitions are in a different schema, this should specify the name of that schema.
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from CDC events. This cannot be used if `columns_to_include` is also specified.
 - `columns_to_include` (List of String) An optional list of columns to include in CDC events. If not provided, all columns will be included. This cannot be used if `columns_to_exclude` is also specified.
 - `is_partitioned` (Boolean) If the source table is partitioned, set this to true and we will ingest data from all of its partitions. You may also need to customize `partition_suffix_regex_pattern` on the source reader.

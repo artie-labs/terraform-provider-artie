@@ -38,14 +38,13 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceRe
 	diags.Append(includeDiags...)
 
 	return artieclient.SourceReaderTable{
-		Name:                     s.Name.ValueString(),
-		Schema:                   s.Schema.ValueString(),
-		IsPartitioned:            s.IsPartitioned.ValueBool(),
-		ColumnsToExclude:         colsToExclude,
-		ColumnsToInclude:         colsToInclude,
-		ChildPartitionSchemaName: s.ChildPartitionSchemaName.ValueString(),
-		UnifyAcrossSchemas:       s.UnifyAcrossSchemas.ValueBool(),
-		UnifyAcrossDatabases:     s.UnifyAcrossDatabases.ValueBool(),
+		Name:                 s.Name.ValueString(),
+		Schema:               s.Schema.ValueString(),
+		IsPartitioned:        s.IsPartitioned.ValueBool(),
+		ColumnsToExclude:     colsToExclude,
+		ColumnsToInclude:     colsToInclude,
+		UnifyAcrossSchemas:   s.UnifyAcrossSchemas.ValueBool(),
+		UnifyAcrossDatabases: s.UnifyAcrossDatabases.ValueBool(),
 	}, diags
 }
 
@@ -64,7 +63,7 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string
 			IsPartitioned:            types.BoolValue(apiTable.IsPartitioned),
 			ColumnsToExclude:         colsToExclude,
 			ColumnsToInclude:         colsToInclude,
-			ChildPartitionSchemaName: types.StringValue(apiTable.ChildPartitionSchemaName),
+			ChildPartitionSchemaName: types.StringValue(""), // Deprecated field, always set to empty string
 			UnifyAcrossSchemas:       types.BoolValue(apiTable.UnifyAcrossSchemas),
 			UnifyAcrossDatabases:     types.BoolValue(apiTable.UnifyAcrossDatabases),
 		}
