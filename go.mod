@@ -12,6 +12,10 @@ require (
 	github.com/stretchr/testify v1.11.1
 )
 
+// Prevent dependabot from upgrading to v1.15.1 which has a breaking change for us
+// https://github.com/hashicorp/terraform-plugin-framework/issues/1197
+replace github.com/hashicorp/terraform-plugin-framework => github.com/hashicorp/terraform-plugin-framework v1.15.0
+
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
