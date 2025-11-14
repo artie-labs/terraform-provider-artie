@@ -9,22 +9,20 @@ import (
 
 type PrivateLink struct {
 	UUID           types.String `tfsdk:"uuid"`
-	Name           types.String `tfsdk:"name"`
-	AWSAccountID   types.String `tfsdk:"aws_account_id"`
+	VpcServiceName types.String `tfsdk:"vpc_service_name"`
 	Region         types.String `tfsdk:"region"`
 	VpcEndpointID  types.String `tfsdk:"vpc_endpoint_id"`
-	VpcServiceName types.String `tfsdk:"vpc_service_name"`
+	Name           types.String `tfsdk:"name"`
 	Status         types.String `tfsdk:"status"`
 	DnsEntry       types.String `tfsdk:"dns_entry"`
+	DataPlaneName  types.String `tfsdk:"data_plane_name"`
 }
 
 func (p PrivateLink) ToAPIBaseModel() artieclient.BasePrivateLinkConnection {
 	return artieclient.BasePrivateLinkConnection{
-		Name:           p.Name.ValueString(),
-		AWSAccountID:   p.AWSAccountID.ValueString(),
+		VpcServiceName: p.VpcServiceName.ValueString(),
 		Region:         p.Region.ValueString(),
 		VpcEndpointID:  p.VpcEndpointID.ValueString(),
-		VpcServiceName: p.VpcServiceName.ValueString(),
 	}
 }
 
@@ -43,12 +41,12 @@ func (p PrivateLink) ToAPIModel() (artieclient.PrivateLinkConnection, diag.Diagn
 func PrivateLinkFromAPIModel(apiModel artieclient.PrivateLinkConnection) PrivateLink {
 	return PrivateLink{
 		UUID:           types.StringValue(apiModel.UUID.String()),
-		Name:           types.StringValue(apiModel.Name),
-		AWSAccountID:   types.StringValue(apiModel.AWSAccountID),
+		VpcServiceName: types.StringValue(apiModel.VpcServiceName),
 		Region:         types.StringValue(apiModel.Region),
 		VpcEndpointID:  types.StringValue(apiModel.VpcEndpointID),
-		VpcServiceName: types.StringValue(apiModel.VpcServiceName),
+		Name:           types.StringValue(apiModel.Name),
 		Status:         types.StringValue(apiModel.Status),
 		DnsEntry:       types.StringValue(apiModel.DnsEntry),
+		DataPlaneName:  types.StringValue(apiModel.DataPlaneName),
 	}
 }

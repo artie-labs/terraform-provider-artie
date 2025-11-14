@@ -5,6 +5,6 @@
 terraform import artie_private_link.example <privatelink_uuid>
 
 # Then print the state and copy it into your terraform config file
-# (be sure to remove all read-only fields, like `uuid`, `status`, and `dns_entry`):
+# (be sure to remove all read-only/computed fields like `uuid`, `name`, `status`, `dns_entry`, and `data_plane_name`):
 terraform state show artie_private_link.example
 

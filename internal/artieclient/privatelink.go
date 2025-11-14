@@ -9,18 +9,18 @@ import (
 )
 
 type BasePrivateLinkConnection struct {
-	Name           string `json:"name"`
-	AWSAccountID   string `json:"awsAccountId"`
+	VpcServiceName string `json:"vpcServiceName"`
 	Region         string `json:"region"`
 	VpcEndpointID  string `json:"vpcEndpointId"`
-	VpcServiceName string `json:"vpcServiceName"`
 }
 
 type PrivateLinkConnection struct {
 	BasePrivateLinkConnection
-	UUID     uuid.UUID `json:"uuid"`
-	Status   string    `json:"status"`
-	DnsEntry string    `json:"dnsEntry"`
+	UUID          uuid.UUID `json:"uuid"`
+	Name          string    `json:"name"`
+	Status        string    `json:"status"`
+	DnsEntry      string    `json:"dnsEntry"`
+	DataPlaneName string    `json:"dataPlaneName"`
 }
 
 type PrivateLinkClient struct {

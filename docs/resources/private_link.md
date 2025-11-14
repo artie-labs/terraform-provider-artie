@@ -14,11 +14,9 @@ Artie PrivateLink connection resource. This resource represents an AWS PrivateLi
 
 ```terraform
 resource "artie_private_link" "example" {
-  name             = "My PrivateLink Connection"
-  aws_account_id   = "123456789012"
+  vpc_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-1234567890abcdef0"
   region           = "us-east-1"
   vpc_endpoint_id  = "vpce-1234567890abcdef0"
-  vpc_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-1234567890abcdef0"
 }
 ```
 
@@ -27,17 +25,17 @@ resource "artie_private_link" "example" {
 
 ### Required
 
-- `aws_account_id` (String) Your AWS Account ID that owns the VPC endpoint.
-- `name` (String) A human-readable label for this PrivateLink connection.
-- `region` (String) The AWS region of the VPC endpoint.
+- `region` (String) The AWS region of the VPC endpoint (e.g., us-east-1).
 - `vpc_endpoint_id` (String) The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service.
-- `vpc_service_name` (String) The VPC endpoint service name for Artie's service in your AWS region.
+- `vpc_service_name` (String) The VPC endpoint service name for Artie's service in your AWS region (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx).
 
 ### Read-Only
 
+- `data_plane_name` (String) The data plane name associated with this PrivateLink connection.
 - `dns_entry` (String) The DNS entry for the PrivateLink connection.
-- `status` (String) The status of the PrivateLink connection.
-- `uuid` (String)
+- `name` (String) The name of the PrivateLink connection (auto-generated from vpc_service_name).
+- `status` (String) The status of the PrivateLink connection (e.g., available, pending).
+- `uuid` (String) The unique identifier for this PrivateLink connection.
 
 ## Import
 
@@ -53,6 +51,6 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 terraform import artie_private_link.example <privatelink_uuid>
 
 # Then print the state and copy it into your terraform config file
-# (be sure to remove all read-only fields, like `uuid`, `status`, and `dns_entry`):
+# (be sure to remove all read-only/computed fields like `uuid`, `name`, `status`, `dns_entry`, and `data_plane_name`):
 terraform state show artie_private_link.example
 ```
