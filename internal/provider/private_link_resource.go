@@ -37,10 +37,10 @@ func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaReq
 		MarkdownDescription: "Artie PrivateLink connection resource. This resource represents an AWS PrivateLink connection to Artie.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The unique identifier for this PrivateLink connection."},
+			"name":             schema.StringAttribute{Required: true, MarkdownDescription: "The name of the PrivateLink connection."},
 			"vpc_service_name": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC endpoint service name for Artie's service in your AWS region (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx)."},
 			"region":           schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
 			"vpc_endpoint_id":  schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
-			"name":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The name of the PrivateLink connection (auto-generated from vpc_service_name)."},
 			"status":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
 			"dns_entry":        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
 			"data_plane_name":  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The data plane name associated with this PrivateLink connection."},

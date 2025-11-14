@@ -20,6 +20,7 @@ type PrivateLink struct {
 
 func (p PrivateLink) ToAPIBaseModel() artieclient.BasePrivateLinkConnection {
 	return artieclient.BasePrivateLinkConnection{
+		Name:           p.Name.ValueString(),
 		VpcServiceName: p.VpcServiceName.ValueString(),
 		Region:         p.Region.ValueString(),
 		VpcEndpointID:  p.VpcEndpointID.ValueString(),

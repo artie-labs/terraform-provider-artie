@@ -9,6 +9,7 @@ import (
 )
 
 type BasePrivateLinkConnection struct {
+	Name           string `json:"name"`
 	VpcServiceName string `json:"vpcServiceName"`
 	Region         string `json:"region"`
 	VpcEndpointID  string `json:"vpcEndpointId"`
@@ -17,7 +18,6 @@ type BasePrivateLinkConnection struct {
 type PrivateLinkConnection struct {
 	BasePrivateLinkConnection
 	UUID          uuid.UUID `json:"uuid"`
-	Name          string    `json:"name"`
 	Status        string    `json:"status"`
 	DnsEntry      string    `json:"dnsEntry"`
 	DataPlaneName string    `json:"dataPlaneName"`
