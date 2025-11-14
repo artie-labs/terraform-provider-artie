@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -41,6 +42,7 @@ func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaReq
 			"vpc_service_name": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC endpoint service name for Artie's service in your AWS region (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx)."},
 			"region":           schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
 			"vpc_endpoint_id":  schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
+			"az_ids":           schema.ListAttribute{ElementType: types.StringType, Required: true, MarkdownDescription: "List of AWS Availability Zone IDs where the PrivateLink endpoint is available (e.g., [\"use1-az1\", \"use1-az2\"])."},
 			"status":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
 			"dns_entry":        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
 			"data_plane_name":  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The data plane name associated with this PrivateLink connection."},
@@ -86,7 +88,12 @@ func (r *PrivateLinkResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, 
 }
 
 func (r *PrivateLinkResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, pl artieclient.PrivateLinkConnection) {
-	diagnostics.Append(state.Set(ctx, tfmodels.PrivateLinkFromAPIModel(pl))...)
+	tfModel, diags := tfmodels.PrivateLinkFromAPIModel(ctx, pl)
+	diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+	diagnostics.Append(state.Set(ctx, tfModel)...)
 }
 
 func (r *PrivateLinkResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -95,7 +102,13 @@ func (r *PrivateLinkResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	conn, err := r.client.PrivateLinks().Create(ctx, planData.ToAPIBaseModel())
+	baseModel, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	conn, err := r.client.PrivateLinks().Create(ctx, baseModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create PrivateLink connection", err.Error())
 		return
@@ -130,7 +143,13 @@ func (r *PrivateLinkResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	conn, err := r.client.PrivateLinks().Update(ctx, uuid, planData.ToAPIBaseModel())
+	baseModel, diags := planData.ToAPIBaseModel(ctx)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	conn, err := r.client.PrivateLinks().Update(ctx, uuid, baseModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update PrivateLink connection", err.Error())
 		return

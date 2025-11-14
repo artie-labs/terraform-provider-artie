@@ -9,10 +9,11 @@ import (
 )
 
 type BasePrivateLinkConnection struct {
-	Name           string `json:"name"`
-	VpcServiceName string `json:"vpcServiceName"`
-	Region         string `json:"region"`
-	VpcEndpointID  string `json:"vpcEndpointId"`
+	Name           string   `json:"name"`
+	VpcServiceName string   `json:"vpcServiceName"`
+	Region         string   `json:"region"`
+	VpcEndpointID  string   `json:"vpcEndpointId"`
+	AzIDs          []string `json:"availabilityZoneIds"`
 }
 
 type PrivateLinkConnection struct {
