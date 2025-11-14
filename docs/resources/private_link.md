@@ -51,7 +51,7 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 
 ```shell
 # Import a PrivateLink connection by using its UUID, which you can find by:
-# 1. Go to the PrivateLink connections page in the Artie UI
+# 1. Go to the PrivateLink connections page in the Artie UI (https://app.artie.com/settings?tab=privateLinkConnections)
 # 2. Click on the PrivateLink connection you want to import and copy the UUID
 terraform import artie_private_link.example <privatelink_uuid>
 
