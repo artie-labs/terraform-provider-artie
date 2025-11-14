@@ -14,10 +14,11 @@ Artie PrivateLink connection resource. This resource represents an AWS PrivateLi
 
 ```terraform
 resource "artie_private_link" "example" {
-  name            = "My PrivateLink Connection"
-  aws_account_id  = "123456789012"
-  aws_region      = "us-east-1"
-  vpc_endpoint_id = "vpce-1234567890abcdef0"
+  name             = "My PrivateLink Connection"
+  aws_account_id   = "123456789012"
+  region           = "us-east-1"
+  vpc_endpoint_id  = "vpce-1234567890abcdef0"
+  vpc_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-1234567890abcdef0"
 }
 ```
 
@@ -27,13 +28,14 @@ resource "artie_private_link" "example" {
 ### Required
 
 - `aws_account_id` (String) Your AWS Account ID that owns the VPC endpoint.
-- `aws_region` (String) The AWS region of the VPC endpoint.
 - `name` (String) A human-readable label for this PrivateLink connection.
+- `region` (String) The AWS region of the VPC endpoint.
 - `vpc_endpoint_id` (String) The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service.
+- `vpc_service_name` (String) The VPC endpoint service name for Artie's service in your AWS region.
 
 ### Read-Only
 
-- `service_name` (String) The endpoint service name in AWS for Artie.
+- `dns_entry` (String) The DNS entry for the PrivateLink connection.
 - `status` (String) The status of the PrivateLink connection.
 - `uuid` (String)
 
@@ -51,6 +53,6 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 terraform import artie_private_link.example <privatelink_uuid>
 
 # Then print the state and copy it into your terraform config file
-# (be sure to remove all read-only fields, like `uuid`, `status`, and `service_name`):
+# (be sure to remove all read-only fields, like `uuid`, `status`, and `dns_entry`):
 terraform state show artie_private_link.example
 ```

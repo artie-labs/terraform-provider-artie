@@ -36,13 +36,14 @@ func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaReq
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie PrivateLink connection resource. This resource represents an AWS PrivateLink connection to Artie.",
 		Attributes: map[string]schema.Attribute{
-			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name":            schema.StringAttribute{Required: true, MarkdownDescription: "A human-readable label for this PrivateLink connection."},
-			"aws_account_id":  schema.StringAttribute{Required: true, MarkdownDescription: "Your AWS Account ID that owns the VPC endpoint."},
-			"aws_region":      schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint."},
-			"vpc_endpoint_id": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
-			"status":          schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection."},
-			"service_name":    schema.StringAttribute{Computed: true, MarkdownDescription: "The endpoint service name in AWS for Artie."},
+			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"name":             schema.StringAttribute{Required: true, MarkdownDescription: "A human-readable label for this PrivateLink connection."},
+			"aws_account_id":   schema.StringAttribute{Required: true, MarkdownDescription: "Your AWS Account ID that owns the VPC endpoint."},
+			"region":           schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint."},
+			"vpc_endpoint_id":  schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
+			"vpc_service_name": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC endpoint service name for Artie's service in your AWS region."},
+			"status":           schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection."},
+			"dns_entry":        schema.StringAttribute{Computed: true, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
 		},
 	}
 }
