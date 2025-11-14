@@ -43,8 +43,8 @@ func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaReq
 			"region":           schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
 			"vpc_endpoint_id":  schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
 			"az_ids":           schema.ListAttribute{ElementType: types.StringType, Required: true, MarkdownDescription: "List of AWS Availability Zone IDs where the PrivateLink endpoint is available (e.g., [\"use1-az1\", \"use1-az2\"])."},
-			"status":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
-			"dns_entry":        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
+			"status":           schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
+			"dns_entry":        schema.StringAttribute{Computed: true, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
 			"data_plane_name":  schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The data plane name associated with this PrivateLink connection. If not provided, it will be computed by the server."},
 		},
 	}
