@@ -129,3 +129,7 @@ func (c Client) SourceReaders() SourceReaderClient {
 func (c Client) Pipelines() PipelineClient {
 	return PipelineClient{client: c}
 }
+
+func (c Client) PrivateLinks() PrivateLinkClient {
+	return PrivateLinkClient{client: c}
+}

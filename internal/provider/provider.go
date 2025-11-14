@@ -105,6 +105,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewConnectorResource,
 		NewSourceReaderResource,
 		NewPipelineResource,
+		NewPrivateLinkResource,
 	}
 }
 
