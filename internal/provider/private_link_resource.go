@@ -41,9 +41,9 @@ func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaReq
 			"region":           schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
 			"vpc_endpoint_id":  schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
 			"name":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The name of the PrivateLink connection (auto-generated from vpc_service_name)."},
-			"status":           schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
-			"dns_entry":        schema.StringAttribute{Computed: true, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
-			"data_plane_name":  schema.StringAttribute{Computed: true, MarkdownDescription: "The data plane name associated with this PrivateLink connection."},
+			"status":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
+			"dns_entry":        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
+			"data_plane_name":  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The data plane name associated with this PrivateLink connection."},
 		},
 	}
 }
@@ -120,18 +120,17 @@ func (r *PrivateLinkResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *PrivateLinkResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	uuid, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
+	if hasError {
+		return
+	}
+
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
 	}
 
-	apiModel, diags := planData.ToAPIModel()
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
-	conn, err := r.client.PrivateLinks().Update(ctx, apiModel)
+	conn, err := r.client.PrivateLinks().Update(ctx, uuid, planData.ToAPIBaseModel())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update PrivateLink connection", err.Error())
 		return

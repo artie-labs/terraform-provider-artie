@@ -44,8 +44,8 @@ func (pc PrivateLinkClient) Create(ctx context.Context, conn BasePrivateLinkConn
 	return makeRequest[PrivateLinkConnection](ctx, pc.client, http.MethodPost, pc.basePath(), conn)
 }
 
-func (pc PrivateLinkClient) Update(ctx context.Context, conn PrivateLinkConnection) (PrivateLinkConnection, error) {
-	path, err := url.JoinPath(pc.basePath(), conn.UUID.String())
+func (pc PrivateLinkClient) Update(ctx context.Context, plUUID string, conn BasePrivateLinkConnection) (PrivateLinkConnection, error) {
+	path, err := url.JoinPath(pc.basePath(), plUUID)
 	if err != nil {
 		return PrivateLinkConnection{}, err
 	}
