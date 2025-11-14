@@ -19,9 +19,9 @@ type BasePrivateLinkConnection struct {
 type PrivateLinkConnection struct {
 	BasePrivateLinkConnection
 	UUID          uuid.UUID `json:"uuid"`
-	Status        string    `json:"status"`
-	DnsEntry      string    `json:"dnsEntry"`
-	DataPlaneName string    `json:"dataPlaneName"`
+	Status        string    `json:"status,omitempty"`
+	DnsEntry      string    `json:"dnsEntry,omitempty"`
+	DataPlaneName string    `json:"dataPlaneName,omitempty"`
 }
 
 type PrivateLinkClient struct {
@@ -45,8 +45,8 @@ func (pc PrivateLinkClient) Create(ctx context.Context, conn BasePrivateLinkConn
 	return makeRequest[PrivateLinkConnection](ctx, pc.client, http.MethodPost, pc.basePath(), conn)
 }
 
-func (pc PrivateLinkClient) Update(ctx context.Context, plUUID string, conn BasePrivateLinkConnection) (PrivateLinkConnection, error) {
-	path, err := url.JoinPath(pc.basePath(), plUUID)
+func (pc PrivateLinkClient) Update(ctx context.Context, conn PrivateLinkConnection) (PrivateLinkConnection, error) {
+	path, err := url.JoinPath(pc.basePath(), conn.UUID.String())
 	if err != nil {
 		return PrivateLinkConnection{}, err
 	}

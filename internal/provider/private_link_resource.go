@@ -133,23 +133,18 @@ func (r *PrivateLinkResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *PrivateLinkResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	uuid, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
-	if hasError {
-		return
-	}
-
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
 		return
 	}
 
-	baseModel, diags := planData.ToAPIBaseModel(ctx)
+	apiModel, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	conn, err := r.client.PrivateLinks().Update(ctx, uuid, baseModel)
+	conn, err := r.client.PrivateLinks().Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update PrivateLink connection", err.Error())
 		return
