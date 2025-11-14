@@ -33,6 +33,7 @@ func (p PrivateLink) ToAPIBaseModel(ctx context.Context) (artieclient.BasePrivat
 		Region:         p.Region.ValueString(),
 		VpcEndpointID:  p.VpcEndpointID.ValueString(),
 		AzIDs:          azIDs,
+		DataPlaneName:  p.DataPlaneName.ValueString(),
 	}, diags
 }
 

@@ -33,9 +33,12 @@ resource "artie_private_link" "example" {
 - `vpc_endpoint_id` (String) The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service.
 - `vpc_service_name` (String) The VPC endpoint service name for Artie's service in your AWS region (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx).
 
+### Optional
+
+- `data_plane_name` (String) The data plane name associated with this PrivateLink connection. If not provided, it will be computed by the server.
+
 ### Read-Only
 
-- `data_plane_name` (String) The data plane name associated with this PrivateLink connection.
 - `dns_entry` (String) The DNS entry for the PrivateLink connection.
 - `status` (String) The status of the PrivateLink connection (e.g., available, pending).
 - `uuid` (String) The unique identifier for this PrivateLink connection.
@@ -48,12 +51,11 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 
 ```shell
 # Import a PrivateLink connection by using its UUID, which you can find by:
-# 1. Go to the pipeline overview page in the Artie UI
-# 2. Open the dropdown in the top right corner
-# 3. Select "View UUIDs" to see all related resource UUIDs
+# 1. Go to the PrivateLink connections page in the Artie UI
+# 2. Click on the PrivateLink connection you want to import
+# 3. Open the drop down in the top right corner and select "View UUID"
 terraform import artie_private_link.example <privatelink_uuid>
 
-# Then print the state and copy it into your terraform config file
-# (be sure to remove all read-only/computed fields like `uuid`, `status`, `dns_entry`, and `data_plane_name`):
+# Then print the state and copy it into your terraform config file (be sure to remove all read-only/computed fields like `uuid`, `status`, and `dns_entry`):
 terraform state show artie_private_link.example
 ```

@@ -14,14 +14,14 @@ type BasePrivateLinkConnection struct {
 	Region         string   `json:"region"`
 	VpcEndpointID  string   `json:"vpcEndpointId"`
 	AzIDs          []string `json:"availabilityZoneIds"`
+	DataPlaneName  string   `json:"dataPlaneName,omitempty"`
 }
 
 type PrivateLinkConnection struct {
 	BasePrivateLinkConnection
-	UUID          uuid.UUID `json:"uuid"`
-	Status        string    `json:"status,omitempty"`
-	DnsEntry      string    `json:"dnsEntry,omitempty"`
-	DataPlaneName string    `json:"dataPlaneName,omitempty"`
+	UUID     uuid.UUID `json:"uuid"`
+	Status   string    `json:"status,omitempty"`
+	DnsEntry string    `json:"dnsEntry,omitempty"`
 }
 
 type PrivateLinkClient struct {
