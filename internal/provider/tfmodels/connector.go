@@ -17,6 +17,7 @@ type Connector struct {
 	DataPlaneName    types.String            `tfsdk:"data_plane_name"`
 	BigQueryConfig   *BigQuerySharedConfig   `tfsdk:"bigquery_config"`
 	DynamoDBConfig   *DynamoDBConfig         `tfsdk:"dynamodb_config"`
+	GCSConfig        *GCSSharedConfig        `tfsdk:"gcs_config"`
 	MongoDBConfig    *MongoDBSharedConfig    `tfsdk:"mongodb_config"`
 	MySQLConfig      *MySQLSharedConfig      `tfsdk:"mysql_config"`
 	MSSQLConfig      *MSSQLSharedConfig      `tfsdk:"mssql_config"`
@@ -42,6 +43,8 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		sharedConfig = c.BigQueryConfig.ToAPIModel()
 	case artieclient.DynamoDB:
 		sharedConfig = c.DynamoDBConfig.ToAPIModel()
+	case artieclient.GCS:
+		sharedConfig = c.GCSConfig.ToAPIModel()
 	case artieclient.MongoDB:
 		sharedConfig = c.MongoDBConfig.ToAPIModel()
 	case artieclient.MySQL:
@@ -112,6 +115,8 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		connector.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.DynamoDB:
 		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(apiModel.Config)
+	case artieclient.GCS:
+		connector.GCSConfig = GCSSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.MongoDB:
 		connector.MongoDBConfig = MongoDBSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.MySQL:
@@ -411,5 +416,30 @@ func DatabricksSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *D
 		HttpPath:            types.StringValue(apiModel.DatabricksHttpPath),
 		PersonalAccessToken: types.StringValue(apiModel.DatabricksPersonalAccessToken),
 		Volume:              types.StringValue(apiModel.DatabricksVolume),
+	}
+}
+
+type GCSSharedConfig struct {
+	Bucket          types.String `tfsdk:"bucket"`
+	Folder          types.String `tfsdk:"folder"`
+	ProjectID       types.String `tfsdk:"project_id"`
+	CredentialsData types.String `tfsdk:"credentials_data"`
+}
+
+func (g GCSSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		GCSBucket:          g.Bucket.ValueString(),
+		GCSFolder:          g.Folder.ValueString(),
+		GCPProjectID:       g.ProjectID.ValueString(),
+		GCPCredentialsData: g.CredentialsData.ValueString(),
+	}
+}
+
+func GCSSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *GCSSharedConfig {
+	return &GCSSharedConfig{
+		Bucket:          types.StringValue(apiModel.GCSBucket),
+		Folder:          types.StringValue(apiModel.GCSFolder),
+		ProjectID:       types.StringValue(apiModel.GCPProjectID),
+		CredentialsData: types.StringValue(apiModel.GCPCredentialsData),
 	}
 }

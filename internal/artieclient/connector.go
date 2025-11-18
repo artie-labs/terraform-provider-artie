@@ -35,6 +35,10 @@ type ConnectorConfig struct {
 	GCPLocation        string `json:"location"`
 	GCPCredentialsData string `json:"credentialsData"`
 
+	// GCS:
+	GCSBucket string `json:"gcsBucket"`
+	GCSFolder string `json:"gcsFolder"`
+
 	// Snowflake:
 	SnowflakeAccountIdentifier string `json:"accountIdentifier"`
 	SnowflakeAccountURL        string `json:"accountURL"`

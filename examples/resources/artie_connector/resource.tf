@@ -13,3 +13,19 @@ resource "artie_connector" "postgres_dev" {
     password = var.postgres_password
   }
 }
+
+variable "gcp_credentials" {
+  type      = string
+  sensitive = true
+}
+
+resource "artie_connector" "gcs_destination" {
+  name = "GCS Destination"
+  type = "gcs"
+  gcs_config = {
+    bucket           = "my-artie-data"
+    folder           = "production/cdc"
+    project_id       = "my-gcp-project"
+    credentials_data = var.gcp_credentials
+  }
+}

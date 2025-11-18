@@ -81,6 +81,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
+			"gcs_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `gcs`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"bucket":           schema.StringAttribute{Required: true, MarkdownDescription: "The name of the GCS bucket where data will be stored."},
+					"folder":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "Optional folder path within the bucket."},
+					"project_id":       schema.StringAttribute{Required: true, MarkdownDescription: "The ID of the Google Cloud project."},
+					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
 			"mongodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `mongodb`.",
@@ -262,6 +272,11 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	case string(artieclient.DynamoDB):
 		if configData.DynamoDBConfig == nil {
 			resp.Diagnostics.AddError("dynamodb_config is required", "Please provide `dynamodb_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.GCS):
+		if configData.GCSConfig == nil {
+			resp.Diagnostics.AddError("gcs_config is required", "Please provide `gcs_config` inside `connector`.")
 			return
 		}
 	case string(artieclient.MongoDB):
