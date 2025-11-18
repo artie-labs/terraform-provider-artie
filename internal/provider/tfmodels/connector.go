@@ -420,16 +420,12 @@ func DatabricksSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *D
 }
 
 type GCSSharedConfig struct {
-	Bucket          types.String `tfsdk:"bucket"`
-	Folder          types.String `tfsdk:"folder"`
 	ProjectID       types.String `tfsdk:"project_id"`
 	CredentialsData types.String `tfsdk:"credentials_data"`
 }
 
 func (g GCSSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	return artieclient.ConnectorConfig{
-		GCSBucket:          g.Bucket.ValueString(),
-		GCSFolder:          g.Folder.ValueString(),
 		GCPProjectID:       g.ProjectID.ValueString(),
 		GCPCredentialsData: g.CredentialsData.ValueString(),
 	}
@@ -437,8 +433,6 @@ func (g GCSSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 
 func GCSSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *GCSSharedConfig {
 	return &GCSSharedConfig{
-		Bucket:          types.StringValue(apiModel.GCSBucket),
-		Folder:          types.StringValue(apiModel.GCSFolder),
 		ProjectID:       types.StringValue(apiModel.GCPProjectID),
 		CredentialsData: types.StringValue(apiModel.GCPCredentialsData),
 	}
