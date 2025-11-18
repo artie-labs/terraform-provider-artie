@@ -111,13 +111,8 @@ Required:
 
 Required:
 
-- `bucket` (String) The name of the GCS bucket where data will be stored.
 - `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `project_id` (String) The ID of the Google Cloud project.
-
-Optional:
-
-- `folder` (String) Optional folder path within the bucket.
 
 
 <a id="nestedatt--mongodb_config"></a>
