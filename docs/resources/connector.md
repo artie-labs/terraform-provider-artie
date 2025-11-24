@@ -49,7 +49,7 @@ resource "artie_connector" "gcs_destination" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `bigquery`, `databricks`, `dynamodb`, `gcs`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `databricks`, `dynamodb`, `gcs`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 
