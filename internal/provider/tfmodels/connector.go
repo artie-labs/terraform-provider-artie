@@ -39,6 +39,8 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 	}
 
 	switch connectorType {
+	case artieclient.API:
+		// No config needed
 	case artieclient.BigQuery:
 		sharedConfig = c.BigQueryConfig.ToAPIModel()
 	case artieclient.DynamoDB:
