@@ -111,6 +111,8 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 	}
 
 	switch apiModel.Type {
+	case artieclient.API:
+		// No config needed
 	case artieclient.BigQuery:
 		connector.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.DynamoDB:
