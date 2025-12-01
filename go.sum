@@ -20,8 +20,8 @@ github.com/apparentlymart/go-textseg/v15 v15.0.0 h1:uYvfpb3DyLSCGWnctWKGj857c6ew
 github.com/apparentlymart/go-textseg/v15 v15.0.0/go.mod h1:K8XmNZdhEBkdlyDdvbmmsvpAG721bKi0joRfFdHIWJ4=
 github.com/armon/go-radix v1.0.0 h1:F4z6KzEeeQIMeLFa97iZU6vupzoecKdU5TX24SNppXI=
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
-github.com/artie-labs/transfer v1.27.204 h1:zPddpJLwejSU8PI/Ma75RAUnQmHSYcNsyFFMaDb7OlM=
-github.com/artie-labs/transfer v1.27.204/go.mod h1:nzBUZQ5C9SCzed3QfG/fbr4SmMPsQldplKr101S1yVo=
+github.com/artie-labs/transfer v1.27.205 h1:nr4RH0Cc0E8Fm2Lzt4uUEklozePfuHueU/Lo2M1wIug=
+github.com/artie-labs/transfer v1.27.205/go.mod h1:nzBUZQ5C9SCzed3QfG/fbr4SmMPsQldplKr101S1yVo=
 github.com/aws/aws-sdk-go-v2 v1.16.12/go.mod h1:C+Ym0ag2LIghJbXhfXZ0YEEp49rBWowxKzJLUoob0ts=
 github.com/aws/aws-sdk-go-v2 v1.38.1 h1:j7sc33amE74Rz0M/PoCpsZQ6OunLqys/m5antM0J+Z8=
 github.com/aws/aws-sdk-go-v2 v1.38.1/go.mod h1:9Q0OoGQoboYIAJyslFyF1f5K1Ryddop8gqMhWx/n4Wg=
