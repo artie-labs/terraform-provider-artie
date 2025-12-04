@@ -56,7 +56,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 				Required:            true,
 				MarkdownDescription: "A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`.",
 				NestedObject: schema.NestedAttributeObject{
-					// All table attributes must use UseNonNullStateForUnknown() to prevent errors when adding a new table (see https://github.com/hashicorp/terraform-plugin-framework/issues/1197)
+					// All non-required table attributes must use UseNonNullStateForUnknown() to prevent errors when adding a new table (see https://github.com/hashicorp/terraform-plugin-framework/issues/1197)
 					Attributes: map[string]schema.Attribute{
 						"uuid":                   schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}},
 						"name":                   schema.StringAttribute{Required: true, MarkdownDescription: "The name of the table in the source database."},
