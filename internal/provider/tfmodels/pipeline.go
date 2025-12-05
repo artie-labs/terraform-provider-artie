@@ -112,6 +112,7 @@ type Pipeline struct {
 	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
 	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
 	DefaultSourceSchema            types.String `tfsdk:"default_source_schema"`
+	SplitEventsByType              types.Bool   `tfsdk:"split_events_by_type"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -161,6 +162,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
 		IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
 		DefaultSourceSchema:            p.DefaultSourceSchema.ValueStringPointer(),
+		SplitEventsByType:              p.SplitEventsByType.ValueBoolPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -218,6 +220,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeArtieUpdatedAtColumn types.Bool
 	var includeDatabaseUpdatedAtColumn types.Bool
 	var defaultSourceSchema types.String
+	var splitEventsByType types.Bool
 	if apiModel.AdvancedSettings != nil {
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
@@ -233,6 +236,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.DefaultSourceSchema != nil {
 			defaultSourceSchema = types.StringValue(*apiModel.AdvancedSettings.DefaultSourceSchema)
+		}
+		if apiModel.AdvancedSettings.SplitEventsByType != nil {
+			splitEventsByType = types.BoolValue(*apiModel.AdvancedSettings.SplitEventsByType)
 		}
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
@@ -271,5 +277,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		IncludeDatabaseUpdatedAtColumn: includeDatabaseUpdatedAtColumn,
 		FlushConfig:                    flushConfig,
 		DefaultSourceSchema:            defaultSourceSchema,
+		SplitEventsByType:              splitEventsByType,
 	}, diags
 }

@@ -19,6 +19,7 @@ type AdvancedSettings struct {
 	BufferRows                     *int64  `json:"bufferRows"`
 	FlushSizeKB                    *int64  `json:"flushSizeKb"`
 	DefaultSourceSchema            *string `json:"defaultSourceSchema"`
+	SplitEventsByType              *bool   `json:"splitEventsByType"`
 }
 
 type BasePipeline struct {

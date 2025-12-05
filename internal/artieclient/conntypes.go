@@ -5,6 +5,7 @@ import "fmt"
 type ConnectorType string
 
 const (
+	API        ConnectorType = "api"
 	BigQuery   ConnectorType = "bigquery"
 	DynamoDB   ConnectorType = "dynamodb"
 	GCS        ConnectorType = "gcs"
@@ -20,6 +21,7 @@ const (
 )
 
 var AllSourceTypes = []string{
+	string(API),
 	string(DynamoDB),
 	string(MongoDB),
 	string(MySQL),
@@ -42,6 +44,8 @@ var AllConnectorTypes = append(AllSourceTypes, AllDestinationTypes...)
 
 func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 	switch ConnectorType(connType) {
+	case API:
+		return API, nil
 	case BigQuery:
 		return BigQuery, nil
 	case DynamoDB:
