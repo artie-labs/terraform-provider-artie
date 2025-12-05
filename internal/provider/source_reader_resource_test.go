@@ -161,7 +161,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 
 		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
-		assert.Contains(t, diags.Errors()[0].Detail(), "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `fn_dblog`.")
+		assert.Contains(t, diags.Errors()[0].Detail(), "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `fn_dblog` or `change_tracking`.")
 	}
 	{
 		config := tfmodels.SourceReader{

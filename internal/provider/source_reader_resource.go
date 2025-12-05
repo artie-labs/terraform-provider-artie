@@ -175,8 +175,8 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 	}
 
 	if configData.EnableUnifyAcrossDatabases.ValueBool() {
-		if configData.MSSQLReplicationMethod.ValueString() != "fn_dblog" {
-			diags.AddError("Invalid configuration", "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `fn_dblog`.")
+		if !slices.Contains([]string{"fn_dblog", "change_tracking"}, configData.MSSQLReplicationMethod.ValueString()) {
+			diags.AddError("Invalid configuration", "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `fn_dblog` or `change_tracking`.")
 		} else if configData.DatabasesToUnify.IsNull() || len(configData.DatabasesToUnify.Elements()) == 0 {
 			diags.AddError("Invalid configuration", "You must specify `databases_to_unify` if `enable_unify_across_databases` is set to true.")
 		} else if !configData.DatabaseName.IsUnknown() {
