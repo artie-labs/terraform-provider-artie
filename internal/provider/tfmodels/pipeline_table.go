@@ -109,6 +109,7 @@ type Table struct {
 	UnifyAcrossDatabases types.Bool   `tfsdk:"unify_across_databases"`
 	MergePredicates      types.List   `tfsdk:"merge_predicates"`
 	SoftPartitioning     types.Object `tfsdk:"soft_partitioning"`
+	BackfillHistoryTable types.Bool   `tfsdk:"backfill_history_table"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
@@ -126,6 +127,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"unify_across_databases": types.BoolType,
 	"merge_predicates":       types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
 	"soft_partitioning":      types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
+	"backfill_history_table": types.BoolType,
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -174,15 +176,16 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		EnableHistoryMode: t.EnableHistoryMode.ValueBool(),
 		IsPartitioned:     t.IsPartitioned.ValueBool(),
 		AdvancedSettings: artieclient.AdvancedTableSettings{
-			Alias:                t.Alias.ValueStringPointer(),
-			ExcludeColumns:       colsToExclude,
-			IncludeColumns:       colsToInclude,
-			ColumnsToHash:        colsToHash,
-			SkipDeletes:          t.SkipDeletes.ValueBoolPointer(),
-			UnifyAcrossSchemas:   t.UnifyAcrossSchemas.ValueBoolPointer(),
-			UnifyAcrossDatabases: t.UnifyAcrossDatabases.ValueBoolPointer(),
-			MergePredicates:      clientMergePreds,
-			SoftPartitioning:     clientSoftPartitioning,
+			Alias:                      t.Alias.ValueStringPointer(),
+			ExcludeColumns:             colsToExclude,
+			IncludeColumns:             colsToInclude,
+			ColumnsToHash:              colsToHash,
+			SkipDeletes:                t.SkipDeletes.ValueBoolPointer(),
+			UnifyAcrossSchemas:         t.UnifyAcrossSchemas.ValueBoolPointer(),
+			UnifyAcrossDatabases:       t.UnifyAcrossDatabases.ValueBoolPointer(),
+			MergePredicates:            clientMergePreds,
+			SoftPartitioning:           clientSoftPartitioning,
+			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
 		},
 	}, diags
 }
@@ -226,6 +229,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			UnifyAcrossDatabases: types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
 			MergePredicates:      mergePredicates,
 			SoftPartitioning:     softPartitioning,
+			BackfillHistoryTable: types.BoolPointerValue(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
 		}
 	}
 
