@@ -89,6 +89,7 @@ Required:
 Optional:
 
 - `alias` (String) An optional alias for the table. If set, this will be the name of the destination table.
+- `backfill_history_table` (Boolean) If set to true, Artie will backfill the history table with existing data. This is only applicable if `enable_history_mode` is set to true.
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from syncing to the destination.
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
 - `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables.
