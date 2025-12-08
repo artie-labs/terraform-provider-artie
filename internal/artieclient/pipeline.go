@@ -60,15 +60,16 @@ type SoftPartitioning struct {
 }
 
 type AdvancedTableSettings struct {
-	Alias                *string           `json:"alias"`
-	ExcludeColumns       *[]string         `json:"excludeColumns"`
-	IncludeColumns       *[]string         `json:"includeColumns"`
-	ColumnsToHash        *[]string         `json:"columnsToHash"`
-	SkipDeletes          *bool             `json:"skipDelete"`
-	UnifyAcrossSchemas   *bool             `json:"unifyAcrossSchemas"`
-	UnifyAcrossDatabases *bool             `json:"unifyAcrossDatabases"`
-	MergePredicates      *[]MergePredicate `json:"mergePredicates"`
-	SoftPartitioning     *SoftPartitioning `json:"softPartitioning,omitempty"`
+	Alias                      *string           `json:"alias"`
+	ExcludeColumns             *[]string         `json:"excludeColumns"`
+	IncludeColumns             *[]string         `json:"includeColumns"`
+	ColumnsToHash              *[]string         `json:"columnsToHash"`
+	SkipDeletes                *bool             `json:"skipDelete"`
+	UnifyAcrossSchemas         *bool             `json:"unifyAcrossSchemas"`
+	UnifyAcrossDatabases       *bool             `json:"unifyAcrossDatabases"`
+	MergePredicates            *[]MergePredicate `json:"mergePredicates"`
+	SoftPartitioning           *SoftPartitioning `json:"softPartitioning,omitempty"`
+	ShouldBackfillHistoryTable *bool             `json:"shouldBackfillHistoryTable"`
 }
 
 type FlushConfig struct {
