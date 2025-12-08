@@ -50,6 +50,10 @@ type ConnectorConfig struct {
 	AWSSecretAccessKey string `json:"awsSecretAccessKey"`
 	AWSRegion          string `json:"awsRegion"`
 	DynamoStreamArn    string `json:"streamsArn"`
+
+	// Iceberg:
+	IcebergProvider  string `json:"provider"`
+	IcebergBucketARN string `json:"bucketARN"`
 }
 
 type validationResponse struct {

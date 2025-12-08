@@ -89,6 +89,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
+			"iceberg_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `iceberg`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"provider":          schema.StringAttribute{Required: true, MarkdownDescription: "The Iceberg provider type. Currently, the only supported value is `s3tables`."},
+					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3."},
+					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"bucket_arn":        schema.StringAttribute{Required: true, MarkdownDescription: "The ARN (Amazon Resource Name) of the S3 bucket for Iceberg tables."},
+				},
+			},
 			"mongodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `mongodb`.",
@@ -275,6 +285,11 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	case string(artieclient.GCS):
 		if configData.GCSConfig == nil {
 			resp.Diagnostics.AddError("gcs_config is required", "Please provide `gcs_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.Iceberg):
+		if configData.IcebergConfig == nil {
+			resp.Diagnostics.AddError("iceberg_config is required", "Please provide `iceberg_config` inside `connector`.")
 			return
 		}
 	case string(artieclient.MongoDB):
