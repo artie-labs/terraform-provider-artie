@@ -79,14 +79,15 @@ type FlushConfig struct {
 }
 
 type DestinationConfig struct {
-	Dataset               string `json:"dataset"`
-	Database              string `json:"database"`
-	Schema                string `json:"schema"`
-	UseSameSchemaAsSource bool   `json:"useSameSchemaAsSource"`
-	SchemaNamePrefix      string `json:"schemaNamePrefix"`
-	Bucket                string `json:"bucketName"`
-	TableNameSeparator    string `json:"tableNameSeparator"`
-	Folder                string `json:"folderName"`
+	Dataset                 string `json:"dataset"`
+	Database                string `json:"database"`
+	Schema                  string `json:"schema"`
+	UseSameSchemaAsSource   bool   `json:"useSameSchemaAsSource"`
+	SchemaNamePrefix        string `json:"schemaNamePrefix"`
+	Bucket                  string `json:"bucketName"`
+	TableNameSeparator      string `json:"tableNameSeparator"`
+	Folder                  string `json:"folderName"`
+	CreateIcebergNamespaces bool   `json:"dynamicallyCreateNamespaces"`
 }
 
 type PipelineClient struct {
