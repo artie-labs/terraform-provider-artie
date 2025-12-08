@@ -18,6 +18,7 @@ type Connector struct {
 	BigQueryConfig   *BigQuerySharedConfig   `tfsdk:"bigquery_config"`
 	DynamoDBConfig   *DynamoDBConfig         `tfsdk:"dynamodb_config"`
 	GCSConfig        *GCSSharedConfig        `tfsdk:"gcs_config"`
+	IcebergConfig    *IcebergSharedConfig    `tfsdk:"iceberg_config"`
 	MongoDBConfig    *MongoDBSharedConfig    `tfsdk:"mongodb_config"`
 	MySQLConfig      *MySQLSharedConfig      `tfsdk:"mysql_config"`
 	MSSQLConfig      *MSSQLSharedConfig      `tfsdk:"mssql_config"`
@@ -47,6 +48,8 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		sharedConfig = c.DynamoDBConfig.ToAPIModel()
 	case artieclient.GCS:
 		sharedConfig = c.GCSConfig.ToAPIModel()
+	case artieclient.Iceberg:
+		sharedConfig = c.IcebergConfig.ToAPIModel()
 	case artieclient.MongoDB:
 		sharedConfig = c.MongoDBConfig.ToAPIModel()
 	case artieclient.MySQL:
@@ -121,6 +124,8 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(apiModel.Config)
 	case artieclient.GCS:
 		connector.GCSConfig = GCSSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.Iceberg:
+		connector.IcebergConfig = IcebergSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.MongoDB:
 		connector.MongoDBConfig = MongoDBSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.MySQL:
@@ -439,5 +444,30 @@ func GCSSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *GCSShare
 	return &GCSSharedConfig{
 		ProjectID:       types.StringValue(apiModel.GCPProjectID),
 		CredentialsData: types.StringValue(apiModel.GCPCredentialsData),
+	}
+}
+
+type IcebergSharedConfig struct {
+	Provider           types.String `tfsdk:"provider"`
+	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
+	BucketARN          types.String `tfsdk:"bucket_arn"`
+}
+
+func (i IcebergSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		IcebergProvider:    i.Provider.ValueString(),
+		AWSAccessKeyID:     i.AwsAccessKeyID.ValueString(),
+		AWSSecretAccessKey: i.AwsSecretAccessKey.ValueString(),
+		IcebergBucketARN:   i.BucketARN.ValueString(),
+	}
+}
+
+func IcebergSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *IcebergSharedConfig {
+	return &IcebergSharedConfig{
+		Provider:           types.StringValue(apiModel.IcebergProvider),
+		AwsAccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
+		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
+		BucketARN:          types.StringValue(apiModel.IcebergBucketARN),
 	}
 }

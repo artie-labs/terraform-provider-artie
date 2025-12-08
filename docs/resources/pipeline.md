@@ -69,11 +69,12 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 Optional:
 
-- `bucket` (String) The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3 or GCS.
+- `bucket` (String) The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg (for Iceberg, this bucket is where delta files will be stored).
+- `create_iceberg_namespaces` (Boolean) If set to true, Artie will automatically create namespaces if they don't exist. This is only applicable if the destination is Iceberg.
 - `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.
 - `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.
 - `folder` (String) If provided, all files will be stored under this folder inside the S3 or GCS bucket. This is optional and only applies if the destination is S3 or GCS.
-- `schema` (String) The name of the schema that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, or Snowflake (unless `use_same_schema_as_source` is set to true).
+- `schema` (String) The name of the schema or namespace that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, Iceberg, or Snowflake (unless `use_same_schema_as_source` is set to true).
 - `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this pipeline's schemas in the destination.
 - `table_name_separator` (String) If provided, this is the separator between database, schema and table name. This is only applicable if the destination is S3 or GCS.
 - `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, etc).
