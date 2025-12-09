@@ -89,6 +89,7 @@ type SourceReader struct {
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresPublicationMode         types.String `tfsdk:"postgres_publication_mode"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
+	PublishViaPartitionRoot         types.Bool   `tfsdk:"publish_via_partition_root"`
 	PartitionRegexPattern           types.String `tfsdk:"partition_suffix_regex_pattern"`
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
@@ -127,6 +128,7 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
 		PostgresPublicationMode:         s.PostgresPublicationMode.ValueString(),
 		PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
+		PublishViaPartitionRoot:         s.PublishViaPartitionRoot.ValueBoolPointer(),
 		EnableUnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBool(),
 		UnifyAcrossSchemasRegex:         s.UnifyAcrossSchemasRegex.ValueStringPointer(),
 		MSSQLReplicationMethod:          s.MSSQLReplicationMethod.ValueString(),
@@ -200,6 +202,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
 		PostgresPublicationMode:         types.StringValue(apiModel.Settings.PostgresPublicationMode),
 		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
+		PublishViaPartitionRoot:         types.BoolPointerValue(apiModel.Settings.PublishViaPartitionRoot),
 		EnableUnifyAcrossSchemas:        types.BoolValue(apiModel.Settings.EnableUnifyAcrossSchemas),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
 		MSSQLReplicationMethod:          types.StringValue(apiModel.Settings.MSSQLReplicationMethod),
