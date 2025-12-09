@@ -46,10 +46,19 @@ type ConnectorConfig struct {
 	DatabricksPersonalAccessToken string `json:"personalAccessToken"`
 	DatabricksVolume              string `json:"volume"`
 
+	// Dynamo, S3, Iceberg:
 	AWSAccessKeyID     string `json:"awsAccessKeyID"`
 	AWSSecretAccessKey string `json:"awsSecretAccessKey"`
-	AWSRegion          string `json:"awsRegion"`
-	DynamoStreamArn    string `json:"streamsArn"`
+
+	// Dynamo:
+	DynamoStreamArn string `json:"streamsArn"`
+
+	// S3
+	AWSRegion string `json:"awsRegion"`
+
+	// Iceberg:
+	IcebergProvider  string `json:"provider"`
+	IcebergBucketARN string `json:"bucketARN"`
 }
 
 type validationResponse struct {

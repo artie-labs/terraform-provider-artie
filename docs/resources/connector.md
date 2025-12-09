@@ -49,7 +49,7 @@ resource "artie_connector" "gcs_destination" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `databricks`, `dynamodb`, `gcs`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 
@@ -58,6 +58,7 @@ resource "artie_connector" "gcs_destination" {
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. (see [below for nested schema](#nestedatt--databricks_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
+- `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. (see [below for nested schema](#nestedatt--iceberg_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
 - `mssql_config` (Attributes) This should be filled out if the connector type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the connector type is `mysql`. (see [below for nested schema](#nestedatt--mysql_config))
@@ -111,6 +112,17 @@ Required:
 
 - `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `project_id` (String) The ID of the Google Cloud project.
+
+
+<a id="nestedatt--iceberg_config"></a>
+### Nested Schema for `iceberg_config`
+
+Required:
+
+- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to S3.
+- `bucket_arn` (String) The ARN (Amazon Resource Name) of the S3 bucket for Iceberg tables.
+- `provider` (String) The Iceberg provider type. Currently, the only supported value is `s3tables`.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--mongodb_config"></a>

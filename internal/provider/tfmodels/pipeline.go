@@ -12,39 +12,42 @@ import (
 )
 
 type PipelineDestinationConfig struct {
-	Dataset               types.String `tfsdk:"dataset"`
-	Database              types.String `tfsdk:"database"`
-	Schema                types.String `tfsdk:"schema"`
-	UseSameSchemaAsSource types.Bool   `tfsdk:"use_same_schema_as_source"`
-	SchemaNamePrefix      types.String `tfsdk:"schema_name_prefix"`
-	Bucket                types.String `tfsdk:"bucket"`
-	TableNameSeparator    types.String `tfsdk:"table_name_separator"`
-	Folder                types.String `tfsdk:"folder"`
+	Dataset                 types.String `tfsdk:"dataset"`
+	Database                types.String `tfsdk:"database"`
+	Schema                  types.String `tfsdk:"schema"`
+	UseSameSchemaAsSource   types.Bool   `tfsdk:"use_same_schema_as_source"`
+	SchemaNamePrefix        types.String `tfsdk:"schema_name_prefix"`
+	Bucket                  types.String `tfsdk:"bucket"`
+	TableNameSeparator      types.String `tfsdk:"table_name_separator"`
+	Folder                  types.String `tfsdk:"folder"`
+	CreateIcebergNamespaces types.Bool   `tfsdk:"create_iceberg_namespaces"`
 }
 
 func (d PipelineDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
 	return artieclient.DestinationConfig{
-		Dataset:               d.Dataset.ValueString(),
-		Database:              d.Database.ValueString(),
-		Schema:                d.Schema.ValueString(),
-		UseSameSchemaAsSource: d.UseSameSchemaAsSource.ValueBool(),
-		SchemaNamePrefix:      d.SchemaNamePrefix.ValueString(),
-		Bucket:                d.Bucket.ValueString(),
-		TableNameSeparator:    d.TableNameSeparator.ValueString(),
-		Folder:                d.Folder.ValueString(),
+		Dataset:                 d.Dataset.ValueString(),
+		Database:                d.Database.ValueString(),
+		Schema:                  d.Schema.ValueString(),
+		UseSameSchemaAsSource:   d.UseSameSchemaAsSource.ValueBool(),
+		SchemaNamePrefix:        d.SchemaNamePrefix.ValueString(),
+		Bucket:                  d.Bucket.ValueString(),
+		TableNameSeparator:      d.TableNameSeparator.ValueString(),
+		Folder:                  d.Folder.ValueString(),
+		CreateIcebergNamespaces: d.CreateIcebergNamespaces.ValueBool(),
 	}
 }
 
 func PipelineDestinationConfigFromAPIModel(apiModel artieclient.DestinationConfig) PipelineDestinationConfig {
 	return PipelineDestinationConfig{
-		Dataset:               types.StringValue(apiModel.Dataset),
-		Database:              types.StringValue(apiModel.Database),
-		Schema:                types.StringValue(apiModel.Schema),
-		UseSameSchemaAsSource: types.BoolValue(apiModel.UseSameSchemaAsSource),
-		SchemaNamePrefix:      types.StringValue(apiModel.SchemaNamePrefix),
-		Bucket:                types.StringValue(apiModel.Bucket),
-		TableNameSeparator:    types.StringValue(apiModel.TableNameSeparator),
-		Folder:                types.StringValue(apiModel.Folder),
+		Dataset:                 types.StringValue(apiModel.Dataset),
+		Database:                types.StringValue(apiModel.Database),
+		Schema:                  types.StringValue(apiModel.Schema),
+		UseSameSchemaAsSource:   types.BoolValue(apiModel.UseSameSchemaAsSource),
+		SchemaNamePrefix:        types.StringValue(apiModel.SchemaNamePrefix),
+		Bucket:                  types.StringValue(apiModel.Bucket),
+		TableNameSeparator:      types.StringValue(apiModel.TableNameSeparator),
+		Folder:                  types.StringValue(apiModel.Folder),
+		CreateIcebergNamespaces: types.BoolValue(apiModel.CreateIcebergNamespaces),
 	}
 }
 

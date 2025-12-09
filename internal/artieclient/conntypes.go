@@ -9,6 +9,7 @@ const (
 	BigQuery   ConnectorType = "bigquery"
 	DynamoDB   ConnectorType = "dynamodb"
 	GCS        ConnectorType = "gcs"
+	Iceberg    ConnectorType = "iceberg"
 	MongoDB    ConnectorType = "mongodb"
 	MySQL      ConnectorType = "mysql"
 	MSSQL      ConnectorType = "mssql"
@@ -33,6 +34,7 @@ var AllSourceTypes = []string{
 var AllDestinationTypes = []string{
 	string(BigQuery),
 	string(GCS),
+	string(Iceberg),
 	string(MSSQL),
 	string(Redshift),
 	string(S3),
@@ -52,6 +54,8 @@ func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 		return DynamoDB, nil
 	case GCS:
 		return GCS, nil
+	case Iceberg:
+		return Iceberg, nil
 	case MongoDB:
 		return MongoDB, nil
 	case MySQL:
