@@ -3,7 +3,7 @@ module terraform-provider-artie
 go 1.24.0
 
 require (
-	github.com/artie-labs/transfer v1.27.216
+	github.com/artie-labs/transfer v1.27.217
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.17.0
@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	dario.cat/mergo v1.0.1 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -79,7 +80,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/segmentio/kafka-go v0.4.49 // indirect
 	github.com/segmentio/kafka-go/sasl/aws_msk_iam_v2 v0.1.0 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/twmb/franz-go v1.19.5 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.11.2 // indirect
