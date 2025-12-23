@@ -39,9 +39,9 @@ func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The unique identifier for this PrivateLink connection."},
 			"name":             schema.StringAttribute{Required: true, MarkdownDescription: "The name of the PrivateLink connection."},
-			"vpc_service_name": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC endpoint service name for Artie's service in your AWS region (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx)."},
-			"region":           schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
-			"vpc_endpoint_id":  schema.StringAttribute{Required: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
+			"vpc_service_name": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC endpoint service name for Artie's service (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx)."},
+			"region":           schema.StringAttribute{Computed: true, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
+			"vpc_endpoint_id":  schema.StringAttribute{Computed: true, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
 			"az_ids":           schema.ListAttribute{ElementType: types.StringType, Required: true, MarkdownDescription: "List of AWS Availability Zone IDs where the PrivateLink endpoint is available (e.g., [\"use1-az1\", \"use1-az2\"])."},
 			"status":           schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
 			"dns_entry":        schema.StringAttribute{Computed: true, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
