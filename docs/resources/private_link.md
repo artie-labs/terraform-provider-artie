@@ -29,9 +29,7 @@ resource "artie_private_link" "example" {
 
 - `az_ids` (List of String) List of AWS Availability Zone IDs where the PrivateLink endpoint is available (e.g., ["use1-az1", "use1-az2"]).
 - `name` (String) The name of the PrivateLink connection.
-- `region` (String) The AWS region of the VPC endpoint (e.g., us-east-1).
-- `vpc_endpoint_id` (String) The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service.
-- `vpc_service_name` (String) The VPC endpoint service name for Artie's service in your AWS region (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx).
+- `vpc_service_name` (String) The VPC endpoint service name for Artie's service (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx).
 
 ### Optional
 
@@ -40,8 +38,10 @@ resource "artie_private_link" "example" {
 ### Read-Only
 
 - `dns_entry` (String) The DNS entry for the PrivateLink connection.
+- `region` (String) The AWS region of the VPC endpoint (e.g., us-east-1).
 - `status` (String) The status of the PrivateLink connection (e.g., available, pending).
 - `uuid` (String) The unique identifier for this PrivateLink connection.
+- `vpc_endpoint_id` (String) The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service.
 
 ## Import
 
