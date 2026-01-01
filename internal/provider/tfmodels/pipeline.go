@@ -136,7 +136,9 @@ func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]a
 
 func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]artieclient.StaticColumn) (types.List, diag.Diagnostics) {
 	if apiStaticColumns == nil || len(*apiStaticColumns) == 0 {
-		return types.ListNull(types.ObjectType{AttrTypes: StaticColumnAttrTypes}), nil
+		// Return an empty list instead of null to avoid perpetual diffs when
+		// the user explicitly specifies `static_columns = []`
+		return types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
 	}
 
 	var staticColumns []StaticColumn
