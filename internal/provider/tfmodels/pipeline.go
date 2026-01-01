@@ -123,12 +123,12 @@ func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]a
 		return nil, nil
 	}
 
-	apiStaticColumns := make([]artieclient.StaticColumn, len(staticColumns))
-	for i, sc := range staticColumns {
-		apiStaticColumns[i] = artieclient.StaticColumn{
+	var apiStaticColumns []artieclient.StaticColumn
+	for _, sc := range staticColumns {
+		apiStaticColumns = append(apiStaticColumns, artieclient.StaticColumn{
 			Column: sc.Column.ValueString(),
 			Value:  sc.Value.ValueString(),
-		}
+		})
 	}
 
 	return &apiStaticColumns, nil
@@ -139,12 +139,12 @@ func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]artieclient.S
 		return types.ListNull(types.ObjectType{AttrTypes: StaticColumnAttrTypes}), nil
 	}
 
-	staticColumns := make([]StaticColumn, len(*apiStaticColumns))
-	for i, sc := range *apiStaticColumns {
-		staticColumns[i] = StaticColumn{
+	var staticColumns []StaticColumn
+	for _, sc := range *apiStaticColumns {
+		staticColumns = append(staticColumns, StaticColumn{
 			Column: types.StringValue(sc.Column),
 			Value:  types.StringValue(sc.Value),
-		}
+		})
 	}
 
 	return types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, staticColumns)
