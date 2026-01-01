@@ -284,7 +284,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeDatabaseUpdatedAtColumn types.Bool
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
-	var staticColumns types.List
+	staticColumns := types.ListNull(types.ObjectType{AttrTypes: StaticColumnAttrTypes})
 	if apiModel.AdvancedSettings != nil {
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
