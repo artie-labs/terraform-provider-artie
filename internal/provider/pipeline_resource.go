@@ -217,6 +217,24 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"include_database_updated_at_column": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_db_updated_at` to the destination table to indicate when the row was last updated by the source database."},
 			"default_source_schema":              schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL."},
 			"split_events_by_type":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API."},
+			"static_columns": schema.ListNestedAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc.",
+				PlanModifiers:       []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"column": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "The name of the column to add to the destination table.",
+						},
+						"value": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "The static value to populate for this column in all rows.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
