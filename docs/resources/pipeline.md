@@ -34,18 +34,6 @@ resource "artie_pipeline" "postgres_to_snowflake" {
   }
   soft_delete_rows                = true
   include_artie_updated_at_column = true
-
-  # Optional: Add static columns to all destination rows
-  static_columns = [
-    {
-      column = "env"
-      value  = "production"
-    },
-    {
-      column = "source_name"
-      value  = "my-postgres-db"
-    }
-  ]
 }
 ```
 
