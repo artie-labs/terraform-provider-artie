@@ -211,12 +211,15 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"drop_deleted_columns":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a column is dropped from the source it will also be dropped in the destination."},
-			"soft_delete_rows":                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source."},
-			"include_artie_updated_at_column":    schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_updated_at` to the destination table to indicate when the row was last updated by Artie."},
-			"include_database_updated_at_column": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_db_updated_at` to the destination table to indicate when the row was last updated by the source database."},
-			"default_source_schema":              schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL."},
-			"split_events_by_type":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API."},
+			"drop_deleted_columns":                              schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a column is dropped from the source it will also be dropped in the destination."},
+			"soft_delete_rows":                                  schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source."},
+			"include_artie_updated_at_column":                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_updated_at` to the destination table to indicate when the row was last updated by Artie."},
+			"include_database_updated_at_column":                schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_db_updated_at` to the destination table to indicate when the row was last updated by the source database."},
+			"include_artie_operation_column":                    schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_operation` to the destination table that indicates the operation type (insert, update, delete) for each row."},
+			"include_full_source_table_name_column":             schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will add a new column called `__artie_full_source_table_name` to the destination table containing the fully qualified source table name (e.g., schema.table). Useful when unifying tables across schemas/databases."},
+			"include_full_source_table_name_column_as_primary_key": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, includes the full source table name column as part of the primary key in destination tables. Requires `include_full_source_table_name_column` to be true."},
+			"default_source_schema":                             schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL."},
+			"split_events_by_type":                              schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API."},
 		},
 	}
 }
@@ -270,6 +273,14 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Validate that include_full_source_table_name_column_as_primary_key requires include_full_source_table_name_column
+	if configData.IncludeFullSourceTableNameColumnAsPrimaryKey.ValueBool() && !configData.IncludeFullSourceTableNameColumn.ValueBool() {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"include_full_source_table_name_column_as_primary_key is true, but include_full_source_table_name_column is false. The full source table name column must be enabled to use it as a primary key.",
+		)
 	}
 
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
