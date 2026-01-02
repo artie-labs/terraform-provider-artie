@@ -286,7 +286,12 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeFullSourceTableNameColumnAsPrimaryKey types.Bool
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
-	staticColumns, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
+	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
+	diags.Append(staticColumnsDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
+
 	if apiModel.AdvancedSettings != nil {
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
