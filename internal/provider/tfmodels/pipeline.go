@@ -109,13 +109,16 @@ type Pipeline struct {
 	Tables                   types.Map                  `tfsdk:"tables"`
 
 	// Advanced settings
-	FlushConfig                    types.Object `tfsdk:"flush_rules"`
-	DropDeletedColumns             types.Bool   `tfsdk:"drop_deleted_columns"`
-	SoftDeleteRows                 types.Bool   `tfsdk:"soft_delete_rows"`
-	IncludeArtieUpdatedAtColumn    types.Bool   `tfsdk:"include_artie_updated_at_column"`
-	IncludeDatabaseUpdatedAtColumn types.Bool   `tfsdk:"include_database_updated_at_column"`
-	DefaultSourceSchema            types.String `tfsdk:"default_source_schema"`
-	SplitEventsByType              types.Bool   `tfsdk:"split_events_by_type"`
+	FlushConfig                                  types.Object `tfsdk:"flush_rules"`
+	DropDeletedColumns                           types.Bool   `tfsdk:"drop_deleted_columns"`
+	SoftDeleteRows                               types.Bool   `tfsdk:"soft_delete_rows"`
+	IncludeArtieUpdatedAtColumn                  types.Bool   `tfsdk:"include_artie_updated_at_column"`
+	IncludeDatabaseUpdatedAtColumn               types.Bool   `tfsdk:"include_database_updated_at_column"`
+	IncludeArtieOperationColumn                  types.Bool   `tfsdk:"include_artie_operation_column"`
+	IncludeFullSourceTableNameColumn             types.Bool   `tfsdk:"include_full_source_table_name_column"`
+	IncludeFullSourceTableNameColumnAsPrimaryKey types.Bool   `tfsdk:"include_full_source_table_name_column_as_primary_key"`
+	DefaultSourceSchema                          types.String `tfsdk:"default_source_schema"`
+	SplitEventsByType                            types.Bool   `tfsdk:"split_events_by_type"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -160,12 +163,15 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 	}
 
 	advancedSettings := artieclient.AdvancedSettings{
-		DropDeletedColumns:             p.DropDeletedColumns.ValueBoolPointer(),
-		EnableSoftDelete:               p.SoftDeleteRows.ValueBoolPointer(),
-		IncludeArtieUpdatedAtColumn:    p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
-		IncludeDatabaseUpdatedAtColumn: p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
-		DefaultSourceSchema:            p.DefaultSourceSchema.ValueStringPointer(),
-		SplitEventsByType:              p.SplitEventsByType.ValueBoolPointer(),
+		DropDeletedColumns:                           p.DropDeletedColumns.ValueBoolPointer(),
+		EnableSoftDelete:                             p.SoftDeleteRows.ValueBoolPointer(),
+		IncludeArtieUpdatedAtColumn:                  p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
+		IncludeDatabaseUpdatedAtColumn:               p.IncludeDatabaseUpdatedAtColumn.ValueBoolPointer(),
+		IncludeArtieOperationColumn:                  p.IncludeArtieOperationColumn.ValueBoolPointer(),
+		IncludeFullSourceTableNameColumn:             p.IncludeFullSourceTableNameColumn.ValueBoolPointer(),
+		IncludeFullSourceTableNameColumnAsPrimaryKey: p.IncludeFullSourceTableNameColumnAsPrimaryKey.ValueBoolPointer(),
+		DefaultSourceSchema:                          p.DefaultSourceSchema.ValueStringPointer(),
+		SplitEventsByType:                            p.SplitEventsByType.ValueBoolPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -222,6 +228,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var softDeleteRows types.Bool
 	var includeArtieUpdatedAtColumn types.Bool
 	var includeDatabaseUpdatedAtColumn types.Bool
+	var includeArtieOperationColumn types.Bool
+	var includeFullSourceTableNameColumn types.Bool
+	var includeFullSourceTableNameColumnAsPrimaryKey types.Bool
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
 	if apiModel.AdvancedSettings != nil {
@@ -236,6 +245,15 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn != nil {
 			includeDatabaseUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn)
+		}
+		if apiModel.AdvancedSettings.IncludeArtieOperationColumn != nil {
+			includeArtieOperationColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeArtieOperationColumn)
+		}
+		if apiModel.AdvancedSettings.IncludeFullSourceTableNameColumn != nil {
+			includeFullSourceTableNameColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeFullSourceTableNameColumn)
+		}
+		if apiModel.AdvancedSettings.IncludeFullSourceTableNameColumnAsPrimaryKey != nil {
+			includeFullSourceTableNameColumnAsPrimaryKey = types.BoolValue(*apiModel.AdvancedSettings.IncludeFullSourceTableNameColumnAsPrimaryKey)
 		}
 		if apiModel.AdvancedSettings.DefaultSourceSchema != nil {
 			defaultSourceSchema = types.StringValue(*apiModel.AdvancedSettings.DefaultSourceSchema)
@@ -274,12 +292,15 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
 
 		// Advanced settings:
-		DropDeletedColumns:             dropDeletedColumns,
-		SoftDeleteRows:                 softDeleteRows,
-		IncludeArtieUpdatedAtColumn:    includeArtieUpdatedAtColumn,
-		IncludeDatabaseUpdatedAtColumn: includeDatabaseUpdatedAtColumn,
-		FlushConfig:                    flushConfig,
-		DefaultSourceSchema:            defaultSourceSchema,
-		SplitEventsByType:              splitEventsByType,
+		DropDeletedColumns:                           dropDeletedColumns,
+		SoftDeleteRows:                               softDeleteRows,
+		IncludeArtieUpdatedAtColumn:                  includeArtieUpdatedAtColumn,
+		IncludeDatabaseUpdatedAtColumn:               includeDatabaseUpdatedAtColumn,
+		IncludeArtieOperationColumn:                  includeArtieOperationColumn,
+		IncludeFullSourceTableNameColumn:             includeFullSourceTableNameColumn,
+		IncludeFullSourceTableNameColumnAsPrimaryKey: includeFullSourceTableNameColumnAsPrimaryKey,
+		FlushConfig:                                  flushConfig,
+		DefaultSourceSchema:                          defaultSourceSchema,
+		SplitEventsByType:                            splitEventsByType,
 	}, diags
 }

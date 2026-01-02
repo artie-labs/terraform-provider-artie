@@ -11,15 +11,18 @@ import (
 )
 
 type AdvancedSettings struct {
-	DropDeletedColumns             *bool   `json:"dropDeletedColumns"`
-	EnableSoftDelete               *bool   `json:"enableSoftDelete"`
-	IncludeArtieUpdatedAtColumn    *bool   `json:"includeArtieUpdatedAtColumn"`
-	IncludeDatabaseUpdatedAtColumn *bool   `json:"includeDatabaseUpdatedAtColumn"`
-	FlushIntervalSeconds           *int64  `json:"flushIntervalSeconds"`
-	BufferRows                     *int64  `json:"bufferRows"`
-	FlushSizeKB                    *int64  `json:"flushSizeKb"`
-	DefaultSourceSchema            *string `json:"defaultSourceSchema"`
-	SplitEventsByType              *bool   `json:"splitEventsByType"`
+	DropDeletedColumns                           *bool   `json:"dropDeletedColumns"`
+	EnableSoftDelete                             *bool   `json:"enableSoftDelete"`
+	IncludeArtieUpdatedAtColumn                  *bool   `json:"includeArtieUpdatedAtColumn"`
+	IncludeDatabaseUpdatedAtColumn               *bool   `json:"includeDatabaseUpdatedAtColumn"`
+	IncludeArtieOperationColumn                  *bool   `json:"includeArtieOperationColumn"`
+	IncludeFullSourceTableNameColumn             *bool   `json:"includeFullSourceTableNameColumn"`
+	IncludeFullSourceTableNameColumnAsPrimaryKey *bool   `json:"includeFullSourceTableNameColumnAsPrimaryKey"`
+	FlushIntervalSeconds                         *int64  `json:"flushIntervalSeconds"`
+	BufferRows                                   *int64  `json:"bufferRows"`
+	FlushSizeKB                                  *int64  `json:"flushSizeKb"`
+	DefaultSourceSchema                          *string `json:"defaultSourceSchema"`
+	SplitEventsByType                            *bool   `json:"splitEventsByType"`
 }
 
 type BasePipeline struct {

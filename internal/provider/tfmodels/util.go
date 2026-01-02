@@ -88,3 +88,13 @@ func parseOptionalObject[T any](ctx context.Context, value *types.Object) (*T, d
 
 	return &t, diags
 }
+
+// IsExplicitlyTrue returns true if the value is explicitly set (not null/unknown) and is true.
+func IsExplicitlyTrue(value types.Bool) bool {
+	return !value.IsNull() && !value.IsUnknown() && value.ValueBool()
+}
+
+// IsExplicitlyFalse returns true if the value is explicitly set (not null/unknown) and is false.
+func IsExplicitlyFalse(value types.Bool) bool {
+	return !value.IsNull() && !value.IsUnknown() && !value.ValueBool()
+}
