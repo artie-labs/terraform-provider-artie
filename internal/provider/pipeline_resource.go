@@ -276,7 +276,10 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 	}
 
 	// Validate that include_full_source_table_name_column_as_primary_key requires include_full_source_table_name_column
-	if configData.IncludeFullSourceTableNameColumnAsPrimaryKey.ValueBool() && !configData.IncludeFullSourceTableNameColumn.ValueBool() {
+	// Only validate when both values are explicitly set (not null/unknown) to avoid false failures
+	// when users rely on dashboard/API defaults for include_full_source_table_name_column
+	if tfmodels.IsExplicitlyTrue(configData.IncludeFullSourceTableNameColumnAsPrimaryKey) &&
+		tfmodels.IsExplicitlyFalse(configData.IncludeFullSourceTableNameColumn) {
 		resp.Diagnostics.AddError(
 			"Invalid configuration",
 			"include_full_source_table_name_column_as_primary_key is true, but include_full_source_table_name_column is false. The full source table name column must be enabled to use it as a primary key.",
