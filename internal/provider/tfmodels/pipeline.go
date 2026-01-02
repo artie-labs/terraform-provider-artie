@@ -98,6 +98,51 @@ func buildFlushConfig(ctx context.Context, d types.Object) (*FlushConfig, diag.D
 	return flushConfig, nil
 }
 
+type StaticColumn struct {
+	Column types.String `tfsdk:"column"`
+	Value  types.String `tfsdk:"value"`
+}
+
+var StaticColumnAttrTypes = map[string]attr.Type{
+	"column": types.StringType,
+	"value":  types.StringType,
+}
+
+func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]artieclient.StaticColumn, diag.Diagnostics) {
+	staticColumns, diags := parseOptionalList[StaticColumn](ctx, staticColumnsList)
+	if staticColumns == nil {
+		return nil, diags
+	}
+
+	var apiStaticColumns []artieclient.StaticColumn
+	for _, sc := range *staticColumns {
+		apiStaticColumns = append(apiStaticColumns, artieclient.StaticColumn{
+			Column: sc.Column.ValueString(),
+			Value:  sc.Value.ValueString(),
+		})
+	}
+
+	return &apiStaticColumns, diags
+}
+
+func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]artieclient.StaticColumn) (types.List, diag.Diagnostics) {
+	if apiStaticColumns == nil || len(*apiStaticColumns) == 0 {
+		// Return an empty list instead of null to avoid perpetual diffs when
+		// the user explicitly specifies `static_columns = []`
+		return types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
+	}
+
+	var staticColumns []StaticColumn
+	for _, sc := range *apiStaticColumns {
+		staticColumns = append(staticColumns, StaticColumn{
+			Column: types.StringValue(sc.Column),
+			Value:  types.StringValue(sc.Value),
+		})
+	}
+
+	return types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, staticColumns)
+}
+
 type Pipeline struct {
 	UUID                     types.String               `tfsdk:"uuid"`
 	Name                     types.String               `tfsdk:"name"`
@@ -119,6 +164,7 @@ type Pipeline struct {
 	IncludeFullSourceTableNameColumnAsPrimaryKey types.Bool   `tfsdk:"include_full_source_table_name_column_as_primary_key"`
 	DefaultSourceSchema                          types.String `tfsdk:"default_source_schema"`
 	SplitEventsByType                            types.Bool   `tfsdk:"split_events_by_type"`
+	StaticColumns                                types.List   `tfsdk:"static_columns"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -162,6 +208,12 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		return artieclient.BasePipeline{}, diags
 	}
 
+	staticColumns, staticColumnsDiags := staticColumnsToAPI(ctx, p.StaticColumns)
+	diags.Append(staticColumnsDiags...)
+	if diags.HasError() {
+		return artieclient.BasePipeline{}, diags
+	}
+
 	advancedSettings := artieclient.AdvancedSettings{
 		DropDeletedColumns:                           p.DropDeletedColumns.ValueBoolPointer(),
 		EnableSoftDelete:                             p.SoftDeleteRows.ValueBoolPointer(),
@@ -172,6 +224,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		IncludeFullSourceTableNameColumnAsPrimaryKey: p.IncludeFullSourceTableNameColumnAsPrimaryKey.ValueBoolPointer(),
 		DefaultSourceSchema:                          p.DefaultSourceSchema.ValueStringPointer(),
 		SplitEventsByType:                            p.SplitEventsByType.ValueBoolPointer(),
+		StaticColumns:                                staticColumns,
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -233,6 +286,12 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeFullSourceTableNameColumnAsPrimaryKey types.Bool
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
+	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
+	diags.Append(staticColumnsDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
+
 	if apiModel.AdvancedSettings != nil {
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
@@ -279,6 +338,14 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 				return Pipeline{}, diags
 			}
 		}
+
+		// Convert static columns
+		var staticColumnsDiags diag.Diagnostics
+		staticColumns, staticColumnsDiags = staticColumnsFromAPI(ctx, apiModel.AdvancedSettings.StaticColumns)
+		diags.Append(staticColumnsDiags...)
+		if diags.HasError() {
+			return Pipeline{}, diags
+		}
 	}
 
 	return Pipeline{
@@ -302,5 +369,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		FlushConfig:                                  flushConfig,
 		DefaultSourceSchema:                          defaultSourceSchema,
 		SplitEventsByType:                            splitEventsByType,
+		StaticColumns:                                staticColumns,
 	}, diags
 }
