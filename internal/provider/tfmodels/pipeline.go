@@ -109,29 +109,20 @@ var StaticColumnAttrTypes = map[string]attr.Type{
 }
 
 func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]artieclient.StaticColumn, diag.Diagnostics) {
-	if staticColumnsList.IsNull() || staticColumnsList.IsUnknown() {
-		return nil, nil
-	}
-
-	var staticColumns []StaticColumn
-	diags := staticColumnsList.ElementsAs(ctx, &staticColumns, false)
-	if diags.HasError() {
+	staticColumns, diags := parseOptionalList[StaticColumn](ctx, staticColumnsList)
+	if staticColumns == nil {
 		return nil, diags
 	}
 
-	if len(staticColumns) == 0 {
-		return nil, nil
-	}
-
 	var apiStaticColumns []artieclient.StaticColumn
-	for _, sc := range staticColumns {
+	for _, sc := range *staticColumns {
 		apiStaticColumns = append(apiStaticColumns, artieclient.StaticColumn{
 			Column: sc.Column.ValueString(),
 			Value:  sc.Value.ValueString(),
 		})
 	}
 
-	return &apiStaticColumns, nil
+	return &apiStaticColumns, diags
 }
 
 func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]artieclient.StaticColumn) (types.List, diag.Diagnostics) {
@@ -295,7 +286,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeFullSourceTableNameColumnAsPrimaryKey types.Bool
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
-	staticColumns := types.ListNull(types.ObjectType{AttrTypes: StaticColumnAttrTypes})
+	staticColumns, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
 	if apiModel.AdvancedSettings != nil {
 		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
 			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
