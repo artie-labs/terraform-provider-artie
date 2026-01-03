@@ -8,6 +8,7 @@ import (
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -71,6 +72,9 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"unify_across_schemas":   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration."},
 						"unify_across_databases": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled."},
 						"backfill_history_table": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will backfill the history table with existing data. This is only applicable if `enable_history_mode` is set to true."},
+						"ctid_backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, enables CTID backfill for this table. This is only applicable if the source type is `postgres`."},
+						"ctid_chunk_size":        schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.Between(100000, 1000000)}, MarkdownDescription: "The chunk size to use for CTID backfill. This should be between 100,000 and 1,000,000. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true."},
+						"ctid_max_parallelism":   schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.Between(5, 20)}, MarkdownDescription: "The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true."},
 						"merge_predicates": schema.ListNestedAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -317,6 +321,14 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 			}
 			if !table.UUID.IsNull() {
 				resp.Diagnostics.AddError("Table.uuid is Read-Only", fmt.Sprintf("%q table should not have `uuid` specified. Please remove this attribute from your config.", tableKey))
+			}
+			if !table.CTIDBackfill.IsNull() && !table.CTIDBackfill.IsUnknown() && table.CTIDBackfill.ValueBool() {
+				if table.CTIDChunkSize.IsNull() || table.CTIDChunkSize.IsUnknown() {
+					resp.Diagnostics.AddError("CTID chunk size is required", "ctid_chunk_size is required when CTID backfill is enabled.")
+				}
+				if table.CTIDMaxParallelism.IsNull() || table.CTIDMaxParallelism.IsUnknown() {
+					resp.Diagnostics.AddError("CTID max parallelism is required", "ctid_max_parallelism is required when CTID backfill is enabled.")
+				}
 			}
 		}
 	}

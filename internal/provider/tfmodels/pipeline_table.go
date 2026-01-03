@@ -110,6 +110,9 @@ type Table struct {
 	MergePredicates      types.List   `tfsdk:"merge_predicates"`
 	SoftPartitioning     types.Object `tfsdk:"soft_partitioning"`
 	BackfillHistoryTable types.Bool   `tfsdk:"backfill_history_table"`
+	CTIDBackfill         types.Bool   `tfsdk:"ctid_backfill"`
+	CTIDChunkSize        types.Int64  `tfsdk:"ctid_chunk_size"`
+	CTIDMaxParallelism   types.Int64  `tfsdk:"ctid_max_parallelism"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
@@ -128,6 +131,9 @@ var TableAttrTypes = map[string]attr.Type{
 	"merge_predicates":       types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
 	"soft_partitioning":      types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
 	"backfill_history_table": types.BoolType,
+	"ctid_backfill":          types.BoolType,
+	"ctid_chunk_size":        types.Int64Type,
+	"ctid_max_parallelism":   types.Int64Type,
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -165,6 +171,15 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	}
 	diags.Append(softPartitioningDiags...)
 
+	var clientCTIDSettings *artieclient.CTIDSettings
+	if !t.CTIDBackfill.IsNull() && !t.CTIDBackfill.IsUnknown() {
+		clientCTIDSettings = &artieclient.CTIDSettings{
+			Enabled:        t.CTIDBackfill.ValueBool(),
+			ChunkSize:      uint(t.CTIDChunkSize.ValueInt64()),
+			MaxParallelism: uint(t.CTIDMaxParallelism.ValueInt64()),
+		}
+	}
+
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
@@ -186,6 +201,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			MergePredicates:            clientMergePreds,
 			SoftPartitioning:           clientSoftPartitioning,
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
+			CTIDSettings:               clientCTIDSettings,
 		},
 	}, diags
 }
@@ -214,6 +230,16 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		softPartitioning, softPartitioningDiags := SoftPartitioningFromAPIModel(ctx, apiTable.AdvancedSettings.SoftPartitioning)
 		diags.Append(softPartitioningDiags...)
 
+		// Extract CTID settings
+		var ctidBackfill types.Bool
+		var ctidChunkSize types.Int64
+		var ctidMaxParallelism types.Int64
+		if apiTable.AdvancedSettings.CTIDSettings != nil {
+			ctidBackfill = types.BoolValue(apiTable.AdvancedSettings.CTIDSettings.Enabled)
+			ctidChunkSize = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.ChunkSize))
+			ctidMaxParallelism = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.MaxParallelism))
+		}
+
 		tables[tableKey] = Table{
 			UUID:                 types.StringValue(apiTable.UUID.String()),
 			Name:                 types.StringValue(apiTable.Name),
@@ -230,6 +256,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			MergePredicates:      mergePredicates,
 			SoftPartitioning:     softPartitioning,
 			BackfillHistoryTable: types.BoolPointerValue(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
+			CTIDBackfill:         ctidBackfill,
+			CTIDChunkSize:        ctidChunkSize,
+			CTIDMaxParallelism:   ctidMaxParallelism,
 		}
 	}
 

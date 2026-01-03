@@ -98,6 +98,9 @@ Optional:
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from syncing to the destination.
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
 - `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables.
+- `ctid_backfill` (Boolean) If set to true, enables CTID backfill for this table. This is only applicable if the source type is `postgres`.
+- `ctid_chunk_size` (Number) The chunk size to use for CTID backfill. This should be between 100,000 and 1,000,000. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
+- `ctid_max_parallelism` (Number) The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `is_partitioned` (Boolean) If the source table is partitioned, set this to true and we will ingest data from all of its partitions. You may also need to customize `partition_suffix_regex_pattern` on the source reader.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range-partitioned column; set `partition_type` to 'time' or 'integer' accordingly. (see [below for nested schema](#nestedatt--tables--merge_predicates))

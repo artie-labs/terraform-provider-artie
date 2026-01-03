@@ -68,6 +68,12 @@ type SoftPartitioning struct {
 	MaxPartitions      int                         `json:"maxPartitions"`
 }
 
+type CTIDSettings struct {
+	ChunkSize      uint `json:"chunkSize"`
+	Enabled        bool `json:"enabled"`
+	MaxParallelism uint `json:"maxParallelism"`
+}
+
 type AdvancedTableSettings struct {
 	Alias                      *string           `json:"alias"`
 	ExcludeColumns             *[]string         `json:"excludeColumns"`
@@ -79,6 +85,7 @@ type AdvancedTableSettings struct {
 	MergePredicates            *[]MergePredicate `json:"mergePredicates"`
 	SoftPartitioning           *SoftPartitioning `json:"softPartitioning,omitempty"`
 	ShouldBackfillHistoryTable *bool             `json:"shouldBackfillHistoryTable"`
+	CTIDSettings               *CTIDSettings     `json:"ctidSettings,omitempty"`
 }
 
 type FlushConfig struct {
