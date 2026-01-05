@@ -23,12 +23,15 @@ type AdvancedSettings struct {
 	IncludeArtieOperationColumn                  *bool           `json:"includeArtieOperationColumn"`
 	IncludeFullSourceTableNameColumn             *bool           `json:"includeFullSourceTableNameColumn"`
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool           `json:"includeFullSourceTableNameColumnAsPrimaryKey"`
+	IncludeSourceMetadataColumn                  *bool           `json:"includeSourceMetadataColumn"`
 	FlushIntervalSeconds                         *int64          `json:"flushIntervalSeconds"`
 	BufferRows                                   *int64          `json:"bufferRows"`
 	FlushSizeKB                                  *int64          `json:"flushSizeKb"`
 	DefaultSourceSchema                          *string         `json:"defaultSourceSchema"`
 	SplitEventsByType                            *bool           `json:"splitEventsByType"`
 	StaticColumns                                *[]StaticColumn `json:"staticColumns,omitempty"`
+	AutoReplicateNewTables                       *bool           `json:"autoReplicateNewTables"`
+	AppendOnly                                   *bool           `json:"appendOnly"`
 }
 
 type BasePipeline struct {

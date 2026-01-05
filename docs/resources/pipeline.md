@@ -50,6 +50,8 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 ### Optional
 
+- `append_only` (Boolean) If set to true, data will always be appended instead of merged into the destination table. This should only be used for data that is known to be append-only (e.g. event tracking data). Rows will not be deduplicated..
+- `auto_replicate_new_tables` (Boolean) If set to true, Artie will automatically start replicating any new tables that are created in the source database.
 - `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
@@ -59,6 +61,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column called `__artie_db_updated_at` to the destination table to indicate when the row was last updated by the source database.
 - `include_full_source_table_name_column` (Boolean) If set to true, Artie will add a new column called `__artie_full_source_table_name` to the destination table containing the fully qualified source table name (e.g., schema.table). Useful when unifying tables across schemas/databases.
 - `include_full_source_table_name_column_as_primary_key` (Boolean) If set to true, includes the full source table name column as part of the primary key in destination tables. Requires `include_full_source_table_name_column` to be true.
+- `include_source_metadata_column` (Boolean) If set to true, Artie will add a new column called `__artie_source_metadata` to the destination table which will contain a json blob of metadata about the source event.
 - `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
 - `static_columns` (Attributes List) Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc. (see [below for nested schema](#nestedatt--static_columns))

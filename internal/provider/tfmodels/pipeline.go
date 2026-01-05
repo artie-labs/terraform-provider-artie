@@ -164,6 +164,9 @@ type Pipeline struct {
 	IncludeFullSourceTableNameColumnAsPrimaryKey types.Bool   `tfsdk:"include_full_source_table_name_column_as_primary_key"`
 	DefaultSourceSchema                          types.String `tfsdk:"default_source_schema"`
 	SplitEventsByType                            types.Bool   `tfsdk:"split_events_by_type"`
+	IncludeSourceMetadataColumn                  types.Bool   `tfsdk:"include_source_metadata_column"`
+	AutoReplicateNewTables                       types.Bool   `tfsdk:"auto_replicate_new_tables"`
+	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
 }
 
@@ -224,6 +227,9 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		IncludeFullSourceTableNameColumnAsPrimaryKey: p.IncludeFullSourceTableNameColumnAsPrimaryKey.ValueBoolPointer(),
 		DefaultSourceSchema:                          p.DefaultSourceSchema.ValueStringPointer(),
 		SplitEventsByType:                            p.SplitEventsByType.ValueBoolPointer(),
+		IncludeSourceMetadataColumn:                  p.IncludeSourceMetadataColumn.ValueBoolPointer(),
+		AutoReplicateNewTables:                       p.AutoReplicateNewTables.ValueBoolPointer(),
+		AppendOnly:                                   p.AppendOnly.ValueBoolPointer(),
 		StaticColumns:                                staticColumns,
 	}
 	if flushConfig != nil {
@@ -286,6 +292,10 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeFullSourceTableNameColumnAsPrimaryKey types.Bool
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
+	var includeSourceMetadataColumn types.Bool
+	var appendOnly types.Bool
+	// This should default to false even if it's omitted from the API response.
+	autoReplicateNewTables := types.BoolValue(false)
 	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
 	diags.Append(staticColumnsDiags...)
 	if diags.HasError() {
@@ -319,6 +329,15 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.SplitEventsByType != nil {
 			splitEventsByType = types.BoolValue(*apiModel.AdvancedSettings.SplitEventsByType)
+		}
+		if apiModel.AdvancedSettings.IncludeSourceMetadataColumn != nil {
+			includeSourceMetadataColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeSourceMetadataColumn)
+		}
+		if apiModel.AdvancedSettings.AutoReplicateNewTables != nil {
+			autoReplicateNewTables = types.BoolValue(*apiModel.AdvancedSettings.AutoReplicateNewTables)
+		}
+		if apiModel.AdvancedSettings.AppendOnly != nil {
+			appendOnly = types.BoolValue(*apiModel.AdvancedSettings.AppendOnly)
 		}
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
@@ -369,6 +388,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		FlushConfig:                                  flushConfig,
 		DefaultSourceSchema:                          defaultSourceSchema,
 		SplitEventsByType:                            splitEventsByType,
+		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
+		AutoReplicateNewTables:                       autoReplicateNewTables,
+		AppendOnly:                                   appendOnly,
 		StaticColumns:                                staticColumns,
 	}, diags
 }
