@@ -244,13 +244,13 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		}
 
 		tables[tableKey] = Table{
-			UUID:               types.StringValue(apiTable.UUID.String()),
-			Name:               types.StringValue(apiTable.Name),
-			Schema:             types.StringValue(apiTable.Schema),
-			EnableHistoryMode:  types.BoolValue(apiTable.EnableHistoryMode),
-			DisableReplication: types.BoolValue(apiTable.DisableReplication),
-			IsPartitioned:      types.BoolValue(apiTable.IsPartitioned),
-			Alias:              types.StringPointerValue(apiTable.AdvancedSettings.Alias),
+			UUID:                 types.StringValue(apiTable.UUID.String()),
+			Name:                 types.StringValue(apiTable.Name),
+			Schema:               types.StringValue(apiTable.Schema),
+			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
+			DisableReplication:   types.BoolValue(apiTable.DisableReplication),
+			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
+			Alias:                types.StringPointerValue(apiTable.AdvancedSettings.Alias),
 			ExcludeColumns:       colsToExclude,
 			IncludeColumns:       colsToInclude,
 			ColumnsToHash:        colsToHash,
