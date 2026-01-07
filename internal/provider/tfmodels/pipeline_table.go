@@ -93,11 +93,12 @@ func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *arti
 }
 
 type Table struct {
-	UUID              types.String `tfsdk:"uuid"`
-	Name              types.String `tfsdk:"name"`
-	Schema            types.String `tfsdk:"schema"`
-	EnableHistoryMode types.Bool   `tfsdk:"enable_history_mode"`
-	IsPartitioned     types.Bool   `tfsdk:"is_partitioned"`
+	UUID               types.String `tfsdk:"uuid"`
+	Name               types.String `tfsdk:"name"`
+	Schema             types.String `tfsdk:"schema"`
+	EnableHistoryMode  types.Bool   `tfsdk:"enable_history_mode"`
+	DisableReplication types.Bool   `tfsdk:"disable_replication"`
+	IsPartitioned      types.Bool   `tfsdk:"is_partitioned"`
 
 	// Advanced table settings
 	Alias                types.String `tfsdk:"alias"`
@@ -120,6 +121,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"name":                   types.StringType,
 	"schema":                 types.StringType,
 	"enable_history_mode":    types.BoolType,
+	"disable_replication":    types.BoolType,
 	"is_partitioned":         types.BoolType,
 	"alias":                  types.StringType,
 	"columns_to_exclude":     types.ListType{ElemType: types.StringType},
@@ -185,11 +187,12 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	}
 
 	return artieclient.Table{
-		UUID:              tableUUID,
-		Name:              t.Name.ValueString(),
-		Schema:            t.Schema.ValueString(),
-		EnableHistoryMode: t.EnableHistoryMode.ValueBool(),
-		IsPartitioned:     t.IsPartitioned.ValueBool(),
+		UUID:               tableUUID,
+		Name:               t.Name.ValueString(),
+		Schema:             t.Schema.ValueString(),
+		EnableHistoryMode:  t.EnableHistoryMode.ValueBool(),
+		DisableReplication: t.DisableReplication.ValueBool(),
+		IsPartitioned:      t.IsPartitioned.ValueBool(),
 		AdvancedSettings: artieclient.AdvancedTableSettings{
 			Alias:                      t.Alias.ValueStringPointer(),
 			ExcludeColumns:             colsToExclude,
@@ -245,6 +248,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			Name:                 types.StringValue(apiTable.Name),
 			Schema:               types.StringValue(apiTable.Schema),
 			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
+			DisableReplication:   types.BoolValue(apiTable.DisableReplication),
 			IsPartitioned:        types.BoolValue(apiTable.IsPartitioned),
 			Alias:                types.StringPointerValue(apiTable.AdvancedSettings.Alias),
 			ExcludeColumns:       colsToExclude,
