@@ -51,12 +51,13 @@ type Pipeline struct {
 }
 
 type Table struct {
-	UUID              uuid.UUID             `json:"uuid"`
-	Name              string                `json:"name"`
-	Schema            string                `json:"schema"`
-	EnableHistoryMode bool                  `json:"enableHistoryMode"`
-	IsPartitioned     bool                  `json:"isPartitioned"`
-	AdvancedSettings  AdvancedTableSettings `json:"advancedSettings"`
+	UUID               uuid.UUID             `json:"uuid"`
+	Name               string                `json:"name"`
+	Schema             string                `json:"schema"`
+	EnableHistoryMode  bool                  `json:"enableHistoryMode"`
+	DisableReplication bool                  `json:"disableReplication"`
+	IsPartitioned      bool                  `json:"isPartitioned"`
+	AdvancedSettings   AdvancedTableSettings `json:"advancedSettings"`
 }
 
 type MergePredicate struct {
