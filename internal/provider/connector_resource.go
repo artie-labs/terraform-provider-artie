@@ -72,6 +72,24 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
+			"cockroach_config": schema.SingleNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "This should be filled out if the connector type is `cockroach`.",
+				Attributes: map[string]schema.Attribute{
+					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the CockroachDB database."},
+					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the CockroachDB database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
+					"snapshot_port": schema.Int32Attribute{Optional: true, Computed: true, MarkdownDescription: "The port of the CockroachDB database that we should use to snapshot the database. If not provided, we will use the `port` value."},
+					"port": schema.Int32Attribute{
+						Required:            true,
+						MarkdownDescription: "The default port for CockroachDB is 26257.",
+						Validators: []validator.Int32{
+							int32validator.Between(1024, math.MaxUint16),
+						},
+					},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the CockroachDB database."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
 			"dynamodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `dynamodb`.",
@@ -275,6 +293,11 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	case string(artieclient.BigQuery):
 		if configData.BigQueryConfig == nil {
 			resp.Diagnostics.AddError("bigquery_config is required", "Please provide `bigquery_config` inside `connector`.")
+			return
+		}
+	case string(artieclient.CockroachDB):
+		if configData.CockroachDBConfig == nil {
+			resp.Diagnostics.AddError("cockroach_config is required", "Please provide `cockroach_config` inside `connector`.")
 			return
 		}
 	case string(artieclient.DynamoDB):
