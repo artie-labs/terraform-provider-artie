@@ -32,6 +32,7 @@ type AdvancedSettings struct {
 	StaticColumns                                *[]StaticColumn `json:"staticColumns,omitempty"`
 	AutoReplicateNewTables                       *bool           `json:"autoReplicateNewTables"`
 	AppendOnly                                   *bool           `json:"appendOnly"`
+	StagingSchema                                *string         `json:"stagingSchema"`
 }
 
 type BasePipeline struct {
