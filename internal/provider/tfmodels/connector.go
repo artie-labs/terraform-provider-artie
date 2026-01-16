@@ -10,24 +10,25 @@ import (
 )
 
 type Connector struct {
-	UUID             types.String            `tfsdk:"uuid"`
-	SSHTunnelUUID    types.String            `tfsdk:"ssh_tunnel_uuid"`
-	Type             types.String            `tfsdk:"type"`
-	Name             types.String            `tfsdk:"name"`
-	DataPlaneName    types.String            `tfsdk:"data_plane_name"`
-	BigQueryConfig   *BigQuerySharedConfig   `tfsdk:"bigquery_config"`
-	DynamoDBConfig   *DynamoDBConfig         `tfsdk:"dynamodb_config"`
-	GCSConfig        *GCSSharedConfig        `tfsdk:"gcs_config"`
-	IcebergConfig    *IcebergSharedConfig    `tfsdk:"iceberg_config"`
-	MongoDBConfig    *MongoDBSharedConfig    `tfsdk:"mongodb_config"`
-	MySQLConfig      *MySQLSharedConfig      `tfsdk:"mysql_config"`
-	MSSQLConfig      *MSSQLSharedConfig      `tfsdk:"mssql_config"`
-	OracleConfig     *OracleSharedConfig     `tfsdk:"oracle_config"`
-	PostgresConfig   *PostgresSharedConfig   `tfsdk:"postgresql_config"`
-	RedshiftConfig   *RedshiftSharedConfig   `tfsdk:"redshift_config"`
-	S3Config         *S3SharedConfig         `tfsdk:"s3_config"`
-	SnowflakeConfig  *SnowflakeSharedConfig  `tfsdk:"snowflake_config"`
-	DatabricksConfig *DatabricksSharedConfig `tfsdk:"databricks_config"`
+	UUID              types.String             `tfsdk:"uuid"`
+	SSHTunnelUUID     types.String             `tfsdk:"ssh_tunnel_uuid"`
+	Type              types.String             `tfsdk:"type"`
+	Name              types.String             `tfsdk:"name"`
+	DataPlaneName     types.String             `tfsdk:"data_plane_name"`
+	BigQueryConfig    *BigQuerySharedConfig    `tfsdk:"bigquery_config"`
+	CockroachDBConfig *CockroachDBSharedConfig `tfsdk:"cockroach_config"`
+	DynamoDBConfig    *DynamoDBConfig          `tfsdk:"dynamodb_config"`
+	GCSConfig         *GCSSharedConfig         `tfsdk:"gcs_config"`
+	IcebergConfig     *IcebergSharedConfig     `tfsdk:"iceberg_config"`
+	MongoDBConfig     *MongoDBSharedConfig     `tfsdk:"mongodb_config"`
+	MySQLConfig       *MySQLSharedConfig       `tfsdk:"mysql_config"`
+	MSSQLConfig       *MSSQLSharedConfig       `tfsdk:"mssql_config"`
+	OracleConfig      *OracleSharedConfig      `tfsdk:"oracle_config"`
+	PostgresConfig    *PostgresSharedConfig    `tfsdk:"postgresql_config"`
+	RedshiftConfig    *RedshiftSharedConfig    `tfsdk:"redshift_config"`
+	S3Config          *S3SharedConfig          `tfsdk:"s3_config"`
+	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
+	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 }
 
 func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
@@ -44,6 +45,8 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		// No config needed
 	case artieclient.BigQuery:
 		sharedConfig = c.BigQueryConfig.ToAPIModel()
+	case artieclient.CockroachDB:
+		sharedConfig = c.CockroachDBConfig.ToAPIModel()
 	case artieclient.DynamoDB:
 		sharedConfig = c.DynamoDBConfig.ToAPIModel()
 	case artieclient.GCS:
@@ -120,6 +123,8 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		// No config needed
 	case artieclient.BigQuery:
 		connector.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.CockroachDB:
+		connector.CockroachDBConfig = CockroachDBSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.DynamoDB:
 		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(apiModel.Config)
 	case artieclient.GCS:
@@ -194,6 +199,37 @@ func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.ConnectorConfig) *Dynam
 		StreamArn:          types.StringValue(apiDynamoCfg.DynamoStreamArn),
 		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AWSAccessKeyID),
 		AwsSecretAccessKey: types.StringValue(apiDynamoCfg.AWSSecretAccessKey),
+	}
+}
+
+type CockroachDBSharedConfig struct {
+	Host         types.String `tfsdk:"host"`
+	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	SnapshotPort types.Int32  `tfsdk:"snapshot_port"`
+	Port         types.Int32  `tfsdk:"port"`
+	Username     types.String `tfsdk:"username"`
+	Password     types.String `tfsdk:"password"`
+}
+
+func (c CockroachDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:         c.Host.ValueString(),
+		SnapshotHost: c.SnapshotHost.ValueString(),
+		SnapshotPort: c.SnapshotPort.ValueInt32(),
+		Port:         c.Port.ValueInt32(),
+		User:         c.Username.ValueString(),
+		Password:     c.Password.ValueString(),
+	}
+}
+
+func CockroachDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *CockroachDBSharedConfig {
+	return &CockroachDBSharedConfig{
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		SnapshotPort: types.Int32Value(apiModel.SnapshotPort),
+		Port:         types.Int32Value(apiModel.Port),
+		Username:     types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
 	}
 }
 
