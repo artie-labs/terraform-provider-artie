@@ -233,10 +233,11 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		softPartitioning, softPartitioningDiags := SoftPartitioningFromAPIModel(ctx, apiTable.AdvancedSettings.SoftPartitioning)
 		diags.Append(softPartitioningDiags...)
 
-		// Extract CTID settings
-		var ctidBackfill types.Bool
-		var ctidChunkSize types.Int64
-		var ctidMaxParallelism types.Int64
+		// Extract CTID settings - initialize them to the zero-values (instead of null/unknown) because if
+		// they're not in the api response, that means they're zero. This avoids extra noise in the plan output.
+		ctidBackfill := types.BoolValue(false)
+		ctidChunkSize := types.Int64Value(0)
+		ctidMaxParallelism := types.Int64Value(0)
 		if apiTable.AdvancedSettings.CTIDSettings != nil {
 			ctidBackfill = types.BoolValue(apiTable.AdvancedSettings.CTIDSettings.Enabled)
 			ctidChunkSize = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.ChunkSize))
