@@ -234,9 +234,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		diags.Append(softPartitioningDiags...)
 
 		// Extract CTID settings
-		var ctidBackfill types.Bool
-		var ctidChunkSize types.Int64
-		var ctidMaxParallelism types.Int64
+		ctidBackfill := types.BoolValue(false)
+		ctidChunkSize := types.Int64Value(0)
+		ctidMaxParallelism := types.Int64Value(0)
 		if apiTable.AdvancedSettings.CTIDSettings != nil {
 			ctidBackfill = types.BoolValue(apiTable.AdvancedSettings.CTIDSettings.Enabled)
 			ctidChunkSize = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.ChunkSize))
