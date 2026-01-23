@@ -168,6 +168,7 @@ type Pipeline struct {
 	AutoReplicateNewTables                       types.Bool   `tfsdk:"auto_replicate_new_tables"`
 	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
+	StagingSchema                                types.String `tfsdk:"staging_schema"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -231,6 +232,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		AutoReplicateNewTables:                       p.AutoReplicateNewTables.ValueBoolPointer(),
 		AppendOnly:                                   p.AppendOnly.ValueBoolPointer(),
 		StaticColumns:                                staticColumns,
+		StagingSchema:                                p.StagingSchema.ValueStringPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -294,6 +296,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var splitEventsByType types.Bool
 	var includeSourceMetadataColumn types.Bool
 	var appendOnly types.Bool
+	var stagingSchema types.String
 	// This should default to false even if it's omitted from the API response.
 	autoReplicateNewTables := types.BoolValue(false)
 	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
@@ -338,6 +341,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.AppendOnly != nil {
 			appendOnly = types.BoolValue(*apiModel.AdvancedSettings.AppendOnly)
+		}
+		if apiModel.AdvancedSettings.StagingSchema != nil {
+			stagingSchema = types.StringValue(*apiModel.AdvancedSettings.StagingSchema)
 		}
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
@@ -392,5 +398,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		AutoReplicateNewTables:                       autoReplicateNewTables,
 		AppendOnly:                                   appendOnly,
 		StaticColumns:                                staticColumns,
+		StagingSchema:                                stagingSchema,
 	}, diags
 }

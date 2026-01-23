@@ -64,6 +64,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `include_source_metadata_column` (Boolean) If set to true, Artie will add a new column called `__artie_source_metadata` to the destination table which will contain a JSON blob of metadata about the source event.
 - `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
+- `staging_schema` (String) If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces.
 - `static_columns` (Attributes List) Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc. (see [below for nested schema](#nestedatt--static_columns))
 
 ### Read-Only
