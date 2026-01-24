@@ -24,8 +24,24 @@ resource "artie_connector" "postgres_dev" {
   postgresql_config = {
     host     = "server.example.com"
     port     = 5432
-    user     = "artie"
+    username = "artie"
     password = var.postgres_password
+  }
+}
+
+variable "cockroach_password" {
+  type      = string
+  sensitive = true
+}
+
+resource "artie_connector" "cockroach_source" {
+  name = "CockroachDB Source"
+  type = "cockroach"
+  cockroach_config = {
+    host     = "my-cockroach-cluster.example.com"
+    port     = 26257
+    username = "artie"
+    password = var.cockroach_password
   }
 }
 
@@ -49,11 +65,12 @@ resource "artie_connector" "gcs_destination" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 
 - `bigquery_config` (Attributes) This should be filled out if the connector type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
+- `cockroach_config` (Attributes) This should be filled out if the connector type is `cockroach`. (see [below for nested schema](#nestedatt--cockroach_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. (see [below for nested schema](#nestedatt--databricks_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. (see [below for nested schema](#nestedatt--dynamodb_config))
@@ -82,6 +99,22 @@ Required:
 - `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `location` (String) The location of the BigQuery dataset. This must be either `US` or `EU`.
 - `project_id` (String) The ID of the Google Cloud project.
+
+
+<a id="nestedatt--cockroach_config"></a>
+### Nested Schema for `cockroach_config`
+
+Required:
+
+- `host` (String) The hostname of the CockroachDB database.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for CockroachDB is 26257.
+- `username` (String) The username of the service account we will use to connect to the CockroachDB database.
+
+Optional:
+
+- `snapshot_host` (String) The hostname of the CockroachDB database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
+- `snapshot_port` (Number) The port of the CockroachDB database that we should use to snapshot the database. If not provided, we will use the `port` value.
 
 
 <a id="nestedatt--databricks_config"></a>

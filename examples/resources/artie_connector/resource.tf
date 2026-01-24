@@ -9,8 +9,24 @@ resource "artie_connector" "postgres_dev" {
   postgresql_config = {
     host     = "server.example.com"
     port     = 5432
-    user     = "artie"
+    username = "artie"
     password = var.postgres_password
+  }
+}
+
+variable "cockroach_password" {
+  type      = string
+  sensitive = true
+}
+
+resource "artie_connector" "cockroach_source" {
+  name = "CockroachDB Source"
+  type = "cockroach"
+  cockroach_config = {
+    host     = "my-cockroach-cluster.example.com"
+    port     = 26257
+    username = "artie"
+    password = var.cockroach_password
   }
 }
 

@@ -5,24 +5,26 @@ import "fmt"
 type ConnectorType string
 
 const (
-	API        ConnectorType = "api"
-	BigQuery   ConnectorType = "bigquery"
-	DynamoDB   ConnectorType = "dynamodb"
-	GCS        ConnectorType = "gcs"
-	Iceberg    ConnectorType = "iceberg"
-	MongoDB    ConnectorType = "mongodb"
-	MySQL      ConnectorType = "mysql"
-	MSSQL      ConnectorType = "mssql"
-	Oracle     ConnectorType = "oracle"
-	PostgreSQL ConnectorType = "postgresql"
-	Redshift   ConnectorType = "redshift"
-	S3         ConnectorType = "s3"
-	Snowflake  ConnectorType = "snowflake"
-	Databricks ConnectorType = "databricks"
+	API         ConnectorType = "api"
+	BigQuery    ConnectorType = "bigquery"
+	CockroachDB ConnectorType = "cockroach"
+	DynamoDB    ConnectorType = "dynamodb"
+	GCS         ConnectorType = "gcs"
+	Iceberg     ConnectorType = "iceberg"
+	MongoDB     ConnectorType = "mongodb"
+	MySQL       ConnectorType = "mysql"
+	MSSQL       ConnectorType = "mssql"
+	Oracle      ConnectorType = "oracle"
+	PostgreSQL  ConnectorType = "postgresql"
+	Redshift    ConnectorType = "redshift"
+	S3          ConnectorType = "s3"
+	Snowflake   ConnectorType = "snowflake"
+	Databricks  ConnectorType = "databricks"
 )
 
 var AllSourceTypes = []string{
 	string(API),
+	string(CockroachDB),
 	string(DynamoDB),
 	string(MongoDB),
 	string(MySQL),
@@ -50,6 +52,8 @@ func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 		return API, nil
 	case BigQuery:
 		return BigQuery, nil
+	case CockroachDB:
+		return CockroachDB, nil
 	case DynamoDB:
 		return DynamoDB, nil
 	case GCS:

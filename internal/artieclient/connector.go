@@ -24,6 +24,7 @@ type Connector struct {
 type ConnectorConfig struct {
 	Host         string `json:"host"`
 	SnapshotHost string `json:"snapshotHost"`
+	SnapshotPort int32  `json:"snapshotPort,omitempty"`
 	Port         int32  `json:"port"`
 	Endpoint     string `json:"endpoint"`
 	User         string `json:"user"`
