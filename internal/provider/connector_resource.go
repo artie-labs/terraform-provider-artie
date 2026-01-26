@@ -132,6 +132,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Attributes: map[string]schema.Attribute{
 					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the MySQL database. This must point to the primary host, not a read replica."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
+					"snapshot_port": schema.Int32Attribute{Optional: true, Computed: true, MarkdownDescription: "The port of the MySQL database that we should use to snapshot the database. If not provided, we will use the `port` value."},
 					"port": schema.Int32Attribute{
 						Required:            true,
 						MarkdownDescription: "The default port for MySQL is 3306.",
@@ -141,6 +142,15 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MySQL database. This service account needs enough permissions to read from the server binlogs."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"tls_mode": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						MarkdownDescription: "The TLS mode for the MySQL connection. Use `\"\"` (empty string) to disable TLS, or `\"preferred\"` to enable TLS preferred mode.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("", "preferred"),
+						},
+					},
 				},
 			},
 			"mssql_config": schema.SingleNestedAttribute{

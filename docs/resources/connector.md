@@ -196,6 +196,8 @@ Required:
 Optional:
 
 - `snapshot_host` (String) The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
+- `snapshot_port` (Number) The port of the MySQL database that we should use to snapshot the database. If not provided, we will use the `port` value.
+- `tls_mode` (String) The TLS mode for the MySQL connection. Use `""` (empty string) to disable TLS, or `"preferred"` to enable TLS preferred mode.
 
 
 <a id="nestedatt--oracle_config"></a>
