@@ -258,27 +258,34 @@ func MongoDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Mong
 type MySQLSharedConfig struct {
 	Host         types.String `tfsdk:"host"`
 	SnapshotHost types.String `tfsdk:"snapshot_host"`
+	SnapshotPort types.Int32  `tfsdk:"snapshot_port"`
 	Port         types.Int32  `tfsdk:"port"`
 	Username     types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
+	TLSMode      types.String `tfsdk:"tls_mode"`
 }
 
 func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	return artieclient.ConnectorConfig{
 		Host:         m.Host.ValueString(),
 		SnapshotHost: m.SnapshotHost.ValueString(),
+		SnapshotPort: m.SnapshotPort.ValueInt32(),
 		Port:         m.Port.ValueInt32(),
 		User:         m.Username.ValueString(),
 		Password:     m.Password.ValueString(),
+		MySQLTLSMode: m.TLSMode.ValueString(),
 	}
 }
 
 func MySQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MySQLSharedConfig {
 	return &MySQLSharedConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		Username: types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		SnapshotPort: types.Int32Value(apiModel.SnapshotPort),
+		Port:         types.Int32Value(apiModel.Port),
+		Username:     types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
+		TLSMode:      types.StringValue(apiModel.MySQLTLSMode),
 	}
 }
 

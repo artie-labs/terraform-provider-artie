@@ -31,6 +31,9 @@ type ConnectorConfig struct {
 	Username     string `json:"username"`
 	Password     string `json:"password"`
 
+	// MySQL:
+	MySQLTLSMode string `json:"tlsMode,omitempty"`
+
 	// BigQuery:
 	GCPProjectID       string `json:"projectID"`
 	GCPLocation        string `json:"location"`
