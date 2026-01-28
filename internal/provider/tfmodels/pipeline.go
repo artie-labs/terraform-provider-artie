@@ -169,6 +169,7 @@ type Pipeline struct {
 	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
 	StagingSchema                                types.String `tfsdk:"staging_schema"`
+	ForceUTCTimezone                             types.Bool   `tfsdk:"force_utc_timezone"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -233,6 +234,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		AppendOnly:                                   p.AppendOnly.ValueBoolPointer(),
 		StaticColumns:                                staticColumns,
 		StagingSchema:                                p.StagingSchema.ValueStringPointer(),
+		ForceUTCTimezone:                             p.ForceUTCTimezone.ValueBoolPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -297,6 +299,8 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var includeSourceMetadataColumn types.Bool
 	var appendOnly types.Bool
 	var stagingSchema types.String
+	var forceUTCTimezone types.Bool
+
 	// This should default to false even if it's omitted from the API response.
 	autoReplicateNewTables := types.BoolValue(false)
 	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
@@ -344,6 +348,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.StagingSchema != nil {
 			stagingSchema = types.StringValue(*apiModel.AdvancedSettings.StagingSchema)
+		}
+		if apiModel.AdvancedSettings.ForceUTCTimezone != nil {
+			forceUTCTimezone = types.BoolValue(*apiModel.AdvancedSettings.ForceUTCTimezone)
 		}
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
@@ -399,5 +406,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		AppendOnly:                                   appendOnly,
 		StaticColumns:                                staticColumns,
 		StagingSchema:                                stagingSchema,
+		ForceUTCTimezone:                             forceUTCTimezone,
 	}, diags
 }
