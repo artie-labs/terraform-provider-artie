@@ -56,6 +56,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
+- `force_utc_timezone` (Boolean) If set to true, timestamps without timezone information in the source will be written as UTC in the destination.
 - `include_artie_operation_column` (Boolean) If set to true, Artie will add a new column called `__artie_operation` to the destination table that indicates the operation type (insert, update, delete) for each row.
 - `include_artie_updated_at_column` (Boolean) If set to true, Artie will add a new column called `__artie_updated_at` to the destination table to indicate when the row was last updated by Artie.
 - `include_database_updated_at_column` (Boolean) If set to true, Artie will add a new column called `__artie_db_updated_at` to the destination table to indicate when the row was last updated by the source database.
@@ -65,7 +66,6 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
 - `staging_schema` (String) If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces.
-- `force_utc_timezone` (Boolean) If set to true, timestamps without timezone information in the source will be written as UTC in the destination.
 - `static_columns` (Attributes List) Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc. (see [below for nested schema](#nestedatt--static_columns))
 
 ### Read-Only
