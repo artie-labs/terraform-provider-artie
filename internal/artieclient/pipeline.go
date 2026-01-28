@@ -33,6 +33,7 @@ type AdvancedSettings struct {
 	AutoReplicateNewTables                       *bool           `json:"autoReplicateNewTables"`
 	AppendOnly                                   *bool           `json:"appendOnly"`
 	StagingSchema                                *string         `json:"stagingSchema"`
+	ForceUTCTimezone                             *bool           `json:"forceUTCTimezone"`
 }
 
 type BasePipeline struct {
