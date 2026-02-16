@@ -3,7 +3,7 @@ module terraform-provider-artie
 go 1.25.0
 
 require (
-	github.com/artie-labs/transfer v1.29.10
+	github.com/artie-labs/transfer v1.29.14
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.17.0
