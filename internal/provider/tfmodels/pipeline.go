@@ -170,6 +170,7 @@ type Pipeline struct {
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
 	StagingSchema                                types.String `tfsdk:"staging_schema"`
 	ForceUTCTimezone                             types.Bool   `tfsdk:"force_utc_timezone"`
+	WriteRawBinaryValues                         types.Bool   `tfsdk:"write_raw_binary_values"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -235,6 +236,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		StaticColumns:                                staticColumns,
 		StagingSchema:                                p.StagingSchema.ValueStringPointer(),
 		ForceUTCTimezone:                             p.ForceUTCTimezone.ValueBoolPointer(),
+		WriteRawBinaryValues:                         p.WriteRawBinaryValues.ValueBoolPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -300,6 +302,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var appendOnly types.Bool
 	var stagingSchema types.String
 	var forceUTCTimezone types.Bool
+	var writeRawBinaryValues types.Bool
 
 	// This should default to false even if it's omitted from the API response.
 	autoReplicateNewTables := types.BoolValue(false)
@@ -351,6 +354,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.ForceUTCTimezone != nil {
 			forceUTCTimezone = types.BoolValue(*apiModel.AdvancedSettings.ForceUTCTimezone)
+		}
+		if apiModel.AdvancedSettings.WriteRawBinaryValues != nil {
+			writeRawBinaryValues = types.BoolValue(*apiModel.AdvancedSettings.WriteRawBinaryValues)
 		}
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
@@ -407,5 +413,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		StaticColumns:                                staticColumns,
 		StagingSchema:                                stagingSchema,
 		ForceUTCTimezone:                             forceUTCTimezone,
+		WriteRawBinaryValues:                         writeRawBinaryValues,
 	}, diags
 }
