@@ -34,6 +34,7 @@ type AdvancedSettings struct {
 	AppendOnly                                   *bool           `json:"appendOnly"`
 	StagingSchema                                *string         `json:"stagingSchema"`
 	ForceUTCTimezone                             *bool           `json:"forceUTCTimezone"`
+	WriteRawBinaryValues                         *bool           `json:"writeRawBinaryValues"`
 }
 
 type BasePipeline struct {
