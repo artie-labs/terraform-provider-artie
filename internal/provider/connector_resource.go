@@ -108,13 +108,25 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				},
 			},
 			"iceberg_config": schema.SingleNestedAttribute{
-				MarkdownDescription: "This should be filled out if the connector type is `iceberg`.",
+				MarkdownDescription: "This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials.",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"provider":          schema.StringAttribute{Required: true, MarkdownDescription: "The Iceberg provider type. Currently, the only supported value is `s3tables`."},
-					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3."},
-					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-					"bucket_arn":        schema.StringAttribute{Required: true, MarkdownDescription: "The ARN (Amazon Resource Name) of the S3 bucket for Iceberg tables."},
+					"provider": schema.StringAttribute{Required: true, MarkdownDescription: "The Iceberg provider type. Must be `s3tables` or `rest`.", Validators: []validator.String{stringvalidator.OneOf("s3tables", "rest")}},
+
+					// S3 Tables fields:
+					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for connecting to S3 Tables. Required if `provider` is `s3tables`."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for connecting to S3 Tables. Required if `provider` is `s3tables`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable."},
+					"bucket_arn":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the S3 Tables table bucket (e.g. `arn:aws:s3tables:us-east-1:123456789012:bucket/my-bucket`). Required if `provider` is `s3tables`."},
+					"region":            schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS region for S3 Tables. Optional; can be parsed from the `bucket_arn`."},
+
+					// REST Catalog fields:
+					"uri":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The REST catalog endpoint URL. Required if `provider` is `rest`."},
+					"token":      schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "A bearer token for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`."},
+					"credential": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "OAuth2 client credentials in the format `client_id:client_secret` for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`."},
+					"auth_uri":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth2 token endpoint URL. Required when using `credential` authentication (without `token`)."},
+					"scope":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth2 scope. Optional; defaults to `catalog` on the server side."},
+					"warehouse":  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The warehouse identifier for the REST catalog. Required if `provider` is `rest`."},
+					"prefix":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "An optional catalog prefix for namespacing in the REST catalog."},
 				},
 			},
 			"mongodb_config": schema.SingleNestedAttribute{
@@ -324,6 +336,32 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.IcebergConfig == nil {
 			resp.Diagnostics.AddError("iceberg_config is required", "Please provide `iceberg_config` inside `connector`.")
 			return
+		}
+
+		switch configData.IcebergConfig.Provider.ValueString() {
+		case "s3tables":
+			if configData.IcebergConfig.AwsAccessKeyID.ValueString() == "" {
+				resp.Diagnostics.AddError("access_key_id is required for s3tables", "Please provide `access_key_id` inside `iceberg_config` when using `s3tables` provider.")
+			}
+			if configData.IcebergConfig.AwsSecretAccessKey.ValueString() == "" {
+				resp.Diagnostics.AddError("secret_access_key is required for s3tables", "Please provide `secret_access_key` inside `iceberg_config` when using `s3tables` provider.")
+			}
+			if configData.IcebergConfig.BucketARN.ValueString() == "" {
+				resp.Diagnostics.AddError("bucket_arn is required for s3tables", "Please provide `bucket_arn` inside `iceberg_config` when using `s3tables` provider.")
+			}
+		case "rest":
+			if configData.IcebergConfig.URI.ValueString() == "" {
+				resp.Diagnostics.AddError("uri is required for rest catalog", "Please provide `uri` inside `iceberg_config` when using `rest` provider.")
+			}
+			if configData.IcebergConfig.Warehouse.ValueString() == "" {
+				resp.Diagnostics.AddError("warehouse is required for rest catalog", "Please provide `warehouse` inside `iceberg_config` when using `rest` provider.")
+			}
+			if configData.IcebergConfig.Token.ValueString() == "" && configData.IcebergConfig.Credential.ValueString() == "" {
+				resp.Diagnostics.AddError("token or credential is required for rest catalog", "Please provide either `token` or `credential` inside `iceberg_config` when using `rest` provider.")
+			}
+			if configData.IcebergConfig.Token.ValueString() == "" && configData.IcebergConfig.Credential.ValueString() != "" && configData.IcebergConfig.AuthURI.ValueString() == "" {
+				resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
+			}
 		}
 	case string(artieclient.MongoDB):
 		if configData.MongoDBConfig == nil {
