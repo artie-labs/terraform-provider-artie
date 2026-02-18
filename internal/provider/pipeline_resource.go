@@ -181,7 +181,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
 					"bucket": schema.StringAttribute{
-						MarkdownDescription: "The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg (for Iceberg, this bucket is where delta files will be stored).",
+						MarkdownDescription: "The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg with provider `s3tables` (for Iceberg S3 Tables, this bucket is where delta files will be stored). Not used for Iceberg REST catalog.",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),

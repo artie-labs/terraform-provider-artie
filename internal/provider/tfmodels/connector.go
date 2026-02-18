@@ -491,10 +491,22 @@ func GCSSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *GCSShare
 }
 
 type IcebergSharedConfig struct {
-	Provider           types.String `tfsdk:"provider"`
+	Provider types.String `tfsdk:"provider"`
+
+	// S3 Tables fields:
 	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
 	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
 	BucketARN          types.String `tfsdk:"bucket_arn"`
+	Region             types.String `tfsdk:"region"`
+
+	// REST Catalog fields:
+	URI        types.String `tfsdk:"uri"`
+	Token      types.String `tfsdk:"token"`
+	Credential types.String `tfsdk:"credential"`
+	AuthURI    types.String `tfsdk:"auth_uri"`
+	Scope      types.String `tfsdk:"scope"`
+	Warehouse  types.String `tfsdk:"warehouse"`
+	Prefix     types.String `tfsdk:"prefix"`
 }
 
 func (i IcebergSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
@@ -503,6 +515,14 @@ func (i IcebergSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 		AWSAccessKeyID:     i.AwsAccessKeyID.ValueString(),
 		AWSSecretAccessKey: i.AwsSecretAccessKey.ValueString(),
 		IcebergBucketARN:   i.BucketARN.ValueString(),
+		IcebergRegion:      i.Region.ValueString(),
+		IcebergURI:         i.URI.ValueString(),
+		IcebergToken:       i.Token.ValueString(),
+		IcebergCredential:  i.Credential.ValueString(),
+		IcebergAuthURI:     i.AuthURI.ValueString(),
+		IcebergScope:       i.Scope.ValueString(),
+		IcebergWarehouse:   i.Warehouse.ValueString(),
+		IcebergPrefix:      i.Prefix.ValueString(),
 	}
 }
 
@@ -512,5 +532,13 @@ func IcebergSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Iceb
 		AwsAccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
 		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
 		BucketARN:          types.StringValue(apiModel.IcebergBucketARN),
+		Region:             types.StringValue(apiModel.IcebergRegion),
+		URI:                types.StringValue(apiModel.IcebergURI),
+		Token:              types.StringValue(apiModel.IcebergToken),
+		Credential:         types.StringValue(apiModel.IcebergCredential),
+		AuthURI:            types.StringValue(apiModel.IcebergAuthURI),
+		Scope:              types.StringValue(apiModel.IcebergScope),
+		Warehouse:          types.StringValue(apiModel.IcebergWarehouse),
+		Prefix:             types.StringValue(apiModel.IcebergPrefix),
 	}
 }
