@@ -340,26 +340,26 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 
 		switch configData.IcebergConfig.Provider.ValueString() {
 		case "s3tables":
-			if configData.IcebergConfig.AwsAccessKeyID.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AwsAccessKeyID) {
 				resp.Diagnostics.AddError("access_key_id is required for s3tables", "Please provide `access_key_id` inside `iceberg_config` when using `s3tables` provider.")
 			}
-			if configData.IcebergConfig.AwsSecretAccessKey.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AwsSecretAccessKey) {
 				resp.Diagnostics.AddError("secret_access_key is required for s3tables", "Please provide `secret_access_key` inside `iceberg_config` when using `s3tables` provider.")
 			}
-			if configData.IcebergConfig.BucketARN.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.BucketARN) {
 				resp.Diagnostics.AddError("bucket_arn is required for s3tables", "Please provide `bucket_arn` inside `iceberg_config` when using `s3tables` provider.")
 			}
 		case "rest":
-			if configData.IcebergConfig.URI.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.URI) {
 				resp.Diagnostics.AddError("uri is required for rest catalog", "Please provide `uri` inside `iceberg_config` when using `rest` provider.")
 			}
-			if configData.IcebergConfig.Warehouse.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Warehouse) {
 				resp.Diagnostics.AddError("warehouse is required for rest catalog", "Please provide `warehouse` inside `iceberg_config` when using `rest` provider.")
 			}
-			if configData.IcebergConfig.Token.ValueString() == "" && configData.IcebergConfig.Credential.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Token) && tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Credential) {
 				resp.Diagnostics.AddError("token or credential is required for rest catalog", "Please provide either `token` or `credential` inside `iceberg_config` when using `rest` provider.")
 			}
-			if configData.IcebergConfig.Token.ValueString() == "" && configData.IcebergConfig.Credential.ValueString() != "" && configData.IcebergConfig.AuthURI.ValueString() == "" {
+			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Token) && tfmodels.IsKnownAndNonEmpty(configData.IcebergConfig.Credential) && tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AuthURI) {
 				resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
 			}
 		}
