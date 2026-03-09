@@ -89,6 +89,16 @@ func parseOptionalObject[T any](ctx context.Context, value *types.Object) (*T, d
 	return &t, diags
 }
 
+// IsKnownAndEmpty returns true if the value is known (not null/unknown) and is an empty string.
+func IsKnownAndEmpty(value types.String) bool {
+	return !value.IsUnknown() && value.ValueString() == ""
+}
+
+// IsKnownAndNonEmpty returns true if the value is known (not null/unknown) and is a non-empty string.
+func IsKnownAndNonEmpty(value types.String) bool {
+	return !value.IsUnknown() && value.ValueString() != ""
+}
+
 // IsExplicitlyTrue returns true if the value is explicitly set (not null/unknown) and is true.
 func IsExplicitlyTrue(value types.Bool) bool {
 	return !value.IsNull() && !value.IsUnknown() && value.ValueBool()
