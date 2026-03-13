@@ -450,6 +450,8 @@ type DatabricksSharedConfig struct {
 	Host                types.String `tfsdk:"host"`
 	HttpPath            types.String `tfsdk:"http_path"`
 	PersonalAccessToken types.String `tfsdk:"personal_access_token"`
+	ClientID            types.String `tfsdk:"client_id"`
+	ClientSecret        types.String `tfsdk:"client_secret"`
 	Volume              types.String `tfsdk:"volume"`
 }
 
@@ -458,6 +460,8 @@ func (d DatabricksSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 		Host:                          d.Host.ValueString(),
 		DatabricksHttpPath:            d.HttpPath.ValueString(),
 		DatabricksPersonalAccessToken: d.PersonalAccessToken.ValueString(),
+		DatabricksClientID:            d.ClientID.ValueString(),
+		DatabricksClientSecret:        d.ClientSecret.ValueString(),
 		DatabricksVolume:              d.Volume.ValueString(),
 	}
 }
@@ -467,6 +471,8 @@ func DatabricksSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *D
 		Host:                types.StringValue(apiModel.Host),
 		HttpPath:            types.StringValue(apiModel.DatabricksHttpPath),
 		PersonalAccessToken: types.StringValue(apiModel.DatabricksPersonalAccessToken),
+		ClientID:            types.StringValue(apiModel.DatabricksClientID),
+		ClientSecret:        types.StringValue(apiModel.DatabricksClientSecret),
 		Volume:              types.StringValue(apiModel.DatabricksVolume),
 	}
 }

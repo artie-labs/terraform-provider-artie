@@ -48,6 +48,8 @@ type ConnectorConfig struct {
 	// Databricks:
 	DatabricksHttpPath            string `json:"httpPath"`
 	DatabricksPersonalAccessToken string `json:"personalAccessToken"`
+	DatabricksClientID            string `json:"clientID"`
+	DatabricksClientSecret        string `json:"clientSecret"`
 	DatabricksVolume              string `json:"volume"`
 
 	// Dynamo, S3, Iceberg:

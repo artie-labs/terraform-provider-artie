@@ -247,12 +247,14 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				},
 			},
 			"databricks_config": schema.SingleNestedAttribute{
-				MarkdownDescription: "This should be filled out if the connector type is `databricks`.",
+				MarkdownDescription: "This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M).",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
 					"host":                  schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Databricks cluster."},
 					"http_path":             schema.StringAttribute{Required: true, MarkdownDescription: "The HTTP path of the Databricks cluster."},
-					"personal_access_token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks."},
+					"personal_access_token": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`."},
+					"client_id":             schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`."},
+					"client_secret":         schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`."},
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
 				},
 			},
@@ -417,6 +419,20 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.DatabricksConfig == nil {
 			resp.Diagnostics.AddError("databricks_config is required", "Please provide `databricks_config` inside `connector`.")
 			return
+		}
+
+		patSet := !configData.DatabricksConfig.PersonalAccessToken.IsNull()
+		clientIDSet := !configData.DatabricksConfig.ClientID.IsNull()
+		clientSecretSet := !configData.DatabricksConfig.ClientSecret.IsNull()
+
+		if patSet && (clientIDSet || clientSecretSet) {
+			resp.Diagnostics.AddError("Conflicting authentication methods", "`personal_access_token` conflicts with `client_id` and `client_secret`. Please provide either `personal_access_token` or both `client_id` and `client_secret`, not both.")
+		}
+		if !patSet && !clientIDSet && !clientSecretSet {
+			resp.Diagnostics.AddError("Authentication is required", "Please provide either `personal_access_token` or both `client_id` and `client_secret` inside `databricks_config`.")
+		}
+		if clientIDSet != clientSecretSet {
+			resp.Diagnostics.AddError("Incomplete OAuth M2M configuration", "Both `client_id` and `client_secret` must be provided together inside `databricks_config`.")
 		}
 	}
 }

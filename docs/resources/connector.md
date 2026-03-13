@@ -130,7 +130,7 @@ resource "artie_connector" "iceberg_rest_catalog_oauth2" {
 - `bigquery_config` (Attributes) This should be filled out if the connector type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
 - `cockroach_config` (Attributes) This should be filled out if the connector type is `cockroach`. (see [below for nested schema](#nestedatt--cockroach_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
-- `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. (see [below for nested schema](#nestedatt--databricks_config))
+- `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M). (see [below for nested schema](#nestedatt--databricks_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
@@ -182,8 +182,13 @@ Required:
 
 - `host` (String) The hostname of the Databricks cluster.
 - `http_path` (String) The HTTP path of the Databricks cluster.
-- `personal_access_token` (String, Sensitive) The personal access token for the service account we should use to connect to Databricks.
 - `volume` (String) The volume of the Databricks cluster.
+
+Optional:
+
+- `client_id` (String) The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`.
+- `client_secret` (String, Sensitive) The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`.
+- `personal_access_token` (String, Sensitive) The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`.
 
 
 <a id="nestedatt--dynamodb_config"></a>
