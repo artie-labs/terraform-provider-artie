@@ -252,9 +252,9 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Attributes: map[string]schema.Attribute{
 					"host":                  schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Databricks cluster."},
 					"http_path":             schema.StringAttribute{Required: true, MarkdownDescription: "The HTTP path of the Databricks cluster."},
-					"personal_access_token": schema.StringAttribute{Optional: true, Sensitive: true, MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`."},
-					"client_id":             schema.StringAttribute{Optional: true, MarkdownDescription: "The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`."},
-					"client_secret":         schema.StringAttribute{Optional: true, Sensitive: true, MarkdownDescription: "The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`."},
+					"personal_access_token": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`."},
+					"client_id":             schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`."},
+					"client_secret":         schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`."},
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
 				},
 			},
@@ -421,17 +421,17 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			return
 		}
 
-		hasPAT := tfmodels.IsKnownAndNonEmpty(configData.DatabricksConfig.PersonalAccessToken)
-		hasClientID := tfmodels.IsKnownAndNonEmpty(configData.DatabricksConfig.ClientID)
-		hasClientSecret := tfmodels.IsKnownAndNonEmpty(configData.DatabricksConfig.ClientSecret)
+		patSet := !configData.DatabricksConfig.PersonalAccessToken.IsNull()
+		clientIDSet := !configData.DatabricksConfig.ClientID.IsNull()
+		clientSecretSet := !configData.DatabricksConfig.ClientSecret.IsNull()
 
-		if hasPAT && (hasClientID || hasClientSecret) {
+		if patSet && (clientIDSet || clientSecretSet) {
 			resp.Diagnostics.AddError("Conflicting authentication methods", "`personal_access_token` conflicts with `client_id` and `client_secret`. Please provide either `personal_access_token` or both `client_id` and `client_secret`, not both.")
 		}
-		if !hasPAT && !hasClientID && !hasClientSecret {
+		if !patSet && !clientIDSet && !clientSecretSet {
 			resp.Diagnostics.AddError("Authentication is required", "Please provide either `personal_access_token` or both `client_id` and `client_secret` inside `databricks_config`.")
 		}
-		if hasClientID != hasClientSecret {
+		if clientIDSet != clientSecretSet {
 			resp.Diagnostics.AddError("Incomplete OAuth M2M configuration", "Both `client_id` and `client_secret` must be provided together inside `databricks_config`.")
 		}
 	}
