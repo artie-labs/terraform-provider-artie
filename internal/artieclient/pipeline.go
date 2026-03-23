@@ -86,6 +86,7 @@ type AdvancedTableSettings struct {
 	ExcludeColumns             *[]string         `json:"excludeColumns"`
 	IncludeColumns             *[]string         `json:"includeColumns"`
 	ColumnsToHash              *[]string         `json:"columnsToHash"`
+	ColumnsToCompress          *[]string         `json:"columnsToCompress"`
 	SkipDeletes                *bool             `json:"skipDelete"`
 	UnifyAcrossSchemas         *bool             `json:"unifyAcrossSchemas"`
 	UnifyAcrossDatabases       *bool             `json:"unifyAcrossDatabases"`

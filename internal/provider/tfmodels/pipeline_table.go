@@ -105,6 +105,7 @@ type Table struct {
 	ExcludeColumns       types.List   `tfsdk:"columns_to_exclude"`
 	IncludeColumns       types.List   `tfsdk:"columns_to_include"`
 	ColumnsToHash        types.List   `tfsdk:"columns_to_hash"`
+	ColumnsToCompress    types.List   `tfsdk:"columns_to_compress"`
 	SkipDeletes          types.Bool   `tfsdk:"skip_deletes"`
 	UnifyAcrossSchemas   types.Bool   `tfsdk:"unify_across_schemas"`
 	UnifyAcrossDatabases types.Bool   `tfsdk:"unify_across_databases"`
@@ -127,6 +128,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"columns_to_exclude":     types.ListType{ElemType: types.StringType},
 	"columns_to_include":     types.ListType{ElemType: types.StringType},
 	"columns_to_hash":        types.ListType{ElemType: types.StringType},
+	"columns_to_compress":    types.ListType{ElemType: types.StringType},
 	"skip_deletes":           types.BoolType,
 	"unify_across_schemas":   types.BoolType,
 	"unify_across_databases": types.BoolType,
@@ -153,6 +155,9 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 
 	colsToHash, hashDiags := parseOptionalList[string](ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
+
+	colsToCompress, compressDiags := parseOptionalList[string](ctx, t.ColumnsToCompress)
+	diags.Append(compressDiags...)
 
 	mergePredicates, mergePredDiags := parseOptionalList[MergePredicate](ctx, t.MergePredicates)
 	diags.Append(mergePredDiags...)
@@ -198,6 +203,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			ExcludeColumns:             colsToExclude,
 			IncludeColumns:             colsToInclude,
 			ColumnsToHash:              colsToHash,
+			ColumnsToCompress:          colsToCompress,
 			SkipDeletes:                t.SkipDeletes.ValueBoolPointer(),
 			UnifyAcrossSchemas:         t.UnifyAcrossSchemas.ValueBoolPointer(),
 			UnifyAcrossDatabases:       t.UnifyAcrossDatabases.ValueBoolPointer(),
@@ -227,6 +233,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		colsToHash, hashDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToHash)
 		diags.Append(hashDiags...)
 
+		colsToCompress, compressDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToCompress)
+		diags.Append(compressDiags...)
+
 		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.AdvancedSettings.MergePredicates)
 		diags.Append(mergePredDiags...)
 
@@ -255,6 +264,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ExcludeColumns:       colsToExclude,
 			IncludeColumns:       colsToInclude,
 			ColumnsToHash:        colsToHash,
+			ColumnsToCompress:    colsToCompress,
 			SkipDeletes:          types.BoolPointerValue(apiTable.AdvancedSettings.SkipDeletes),
 			UnifyAcrossSchemas:   types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemas),
 			UnifyAcrossDatabases: types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
