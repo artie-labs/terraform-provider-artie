@@ -55,6 +55,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
+- `encryption_key_uuid` (String) UUID of an `artie_encryption_key` to use for column-level encryption. Required if any table has `columns_to_encrypt` set.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
 - `force_utc_timezone` (Boolean) If set to true, timestamps without timezone information in the source will be written as UTC in the destination.
 - `include_artie_operation_column` (Boolean) If set to true, Artie will add a new column called `__artie_operation` to the destination table that indicates the operation type (insert, update, delete) for each row.
@@ -102,6 +103,7 @@ Optional:
 - `alias` (String) An optional alias for the table. If set, this will be the name of the destination table.
 - `backfill_history_table` (Boolean) If set to true, Artie will backfill the history table with existing data. This is only applicable if `enable_history_mode` is set to true.
 - `columns_to_compress` (List of String) An optional list of columns to compress using transparent GZIP compression. This can help reduce Kafka payload sizes for columns with large values.
+- `columns_to_encrypt` (List of String) An optional list of columns to encrypt during replication. Requires `encryption_key_uuid` to be set on the pipeline.
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from syncing to the destination.
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
 - `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables.
