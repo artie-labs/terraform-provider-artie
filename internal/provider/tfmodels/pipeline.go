@@ -150,6 +150,7 @@ type Pipeline struct {
 	DestinationUUID          types.String               `tfsdk:"destination_connector_uuid"`
 	DestinationConfig        *PipelineDestinationConfig `tfsdk:"destination_config"`
 	SnowflakeEcoScheduleUUID types.String               `tfsdk:"snowflake_eco_schedule_uuid"`
+	EncryptionKeyUUID        types.String               `tfsdk:"encryption_key_uuid"`
 	DataPlaneName            types.String               `tfsdk:"data_plane_name"`
 	Tables                   types.Map                  `tfsdk:"tables"`
 
@@ -208,6 +209,12 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		return artieclient.BasePipeline{}, diags
 	}
 
+	encryptionKeyUUID, encryptionKeyDiags := parseOptionalUUID(p.EncryptionKeyUUID)
+	diags.Append(encryptionKeyDiags...)
+	if diags.HasError() {
+		return artieclient.BasePipeline{}, diags
+	}
+
 	flushConfig, flushConfigDiags := buildFlushConfig(ctx, p.FlushConfig)
 	diags.Append(flushConfigDiags...)
 	if diags.HasError() {
@@ -251,6 +258,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		DestinationUUID:          destinationUUID,
 		DestinationConfig:        p.DestinationConfig.ToAPIModel(),
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
+		EncryptionKeyUUID:        encryptionKeyUUID,
 		DataPlaneName:            p.DataPlaneName.ValueString(),
 		AdvancedSettings:         &advancedSettings,
 	}, diags
@@ -394,6 +402,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		DestinationUUID:          optionalUUIDToStringValue(apiModel.DestinationUUID),
 		DestinationConfig:        &destinationConfig,
 		SnowflakeEcoScheduleUUID: optionalUUIDToStringValue(apiModel.SnowflakeEcoScheduleUUID),
+		EncryptionKeyUUID:        optionalUUIDToStringValue(apiModel.EncryptionKeyUUID),
 		DataPlaneName:            types.StringValue(apiModel.DataPlaneName),
 
 		// Advanced settings:

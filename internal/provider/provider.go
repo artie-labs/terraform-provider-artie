@@ -106,6 +106,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewSourceReaderResource,
 		NewPipelineResource,
 		NewPrivateLinkResource,
+		NewEncryptionKeyResource,
 	}
 }
 

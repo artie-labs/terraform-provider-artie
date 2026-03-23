@@ -133,3 +133,7 @@ func (c Client) Pipelines() PipelineClient {
 func (c Client) PrivateLinks() PrivateLinkClient {
 	return PrivateLinkClient{client: c}
 }
+
+func (c Client) EncryptionKeys() EncryptionKeyClient {
+	return EncryptionKeyClient{client: c}
+}

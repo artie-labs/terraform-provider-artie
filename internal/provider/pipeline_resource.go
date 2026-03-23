@@ -53,6 +53,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"source_reader_uuid":          schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_source_reader` resource."},
 			"destination_connector_uuid":  schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This must point to an `artie_connector` resource that represents the destination database."},
 			"snowflake_eco_schedule_uuid": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. This can currently only be configured via our UI."},
+			"encryption_key_uuid":         schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "UUID of an `artie_encryption_key` to use for column-level encryption. Required if any table has `columns_to_encrypt` set."},
 			"tables": schema.MapNestedAttribute{
 				Required:            true,
 				MarkdownDescription: "A map of tables from the source database that you want to replicate to the destination. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`.",
@@ -70,6 +71,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"columns_to_include":     schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables."},
 						"columns_to_hash":        schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash."},
 						"columns_to_compress":    schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to compress using transparent GZIP compression. This can help reduce Kafka payload sizes for columns with large values."},
+						"columns_to_encrypt":     schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to encrypt during replication. Requires `encryption_key_uuid` to be set on the pipeline."},
 						"skip_deletes":           schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will skip delete events for this table and only process insert and update events."},
 						"unify_across_schemas":   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration."},
 						"unify_across_databases": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled."},
@@ -319,6 +321,7 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.Table{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
+		hasColumnsToEncrypt := false
 		for tableKey, table := range tables {
 			expectedKey := table.Name.ValueString()
 			if table.Schema.ValueString() != "" {
@@ -338,6 +341,16 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 					resp.Diagnostics.AddError("CTID max parallelism is required", "ctid_max_parallelism is required when CTID backfill is enabled.")
 				}
 			}
+			if !table.ColumnsToEncrypt.IsNull() && !table.ColumnsToEncrypt.IsUnknown() && len(table.ColumnsToEncrypt.Elements()) > 0 {
+				hasColumnsToEncrypt = true
+			}
+		}
+
+		if hasColumnsToEncrypt && tfmodels.IsKnownAndEmpty(configData.EncryptionKeyUUID) {
+			resp.Diagnostics.AddError(
+				"Missing encryption key",
+				"One or more tables have `columns_to_encrypt` set, but the pipeline does not have `encryption_key_uuid` configured. An encryption key is required when encrypting columns.",
+			)
 		}
 	}
 }
