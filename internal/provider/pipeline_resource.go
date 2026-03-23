@@ -321,7 +321,8 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 		tables := map[string]tfmodels.Table{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
-		hasColumnsToEncrypt := false
+
+		var hasColumnsToEncrypt bool
 		for tableKey, table := range tables {
 			expectedKey := table.Name.ValueString()
 			if table.Schema.ValueString() != "" {
