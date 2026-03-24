@@ -29,11 +29,16 @@ func (e EncryptionKey) ToAPIBaseModel() artieclient.BaseEncryptionKey {
 }
 
 func EncryptionKeyFromAPIModel(apiModel artieclient.EncryptionKey) EncryptionKey {
+	kmsKeyUUID := types.StringNull()
+	if apiModel.KMSKeyUUID != nil {
+		kmsKeyUUID = types.StringValue(apiModel.KMSKeyUUID.String())
+	}
+
 	return EncryptionKey{
 		UUID:        types.StringValue(apiModel.UUID.String()),
 		Name:        types.StringValue(apiModel.Name),
 		Description: types.StringValue(apiModel.Description),
-		KMSKeyUUID:  optionalUUIDToStringValue(apiModel.KMSKeyUUID),
+		KMSKeyUUID:  kmsKeyUUID,
 		Type:        types.StringValue(apiModel.Type),
 		Key:         types.StringValue(apiModel.Key),
 	}
