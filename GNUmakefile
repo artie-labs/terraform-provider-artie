@@ -17,3 +17,7 @@ upgrade:
 
 install:
 	go install ./...
+
+.PHONY: lint-fix
+lint-fix:
+	golangci-lint run --fix
