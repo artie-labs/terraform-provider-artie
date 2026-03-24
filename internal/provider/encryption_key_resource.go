@@ -112,7 +112,13 @@ func (r *EncryptionKeyResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	encryptionKey, err := r.client.EncryptionKeys().Create(ctx, planData.ToAPIBaseModel())
+	apiBaseModel, diags := planData.ToAPIBaseModel()
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	encryptionKey, err := r.client.EncryptionKeys().Create(ctx, apiBaseModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Encryption Key", err.Error())
 		return

@@ -1,6 +1,7 @@
 package tfmodels
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -15,17 +16,17 @@ type EncryptionKey struct {
 	Key         types.String `tfsdk:"key"`
 }
 
-func (e EncryptionKey) ToAPIBaseModel() artieclient.BaseEncryptionKey {
-	result := artieclient.BaseEncryptionKey{
+func (e EncryptionKey) ToAPIBaseModel() (artieclient.BaseEncryptionKey, diag.Diagnostics) {
+	kmsKeyUUID, diags := parseOptionalUUID(e.KMSKeyUUID)
+	if diags.HasError() {
+		return artieclient.BaseEncryptionKey{}, diags
+	}
+
+	return artieclient.BaseEncryptionKey{
 		Name:        e.Name.ValueString(),
 		Description: e.Description.ValueString(),
-	}
-
-	if kmsUUID, diags := parseOptionalUUID(e.KMSKeyUUID); !diags.HasError() && kmsUUID != nil {
-		result.KMSKeyUUID = kmsUUID
-	}
-
-	return result
+		KMSKeyUUID:  kmsKeyUUID,
+	}, nil
 }
 
 func EncryptionKeyFromAPIModel(apiModel artieclient.EncryptionKey) EncryptionKey {
