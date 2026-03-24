@@ -45,7 +45,7 @@ type BasePipeline struct {
 	DestinationUUID          *uuid.UUID        `json:"destinationUUID"`
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
-	EncryptionKeyUUID        *uuid.UUID        `json:"encryptionKeyUUID,omitempty"`
+	EncryptionKeyUUID        *uuid.UUID        `json:"encryptionKeyUUID"`
 	AdvancedSettings         *AdvancedSettings `json:"advancedSettings"`
 }
 
@@ -88,7 +88,7 @@ type AdvancedTableSettings struct {
 	IncludeColumns             *[]string         `json:"includeColumns"`
 	ColumnsToHash              *[]string         `json:"columnsToHash"`
 	ColumnsToCompress          *[]string         `json:"columnsToCompress"`
-	ColumnsToEncrypt           *[]string         `json:"columnsToEncrypt,omitempty"`
+	ColumnsToEncrypt           *[]string         `json:"columnsToEncrypt"`
 	SkipDeletes                *bool             `json:"skipDelete"`
 	UnifyAcrossSchemas         *bool             `json:"unifyAcrossSchemas"`
 	UnifyAcrossDatabases       *bool             `json:"unifyAcrossDatabases"`
