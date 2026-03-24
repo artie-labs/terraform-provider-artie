@@ -347,7 +347,8 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 			}
 		}
 
-		if hasColumnsToEncrypt && tfmodels.IsKnownAndEmpty(configData.EncryptionKeyUUID) {
+		// encryption_key_uuid is absent when null/empty; skip validation if still unknown (e.g. unresolved reference during plan)
+		if hasColumnsToEncrypt && !configData.EncryptionKeyUUID.IsUnknown() && configData.EncryptionKeyUUID.ValueString() == "" {
 			resp.Diagnostics.AddError(
 				"Missing encryption key",
 				"One or more tables have `columns_to_encrypt` set, but the pipeline does not have `encryption_key_uuid` configured. An encryption key is required when encrypting columns.",

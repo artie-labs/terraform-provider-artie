@@ -23,6 +23,11 @@ type EncryptionKey struct {
 	Key         string     `json:"key"`
 }
 
+type UpdateEncryptionKeyRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
 type encryptionKeyCreateResponse struct {
 	EncryptionKey EncryptionKey `json:"encryptionKey"`
 	Key           string        `json:"key"`
@@ -56,13 +61,13 @@ func (ec EncryptionKeyClient) Create(ctx context.Context, encryptionKey BaseEncr
 	return result, nil
 }
 
-func (ec EncryptionKeyClient) Update(ctx context.Context, encryptionKeyUUID string, body map[string]any) (EncryptionKey, error) {
+func (ec EncryptionKeyClient) Update(ctx context.Context, encryptionKeyUUID string, req UpdateEncryptionKeyRequest) (EncryptionKey, error) {
 	path, err := url.JoinPath(ec.basePath(), encryptionKeyUUID)
 	if err != nil {
 		return EncryptionKey{}, err
 	}
 
-	return makeRequest[EncryptionKey](ctx, ec.client, http.MethodPost, path, body)
+	return makeRequest[EncryptionKey](ctx, ec.client, http.MethodPost, path, req)
 }
 
 func (ec EncryptionKeyClient) Delete(ctx context.Context, encryptionKeyUUID string) error {

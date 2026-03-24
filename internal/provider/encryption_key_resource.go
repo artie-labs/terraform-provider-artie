@@ -161,12 +161,10 @@ func (r *EncryptionKeyResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	encryptionKeyUUID := planData.UUID.ValueString()
-	body := map[string]any{
-		"name":        planData.Name.ValueString(),
-		"description": planData.Description.ValueString(),
-	}
-
-	encryptionKey, err := r.client.EncryptionKeys().Update(ctx, encryptionKeyUUID, body)
+	encryptionKey, err := r.client.EncryptionKeys().Update(ctx, encryptionKeyUUID, artieclient.UpdateEncryptionKeyRequest{
+		Name:        planData.Name.ValueString(),
+		Description: planData.Description.ValueString(),
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Encryption Key", err.Error())
 		return
