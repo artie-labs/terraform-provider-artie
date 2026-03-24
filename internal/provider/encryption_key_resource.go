@@ -128,15 +128,21 @@ func (r *EncryptionKeyResource) Create(ctx context.Context, req resource.CreateR
 }
 
 func (r *EncryptionKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	encryptionKeyUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
-	if hasError {
+	var stateData tfmodels.EncryptionKey
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	encryptionKey, err := r.client.EncryptionKeys().Get(ctx, encryptionKeyUUID)
+	encryptionKey, err := r.client.EncryptionKeys().Get(ctx, stateData.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read Encryption Key", err.Error())
 		return
+	}
+
+	// The API only returns key material on Create, so preserve the value from state.
+	if encryptionKey.Key == "" {
+		encryptionKey.Key = stateData.Key.ValueString()
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, encryptionKey)
@@ -145,6 +151,12 @@ func (r *EncryptionKeyResource) Read(ctx context.Context, req resource.ReadReque
 func (r *EncryptionKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
+		return
+	}
+
+	var stateData tfmodels.EncryptionKey
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -158,6 +170,11 @@ func (r *EncryptionKeyResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Encryption Key", err.Error())
 		return
+	}
+
+	// The API only returns key material on Create, so preserve the value from state.
+	if encryptionKey.Key == "" {
+		encryptionKey.Key = stateData.Key.ValueString()
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, encryptionKey)
