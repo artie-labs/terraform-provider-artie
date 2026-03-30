@@ -112,7 +112,7 @@ Optional:
 - `ctid_max_parallelism` (Number) The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `disable_replication` (Boolean) If set to true along with `enable_history_mode`, this table will only replicate to the history table and not the main destination table.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
-- `is_partitioned` (Boolean) If the source table is partitioned, set this to true and we will ingest data from all of its partitions. You may also need to customize `partition_suffix_regex_pattern` on the source reader.
+- `is_partitioned` (Boolean) If the source table is partitioned, set this to true and we will ingest data from all of its partitions.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range-partitioned column; set `partition_type` to 'time' or 'integer' accordingly. (see [below for nested schema](#nestedatt--tables--merge_predicates))
 - `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.

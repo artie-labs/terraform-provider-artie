@@ -90,7 +90,6 @@ type SourceReader struct {
 	PostgresPublicationMode         types.String `tfsdk:"postgres_publication_mode"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
 	PublishViaPartitionRoot         types.Bool   `tfsdk:"publish_via_partition_root"`
-	PartitionRegexPattern           types.String `tfsdk:"partition_suffix_regex_pattern"`
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
 	MSSQLReplicationMethod          types.String `tfsdk:"mssql_replication_method"`
@@ -134,12 +133,6 @@ func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourc
 		MSSQLReplicationMethod:          s.MSSQLReplicationMethod.ValueString(),
 		EnableUnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBool(),
 		DisableAutoFetchTables:          s.DisableAutoFetchTables.ValueBool(),
-	}
-
-	if !s.PartitionRegexPattern.IsNull() && !s.PartitionRegexPattern.IsUnknown() {
-		settings.PartitionRegex = &artieclient.PartitionRegex{
-			Pattern: s.PartitionRegexPattern.ValueString(),
-		}
 	}
 
 	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
@@ -210,10 +203,6 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceRe
 		DatabasesToUnify:                databasesToUnify,
 		DisableAutoFetchTables:          types.BoolValue(apiModel.Settings.DisableAutoFetchTables),
 		Tables:                          tablesMap,
-	}
-
-	if apiModel.Settings.PartitionRegex != nil {
-		sourceReader.PartitionRegexPattern = types.StringValue(apiModel.Settings.PartitionRegex.Pattern)
 	}
 
 	return sourceReader, diags

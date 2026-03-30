@@ -17,17 +17,12 @@ type SourceReaderSettings struct {
 	PostgresPublicationMode         string          `json:"publicationAutoCreateMode"`
 	PostgresReplicationSlotOverride string          `json:"replicationSlotOverride"`
 	PublishViaPartitionRoot         *bool           `json:"publishViaPartitionRoot,omitempty"`
-	PartitionRegex                  *PartitionRegex `json:"partitionRegex,omitempty"`
 	EnableUnifyAcrossSchemas        bool            `json:"unifyAcrossSchemas"`
 	UnifyAcrossSchemasRegex         *string         `json:"unifyAcrossSchemasRegex"`
 	MSSQLReplicationMethod          string          `json:"mssqlReplicationMethod"`
 	EnableUnifyAcrossDatabases      bool            `json:"unifyAcrossDatabases"`
 	DatabasesToUnify                []string        `json:"databasesToSync"`
 	DisableAutoFetchTables          bool            `json:"disableAutoFetchTables"`
-}
-
-type PartitionRegex struct {
-	Pattern string `json:"pattern"`
 }
 
 type SourceReaderTable struct {
