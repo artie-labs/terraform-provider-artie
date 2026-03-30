@@ -10,24 +10,19 @@ import (
 )
 
 type SourceReaderSettings struct {
-	BackfillBatchSize               int64           `json:"backfillBatchSize"`
-	EnableHeartbeats                bool            `json:"enableHeartbeats"`
-	OneTopicPerSchema               bool            `json:"oneTopicPerSchema"`
-	PostgresPublicationNameOverride string          `json:"publicationNameOverride"`
-	PostgresPublicationMode         string          `json:"publicationAutoCreateMode"`
-	PostgresReplicationSlotOverride string          `json:"replicationSlotOverride"`
-	PublishViaPartitionRoot         *bool           `json:"publishViaPartitionRoot,omitempty"`
-	PartitionRegex                  *PartitionRegex `json:"partitionRegex,omitempty"`
-	EnableUnifyAcrossSchemas        bool            `json:"unifyAcrossSchemas"`
-	UnifyAcrossSchemasRegex         *string         `json:"unifyAcrossSchemasRegex"`
-	MSSQLReplicationMethod          string          `json:"mssqlReplicationMethod"`
-	EnableUnifyAcrossDatabases      bool            `json:"unifyAcrossDatabases"`
-	DatabasesToUnify                []string        `json:"databasesToSync"`
-	DisableAutoFetchTables          bool            `json:"disableAutoFetchTables"`
-}
-
-type PartitionRegex struct {
-	Pattern string `json:"pattern"`
+	BackfillBatchSize               int64    `json:"backfillBatchSize"`
+	EnableHeartbeats                bool     `json:"enableHeartbeats"`
+	OneTopicPerSchema               bool     `json:"oneTopicPerSchema"`
+	PostgresPublicationNameOverride string   `json:"publicationNameOverride"`
+	PostgresPublicationMode         string   `json:"publicationAutoCreateMode"`
+	PostgresReplicationSlotOverride string   `json:"replicationSlotOverride"`
+	PublishViaPartitionRoot         *bool    `json:"publishViaPartitionRoot,omitempty"`
+	EnableUnifyAcrossSchemas        bool     `json:"unifyAcrossSchemas"`
+	UnifyAcrossSchemasRegex         *string  `json:"unifyAcrossSchemasRegex"`
+	MSSQLReplicationMethod          string   `json:"mssqlReplicationMethod"`
+	EnableUnifyAcrossDatabases      bool     `json:"unifyAcrossDatabases"`
+	DatabasesToUnify                []string `json:"databasesToSync"`
+	DisableAutoFetchTables          bool     `json:"disableAutoFetchTables"`
 }
 
 type SourceReaderTable struct {
