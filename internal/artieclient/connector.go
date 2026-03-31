@@ -52,14 +52,16 @@ type ConnectorConfig struct {
 	DatabricksClientSecret        string `json:"clientSecret"`
 	DatabricksVolume              string `json:"volume"`
 
-	// Dynamo, S3, Iceberg:
+	// Dynamo, S3, Iceberg, Keyspaces:
 	AWSAccessKeyID     string `json:"awsAccessKeyID"`
 	AWSSecretAccessKey string `json:"awsSecretAccessKey"`
+	AWSRoleARN         string `json:"awsRoleARN"`
+	AWSExternalID      string `json:"awsExternalID"`
 
 	// Dynamo:
 	DynamoStreamArn string `json:"streamsArn"`
 
-	// S3
+	// S3, Keyspaces:
 	AWSRegion string `json:"awsRegion"`
 
 	// Iceberg:

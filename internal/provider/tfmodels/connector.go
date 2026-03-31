@@ -29,6 +29,7 @@ type Connector struct {
 	S3Config          *S3SharedConfig          `tfsdk:"s3_config"`
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
+	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
 }
 
 func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
@@ -71,6 +72,8 @@ func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics
 		sharedConfig = c.SnowflakeConfig.ToAPIModel()
 	case artieclient.Databricks:
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
+	case artieclient.Keyspaces:
+		sharedConfig = c.KeyspacesConfig.ToAPIModel()
 	default:
 		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Connector to API model", fmt.Sprintf("unhandled connector type: %s", c.Type.ValueString()),
@@ -149,6 +152,8 @@ func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diag
 		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
 	case artieclient.Databricks:
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(apiModel.Config)
+	case artieclient.Keyspaces:
+		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(apiModel.Config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -184,6 +189,8 @@ type DynamoDBConfig struct {
 	StreamArn          types.String `tfsdk:"stream_arn"`
 	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
 	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
+	RoleARN            types.String `tfsdk:"role_arn"`
+	ExternalID         types.String `tfsdk:"external_id"`
 }
 
 func (d DynamoDBConfig) ToAPIModel() artieclient.ConnectorConfig {
@@ -191,6 +198,8 @@ func (d DynamoDBConfig) ToAPIModel() artieclient.ConnectorConfig {
 		DynamoStreamArn:    d.StreamArn.ValueString(),
 		AWSAccessKeyID:     d.AwsAccessKeyID.ValueString(),
 		AWSSecretAccessKey: d.AwsSecretAccessKey.ValueString(),
+		AWSRoleARN:         d.RoleARN.ValueString(),
+		AWSExternalID:      d.ExternalID.ValueString(),
 	}
 }
 
@@ -199,6 +208,8 @@ func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.ConnectorConfig) *Dynam
 		StreamArn:          types.StringValue(apiDynamoCfg.DynamoStreamArn),
 		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AWSAccessKeyID),
 		AwsSecretAccessKey: types.StringValue(apiDynamoCfg.AWSSecretAccessKey),
+		RoleARN:            types.StringValue(apiDynamoCfg.AWSRoleARN),
+		ExternalID:         types.StringValue(apiDynamoCfg.AWSExternalID),
 	}
 }
 
@@ -397,6 +408,8 @@ type S3SharedConfig struct {
 	AccessKeyID     types.String `tfsdk:"access_key_id"`
 	SecretAccessKey types.String `tfsdk:"secret_access_key"`
 	Region          types.String `tfsdk:"region"`
+	RoleARN         types.String `tfsdk:"role_arn"`
+	ExternalID      types.String `tfsdk:"external_id"`
 }
 
 func (s S3SharedConfig) ToAPIModel() artieclient.ConnectorConfig {
@@ -404,6 +417,8 @@ func (s S3SharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 		AWSAccessKeyID:     s.AccessKeyID.ValueString(),
 		AWSSecretAccessKey: s.SecretAccessKey.ValueString(),
 		AWSRegion:          s.Region.ValueString(),
+		AWSRoleARN:         s.RoleARN.ValueString(),
+		AWSExternalID:      s.ExternalID.ValueString(),
 	}
 }
 
@@ -412,6 +427,8 @@ func S3SharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *S3SharedC
 		AccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
 		SecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
 		Region:          types.StringValue(apiModel.AWSRegion),
+		RoleARN:         types.StringValue(apiModel.AWSRoleARN),
+		ExternalID:      types.StringValue(apiModel.AWSExternalID),
 	}
 }
 
@@ -546,5 +563,39 @@ func IcebergSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *Iceb
 		Scope:              types.StringValue(apiModel.IcebergScope),
 		Warehouse:          types.StringValue(apiModel.IcebergWarehouse),
 		Prefix:             types.StringValue(apiModel.IcebergPrefix),
+	}
+}
+
+type KeyspacesSharedConfig struct {
+	Host               types.String `tfsdk:"host"`
+	Port               types.Int32  `tfsdk:"port"`
+	Region             types.String `tfsdk:"region"`
+	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
+	RoleARN            types.String `tfsdk:"role_arn"`
+	ExternalID         types.String `tfsdk:"external_id"`
+}
+
+func (k KeyspacesSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
+	return artieclient.ConnectorConfig{
+		Host:               k.Host.ValueString(),
+		Port:               k.Port.ValueInt32(),
+		AWSRegion:          k.Region.ValueString(),
+		AWSAccessKeyID:     k.AwsAccessKeyID.ValueString(),
+		AWSSecretAccessKey: k.AwsSecretAccessKey.ValueString(),
+		AWSRoleARN:         k.RoleARN.ValueString(),
+		AWSExternalID:      k.ExternalID.ValueString(),
+	}
+}
+
+func KeyspacesSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *KeyspacesSharedConfig {
+	return &KeyspacesSharedConfig{
+		Host:               types.StringValue(apiModel.Host),
+		Port:               types.Int32Value(apiModel.Port),
+		Region:             types.StringValue(apiModel.AWSRegion),
+		AwsAccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
+		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
+		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
+		ExternalID:         types.StringValue(apiModel.AWSExternalID),
 	}
 }

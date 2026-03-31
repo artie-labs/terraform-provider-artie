@@ -123,7 +123,7 @@ resource "artie_connector" "iceberg_rest_catalog_oauth2" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `snowflake`.
 
 ### Optional
 
@@ -131,9 +131,10 @@ resource "artie_connector" "iceberg_rest_catalog_oauth2" {
 - `cockroach_config` (Attributes) This should be filled out if the connector type is `cockroach`. (see [below for nested schema](#nestedatt--cockroach_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M). (see [below for nested schema](#nestedatt--databricks_config))
-- `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. (see [below for nested schema](#nestedatt--dynamodb_config))
+- `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
+- `keyspaces_config` (Attributes) This should be filled out if the connector type is `keyspaces`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--keyspaces_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
 - `mssql_config` (Attributes) This should be filled out if the connector type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the connector type is `mysql`. (see [below for nested schema](#nestedatt--mysql_config))
@@ -141,7 +142,7 @@ resource "artie_connector" "iceberg_rest_catalog_oauth2" {
 - `oracle_config` (Attributes) This should be filled out if the connector type is `oracle`. (see [below for nested schema](#nestedatt--oracle_config))
 - `postgresql_config` (Attributes) This should be filled out if the connector type is `postgresql`. (see [below for nested schema](#nestedatt--postgresql_config))
 - `redshift_config` (Attributes) This should be filled out if the connector type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
-- `s3_config` (Attributes) This should be filled out if the connector type is `s3`. (see [below for nested schema](#nestedatt--s3_config))
+- `s3_config` (Attributes) This should be filled out if the connector type is `s3`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--s3_config))
 - `snowflake_config` (Attributes) This should be filled out if the connector type is `snowflake`. (see [below for nested schema](#nestedatt--snowflake_config))
 - `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect.
 
@@ -196,9 +197,14 @@ Optional:
 
 Required:
 
-- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to DynamoDB.
-- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `stream_arn` (String) The ARN (Amazon Resource Name) of the DynamoDB Stream.
+
+Optional:
+
+- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to DynamoDB. Required if `role_arn` is not set.
+- `external_id` (String) The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set.
+- `role_arn` (String) The ARN of the IAM role to assume for connecting to DynamoDB. If set, `access_key_id` and `secret_access_key` are not required.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to DynamoDB. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--gcs_config"></a>
@@ -230,6 +236,23 @@ Optional:
 - `token` (String, Sensitive) A bearer token for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`.
 - `uri` (String) The REST catalog endpoint URL. Required if `provider` is `rest`.
 - `warehouse` (String) The warehouse identifier for the REST catalog. Required if `provider` is `rest`.
+
+
+<a id="nestedatt--keyspaces_config"></a>
+### Nested Schema for `keyspaces_config`
+
+Required:
+
+- `host` (String) The hostname of the Amazon Keyspaces endpoint.
+- `port` (Number) The default port for Amazon Keyspaces is 9142.
+- `region` (String) The AWS region of the Amazon Keyspaces instance.
+
+Optional:
+
+- `access_key_id` (String) The AWS Access Key ID for connecting to Amazon Keyspaces. Required if `role_arn` is not set.
+- `external_id` (String) The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set.
+- `role_arn` (String) The ARN of the IAM role to assume for connecting to Amazon Keyspaces. If set, `access_key_id` and `secret_access_key` are not required.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for connecting to Amazon Keyspaces. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--mongodb_config"></a>
@@ -319,9 +342,14 @@ Required:
 
 Required:
 
-- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to S3.
 - `region` (String) The AWS region where we should store your data in S3.
-- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+
+Optional:
+
+- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set.
+- `external_id` (String) The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set.
+- `role_arn` (String) The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--snowflake_config"></a>
