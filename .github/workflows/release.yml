@@ -37,7 +37,7 @@ jobs:
           args: release --clean
           # Pin to v2.15.0 to avoid a bug in v2.15.1 that adds the .sig file to SHA256SUMS,
           # which breaks Terraform Registry validation. See: https://github.com/goreleaser/goreleaser/issues/6514
-          version: "~> v2.15.0"
+          version: "v2.15.0"
         env:
           # GitHub sets the GITHUB_TOKEN secret automatically.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
