@@ -92,11 +92,13 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 			"dynamodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
-				MarkdownDescription: "This should be filled out if the connector type is `dynamodb`.",
+				MarkdownDescription: "This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
 				Attributes: map[string]schema.Attribute{
 					"stream_arn":        schema.StringAttribute{Required: true, MarkdownDescription: "The ARN (Amazon Resource Name) of the DynamoDB Stream."},
-					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to DynamoDB."},
-					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to DynamoDB. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to DynamoDB. Required if `role_arn` is not set."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to DynamoDB. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to DynamoDB. If set, `access_key_id` and `secret_access_key` are not required."},
+					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
 				},
 			},
 			"gcs_config": schema.SingleNestedAttribute{
@@ -105,6 +107,25 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Attributes: map[string]schema.Attribute{
 					"project_id":       schema.StringAttribute{Required: true, MarkdownDescription: "The ID of the Google Cloud project."},
 					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
+			"keyspaces_config": schema.SingleNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "This should be filled out if the connector type is `keyspaces`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
+				Attributes: map[string]schema.Attribute{
+					"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Amazon Keyspaces endpoint."},
+					"port": schema.Int32Attribute{
+						Required:            true,
+						MarkdownDescription: "The default port for Amazon Keyspaces is 9142.",
+						Validators: []validator.Int32{
+							int32validator.Between(1024, math.MaxUint16),
+						},
+					},
+					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region of the Amazon Keyspaces instance."},
+					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for connecting to Amazon Keyspaces. Required if `role_arn` is not set."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for connecting to Amazon Keyspaces. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to Amazon Keyspaces. If set, `access_key_id` and `secret_access_key` are not required."},
+					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
 				},
 			},
 			"iceberg_config": schema.SingleNestedAttribute{
@@ -226,12 +247,14 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				},
 			},
 			"s3_config": schema.SingleNestedAttribute{
-				MarkdownDescription: "This should be filled out if the connector type is `s3`.",
+				MarkdownDescription: "This should be filled out if the connector type is `s3`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"access_key_id":     schema.StringAttribute{Required: true, MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3."},
-					"secret_access_key": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your data in S3."},
+					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required."},
+					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
 				},
 			},
 			"snowflake_config": schema.SingleNestedAttribute{
@@ -329,6 +352,15 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			resp.Diagnostics.AddError("dynamodb_config is required", "Please provide `dynamodb_config` inside `connector`.")
 			return
 		}
+
+		if tfmodels.IsKnownAndEmpty(configData.DynamoDBConfig.RoleARN) {
+			if tfmodels.IsKnownAndEmpty(configData.DynamoDBConfig.AwsAccessKeyID) {
+				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `dynamodb_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+			if tfmodels.IsKnownAndEmpty(configData.DynamoDBConfig.AwsSecretAccessKey) {
+				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `dynamodb_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+		}
 	case string(artieclient.GCS):
 		if configData.GCSConfig == nil {
 			resp.Diagnostics.AddError("gcs_config is required", "Please provide `gcs_config` inside `connector`.")
@@ -365,6 +397,20 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 				resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
 			}
 		}
+	case string(artieclient.Keyspaces):
+		if configData.KeyspacesConfig == nil {
+			resp.Diagnostics.AddError("keyspaces_config is required", "Please provide `keyspaces_config` inside `connector`.")
+			return
+		}
+
+		if tfmodels.IsKnownAndEmpty(configData.KeyspacesConfig.RoleARN) {
+			if tfmodels.IsKnownAndEmpty(configData.KeyspacesConfig.AwsAccessKeyID) {
+				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `keyspaces_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+			if tfmodels.IsKnownAndEmpty(configData.KeyspacesConfig.AwsSecretAccessKey) {
+				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `keyspaces_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+		}
 	case string(artieclient.MongoDB):
 		if configData.MongoDBConfig == nil {
 			resp.Diagnostics.AddError("mongodb_config is required", "Please provide `mongodb_config` inside `connector`.")
@@ -399,6 +445,15 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.S3Config == nil {
 			resp.Diagnostics.AddError("s3_config is required", "Please provide `s3_config` inside `connector`.")
 			return
+		}
+
+		if tfmodels.IsKnownAndEmpty(configData.S3Config.RoleARN) {
+			if tfmodels.IsKnownAndEmpty(configData.S3Config.AccessKeyID) {
+				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `s3_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+			if tfmodels.IsKnownAndEmpty(configData.S3Config.SecretAccessKey) {
+				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `s3_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
 		}
 	case string(artieclient.Snowflake):
 		if configData.SnowflakeConfig == nil {

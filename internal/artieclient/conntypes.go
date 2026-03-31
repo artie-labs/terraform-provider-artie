@@ -20,12 +20,14 @@ const (
 	S3          ConnectorType = "s3"
 	Snowflake   ConnectorType = "snowflake"
 	Databricks  ConnectorType = "databricks"
+	Keyspaces   ConnectorType = "keyspaces"
 )
 
 var AllSourceTypes = []string{
 	string(API),
 	string(CockroachDB),
 	string(DynamoDB),
+	string(Keyspaces),
 	string(MongoDB),
 	string(MySQL),
 	string(MSSQL),
@@ -78,6 +80,8 @@ func ConnectorTypeFromString(connType string) (ConnectorType, error) {
 		return Snowflake, nil
 	case Databricks:
 		return Databricks, nil
+	case Keyspaces:
+		return Keyspaces, nil
 	default:
 		return "", fmt.Errorf("invalid connector type: %s", connType)
 	}
