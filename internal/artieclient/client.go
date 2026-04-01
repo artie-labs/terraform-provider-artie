@@ -114,16 +114,28 @@ func makeRequest[Out any](ctx context.Context, client Client, method string, pat
 	return *respBody, nil
 }
 
+func BuildResponseError(statusCode int, body []byte) error {
+	if statusCode == http.StatusNotFound {
+		return fmt.Errorf("artie-client: not found (HTTP %d), response: %q", statusCode, string(body))
+	} else if statusCode >= 400 && statusCode < 500 {
+		type errorBody struct {
+			ErrorMsg string `json:"error"`
+		}
+
+		var errorResponse errorBody
+		if err := json.Unmarshal(body, &errorResponse); err == nil && errorResponse.ErrorMsg != "" {
+			return HttpError{StatusCode: statusCode, message: errorResponse.ErrorMsg}
+		}
+	}
+	return HttpError{StatusCode: statusCode}
+}
+
 func (c Client) Connectors() ConnectorClient {
 	return ConnectorClient{client: c}
 }
 
 func (c Client) SSHTunnels() SSHTunnelClient {
 	return SSHTunnelClient{client: c}
-}
-
-func (c Client) SourceReaders() SourceReaderClient {
-	return SourceReaderClient{client: c}
 }
 
 func (c Client) Pipelines() PipelineClient {

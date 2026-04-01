@@ -2,7 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"strings"
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
@@ -40,6 +44,20 @@ type ArtieProviderData struct {
 
 func (a ArtieProviderData) NewClient() (artieclient.Client, error) {
 	return artieclient.New(a.Endpoint, a.APIKey, a.version)
+}
+
+func (a ArtieProviderData) NewOpenAPIClient() (*openapi.ClientWithResponses, error) {
+	if !strings.HasPrefix(a.APIKey, "arsk_") {
+		return nil, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
+	}
+
+	return openapi.NewClientWithResponses(a.Endpoint, openapi.WithRequestEditorFn(
+		func(ctx context.Context, req *http.Request) error {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", a.APIKey))
+			req.Header.Set("User-Agent", "terraform-provider-artie/"+a.version)
+			return nil
+		},
+	))
 }
 
 func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {

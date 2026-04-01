@@ -7,7 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 )
 
 type SourceReaderTable struct {
@@ -32,40 +33,44 @@ var SourceReaderTableAttrTypes = map[string]attr.Type{
 	"unify_across_databases":      types.BoolType,
 }
 
-func (s SourceReaderTable) ToAPIModel(ctx context.Context) (artieclient.SourceReaderTable, diag.Diagnostics) {
-	colsToExclude, diags := parseList[string](ctx, s.ColumnsToExclude)
-	colsToInclude, includeDiags := parseList[string](ctx, s.ColumnsToInclude)
+func (s SourceReaderTable) ToAPIModel(ctx context.Context) (openapi.PayloadsSourceReaderTable, diag.Diagnostics) {
+	colsToExclude, diags := parseOptionalList[string](ctx, s.ColumnsToExclude)
+	colsToInclude, includeDiags := parseOptionalList[string](ctx, s.ColumnsToInclude)
 	diags.Append(includeDiags...)
 
-	return artieclient.SourceReaderTable{
-		Name:                 s.Name.ValueString(),
-		Schema:               s.Schema.ValueString(),
-		IsPartitioned:        s.IsPartitioned.ValueBool(),
-		ColumnsToExclude:     colsToExclude,
-		ColumnsToInclude:     colsToInclude,
-		UnifyAcrossSchemas:   s.UnifyAcrossSchemas.ValueBool(),
-		UnifyAcrossDatabases: s.UnifyAcrossDatabases.ValueBool(),
+	return openapi.PayloadsSourceReaderTable{
+		Name:                 s.Name.ValueStringPointer(),
+		Schema:               s.Schema.ValueStringPointer(),
+		IsPartitioned:        s.IsPartitioned.ValueBoolPointer(),
+		ExcludeColumns:       colsToExclude,
+		IncludeColumns:       colsToInclude,
+		UnifyAcrossSchemas:   s.UnifyAcrossSchemas.ValueBoolPointer(),
+		UnifyAcrossDatabases: s.UnifyAcrossDatabases.ValueBoolPointer(),
 	}, diags
 }
 
-func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesMap map[string]artieclient.SourceReaderTable) (types.Map, diag.Diagnostics) {
+func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesConfig *openapi.PayloadsSourceReaderTablesConfig) (types.Map, diag.Diagnostics) {
 	tables := map[string]SourceReaderTable{}
 	var diags diag.Diagnostics
-	for key, apiTable := range apiTablesMap {
-		colsToExclude, excludeDiags := types.ListValueFrom(ctx, types.StringType, apiTable.ColumnsToExclude)
-		diags.Append(excludeDiags...)
 
-		colsToInclude, includeDiags := types.ListValueFrom(ctx, types.StringType, apiTable.ColumnsToInclude)
-		diags.Append(includeDiags...)
-		tables[key] = SourceReaderTable{
-			Name:                     types.StringValue(apiTable.Name),
-			Schema:                   types.StringValue(apiTable.Schema),
-			IsPartitioned:            types.BoolValue(apiTable.IsPartitioned),
-			ColumnsToExclude:         colsToExclude,
-			ColumnsToInclude:         colsToInclude,
-			ChildPartitionSchemaName: types.StringValue(""), // Deprecated field, always set to empty string
-			UnifyAcrossSchemas:       types.BoolValue(apiTable.UnifyAcrossSchemas),
-			UnifyAcrossDatabases:     types.BoolValue(apiTable.UnifyAcrossDatabases),
+	if apiTablesConfig != nil {
+		for key, apiTable := range *apiTablesConfig {
+			colsToExclude, excludeDiags := optionalStringListToListValue(ctx, apiTable.ExcludeColumns)
+			diags.Append(excludeDiags...)
+
+			colsToInclude, includeDiags := optionalStringListToListValue(ctx, apiTable.IncludeColumns)
+			diags.Append(includeDiags...)
+
+			tables[key] = SourceReaderTable{
+				Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
+				Schema:                   types.StringValue(lib.RemovePtr(apiTable.Schema)),
+				IsPartitioned:            types.BoolValue(lib.RemovePtr(apiTable.IsPartitioned)),
+				ColumnsToExclude:         colsToExclude,
+				ColumnsToInclude:         colsToInclude,
+				ChildPartitionSchemaName: types.StringValue(""),
+				UnifyAcrossSchemas:       types.BoolValue(lib.RemovePtr(apiTable.UnifyAcrossSchemas)),
+				UnifyAcrossDatabases:     types.BoolValue(lib.RemovePtr(apiTable.UnifyAcrossDatabases)),
+			}
 		}
 	}
 
@@ -99,109 +104,148 @@ type SourceReader struct {
 	Tables                          types.Map    `tfsdk:"tables"`
 }
 
-func (s SourceReader) ToAPIBaseModel(ctx context.Context) (artieclient.BaseSourceReader, diag.Diagnostics) {
-	connectorUUID, diags := parseUUID(s.ConnectorUUID)
-	if diags.HasError() {
-		return artieclient.BaseSourceReader{}, diags
-	}
-
-	apiTablesMap := map[string]artieclient.SourceReaderTable{}
-	if !s.Tables.IsNull() && !s.Tables.IsUnknown() {
-		tablesMap := map[string]SourceReaderTable{}
-		diags.Append(s.Tables.ElementsAs(ctx, &tablesMap, false)...)
-		if diags.HasError() {
-			return artieclient.BaseSourceReader{}, diags
-		}
-
-		for key, table := range tablesMap {
-			apiTable, tableDiags := table.ToAPIModel(ctx)
-			diags.Append(tableDiags...)
-			apiTablesMap[key] = apiTable
-		}
-	}
-
-	settings := artieclient.SourceReaderSettings{
-		BackfillBatchSize:               s.BackfillBatchSize.ValueInt64(),
-		EnableHeartbeats:                s.EnableHeartbeats.ValueBool(),
-		OneTopicPerSchema:               s.OneTopicPerSchema.ValueBool(),
-		PostgresPublicationNameOverride: s.PostgresPublicationNameOverride.ValueString(),
-		PostgresPublicationMode:         s.PostgresPublicationMode.ValueString(),
-		PostgresReplicationSlotOverride: s.PostgresReplicationSlotOverride.ValueString(),
-		PublishViaPartitionRoot:         s.PublishViaPartitionRoot.ValueBoolPointer(),
-		EnableUnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBool(),
-		UnifyAcrossSchemasRegex:         s.UnifyAcrossSchemasRegex.ValueStringPointer(),
-		MSSQLReplicationMethod:          s.MSSQLReplicationMethod.ValueString(),
-		EnableUnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBool(),
-		DisableAutoFetchTables:          s.DisableAutoFetchTables.ValueBool(),
+func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSourceReaderSettingsPayload, diag.Diagnostics) {
+	settings := openapi.PayloadsSourceReaderSettingsPayload{
+		BackfillBatchSize:         lib.ToPtr(int(s.BackfillBatchSize.ValueInt64())),
+		EnableHeartbeats:          s.EnableHeartbeats.ValueBoolPointer(),
+		OneTopicPerSchema:         s.OneTopicPerSchema.ValueBoolPointer(),
+		PublicationNameOverride:   s.PostgresPublicationNameOverride.ValueStringPointer(),
+		PublicationAutoCreateMode: s.PostgresPublicationMode.ValueStringPointer(),
+		ReplicationSlotOverride:   s.PostgresReplicationSlotOverride.ValueStringPointer(),
+		PublishViaPartitionRoot:   s.PublishViaPartitionRoot.ValueBoolPointer(),
+		UnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBoolPointer(),
+		UnifyAcrossSchemasRegex:   s.UnifyAcrossSchemasRegex.ValueStringPointer(),
+		MssqlReplicationMethod:    s.MSSQLReplicationMethod.ValueStringPointer(),
+		UnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBoolPointer(),
+		DisableAutoFetchTables:    s.DisableAutoFetchTables.ValueBoolPointer(),
 	}
 
 	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
-		databasesToUnify, diags := parseList[string](ctx, s.DatabasesToUnify)
-		diags.Append(diags...)
-		settings.DatabasesToUnify = databasesToUnify
+		databasesToUnify, diags := parseOptionalList[string](ctx, s.DatabasesToUnify)
+		if diags.HasError() {
+			return settings, diags
+		}
+		settings.DatabasesToSync = databasesToUnify
 	}
 
-	return artieclient.BaseSourceReader{
-		Name:          s.Name.ValueString(),
-		DataPlaneName: s.DataPlaneName.ValueString(),
+	return settings, nil
+}
+
+func (s SourceReader) toAPITablesConfig(ctx context.Context) (*openapi.PayloadsSourceReaderTablesConfig, diag.Diagnostics) {
+	if s.Tables.IsNull() || s.Tables.IsUnknown() {
+		return nil, nil
+	}
+
+	tablesMap := map[string]SourceReaderTable{}
+	diags := s.Tables.ElementsAs(ctx, &tablesMap, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	apiTables := openapi.PayloadsSourceReaderTablesConfig{}
+	for key, table := range tablesMap {
+		apiTable, tableDiags := table.ToAPIModel(ctx)
+		diags.Append(tableDiags...)
+		apiTables[key] = apiTable
+	}
+
+	return &apiTables, diags
+}
+
+func (s SourceReader) ToAPICreateRequest(ctx context.Context) (openapi.RouterSourceReaderCreateRequest, diag.Diagnostics) {
+	connectorUUID, diags := parseUUID(s.ConnectorUUID)
+	if diags.HasError() {
+		return openapi.RouterSourceReaderCreateRequest{}, diags
+	}
+
+	settings, settingsDiags := s.toAPISettings(ctx)
+	diags.Append(settingsDiags...)
+	if diags.HasError() {
+		return openapi.RouterSourceReaderCreateRequest{}, diags
+	}
+
+	tablesConfig, tablesDiags := s.toAPITablesConfig(ctx)
+	diags.Append(tablesDiags...)
+
+	return openapi.RouterSourceReaderCreateRequest{
 		ConnectorUUID: connectorUUID,
-		DatabaseName:  s.DatabaseName.ValueString(),
-		ContainerName: s.OracleContainerName.ValueString(),
-		IsShared:      s.IsShared.ValueBool(),
-		Settings:      settings,
-		Tables:        apiTablesMap,
+		Name:          s.Name.ValueStringPointer(),
+		DataPlaneName: s.DataPlaneName.ValueStringPointer(),
+		Database:      s.DatabaseName.ValueStringPointer(),
+		ContainerName: s.OracleContainerName.ValueStringPointer(),
+		IsShared:      s.IsShared.ValueBoolPointer(),
+		Settings:      &settings,
+		TablesConfig:  tablesConfig,
 	}, diags
 }
 
-func (s SourceReader) ToAPIModel(ctx context.Context) (artieclient.SourceReader, diag.Diagnostics) {
+func (s SourceReader) ToAPIModel(ctx context.Context) (openapi.PayloadsSourceReader, diag.Diagnostics) {
 	uuid, diags := parseUUID(s.UUID)
 	if diags.HasError() {
-		return artieclient.SourceReader{}, diags
+		return openapi.PayloadsSourceReader{}, diags
 	}
 
-	baseSourceReader, diags := s.ToAPIBaseModel(ctx)
+	connectorUUID, connDiags := parseUUID(s.ConnectorUUID)
+	diags.Append(connDiags...)
 	if diags.HasError() {
-		return artieclient.SourceReader{}, diags
+		return openapi.PayloadsSourceReader{}, diags
 	}
 
-	return artieclient.SourceReader{
-		UUID:             uuid,
-		BaseSourceReader: baseSourceReader,
+	settings, settingsDiags := s.toAPISettings(ctx)
+	diags.Append(settingsDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsSourceReader{}, diags
+	}
+
+	tablesConfig, tablesDiags := s.toAPITablesConfig(ctx)
+	diags.Append(tablesDiags...)
+
+	return openapi.PayloadsSourceReader{
+		Uuid:          uuid,
+		ConnectorUUID: connectorUUID,
+		Name:          s.Name.ValueString(),
+		DataPlaneName: s.DataPlaneName.ValueString(),
+		Database:      s.DatabaseName.ValueString(),
+		ContainerName: s.OracleContainerName.ValueString(),
+		IsShared:      s.IsShared.ValueBoolPointer(),
+		Settings:      settings,
+		TablesConfig:  tablesConfig,
 	}, diags
 }
 
-func SourceReaderFromAPIModel(ctx context.Context, apiModel artieclient.SourceReader) (SourceReader, diag.Diagnostics) {
-	tablesMap, diags := SourceReaderTablesFromAPIModel(ctx, apiModel.Tables)
+func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSourceReader) (SourceReader, diag.Diagnostics) {
+	tablesMap, diags := SourceReaderTablesFromAPIModel(ctx, apiModel.TablesConfig)
 	if diags.HasError() {
 		return SourceReader{}, diags
 	}
 
-	databasesToUnify, diags := types.ListValueFrom(ctx, types.StringType, apiModel.Settings.DatabasesToUnify)
+	databasesToUnify, listDiags := optionalStringListToListValue(ctx, apiModel.Settings.DatabasesToSync)
+	diags.Append(listDiags...)
 	if diags.HasError() {
 		return SourceReader{}, diags
 	}
 
 	sourceReader := SourceReader{
-		UUID:                            types.StringValue(apiModel.UUID.String()),
+		UUID:                            types.StringValue(apiModel.Uuid.String()),
 		Name:                            types.StringValue(apiModel.Name),
 		DataPlaneName:                   types.StringValue(apiModel.DataPlaneName),
 		ConnectorUUID:                   types.StringValue(apiModel.ConnectorUUID.String()),
-		IsShared:                        types.BoolValue(apiModel.IsShared),
-		DatabaseName:                    types.StringValue(apiModel.DatabaseName),
+		IsShared:                        types.BoolValue(lib.RemovePtr(apiModel.IsShared)),
+		DatabaseName:                    types.StringValue(apiModel.Database),
 		OracleContainerName:             types.StringValue(apiModel.ContainerName),
-		BackfillBatchSize:               types.Int64Value(apiModel.Settings.BackfillBatchSize),
-		EnableHeartbeats:                types.BoolValue(apiModel.Settings.EnableHeartbeats),
-		OneTopicPerSchema:               types.BoolValue(apiModel.Settings.OneTopicPerSchema),
-		PostgresPublicationNameOverride: types.StringValue(apiModel.Settings.PostgresPublicationNameOverride),
-		PostgresPublicationMode:         types.StringValue(apiModel.Settings.PostgresPublicationMode),
-		PostgresReplicationSlotOverride: types.StringValue(apiModel.Settings.PostgresReplicationSlotOverride),
+		BackfillBatchSize:               types.Int64Value(int64(lib.RemovePtr(apiModel.Settings.BackfillBatchSize))),
+		EnableHeartbeats:                types.BoolValue(lib.RemovePtr(apiModel.Settings.EnableHeartbeats)),
+		OneTopicPerSchema:               types.BoolValue(lib.RemovePtr(apiModel.Settings.OneTopicPerSchema)),
+		PostgresPublicationNameOverride: types.StringValue(lib.RemovePtr(apiModel.Settings.PublicationNameOverride)),
+		PostgresPublicationMode:         types.StringValue(lib.RemovePtr(apiModel.Settings.PublicationAutoCreateMode)),
+		PostgresReplicationSlotOverride: types.StringValue(lib.RemovePtr(apiModel.Settings.ReplicationSlotOverride)),
 		PublishViaPartitionRoot:         types.BoolPointerValue(apiModel.Settings.PublishViaPartitionRoot),
-		EnableUnifyAcrossSchemas:        types.BoolValue(apiModel.Settings.EnableUnifyAcrossSchemas),
+		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
-		MSSQLReplicationMethod:          types.StringValue(apiModel.Settings.MSSQLReplicationMethod),
-		EnableUnifyAcrossDatabases:      types.BoolValue(apiModel.Settings.EnableUnifyAcrossDatabases),
+		MSSQLReplicationMethod:          types.StringValue(lib.RemovePtr(apiModel.Settings.MssqlReplicationMethod)),
+		EnableUnifyAcrossDatabases:      types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossDatabases)),
 		DatabasesToUnify:                databasesToUnify,
-		DisableAutoFetchTables:          types.BoolValue(apiModel.Settings.DisableAutoFetchTables),
+		DisableAutoFetchTables:          types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),
 		Tables:                          tablesMap,
 	}
 

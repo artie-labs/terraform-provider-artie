@@ -8,3 +8,7 @@ func RemovePtr[T any](ptr *T) T {
 
 	return *ptr
 }
+
+func ToPtr[T any](v T) *T {
+	return &v
+}
