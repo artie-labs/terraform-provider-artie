@@ -179,6 +179,36 @@ func (s SourceReader) ToAPICreateRequest(ctx context.Context) (openapi.RouterSou
 	}, diags
 }
 
+func (s SourceReader) ToAPIBaseModel(ctx context.Context) (openapi.PayloadsSourceReader, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	connectorUUID, connDiags := parseUUID(s.ConnectorUUID)
+	diags.Append(connDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsSourceReader{}, diags
+	}
+
+	settings, settingsDiags := s.toAPISettings(ctx)
+	diags.Append(settingsDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsSourceReader{}, diags
+	}
+
+	tablesConfig, tablesDiags := s.toAPITablesConfig(ctx)
+	diags.Append(tablesDiags...)
+
+	return openapi.PayloadsSourceReader{
+		ConnectorUUID: connectorUUID,
+		Name:          s.Name.ValueString(),
+		DataPlaneName: s.DataPlaneName.ValueString(),
+		Database:      s.DatabaseName.ValueString(),
+		ContainerName: s.OracleContainerName.ValueString(),
+		IsShared:      s.IsShared.ValueBoolPointer(),
+		Settings:      settings,
+		TablesConfig:  tablesConfig,
+	}, diags
+}
+
 func (s SourceReader) ToAPIModel(ctx context.Context) (openapi.PayloadsSourceReader, diag.Diagnostics) {
 	uuid, diags := parseUUID(s.UUID)
 	if diags.HasError() {

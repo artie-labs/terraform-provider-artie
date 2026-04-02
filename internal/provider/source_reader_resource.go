@@ -208,13 +208,13 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	apiModel, diags := planData.ToAPIModel(ctx)
+	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	if err := r.sourceReaders.Validate(ctx, apiModel); err != nil {
+	if err := r.sourceReaders.Validate(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
 	}
