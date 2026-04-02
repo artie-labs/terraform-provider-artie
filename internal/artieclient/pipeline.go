@@ -96,6 +96,7 @@ type AdvancedTableSettings struct {
 	SoftPartitioning           *SoftPartitioning `json:"softPartitioning,omitempty"`
 	ShouldBackfillHistoryTable *bool             `json:"shouldBackfillHistoryTable"`
 	CTIDSettings               *CTIDSettings     `json:"ctidSettings,omitempty"`
+	SkipBackfill               *bool             `json:"skipBackfill"`
 }
 
 type FlushConfig struct {
