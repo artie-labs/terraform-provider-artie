@@ -204,21 +204,19 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 	resp.Diagnostics.Append(validateSourceReaderConfig(ctx, configData)...)
 }
 
-func (r *SourceReaderResource) deployRelatedPipeline(ctx context.Context, sourceReaderUUID string, diagnostics *diag.Diagnostics) {
+func (r *SourceReaderResource) deployRelatedPipeline(ctx context.Context, sourceReaderUUID string) error {
 	pipelines, err := r.pipelines.List(ctx)
 	if err != nil {
-		diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
-		return
+		return err
 	}
 
 	for _, pipeline := range pipelines {
 		if pipeline.SourceReaderUUID != nil && pipeline.SourceReaderUUID.String() == sourceReaderUUID {
-			if err := r.pipelines.StartPipeline(ctx, pipeline.Uuid.String()); err != nil {
-				diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
-			}
-			return
+			return r.pipelines.StartPipeline(ctx, pipeline.Uuid.String())
 		}
 	}
+
+	return nil
 }
 
 func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -257,7 +255,9 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	} else {
-		r.deployRelatedPipeline(ctx, sourceReader.Uuid.String(), &resp.Diagnostics)
+		if err := r.deployRelatedPipeline(ctx, sourceReader.Uuid.String()); err != nil {
+			resp.Diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
+		}
 	}
 }
 
@@ -306,7 +306,9 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	} else {
-		r.deployRelatedPipeline(ctx, updatedSourceReader.Uuid.String(), &resp.Diagnostics)
+		if err := r.deployRelatedPipeline(ctx, updatedSourceReader.Uuid.String(), &resp.Diagnostics); err != nil {
+			resp.Diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
+		}
 	}
 }
 
