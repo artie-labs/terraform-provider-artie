@@ -208,23 +208,18 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
+	apiModel, diags := planData.ToAPIPayload(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	if err := r.sourceReaders.Validate(ctx, apiBaseModel); err != nil {
+	if err := r.sourceReaders.Validate(ctx, apiModel); err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
 	}
 
-	createReq, diags := planData.ToAPICreateRequest(ctx)
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
+	createReq := tfmodels.SourceReaderCreateRequestFromAPIModel(apiModel)
 	sourceReader, err := r.sourceReaders.Create(ctx, createReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())

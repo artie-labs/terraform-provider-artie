@@ -105,6 +105,7 @@ type SourceReader struct {
 }
 
 func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSourceReaderSettingsPayload, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	settings := openapi.PayloadsSourceReaderSettingsPayload{
 		BackfillBatchSize:         lib.ToPtr(int(s.BackfillBatchSize.ValueInt64())),
 		EnableHeartbeats:          s.EnableHeartbeats.ValueBoolPointer(),
@@ -121,14 +122,15 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 	}
 
 	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
-		databasesToUnify, diags := parseOptionalList[string](ctx, s.DatabasesToUnify)
+		databasesToUnify, listDiags := parseOptionalList[string](ctx, s.DatabasesToUnify)
+		diags.Append(listDiags...)
 		if diags.HasError() {
 			return settings, diags
 		}
 		settings.DatabasesToSync = databasesToUnify
 	}
 
-	return settings, nil
+	return settings, diags
 }
 
 func (s SourceReader) toAPITablesConfig(ctx context.Context) (*openapi.PayloadsSourceReaderTablesConfig, diag.Diagnostics) {
@@ -152,34 +154,20 @@ func (s SourceReader) toAPITablesConfig(ctx context.Context) (*openapi.PayloadsS
 	return &apiTables, diags
 }
 
-func (s SourceReader) ToAPICreateRequest(ctx context.Context) (openapi.RouterSourceReaderCreateRequest, diag.Diagnostics) {
-	connectorUUID, diags := parseUUID(s.ConnectorUUID)
-	if diags.HasError() {
-		return openapi.RouterSourceReaderCreateRequest{}, diags
-	}
-
-	settings, settingsDiags := s.toAPISettings(ctx)
-	diags.Append(settingsDiags...)
-	if diags.HasError() {
-		return openapi.RouterSourceReaderCreateRequest{}, diags
-	}
-
-	tablesConfig, tablesDiags := s.toAPITablesConfig(ctx)
-	diags.Append(tablesDiags...)
-
+func SourceReaderCreateRequestFromAPIModel(model openapi.PayloadsSourceReader) openapi.RouterSourceReaderCreateRequest {
 	return openapi.RouterSourceReaderCreateRequest{
-		ConnectorUUID: connectorUUID,
-		Name:          s.Name.ValueStringPointer(),
-		DataPlaneName: s.DataPlaneName.ValueStringPointer(),
-		Database:      s.DatabaseName.ValueStringPointer(),
-		ContainerName: s.OracleContainerName.ValueStringPointer(),
-		IsShared:      s.IsShared.ValueBoolPointer(),
-		Settings:      &settings,
-		TablesConfig:  tablesConfig,
-	}, diags
+		ConnectorUUID: model.ConnectorUUID,
+		Name:          &model.Name,
+		DataPlaneName: &model.DataPlaneName,
+		Database:      &model.Database,
+		ContainerName: &model.ContainerName,
+		IsShared:      model.IsShared,
+		Settings:      &model.Settings,
+		TablesConfig:  model.TablesConfig,
+	}
 }
 
-func (s SourceReader) ToAPIBaseModel(ctx context.Context) (openapi.PayloadsSourceReader, diag.Diagnostics) {
+func (s SourceReader) ToAPIPayload(ctx context.Context) (openapi.PayloadsSourceReader, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	connectorUUID, connDiags := parseUUID(s.ConnectorUUID)
@@ -215,32 +203,14 @@ func (s SourceReader) ToAPIModel(ctx context.Context) (openapi.PayloadsSourceRea
 		return openapi.PayloadsSourceReader{}, diags
 	}
 
-	connectorUUID, connDiags := parseUUID(s.ConnectorUUID)
-	diags.Append(connDiags...)
+	model, baseDiags := s.ToAPIPayload(ctx)
+	diags.Append(baseDiags...)
 	if diags.HasError() {
 		return openapi.PayloadsSourceReader{}, diags
 	}
 
-	settings, settingsDiags := s.toAPISettings(ctx)
-	diags.Append(settingsDiags...)
-	if diags.HasError() {
-		return openapi.PayloadsSourceReader{}, diags
-	}
-
-	tablesConfig, tablesDiags := s.toAPITablesConfig(ctx)
-	diags.Append(tablesDiags...)
-
-	return openapi.PayloadsSourceReader{
-		Uuid:          uuid,
-		ConnectorUUID: connectorUUID,
-		Name:          s.Name.ValueString(),
-		DataPlaneName: s.DataPlaneName.ValueString(),
-		Database:      s.DatabaseName.ValueString(),
-		ContainerName: s.OracleContainerName.ValueString(),
-		IsShared:      s.IsShared.ValueBoolPointer(),
-		Settings:      settings,
-		TablesConfig:  tablesConfig,
-	}, diags
+	model.Uuid = uuid
+	return model, diags
 }
 
 func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSourceReader) (SourceReader, diag.Diagnostics) {
