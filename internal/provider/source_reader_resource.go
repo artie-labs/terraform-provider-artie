@@ -36,6 +36,7 @@ func NewSourceReaderResource() resource.Resource {
 
 type SourceReaderResource struct {
 	sourceReaders artieclient.SourceReaderClient
+	pipelines     artieclient.PipelineOpenAPIClient
 }
 
 func (r *SourceReaderResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -111,6 +112,7 @@ func (r *SourceReaderResource) Configure(ctx context.Context, req resource.Confi
 	}
 
 	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient)
+	r.pipelines = artieclient.NewPipelineOpenAPIClient(openAPIClient)
 }
 
 func (r *SourceReaderResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -202,6 +204,23 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 	resp.Diagnostics.Append(validateSourceReaderConfig(ctx, configData)...)
 }
 
+func (r *SourceReaderResource) deployRelatedPipeline(ctx context.Context, sourceReaderUUID string, diagnostics *diag.Diagnostics) {
+	pipelines, err := r.pipelines.List(ctx)
+	if err != nil {
+		diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
+		return
+	}
+
+	for _, pipeline := range pipelines {
+		if pipeline.SourceReaderUUID != nil && pipeline.SourceReaderUUID.String() == sourceReaderUUID {
+			if err := r.pipelines.StartPipeline(ctx, pipeline.Uuid.String()); err != nil {
+				diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
+			}
+			return
+		}
+	}
+}
+
 func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
@@ -237,6 +256,8 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
+	} else {
+		r.deployRelatedPipeline(ctx, sourceReader.Uuid.String(), &resp.Diagnostics)
 	}
 }
 
@@ -284,6 +305,8 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
+	} else {
+		r.deployRelatedPipeline(ctx, updatedSourceReader.Uuid.String(), &resp.Diagnostics)
 	}
 }
 
