@@ -36,6 +36,7 @@ func NewSourceReaderResource() resource.Resource {
 
 type SourceReaderResource struct {
 	sourceReaders artieclient.SourceReaderClient
+	pipelines     artieclient.PipelineOpenAPIClient
 }
 
 func (r *SourceReaderResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -111,6 +112,7 @@ func (r *SourceReaderResource) Configure(ctx context.Context, req resource.Confi
 	}
 
 	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient)
+	r.pipelines = artieclient.NewPipelineOpenAPIClient(openAPIClient)
 }
 
 func (r *SourceReaderResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -202,6 +204,21 @@ func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.
 	resp.Diagnostics.Append(validateSourceReaderConfig(ctx, configData)...)
 }
 
+func (r *SourceReaderResource) deployRelatedPipeline(ctx context.Context, sourceReaderUUID string) error {
+	pipelines, err := r.pipelines.List(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, pipeline := range pipelines {
+		if pipeline.SourceReaderUUID != nil && pipeline.SourceReaderUUID.String() == sourceReaderUUID {
+			return r.pipelines.StartPipeline(ctx, pipeline.Uuid.String())
+		}
+	}
+
+	return nil
+}
+
 func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
@@ -231,6 +248,10 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 	if lib.RemovePtr(sourceReader.IsShared) {
 		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
+		}
+	} else {
+		if err := r.deployRelatedPipeline(ctx, sourceReader.Uuid.String()); err != nil {
+			resp.Diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
 		}
 	}
 }
@@ -278,6 +299,10 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 	if lib.RemovePtr(updatedSourceReader.IsShared) {
 		if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
+		}
+	} else {
+		if err := r.deployRelatedPipeline(ctx, updatedSourceReader.Uuid.String()); err != nil {
+			resp.Diagnostics.AddError("Unable to deploy related Pipeline", err.Error())
 		}
 	}
 }
