@@ -33,13 +33,16 @@ func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader openapi.
 	if err != nil {
 		return err
 	}
-	if resp.JSON200 == nil {
-		return BuildResponseError(resp.StatusCode(), resp.Body)
+	if resp.JSON200 != nil {
+		if resp.JSON200.Error != "" {
+			return fmt.Errorf("source reader validation failed: %s", resp.JSON200.Error)
+		}
+		return nil
 	}
-	if resp.JSON200.Error != "" {
-		return fmt.Errorf("source reader validation failed: %s", resp.JSON200.Error)
+	if resp.StatusCode() >= 200 && resp.StatusCode() < 300 {
+		return nil
 	}
-	return nil
+	return BuildResponseError(resp.StatusCode(), resp.Body)
 }
 
 func (sc SourceReaderClient) Create(ctx context.Context, req openapi.RouterSourceReaderCreateRequest) (*openapi.PayloadsSourceReader, error) {
