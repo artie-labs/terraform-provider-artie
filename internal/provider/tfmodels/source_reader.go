@@ -55,11 +55,19 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesConfig *openap
 
 	if apiTablesConfig != nil {
 		for key, apiTable := range *apiTablesConfig {
-			colsToExclude, excludeDiags := optionalStringListToListValue(ctx, apiTable.ExcludeColumns)
-			diags.Append(excludeDiags...)
+			colsToExclude := types.ListNull(types.StringType)
+			if apiTable.ExcludeColumns != nil {
+				var excludeDiags diag.Diagnostics
+				colsToExclude, excludeDiags = types.ListValueFrom(ctx, types.StringType, *apiTable.ExcludeColumns)
+				diags.Append(excludeDiags...)
+			}
 
-			colsToInclude, includeDiags := optionalStringListToListValue(ctx, apiTable.IncludeColumns)
-			diags.Append(includeDiags...)
+			colsToInclude := types.ListNull(types.StringType)
+			if apiTable.IncludeColumns != nil {
+				var includeDiags diag.Diagnostics
+				colsToInclude, includeDiags = types.ListValueFrom(ctx, types.StringType, *apiTable.IncludeColumns)
+				diags.Append(includeDiags...)
+			}
 
 			tables[key] = SourceReaderTable{
 				Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
