@@ -3,121 +3,88 @@ package artieclient
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/url"
 
-	"github.com/google/uuid"
+	"terraform-provider-artie/internal/openapi"
 )
 
-type SourceReaderSettings struct {
-	BackfillBatchSize               int64    `json:"backfillBatchSize"`
-	EnableHeartbeats                bool     `json:"enableHeartbeats"`
-	OneTopicPerSchema               bool     `json:"oneTopicPerSchema"`
-	PostgresPublicationNameOverride string   `json:"publicationNameOverride"`
-	PostgresPublicationMode         string   `json:"publicationAutoCreateMode"`
-	PostgresReplicationSlotOverride string   `json:"replicationSlotOverride"`
-	PublishViaPartitionRoot         *bool    `json:"publishViaPartitionRoot,omitempty"`
-	EnableUnifyAcrossSchemas        bool     `json:"unifyAcrossSchemas"`
-	UnifyAcrossSchemasRegex         *string  `json:"unifyAcrossSchemasRegex"`
-	MSSQLReplicationMethod          string   `json:"mssqlReplicationMethod"`
-	EnableUnifyAcrossDatabases      bool     `json:"unifyAcrossDatabases"`
-	DatabasesToUnify                []string `json:"databasesToSync"`
-	DisableAutoFetchTables          bool     `json:"disableAutoFetchTables"`
-}
-
-type SourceReaderTable struct {
-	Name                 string   `json:"name"`
-	Schema               string   `json:"schema"`
-	IsPartitioned        bool     `json:"isPartitioned"`
-	ColumnsToExclude     []string `json:"excludeColumns"`
-	ColumnsToInclude     []string `json:"includeColumns"`
-	UnifyAcrossSchemas   bool     `json:"unifyAcrossSchemas"`
-	UnifyAcrossDatabases bool     `json:"unifyAcrossDatabases"`
-}
-
-type BaseSourceReader struct {
-	Name          string                       `json:"name"`
-	DataPlaneName string                       `json:"dataPlaneName"`
-	ConnectorUUID uuid.UUID                    `json:"connectorUUID"`
-	IsShared      bool                         `json:"isShared"`
-	DatabaseName  string                       `json:"database"`
-	ContainerName string                       `json:"containerName"`
-	Settings      SourceReaderSettings         `json:"settings"`
-	Tables        map[string]SourceReaderTable `json:"tablesConfig"`
-}
-
-type SourceReader struct {
-	BaseSourceReader
-	UUID uuid.UUID `json:"uuid"`
-}
-
 type SourceReaderClient struct {
-	client Client
+	client *openapi.ClientWithResponses
 }
 
-func (SourceReaderClient) basePath() string {
-	return "source-readers"
+func NewSourceReaderClient(client *openapi.ClientWithResponses) SourceReaderClient {
+	return SourceReaderClient{client: client}
 }
 
-func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (SourceReader, error) {
-	path, err := url.JoinPath(sc.basePath(), sourceReaderUUID)
+func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (*openapi.PayloadsSourceReader, error) {
+	resp, err := sc.client.GetSourceReadersUuidWithResponse(ctx, sourceReaderUUID)
 	if err != nil {
-		return SourceReader{}, err
+		return nil, err
 	}
-
-	return makeRequest[SourceReader](ctx, sc.client, http.MethodGet, path, nil)
+	if resp.JSON200 == nil {
+		return nil, BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return resp.JSON200, nil
 }
 
-func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader BaseSourceReader) error {
-	body := map[string]any{
-		"sourceReader": sourceReader,
-	}
-	path, err := url.JoinPath(sc.basePath(), "validate-unsaved")
-	if err != nil {
-		return err
-	}
-
-	response, err := makeRequest[validationResponse](ctx, sc.client, http.MethodPost, path, body)
+func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader openapi.PayloadsSourceReader) error {
+	resp, err := sc.client.PostSourceReadersValidateUnsavedWithResponse(ctx, openapi.RouterSourceReaderValidateUnsavedRequest{
+		SourceReader: sourceReader,
+	})
 	if err != nil {
 		return err
 	}
-
-	if response.Error != "" {
-		return fmt.Errorf("source reader validation failed: %s", response.Error)
+	if resp.JSON200 != nil {
+		if resp.JSON200.Error != "" {
+			return fmt.Errorf("source reader validation failed: %s", resp.JSON200.Error)
+		}
+		return nil
 	}
-
-	return err
+	if resp.StatusCode() >= 200 && resp.StatusCode() < 300 {
+		return nil
+	}
+	return BuildResponseError(resp.StatusCode(), resp.Body)
 }
 
-func (sc SourceReaderClient) Create(ctx context.Context, sourceReader BaseSourceReader) (SourceReader, error) {
-	return makeRequest[SourceReader](ctx, sc.client, http.MethodPost, sc.basePath(), sourceReader)
-}
-
-func (sc SourceReaderClient) Update(ctx context.Context, sourceReader SourceReader) (SourceReader, error) {
-	path, err := url.JoinPath(sc.basePath(), sourceReader.UUID.String())
+func (sc SourceReaderClient) Create(ctx context.Context, req openapi.RouterSourceReaderCreateRequest) (*openapi.PayloadsSourceReader, error) {
+	resp, err := sc.client.PostSourceReadersWithResponse(ctx, req)
 	if err != nil {
-		return SourceReader{}, err
+		return nil, err
 	}
+	if resp.JSON200 == nil {
+		return nil, BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return resp.JSON200, nil
+}
 
-	return makeRequest[SourceReader](ctx, sc.client, http.MethodPost, path, sourceReader)
+func (sc SourceReaderClient) Update(ctx context.Context, uuid string, sourceReader openapi.PayloadsSourceReader) (*openapi.PayloadsSourceReader, error) {
+	resp, err := sc.client.PostSourceReadersUuidWithResponse(ctx, uuid, sourceReader)
+	if err != nil {
+		return nil, err
+	}
+	if resp.JSON200 == nil {
+		return nil, BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return resp.JSON200, nil
 }
 
 func (sc SourceReaderClient) Delete(ctx context.Context, sourceReaderUUID string) error {
-	path, err := url.JoinPath(sc.basePath(), sourceReaderUUID)
+	resp, err := sc.client.DeleteSourceReadersUuidWithResponse(ctx, sourceReaderUUID)
 	if err != nil {
 		return err
 	}
-
-	_, err = makeRequest[any](ctx, sc.client, http.MethodDelete, path, nil)
-	return err
+	if resp.StatusCode() >= 300 {
+		return BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return nil
 }
 
 func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string) error {
-	path, err := url.JoinPath(sc.basePath(), sourceReaderUUID, "deploy")
+	resp, err := sc.client.PostSourceReadersUuidDeployWithResponse(ctx, sourceReaderUUID)
 	if err != nil {
 		return err
 	}
-
-	_, err = makeRequest[any](ctx, sc.client, http.MethodPost, path, nil)
-	return err
+	if resp.StatusCode() >= 300 {
+		return BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return nil
 }

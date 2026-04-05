@@ -6,6 +6,8 @@ import (
 	"slices"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -33,7 +35,7 @@ func NewSourceReaderResource() resource.Resource {
 }
 
 type SourceReaderResource struct {
-	client artieclient.Client
+	sourceReaders artieclient.SourceReaderClient
 }
 
 func (r *SourceReaderResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -92,7 +94,6 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 }
 
 func (r *SourceReaderResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -103,13 +104,13 @@ func (r *SourceReaderResource) Configure(ctx context.Context, req resource.Confi
 		return
 	}
 
-	client, err := providerData.NewClient()
+	openAPIClient, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
 	}
 
-	r.client = client
+	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient)
 }
 
 func (r *SourceReaderResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -124,8 +125,7 @@ func (r *SourceReaderResource) GetPlanData(ctx context.Context, plan tfsdk.Plan,
 	return planData, diagnostics.HasError()
 }
 
-func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiSourceReader artieclient.SourceReader) {
-	// Translate API response type into Terraform model and save it into state
+func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiSourceReader openapi.PayloadsSourceReader) {
 	sourceReader, diags := tfmodels.SourceReaderFromAPIModel(ctx, apiSourceReader)
 	diagnostics.Append(diags...)
 	diagnostics.Append(state.Set(ctx, sourceReader)...)
@@ -208,27 +208,28 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	baseSourceReader, diags := planData.ToAPIBaseModel(ctx)
+	apiModel, diags := planData.ToAPIPayload(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	if err := r.client.SourceReaders().Validate(ctx, baseSourceReader); err != nil {
+	if err := r.sourceReaders.Validate(ctx, apiModel); err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
 	}
 
-	sourceReader, err := r.client.SourceReaders().Create(ctx, baseSourceReader)
+	createReq := tfmodels.SourceReaderCreateRequestFromAPIModel(apiModel)
+	sourceReader, err := r.sourceReaders.Create(ctx, createReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sourceReader)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader)
 
-	if sourceReader.IsShared {
-		if err := r.client.SourceReaders().Deploy(ctx, sourceReader.UUID.String()); err != nil {
+	if lib.RemovePtr(sourceReader.IsShared) {
+		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	}
@@ -240,29 +241,18 @@ func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	sourceReader, err := r.client.SourceReaders().Get(ctx, sourceReaderUUID)
+	sourceReader, err := r.sourceReaders.Get(ctx, sourceReaderUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read Source Reader", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sourceReader)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader)
 }
 
 func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	planData, hasError := r.GetPlanData(ctx, req.Plan, &resp.Diagnostics)
 	if hasError {
-		return
-	}
-
-	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
-	if err := r.client.SourceReaders().Validate(ctx, apiBaseModel); err != nil {
-		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
 		return
 	}
 
@@ -272,16 +262,21 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	updatedSourceReader, err := r.client.SourceReaders().Update(ctx, apiModel)
+	if err := r.sourceReaders.Validate(ctx, apiModel); err != nil {
+		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
+		return
+	}
+
+	updatedSourceReader, err := r.sourceReaders.Update(ctx, apiModel.Uuid.String(), apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedSourceReader)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedSourceReader)
 
-	if updatedSourceReader.IsShared {
-		if err := r.client.SourceReaders().Deploy(ctx, updatedSourceReader.UUID.String()); err != nil {
+	if lib.RemovePtr(updatedSourceReader.IsShared) {
+		if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	}
@@ -293,7 +288,7 @@ func (r *SourceReaderResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	if err := r.client.SourceReaders().Delete(ctx, sourceReaderUUID); err != nil {
+	if err := r.sourceReaders.Delete(ctx, sourceReaderUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to delete Source Reader", err.Error())
 		return
 	}
