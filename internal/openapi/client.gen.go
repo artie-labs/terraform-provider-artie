@@ -148,6 +148,11 @@ type EnumsPipelineStatus string
 // EnumsSourceReaderStatus defines model for EnumsSourceReaderStatus.
 type EnumsSourceReaderStatus string
 
+// ListResponseBodyDataCatalogMatch defines model for ListResponseBodyDataCatalogMatch.
+type ListResponseBodyDataCatalogMatch struct {
+	Items []PayloadsDataCatalogMatch `json:"items"`
+}
+
 // ListResponseBodyEncryptionKey defines model for ListResponseBodyEncryptionKey.
 type ListResponseBodyEncryptionKey struct {
 	Items []PayloadsEncryptionKey `json:"items"`
@@ -209,6 +214,7 @@ type PayloadsAdvancedTableSettingsPayload struct {
 	PrimaryKeysOverride        *[]string                  `json:"primaryKeysOverride,omitempty"`
 	RangeSettings              *PayloadsRangeSettings     `json:"rangeSettings,omitempty"`
 	ShouldBackfillHistoryTable *bool                      `json:"shouldBackfillHistoryTable,omitempty"`
+	SkipBackfill               *bool                      `json:"skipBackfill,omitempty"`
 	SkipDelete                 *bool                      `json:"skipDelete,omitempty"`
 	SkipNoOpUpdates            *bool                      `json:"skipNoOpUpdates,omitempty"`
 	SoftPartitioning           *PayloadsSoftPartitioning  `json:"softPartitioning,omitempty"`
@@ -248,6 +254,43 @@ type PayloadsConnectorPayload struct {
 	SshTunnelUUID   *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
 	Type            *string                 `json:"type,omitempty"`
 	Uuid            *string                 `json:"uuid,omitempty"`
+}
+
+// PayloadsDataCatalogDatabase defines model for PayloadsDataCatalogDatabase.
+type PayloadsDataCatalogDatabase struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// PayloadsDataCatalogMatch defines model for PayloadsDataCatalogMatch.
+type PayloadsDataCatalogMatch struct {
+	ConnectorUUID *openapi_types.UUID               `json:"connectorUUID,omitempty"`
+	Object        *PayloadsDataCatalogMatchedObject `json:"object,omitempty"`
+	Score         *float64                          `json:"score,omitempty"`
+}
+
+// PayloadsDataCatalogMatchedObject defines model for PayloadsDataCatalogMatchedObject.
+type PayloadsDataCatalogMatchedObject struct {
+	Database *PayloadsDataCatalogDatabase `json:"database,omitempty"`
+	Schema   *PayloadsDataCatalogSchema   `json:"schema,omitempty"`
+	Table    *PayloadsDataCatalogTable    `json:"table,omitempty"`
+}
+
+// PayloadsDataCatalogSchema defines model for PayloadsDataCatalogSchema.
+type PayloadsDataCatalogSchema struct {
+	DatabaseName *string `json:"databaseName,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
+
+// PayloadsDataCatalogSearchRequest defines model for PayloadsDataCatalogSearchRequest.
+type PayloadsDataCatalogSearchRequest struct {
+	Query *string `json:"query,omitempty"`
+}
+
+// PayloadsDataCatalogTable defines model for PayloadsDataCatalogTable.
+type PayloadsDataCatalogTable struct {
+	DatabaseName *string `json:"databaseName,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	SchemaName   *string `json:"schemaName,omitempty"`
 }
 
 // PayloadsDynamoDBSnapshotConfig defines model for PayloadsDynamoDBSnapshotConfig.
@@ -582,6 +625,7 @@ type PayloadsTableAdvancedSettings struct {
 	ColumnsToEncrypt                *[]string                  `json:"columnsToEncrypt,omitempty"`
 	ColumnsToHash                   *[]string                  `json:"columnsToHash,omitempty"`
 	CtidSettings                    *PayloadsCTIDSettings      `json:"ctidSettings,omitempty"`
+	EndingPrimaryKey                *string                    `json:"endingPrimaryKey,omitempty"`
 	ExcludeColumns                  *[]string                  `json:"excludeColumns,omitempty"`
 	FlushIntervalSeconds            *int                       `json:"flushIntervalSeconds,omitempty"`
 	FlushSizeKb                     *int                       `json:"flushSizeKb,omitempty"`
@@ -594,9 +638,11 @@ type PayloadsTableAdvancedSettings struct {
 	PrimaryKeysOverride             *[]string                  `json:"primaryKeysOverride,omitempty"`
 	RangeSettings                   *PayloadsRangeSettings     `json:"rangeSettings,omitempty"`
 	ShouldBackfillHistoryTable      *bool                      `json:"shouldBackfillHistoryTable,omitempty"`
+	SkipBackfill                    *bool                      `json:"skipBackfill,omitempty"`
 	SkipDelete                      *bool                      `json:"skipDelete,omitempty"`
 	SkipNoOpUpdates                 *bool                      `json:"skipNoOpUpdates,omitempty"`
 	SoftPartitioning                *PayloadsSoftPartitioning  `json:"softPartitioning,omitempty"`
+	StartingPrimaryKey              *string                    `json:"startingPrimaryKey,omitempty"`
 	StreamARN                       *string                    `json:"streamARN,omitempty"`
 	UnifyAcrossDatabases            *bool                      `json:"unifyAcrossDatabases,omitempty"`
 	UnifyAcrossSchemas              *bool                      `json:"unifyAcrossSchemas,omitempty"`
@@ -869,6 +915,9 @@ type PostConnectorsUuidPostgresDropReplicationSlotJSONRequestBody = RouterConnec
 // PostConnectorsUuidStartDynamodbExportJSONRequestBody defines body for PostConnectorsUuidStartDynamodbExport for application/json ContentType.
 type PostConnectorsUuidStartDynamodbExportJSONRequestBody = RouterConnectorStartDynamoDBExportRequest
 
+// PostDataCatalogSearchJSONRequestBody defines body for PostDataCatalogSearch for application/json ContentType.
+type PostDataCatalogSearchJSONRequestBody = PayloadsDataCatalogSearchRequest
+
 // PostEncryptionKeysJSONRequestBody defines body for PostEncryptionKeys for application/json ContentType.
 type PostEncryptionKeysJSONRequestBody = RouterCreateEncryptionKeyRequest
 
@@ -1049,6 +1098,11 @@ type ClientInterface interface {
 	PostConnectorsUuidStartDynamodbExportWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostConnectorsUuidStartDynamodbExport(ctx context.Context, uuid string, body PostConnectorsUuidStartDynamodbExportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostDataCatalogSearchWithBody request with any body
+	PostDataCatalogSearchWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostDataCatalogSearch(ctx context.Context, body PostDataCatalogSearchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetEncryptionKeys request
 	GetEncryptionKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1421,6 +1475,30 @@ func (c *Client) PostConnectorsUuidStartDynamodbExportWithBody(ctx context.Conte
 
 func (c *Client) PostConnectorsUuidStartDynamodbExport(ctx context.Context, uuid string, body PostConnectorsUuidStartDynamodbExportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostConnectorsUuidStartDynamodbExportRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostDataCatalogSearchWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostDataCatalogSearchRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostDataCatalogSearch(ctx context.Context, body PostDataCatalogSearchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostDataCatalogSearchRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2504,6 +2582,46 @@ func NewPostConnectorsUuidStartDynamodbExportRequestWithBody(server string, uuid
 	}
 
 	operationPath := fmt.Sprintf("/connectors/%s/start-dynamodb-export", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostDataCatalogSearchRequest calls the generic PostDataCatalogSearch builder with application/json body
+func NewPostDataCatalogSearchRequest(server string, body PostDataCatalogSearchJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostDataCatalogSearchRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostDataCatalogSearchRequestWithBody generates requests for PostDataCatalogSearch with any type of body
+func NewPostDataCatalogSearchRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/data-catalog/search")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3951,6 +4069,11 @@ type ClientWithResponsesInterface interface {
 
 	PostConnectorsUuidStartDynamodbExportWithResponse(ctx context.Context, uuid string, body PostConnectorsUuidStartDynamodbExportJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsUuidStartDynamodbExportResponse, error)
 
+	// PostDataCatalogSearchWithBodyWithResponse request with any body
+	PostDataCatalogSearchWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostDataCatalogSearchResponse, error)
+
+	PostDataCatalogSearchWithResponse(ctx context.Context, body PostDataCatalogSearchJSONRequestBody, reqEditors ...RequestEditorFn) (*PostDataCatalogSearchResponse, error)
+
 	// GetEncryptionKeysWithResponse request
 	GetEncryptionKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetEncryptionKeysResponse, error)
 
@@ -4323,6 +4446,28 @@ func (r PostConnectorsUuidStartDynamodbExportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PostConnectorsUuidStartDynamodbExportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostDataCatalogSearchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListResponseBodyDataCatalogMatch
+}
+
+// Status returns HTTPResponse.Status
+func (r PostDataCatalogSearchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostDataCatalogSearchResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5239,6 +5384,23 @@ func (c *ClientWithResponses) PostConnectorsUuidStartDynamodbExportWithResponse(
 	return ParsePostConnectorsUuidStartDynamodbExportResponse(rsp)
 }
 
+// PostDataCatalogSearchWithBodyWithResponse request with arbitrary body returning *PostDataCatalogSearchResponse
+func (c *ClientWithResponses) PostDataCatalogSearchWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostDataCatalogSearchResponse, error) {
+	rsp, err := c.PostDataCatalogSearchWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostDataCatalogSearchResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostDataCatalogSearchWithResponse(ctx context.Context, body PostDataCatalogSearchJSONRequestBody, reqEditors ...RequestEditorFn) (*PostDataCatalogSearchResponse, error) {
+	rsp, err := c.PostDataCatalogSearch(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostDataCatalogSearchResponse(rsp)
+}
+
 // GetEncryptionKeysWithResponse request returning *GetEncryptionKeysResponse
 func (c *ClientWithResponses) GetEncryptionKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetEncryptionKeysResponse, error) {
 	rsp, err := c.GetEncryptionKeys(ctx, reqEditors...)
@@ -5923,6 +6085,32 @@ func ParsePostConnectorsUuidStartDynamodbExportResponse(rsp *http.Response) (*Po
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest RouterConnectorStartDynamoDBExportResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostDataCatalogSearchResponse parses an HTTP response from a PostDataCatalogSearchWithResponse call
+func ParsePostDataCatalogSearchResponse(rsp *http.Response) (*PostDataCatalogSearchResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostDataCatalogSearchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyDataCatalogMatch
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
