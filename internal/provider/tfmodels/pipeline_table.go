@@ -255,6 +255,7 @@ func (t Table) ToAPIPayload(ctx context.Context) (openapi.PayloadsTablePayload, 
 			SoftPartitioning:           adv.softPartitioning,
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
 			CtidSettings:               adv.ctidSettings,
+			SkipBackfill:               t.SkipBackfill.ValueBoolPointer(),
 		},
 	}, diags
 }
@@ -296,6 +297,7 @@ func (t Table) ToAPITable(ctx context.Context) (openapi.PayloadsTable, diag.Diag
 			SoftPartitioning:           adv.softPartitioning,
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
 			CtidSettings:               adv.ctidSettings,
+			SkipBackfill:               t.SkipBackfill.ValueBoolPointer(),
 		},
 	}, diags
 }
@@ -373,7 +375,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			CTIDBackfill:         ctidBackfill,
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
-			SkipBackfill:         types.BoolValue(false),
+			SkipBackfill:         types.BoolPointerValue(advSettings.SkipBackfill),
 		}
 	}
 
