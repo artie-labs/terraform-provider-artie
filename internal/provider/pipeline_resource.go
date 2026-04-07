@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -37,7 +39,7 @@ func NewPipelineResource() resource.Resource {
 }
 
 type PipelineResource struct {
-	client artieclient.Client
+	pipelineClient artieclient.PipelineClient
 }
 
 func (r *PipelineResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -258,7 +260,6 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 }
 
 func (r *PipelineResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -269,13 +270,13 @@ func (r *PipelineResource) Configure(ctx context.Context, req resource.Configure
 		return
 	}
 
-	client, err := providerData.NewClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
 	}
 
-	r.client = client
+	r.pipelineClient = artieclient.NewPipelineClient(client)
 }
 
 func (r *PipelineResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -290,8 +291,7 @@ func (r *PipelineResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, dia
 	return planData, diagnostics.HasError()
 }
 
-func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.Pipeline) {
-	// Translate API response type into Terraform model and save it into state
+func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel openapi.PayloadsFullPipeline) {
 	pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, apiModel)
 	diagnostics.Append(diags...)
 	if diagnostics.HasError() {
@@ -308,9 +308,6 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 		return
 	}
 
-	// Validate that include_full_source_table_name_column_as_primary_key requires include_full_source_table_name_column
-	// Only validate when both values are explicitly set (not null/unknown) to avoid false failures
-	// when users rely on dashboard/API defaults for include_full_source_table_name_column
 	if tfmodels.IsExplicitlyTrue(configData.IncludeFullSourceTableNameColumnAsPrimaryKey) &&
 		tfmodels.IsExplicitlyFalse(configData.IncludeFullSourceTableNameColumn) {
 		resp.Diagnostics.AddError(
@@ -348,7 +345,6 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 			}
 		}
 
-		// encryption_key_uuid is absent when null/empty; skip validation if still unknown (e.g. unresolved reference during plan)
 		if hasColumnsToEncrypt && !configData.EncryptionKeyUUID.IsUnknown() && configData.EncryptionKeyUUID.ValueString() == "" {
 			resp.Diagnostics.AddError(
 				"Missing encryption key",
@@ -364,31 +360,48 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	pipeline, diags := planData.ToAPIBaseModel(ctx)
+	payload, diags := planData.ToAPIPayload(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateSource(ctx, pipeline); err != nil {
+	tables, tableDiags := planData.ToAPITablesForValidation(ctx)
+	resp.Diagnostics.Append(tableDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if err := r.pipelineClient.ValidateSource(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
+		SourceReaderUUID: payload.SourceReaderUUID,
+		ValidateTables:   true,
+		Tables:           tables,
+		DataPlaneName:    payload.DataPlaneName,
+	}); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateDestination(ctx, pipeline); err != nil {
+	if err := r.pipelineClient.ValidateDestination(ctx, openapi.RouterPipelineValidateUnsavedDestinationRequest{
+		DestinationUUID:  payload.DestinationUUID,
+		SourceReaderUUID: payload.SourceReaderUUID,
+		SpecificCfg:      lib.RemovePtr(payload.SpecificDestCfg),
+		Tables:           &tables,
+		AdvancedSettings: payload.AdvancedSettings,
+	}); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	createdPipeline, err := r.client.Pipelines().Create(ctx, pipeline)
+	createdPipeline, err := r.pipelineClient.Create(ctx, openapi.RouterPipelineCreateRequest{Pipeline: payload})
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *createdPipeline)
 
-	if err := r.client.Pipelines().StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
+	if err := r.pipelineClient.StartPipeline(ctx, createdPipeline.Uuid.String()); err != nil {
 		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
@@ -399,13 +412,13 @@ func (r *PipelineResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	pipeline, err := r.client.Pipelines().Get(ctx, pipelineUUID)
+	pipeline, err := r.pipelineClient.Get(ctx, pipelineUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, pipeline)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *pipeline)
 }
 
 func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -414,37 +427,49 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
+	payload, diags := planData.ToAPIPayload(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateSource(ctx, apiBaseModel); err != nil {
-		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
-		return
-	}
-
-	if err := r.client.Pipelines().ValidateDestination(ctx, apiBaseModel); err != nil {
-		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
-		return
-	}
-
-	apiModel, diags := planData.ToAPIModel(ctx)
-	resp.Diagnostics.Append(diags...)
+	tables, tableDiags := planData.ToAPITablesForValidation(ctx)
+	resp.Diagnostics.Append(tableDiags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	updatedPipeline, err := r.client.Pipelines().Update(ctx, apiModel)
+	if err := r.pipelineClient.ValidateSource(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
+		SourceReaderUUID: payload.SourceReaderUUID,
+		ValidateTables:   true,
+		Tables:           tables,
+		DataPlaneName:    payload.DataPlaneName,
+	}); err != nil {
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
+		return
+	}
+
+	if err := r.pipelineClient.ValidateDestination(ctx, openapi.RouterPipelineValidateUnsavedDestinationRequest{
+		DestinationUUID:  payload.DestinationUUID,
+		SourceReaderUUID: payload.SourceReaderUUID,
+		SpecificCfg:      lib.RemovePtr(payload.SpecificDestCfg),
+		Tables:           &tables,
+		AdvancedSettings: payload.AdvancedSettings,
+	}); err != nil {
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
+		return
+	}
+
+	pipelineUUID := planData.UUID.ValueString()
+	updatedPipeline, err := r.pipelineClient.Update(ctx, pipelineUUID, openapi.RouterPipelineUpdateRequest{Pipeline: payload})
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedPipeline)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedPipeline)
 
-	if err := r.client.Pipelines().StartPipeline(ctx, updatedPipeline.UUID.String()); err != nil {
+	if err := r.pipelineClient.StartPipeline(ctx, updatedPipeline.Uuid.String()); err != nil {
 		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
@@ -455,7 +480,7 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	if err := r.client.Pipelines().Delete(ctx, pipelineUUID); err != nil {
+	if err := r.pipelineClient.Delete(ctx, pipelineUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Pipeline", err.Error())
 	}
 }

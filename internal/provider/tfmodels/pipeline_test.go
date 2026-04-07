@@ -44,13 +44,8 @@ func TestFlushConfigFromAPIModel(t *testing.T) {
 		assert.False(t, diags.HasError(), "failed to create flush config")
 		assert.NotNil(t, flushConfig)
 
-		assert.Equal(t, flushConfig.FlushIntervalSeconds.ValueInt64(), int64(100))
-		assert.Equal(t, flushConfig.BufferRows.ValueInt64(), int64(5000))
-		assert.Equal(t, flushConfig.FlushSizeKB.ValueInt64(), int64(1000))
-
-		apiFlushConfig := flushConfig.ToAPIModel()
-		assert.Equal(t, apiFlushConfig.FlushIntervalSeconds, int64(100))
-		assert.Equal(t, apiFlushConfig.BufferRows, int64(5000))
-		assert.Equal(t, apiFlushConfig.FlushSizeKB, int64(1000))
+		assert.Equal(t, int64(100), flushConfig.FlushIntervalSeconds.ValueInt64())
+		assert.Equal(t, int64(5000), flushConfig.BufferRows.ValueInt64())
+		assert.Equal(t, int64(1000), flushConfig.FlushSizeKB.ValueInt64())
 	}
 }

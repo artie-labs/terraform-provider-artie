@@ -138,10 +138,6 @@ func (c Client) SSHTunnels() SSHTunnelClient {
 	return SSHTunnelClient{client: c}
 }
 
-func (c Client) Pipelines() PipelineClient {
-	return PipelineClient{client: c}
-}
-
 func (c Client) PrivateLinks() PrivateLinkClient {
 	return PrivateLinkClient{client: c}
 }
