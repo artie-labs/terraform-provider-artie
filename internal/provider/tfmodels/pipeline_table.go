@@ -196,14 +196,14 @@ func (t Table) parseAdvancedFields(ctx context.Context) (parsedAdvanced, diag.Di
 	}
 
 	return parsedAdvanced{
-		colsToExclude:   colsToExclude,
-		colsToInclude:   colsToInclude,
-		colsToHash:      colsToHash,
-		colsToCompress:  colsToCompress,
-		colsToEncrypt:   colsToEncrypt,
-		mergePredicates: apiMergePreds,
+		colsToExclude:    colsToExclude,
+		colsToInclude:    colsToInclude,
+		colsToHash:       colsToHash,
+		colsToCompress:   colsToCompress,
+		colsToEncrypt:    colsToEncrypt,
+		mergePredicates:  apiMergePreds,
 		softPartitioning: apiSoftPartitioning,
-		ctidSettings:    apiCTIDSettings,
+		ctidSettings:     apiCTIDSettings,
 	}, diags
 }
 

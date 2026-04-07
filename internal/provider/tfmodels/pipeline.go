@@ -320,13 +320,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	var stagingSchema types.String
 	var forceUTCTimezone types.Bool
 	var writeRawBinaryValues types.Bool
+	var staticColumns types.List
 
 	autoReplicateNewTables := types.BoolValue(false)
-	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
-	diags.Append(staticColumnsDiags...)
-	if diags.HasError() {
-		return Pipeline{}, diags
-	}
 
 	if advSettings.DropDeletedColumns != nil {
 		dropDeletedColumns = types.BoolValue(*advSettings.DropDeletedColumns)
