@@ -117,6 +117,7 @@ type Table struct {
 	CTIDChunkSize        types.Int64  `tfsdk:"ctid_chunk_size"`
 	CTIDMaxParallelism   types.Int64  `tfsdk:"ctid_max_parallelism"`
 	SkipBackfill         types.Bool   `tfsdk:"skip_backfill"`
+	SkipNoOpUpdates      types.Bool   `tfsdk:"skip_no_op_updates"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
@@ -142,6 +143,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"ctid_chunk_size":        types.Int64Type,
 	"ctid_max_parallelism":   types.Int64Type,
 	"skip_backfill":          types.BoolType,
+	"skip_no_op_updates":     types.BoolType,
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -220,6 +222,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
 			CTIDSettings:               clientCTIDSettings,
 			SkipBackfill:               t.SkipBackfill.ValueBoolPointer(),
+			SkipNoOpUpdates:            t.SkipNoOpUpdates.ValueBoolPointer(),
 		},
 	}, diags
 }
@@ -288,6 +291,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
 			SkipBackfill:         types.BoolPointerValue(apiTable.AdvancedSettings.SkipBackfill),
+			SkipNoOpUpdates:      types.BoolPointerValue(apiTable.AdvancedSettings.SkipNoOpUpdates),
 		}
 	}
 
