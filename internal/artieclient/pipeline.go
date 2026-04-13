@@ -97,6 +97,7 @@ type AdvancedTableSettings struct {
 	ShouldBackfillHistoryTable *bool             `json:"shouldBackfillHistoryTable"`
 	CTIDSettings               *CTIDSettings     `json:"ctidSettings,omitempty"`
 	SkipBackfill               *bool             `json:"skipBackfill"`
+	SkipNoOpUpdates            *bool             `json:"skipNoOpUpdates"`
 }
 
 type FlushConfig struct {
