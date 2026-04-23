@@ -130,9 +130,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 }
 
 func (p *ArtieProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		NewColumnHashingSaltDataSource,
-	}
+	return []func() datasource.DataSource{}
 }
 
 func (p *ArtieProvider) Functions(ctx context.Context) []func() function.Function {
