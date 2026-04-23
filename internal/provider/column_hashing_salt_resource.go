@@ -125,6 +125,11 @@ func (r *ColumnHashingSaltResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
+	// The API only returns the salt value on Create, so preserve the value from state.
+	if salt.Salt == "" {
+		salt.Salt = stateData.Salt.ValueString()
+	}
+
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, salt)
 }
 
@@ -150,7 +155,7 @@ func (r *ColumnHashingSaltResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	// The API only returns the salt value on Create and Get; Update omits it, so preserve from state.
+	// The API only returns the salt value on Create, so preserve the value from state.
 	if salt.Salt == "" {
 		salt.Salt = stateData.Salt.ValueString()
 	}
