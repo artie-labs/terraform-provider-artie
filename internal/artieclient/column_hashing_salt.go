@@ -15,10 +15,8 @@ type BaseColumnHashingSalt struct {
 }
 
 type ColumnHashingSalt struct {
-	UUID        uuid.UUID `json:"uuid"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Salt        string    `json:"salt"`
+	UUID uuid.UUID `json:"uuid"`
+	BaseColumnHashingSalt
 }
 
 type UpdateColumnHashingSaltRequest struct {
