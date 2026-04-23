@@ -52,6 +52,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 - `append_only` (Boolean) If set to true, data will always be appended instead of merged into the destination table. This should only be used for data that is known to be append-only (e.g. event tracking data). Rows will not be deduplicated.
 - `auto_replicate_new_tables` (Boolean) If set to true, Artie will automatically start replicating any new tables that are created in the source database.
+- `column_hashing_salt_uuid` (String) UUID of an `artie_column_hashing_salt` used when hashing column values. Required if any table has `columns_to_hash` set.
 - `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true). This is currently only applicable if the source is MySQL.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.

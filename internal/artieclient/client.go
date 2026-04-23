@@ -149,3 +149,7 @@ func (c Client) PrivateLinks() PrivateLinkClient {
 func (c Client) EncryptionKeys() EncryptionKeyClient {
 	return EncryptionKeyClient{client: c}
 }
+
+func (c Client) ColumnHashingSalts() ColumnHashingSaltClient {
+	return ColumnHashingSaltClient{client: c}
+}

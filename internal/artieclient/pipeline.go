@@ -46,6 +46,7 @@ type BasePipeline struct {
 	DestinationConfig        DestinationConfig `json:"specificDestCfg"`
 	SnowflakeEcoScheduleUUID *uuid.UUID        `json:"snowflakeEcoScheduleUUID"`
 	EncryptionKeyUUID        *uuid.UUID        `json:"encryptionKeyUUID"`
+	ColumnHashingSaltUUID    *uuid.UUID        `json:"columnHashingSaltUUID"`
 	AdvancedSettings         *AdvancedSettings `json:"advancedSettings"`
 }
 
