@@ -125,11 +125,14 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewPipelineResource,
 		NewPrivateLinkResource,
 		NewEncryptionKeyResource,
+		NewColumnHashingSaltResource,
 	}
 }
 
 func (p *ArtieProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewColumnHashingSaltDataSource,
+	}
 }
 
 func (p *ArtieProvider) Functions(ctx context.Context) []func() function.Function {
