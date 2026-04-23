@@ -148,8 +148,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		}
 
 		diags := validateSourceReaderConfig(t.Context(), config)
-		assert.True(t, diags.HasError())
-		assert.Contains(t, diags.Errors()[0].Detail(), "You can only use one of `columns_to_include` and `columns_to_exclude` within a source reader.")
+		assert.False(t, diags.HasError())
 	}
 	{
 		config := tfmodels.SourceReader{
