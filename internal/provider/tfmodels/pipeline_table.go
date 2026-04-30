@@ -107,6 +107,7 @@ type Table struct {
 	ColumnsToHash        types.List   `tfsdk:"columns_to_hash"`
 	ColumnsToCompress    types.List   `tfsdk:"columns_to_compress"`
 	ColumnsToEncrypt     types.List   `tfsdk:"columns_to_encrypt"`
+	EncryptJSONBColumns  types.Bool   `tfsdk:"encrypt_jsonb_columns"`
 	SkipDeletes          types.Bool   `tfsdk:"skip_deletes"`
 	UnifyAcrossSchemas   types.Bool   `tfsdk:"unify_across_schemas"`
 	UnifyAcrossDatabases types.Bool   `tfsdk:"unify_across_databases"`
@@ -133,6 +134,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"columns_to_hash":        types.ListType{ElemType: types.StringType},
 	"columns_to_compress":    types.ListType{ElemType: types.StringType},
 	"columns_to_encrypt":     types.ListType{ElemType: types.StringType},
+	"encrypt_jsonb_columns":  types.BoolType,
 	"skip_deletes":           types.BoolType,
 	"unify_across_schemas":   types.BoolType,
 	"unify_across_databases": types.BoolType,
@@ -214,6 +216,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			ColumnsToHash:              colsToHash,
 			ColumnsToCompress:          colsToCompress,
 			ColumnsToEncrypt:           colsToEncrypt,
+			EncryptJSONBColumns:        t.EncryptJSONBColumns.ValueBoolPointer(),
 			SkipDeletes:                t.SkipDeletes.ValueBoolPointer(),
 			UnifyAcrossSchemas:         t.UnifyAcrossSchemas.ValueBoolPointer(),
 			UnifyAcrossDatabases:       t.UnifyAcrossDatabases.ValueBoolPointer(),
@@ -281,6 +284,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ColumnsToHash:        colsToHash,
 			ColumnsToCompress:    colsToCompress,
 			ColumnsToEncrypt:     colsToEncrypt,
+			EncryptJSONBColumns:  types.BoolPointerValue(apiTable.AdvancedSettings.EncryptJSONBColumns),
 			SkipDeletes:          types.BoolPointerValue(apiTable.AdvancedSettings.SkipDeletes),
 			UnifyAcrossSchemas:   types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemas),
 			UnifyAcrossDatabases: types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
