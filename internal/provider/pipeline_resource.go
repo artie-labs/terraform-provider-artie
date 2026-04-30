@@ -73,6 +73,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"columns_to_hash":        schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash."},
 						"columns_to_compress":    schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to compress using transparent GZIP compression. This can help reduce Kafka payload sizes for columns with large values."},
 						"columns_to_encrypt":     schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of columns to encrypt during replication. Requires `encryption_key_uuid` to be set on the pipeline."},
+						"encrypt_jsonb_columns":  schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, all JSONB (struct) columns will be automatically encrypted before writing to the destination. Requires `encryption_key_uuid` to be set on the pipeline."},
 						"skip_deletes":           schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will skip delete events for this table and only process insert and update events."},
 						"unify_across_schemas":   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration."},
 						"unify_across_databases": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled."},
@@ -348,13 +349,16 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 			if !table.ColumnsToEncrypt.IsNull() && !table.ColumnsToEncrypt.IsUnknown() && len(table.ColumnsToEncrypt.Elements()) > 0 {
 				hasColumnsToEncrypt = true
 			}
+			if tfmodels.IsExplicitlyTrue(table.EncryptJSONBColumns) {
+				hasColumnsToEncrypt = true
+			}
 		}
 
 		// encryption_key_uuid is absent when null/empty; skip validation if still unknown (e.g. unresolved reference during plan)
 		if hasColumnsToEncrypt && !configData.EncryptionKeyUUID.IsUnknown() && configData.EncryptionKeyUUID.ValueString() == "" {
 			resp.Diagnostics.AddError(
 				"Missing encryption key",
-				"One or more tables have `columns_to_encrypt` set, but the pipeline does not have `encryption_key_uuid` configured. An encryption key is required when encrypting columns.",
+				"One or more tables have `columns_to_encrypt` or `encrypt_jsonb_columns` set, but the pipeline does not have `encryption_key_uuid` configured. An encryption key is required when encrypting columns.",
 			)
 		}
 	}

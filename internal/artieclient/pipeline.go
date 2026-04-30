@@ -90,6 +90,7 @@ type AdvancedTableSettings struct {
 	ColumnsToHash              *[]string         `json:"columnsToHash"`
 	ColumnsToCompress          *[]string         `json:"columnsToCompress"`
 	ColumnsToEncrypt           *[]string         `json:"columnsToEncrypt"`
+	EncryptJSONBColumns        *bool             `json:"encryptJSONBColumns"`
 	SkipDeletes                *bool             `json:"skipDelete"`
 	UnifyAcrossSchemas         *bool             `json:"unifyAcrossSchemas"`
 	UnifyAcrossDatabases       *bool             `json:"unifyAcrossDatabases"`
