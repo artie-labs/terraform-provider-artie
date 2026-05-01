@@ -384,8 +384,7 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	// You cannot create a pipeline in a paused state.
-	if planData.StatusOverride.ValueString() == "paused" {
+	if planData.StatusOverride.ValueString() != "" {
 		resp.Diagnostics.AddError("Invalid configuration", "You cannot create a pipeline in a paused state. Please remove the status_override from your config, you can update the status of a running pipeline.")
 		return
 	}
