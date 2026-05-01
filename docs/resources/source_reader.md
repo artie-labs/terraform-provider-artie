@@ -29,8 +29,6 @@ resource "artie_source_reader" "postgres_dev_reader" {
   database_name                      = "customers"
   postgres_replication_slot_override = "artie_reader"
   is_shared                          = true
-  # Optional: set to "paused" to create the source reader without deploying it
-  # status_override                    = "paused"
   tables = {
     "public.account" = {
       name               = "account"

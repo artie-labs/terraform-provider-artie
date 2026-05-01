@@ -183,6 +183,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	IncludeFullSourceTableNameColumn             *bool                           `json:"includeFullSourceTableNameColumn,omitempty"`
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
 	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
+	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
 	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
@@ -423,6 +424,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	IncludeFullSourceTableNameColumn             *bool                           `json:"includeFullSourceTableNameColumn,omitempty"`
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
 	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
+	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
 	NullOutInvalidValues                         *bool                           `json:"nullOutInvalidValues,omitempty"`
 	ReuseStagingTable                            *bool                           `json:"reuseStagingTable,omitempty"`
 	SessionDriverMemory                          *string                         `json:"sessionDriverMemory,omitempty"`
