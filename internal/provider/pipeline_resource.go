@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -37,7 +38,8 @@ func NewPipelineResource() resource.Resource {
 }
 
 type PipelineResource struct {
-	client artieclient.Client
+	client        artieclient.Client
+	openAPIClient *openapi.ClientWithResponses
 }
 
 func (r *PipelineResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -238,6 +240,11 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"staging_schema":                                       schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces."},
 			"force_utc_timezone":                                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, timestamps without timezone information in the source will be written as UTC in the destination."},
 			"write_raw_binary_values":                              schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, binary columns (e.g. BINARY type) are created in the destination table for raw binary data instead of creating string columns that store Base64-encoded values. It only applies when the destination is Databricks."},
+			"status_override": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.",
+				Validators:          []validator.String{stringvalidator.OneOf("paused")},
+			},
 			"static_columns": schema.ListNestedAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -278,7 +285,14 @@ func (r *PipelineResource) Configure(ctx context.Context, req resource.Configure
 		return
 	}
 
+	openAPIClient, err := providerData.NewOpenAPIClient()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
+		return
+	}
+
 	r.client = client
+	r.openAPIClient = openAPIClient
 }
 
 func (r *PipelineResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -293,14 +307,14 @@ func (r *PipelineResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, dia
 	return planData, diagnostics.HasError()
 }
 
-func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.Pipeline) {
-	// Translate API response type into Terraform model and save it into state
+func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.Pipeline, statusOverride types.String) {
 	pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, apiModel)
 	diagnostics.Append(diags...)
 	if diagnostics.HasError() {
 		return
 	}
 
+	pipeline.StatusOverride = statusOverride
 	diagnostics.Append(state.Set(ctx, pipeline)...)
 }
 
@@ -370,48 +384,53 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	if planData.StatusOverride.ValueString() != "" {
+		resp.Diagnostics.AddError("Invalid configuration", "You cannot create a pipeline in a paused state. Please remove the status_override from your config, you can update the status of a running pipeline.")
+		return
+	}
+
 	pipeline, diags := planData.ToAPIBaseModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateSource(ctx, pipeline); err != nil {
+	if err := r.client.Pipelines(r.openAPIClient).ValidateSource(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateDestination(ctx, pipeline); err != nil {
+	if err := r.client.Pipelines(r.openAPIClient).ValidateDestination(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	createdPipeline, err := r.client.Pipelines().Create(ctx, pipeline)
+	createdPipeline, err := r.client.Pipelines(r.openAPIClient).Create(ctx, pipeline)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline)
-
-	if err := r.client.Pipelines().StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline, planData.StatusOverride)
+	if err := r.client.Pipelines(r.openAPIClient).StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
 		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
 
 func (r *PipelineResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	pipelineUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
-	if hasError {
+	var stateData tfmodels.Pipeline
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	pipeline, err := r.client.Pipelines().Get(ctx, pipelineUUID)
+	pipeline, err := r.client.Pipelines(r.openAPIClient).Get(ctx, stateData.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, pipeline)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, pipeline, stateData.StatusOverride)
 }
 
 func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -426,12 +445,12 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateSource(ctx, apiBaseModel); err != nil {
+	if err := r.client.Pipelines(r.openAPIClient).ValidateSource(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 
-	if err := r.client.Pipelines().ValidateDestination(ctx, apiBaseModel); err != nil {
+	if err := r.client.Pipelines(r.openAPIClient).ValidateDestination(ctx, apiBaseModel); err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
@@ -442,16 +461,22 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	updatedPipeline, err := r.client.Pipelines().Update(ctx, apiModel)
+	updatedPipeline, err := r.client.Pipelines(r.openAPIClient).Update(ctx, apiModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedPipeline)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedPipeline, planData.StatusOverride)
 
-	if err := r.client.Pipelines().StartPipeline(ctx, updatedPipeline.UUID.String()); err != nil {
-		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
+	if planData.StatusOverride.ValueString() == "paused" {
+		if err := r.client.Pipelines(r.openAPIClient).UpdateStatus(ctx, updatedPipeline.UUID.String(), "paused"); err != nil {
+			resp.Diagnostics.AddError("Unable to pause Pipeline", err.Error())
+		}
+	} else {
+		if err := r.client.Pipelines(r.openAPIClient).StartPipeline(ctx, updatedPipeline.UUID.String()); err != nil {
+			resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
+		}
 	}
 }
 
@@ -461,7 +486,7 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	if err := r.client.Pipelines().Delete(ctx, pipelineUUID); err != nil {
+	if err := r.client.Pipelines(r.openAPIClient).Delete(ctx, pipelineUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Pipeline", err.Error())
 	}
 }

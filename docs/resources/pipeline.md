@@ -69,6 +69,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
 - `staging_schema` (String) If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces.
 - `static_columns` (Attributes List) Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc. (see [below for nested schema](#nestedatt--static_columns))
+- `status_override` (String) Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.
 - `write_raw_binary_values` (Boolean) If set to true, binary columns (e.g. BINARY type) are created in the destination table for raw binary data instead of creating string columns that store Base64-encoded values. It only applies when the destination is Databricks.
 
 ### Read-Only

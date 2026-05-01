@@ -88,3 +88,16 @@ func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string
 	}
 	return nil
 }
+
+func (sc SourceReaderClient) UpdateStatus(ctx context.Context, sourceReaderUUID string, status string) error {
+	resp, err := sc.client.PostSourceReadersUuidStatusWithResponse(ctx, sourceReaderUUID, openapi.RouterSourceReaderUpdateStatusRequest{
+		Status: openapi.EnumsSourceReaderStatus(status),
+	})
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() >= 300 {
+		return BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return nil
+}
