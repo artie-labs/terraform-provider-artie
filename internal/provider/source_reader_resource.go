@@ -212,6 +212,11 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	if planData.StatusOverride.ValueString() != "" {
+		resp.Diagnostics.AddError("Invalid configuration", "You cannot create a source reader in a paused state. Please remove the status_override from your config, you can update the status of a running source reader.")
+		return
+	}
+
 	apiModel, diags := planData.ToAPIPayload(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
@@ -232,7 +237,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, planData.StatusOverride)
 
-	if lib.RemovePtr(sourceReader.IsShared) && planData.StatusOverride.ValueString() != "paused" {
+	if lib.RemovePtr(sourceReader.IsShared) {
 		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
