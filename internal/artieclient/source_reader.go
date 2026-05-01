@@ -8,12 +8,11 @@ import (
 )
 
 type SourceReaderClient struct {
-	client     *openapi.ClientWithResponses
-	baseClient Client
+	client *openapi.ClientWithResponses
 }
 
-func NewSourceReaderClient(client *openapi.ClientWithResponses, baseClient Client) SourceReaderClient {
-	return SourceReaderClient{client: client, baseClient: baseClient}
+func NewSourceReaderClient(client *openapi.ClientWithResponses) SourceReaderClient {
+	return SourceReaderClient{client: client}
 }
 
 func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (*openapi.PayloadsSourceReader, error) {
@@ -91,7 +90,14 @@ func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string
 }
 
 func (sc SourceReaderClient) UpdateStatus(ctx context.Context, sourceReaderUUID string, status string) error {
-	path := fmt.Sprintf("source-readers/%s/status", sourceReaderUUID)
-	body := map[string]any{"status": status}
-	return sc.baseClient.makeRequest(ctx, "POST", path, body, nil)
+	resp, err := sc.client.PostSourceReadersUuidStatusWithResponse(ctx, sourceReaderUUID, openapi.RouterSourceReaderUpdateStatusRequest{
+		Status: openapi.EnumsSourceReaderStatus(status),
+	})
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() >= 300 {
+		return BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return nil
 }

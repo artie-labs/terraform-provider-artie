@@ -117,13 +117,7 @@ func (r *SourceReaderResource) Configure(ctx context.Context, req resource.Confi
 		return
 	}
 
-	baseClient, err := providerData.NewClient()
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
-		return
-	}
-
-	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient, baseClient)
+	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient)
 }
 
 func (r *SourceReaderResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
