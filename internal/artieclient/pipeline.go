@@ -227,3 +227,14 @@ func (pc PipelineClient) StartPipeline(ctx context.Context, pipelineUUID string)
 	_, err = makeRequest[any](ctx, pc.client, http.MethodPost, path, nil)
 	return err
 }
+
+func (pc PipelineClient) UpdateStatus(ctx context.Context, pipelineUUID string, status string) error {
+	path, err := url.JoinPath(pc.basePath(), pipelineUUID, "status")
+	if err != nil {
+		return err
+	}
+
+	body := map[string]any{"status": status}
+	_, err = makeRequest[any](ctx, pc.client, http.MethodPost, path, body)
+	return err
+}

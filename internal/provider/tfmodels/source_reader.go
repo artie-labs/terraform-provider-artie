@@ -94,6 +94,7 @@ type SourceReader struct {
 	DataPlaneName                   types.String `tfsdk:"data_plane_name"`
 	ConnectorUUID                   types.String `tfsdk:"connector_uuid"`
 	IsShared                        types.Bool   `tfsdk:"is_shared"`
+	StatusOverride                  types.String `tfsdk:"status_override"`
 	DatabaseName                    types.String `tfsdk:"database_name"`
 	BackfillBatchSize               types.Int64  `tfsdk:"backfill_batch_size"`
 	OracleContainerName             types.String `tfsdk:"oracle_container_name"`

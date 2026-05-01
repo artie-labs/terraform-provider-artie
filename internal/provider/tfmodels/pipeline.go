@@ -154,6 +154,7 @@ type Pipeline struct {
 	ColumnHashingSaltUUID    types.String               `tfsdk:"column_hashing_salt_uuid"`
 	DataPlaneName            types.String               `tfsdk:"data_plane_name"`
 	Tables                   types.Map                  `tfsdk:"tables"`
+	StatusOverride           types.String               `tfsdk:"status_override"`
 
 	// Advanced settings
 	FlushConfig                                  types.Object `tfsdk:"flush_rules"`

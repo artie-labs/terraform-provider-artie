@@ -8,11 +8,12 @@ import (
 )
 
 type SourceReaderClient struct {
-	client *openapi.ClientWithResponses
+	client     *openapi.ClientWithResponses
+	baseClient Client
 }
 
-func NewSourceReaderClient(client *openapi.ClientWithResponses) SourceReaderClient {
-	return SourceReaderClient{client: client}
+func NewSourceReaderClient(client *openapi.ClientWithResponses, baseClient Client) SourceReaderClient {
+	return SourceReaderClient{client: client, baseClient: baseClient}
 }
 
 func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (*openapi.PayloadsSourceReader, error) {
@@ -87,4 +88,10 @@ func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string
 		return BuildResponseError(resp.StatusCode(), resp.Body)
 	}
 	return nil
+}
+
+func (sc SourceReaderClient) UpdateStatus(ctx context.Context, sourceReaderUUID string, status string) error {
+	path := fmt.Sprintf("source-readers/%s/status", sourceReaderUUID)
+	body := map[string]any{"status": status}
+	return sc.baseClient.makeRequest(ctx, "POST", path, body, nil)
 }

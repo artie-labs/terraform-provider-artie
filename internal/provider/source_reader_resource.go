@@ -10,10 +10,12 @@ import (
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -70,7 +72,12 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"mssql_replication_method":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If unset, we will use the default replication method (Capture Instances). If set to `fn_dblog`, we will stream data from transaction logs via SQL access. This is only applicable if the source type is Microsoft SQL Server."},
 			"enable_unify_across_databases":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify multiple databases within your Microsoft SQL Server that we should sync data from, and we will unify tables with the same name and schema into a single destination table. This is useful if you have multiple identical databases and want to fan-in the data. This is only applicable if the source type is Microsoft SQL Server and `mssql_replication_method` is set to `fn_dblog` or `change_tracking`."},
 			"databases_to_unify":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If `enable_unify_across_databases` is set to true, this should be a list of databases within your Microsoft SQL Server that we should sync data from. All tables that you opt into being unified should exist in each of these databases. This is only applicable if the source type is Microsoft SQL Server."},
-			"disable_auto_fetch_tables":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will not automatically fetch tables from the source database on the UI. This is useful if you have a large number of tables and you want to manually specify the schema before we fetch all the tables."},
+			"status_override": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "Override the source reader status after create/update. Currently only `paused` is supported. If set to `paused`, the source reader will not be deployed after creation or update.",
+				Validators:          []validator.String{stringvalidator.OneOf("paused")},
+			},
+			"disable_auto_fetch_tables": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will not automatically fetch tables from the source database on the UI. This is useful if you have a large number of tables and you want to manually specify the schema before we fetch all the tables."},
 			"tables": schema.MapNestedAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -110,7 +117,13 @@ func (r *SourceReaderResource) Configure(ctx context.Context, req resource.Confi
 		return
 	}
 
-	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient)
+	baseClient, err := providerData.NewClient()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
+		return
+	}
+
+	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient, baseClient)
 }
 
 func (r *SourceReaderResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -125,9 +138,14 @@ func (r *SourceReaderResource) GetPlanData(ctx context.Context, plan tfsdk.Plan,
 	return planData, diagnostics.HasError()
 }
 
-func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiSourceReader openapi.PayloadsSourceReader) {
+func (r *SourceReaderResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiSourceReader openapi.PayloadsSourceReader, statusOverride types.String) {
 	sourceReader, diags := tfmodels.SourceReaderFromAPIModel(ctx, apiSourceReader)
 	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return
+	}
+
+	sourceReader.StatusOverride = statusOverride
 	diagnostics.Append(state.Set(ctx, sourceReader)...)
 }
 
@@ -215,9 +233,13 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, planData.StatusOverride)
 
-	if lib.RemovePtr(sourceReader.IsShared) {
+	if planData.StatusOverride.ValueString() == "paused" {
+		if err := r.sourceReaders.UpdateStatus(ctx, sourceReader.Uuid.String(), "paused"); err != nil {
+			resp.Diagnostics.AddError("Unable to pause Source Reader", err.Error())
+		}
+	} else if lib.RemovePtr(sourceReader.IsShared) {
 		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
@@ -225,18 +247,19 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	sourceReaderUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
-	if hasError {
+	var stateData tfmodels.SourceReader
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	sourceReader, err := r.sourceReaders.Get(ctx, sourceReaderUUID)
+	sourceReader, err := r.sourceReaders.Get(ctx, stateData.UUID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read Source Reader", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, stateData.StatusOverride)
 }
 
 func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -262,9 +285,13 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedSourceReader)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedSourceReader, planData.StatusOverride)
 
-	if lib.RemovePtr(updatedSourceReader.IsShared) {
+	if planData.StatusOverride.ValueString() == "paused" {
+		if err := r.sourceReaders.UpdateStatus(ctx, updatedSourceReader.Uuid.String(), "paused"); err != nil {
+			resp.Diagnostics.AddError("Unable to pause Source Reader", err.Error())
+		}
+	} else if lib.RemovePtr(updatedSourceReader.IsShared) {
 		if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
