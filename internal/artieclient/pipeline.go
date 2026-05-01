@@ -8,6 +8,8 @@ import (
 
 	"github.com/artie-labs/transfer/lib/kafkalib"
 	"github.com/google/uuid"
+
+	"terraform-provider-artie/internal/openapi"
 )
 
 type StaticColumn struct {
@@ -121,7 +123,8 @@ type DestinationConfig struct {
 }
 
 type PipelineClient struct {
-	client Client
+	client       Client
+	openAPICient *openapi.ClientWithResponses
 }
 
 func (PipelineClient) basePath() string {
@@ -229,12 +232,14 @@ func (pc PipelineClient) StartPipeline(ctx context.Context, pipelineUUID string)
 }
 
 func (pc PipelineClient) UpdateStatus(ctx context.Context, pipelineUUID string, status string) error {
-	path, err := url.JoinPath(pc.basePath(), pipelineUUID, "status")
+	resp, err := pc.openAPICient.PostPipelinesUuidStatusWithResponse(ctx, pipelineUUID, openapi.RouterPipelineUpdateStatusRequest{
+		Status: openapi.EnumsPipelineStatus(status),
+	})
 	if err != nil {
 		return err
 	}
-
-	body := map[string]any{"status": status}
-	_, err = makeRequest[any](ctx, pc.client, http.MethodPost, path, body)
-	return err
+	if resp.StatusCode() >= 300 {
+		return BuildResponseError(resp.StatusCode(), resp.Body)
+	}
+	return nil
 }

@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"terraform-provider-artie/internal/openapi"
 )
 
 type HttpError struct {
@@ -138,8 +140,8 @@ func (c Client) SSHTunnels() SSHTunnelClient {
 	return SSHTunnelClient{client: c}
 }
 
-func (c Client) Pipelines() PipelineClient {
-	return PipelineClient{client: c}
+func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineClient {
+	return PipelineClient{client: c, openAPICient: openAPIClient}
 }
 
 func (c Client) PrivateLinks() PrivateLinkClient {
