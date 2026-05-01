@@ -160,6 +160,9 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 		if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
 			diags.AddError("Invalid table configuration", "You should not specify a `tables` block if `is_shared` is set to false.")
 		}
+		if configData.StatusOverride.ValueString() != "" {
+			diags.AddError("Invalid configuration", "`status_override` is only applicable if `is_shared` is set to true.")
+		}
 	}
 
 	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
@@ -229,7 +232,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, planData.StatusOverride)
 
-	if planData.StatusOverride.ValueString() != "paused" && lib.RemovePtr(sourceReader.IsShared) {
+	if lib.RemovePtr(sourceReader.IsShared) && planData.StatusOverride.ValueString() != "paused" {
 		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
