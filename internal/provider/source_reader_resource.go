@@ -74,7 +74,7 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"databases_to_unify":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If `enable_unify_across_databases` is set to true, this should be a list of databases within your Microsoft SQL Server that we should sync data from. All tables that you opt into being unified should exist in each of these databases. This is only applicable if the source type is Microsoft SQL Server."},
 			"status_override": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "Override the source reader status after create/update. Currently only `paused` is supported. If set to `paused`, the source reader will not be deployed after creation or update.",
+				MarkdownDescription: "Override the source reader status after create/update. Currently only `paused` is supported. If set to `paused`, a shared source reader will not be deployed after creation or update.",
 				Validators:          []validator.String{stringvalidator.OneOf("paused")},
 			},
 			"disable_auto_fetch_tables": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will not automatically fetch tables from the source database on the UI. This is useful if you have a large number of tables and you want to manually specify the schema before we fetch all the tables."},
@@ -277,13 +277,15 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedSourceReader, planData.StatusOverride)
 
-	if planData.StatusOverride.ValueString() == "paused" {
-		if err := r.sourceReaders.UpdateStatus(ctx, updatedSourceReader.Uuid.String(), "paused"); err != nil {
-			resp.Diagnostics.AddError("Unable to pause Source Reader", err.Error())
-		}
-	} else if lib.RemovePtr(updatedSourceReader.IsShared) {
-		if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
-			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
+	if lib.RemovePtr(updatedSourceReader.IsShared) {
+		if planData.StatusOverride.ValueString() == "paused" {
+			if err := r.sourceReaders.UpdateStatus(ctx, updatedSourceReader.Uuid.String(), "paused"); err != nil {
+				resp.Diagnostics.AddError("Unable to pause Source Reader", err.Error())
+			}
+		} else {
+			if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
+				resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
+			}
 		}
 	}
 }
