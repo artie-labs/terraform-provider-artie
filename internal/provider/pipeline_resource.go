@@ -384,6 +384,12 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	// You cannot create a pipeline in a paused state.
+	if planData.StatusOverride.ValueString() == "paused" {
+		resp.Diagnostics.AddError("Invalid configuration", "You cannot create a pipeline in a paused state. Please remove the status_override from your config, you can update the status of a running pipeline.")
+		return
+	}
+
 	pipeline, diags := planData.ToAPIBaseModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -407,11 +413,8 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline, planData.StatusOverride)
-
-	if planData.StatusOverride.ValueString() != "paused" {
-		if err := r.client.Pipelines(r.openAPIClient).StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
-			resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
-		}
+	if err := r.client.Pipelines(r.openAPIClient).StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
+		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
 
