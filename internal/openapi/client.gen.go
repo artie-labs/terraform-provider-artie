@@ -148,6 +148,11 @@ type EnumsPipelineStatus string
 // EnumsSourceReaderStatus defines model for EnumsSourceReaderStatus.
 type EnumsSourceReaderStatus string
 
+// ListResponseBodyColumnHashingSalt defines model for ListResponseBodyColumnHashingSalt.
+type ListResponseBodyColumnHashingSalt struct {
+	Items []PayloadsColumnHashingSalt `json:"items"`
+}
+
 // ListResponseBodyDataCatalogMatch defines model for ListResponseBodyDataCatalogMatch.
 type ListResponseBodyDataCatalogMatch struct {
 	Items []PayloadsDataCatalogMatch `json:"items"`
@@ -204,6 +209,7 @@ type PayloadsAdvancedTableSettingsPayload struct {
 	ColumnsToEncrypt           *[]string                  `json:"columnsToEncrypt,omitempty"`
 	ColumnsToHash              *[]string                  `json:"columnsToHash,omitempty"`
 	CtidSettings               *PayloadsCTIDSettings      `json:"ctidSettings,omitempty"`
+	EncryptJSONBColumns        *bool                      `json:"encryptJSONBColumns,omitempty"`
 	ExcludeColumns             *[]string                  `json:"excludeColumns,omitempty"`
 	FlushIntervalSeconds       *int                       `json:"flushIntervalSeconds,omitempty"`
 	FlushSizeKb                *int                       `json:"flushSizeKb,omitempty"`
@@ -243,6 +249,25 @@ type PayloadsCTIDSettings struct {
 	ChunkSize      *int  `json:"chunkSize,omitempty"`
 	Enabled        *bool `json:"enabled,omitempty"`
 	MaxParallelism *int  `json:"maxParallelism,omitempty"`
+}
+
+// PayloadsColumnHashingSalt defines model for PayloadsColumnHashingSalt.
+type PayloadsColumnHashingSalt struct {
+	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
+	Description *string            `json:"description,omitempty"`
+	Name        string             `json:"name"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
+	Uuid        openapi_types.UUID `json:"uuid"`
+}
+
+// PayloadsColumnHashingSaltDetail defines model for PayloadsColumnHashingSaltDetail.
+type PayloadsColumnHashingSaltDetail struct {
+	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
+	Description *string            `json:"description,omitempty"`
+	Name        string             `json:"name"`
+	Salt        string             `json:"salt"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
+	Uuid        openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsConnectorPayload defines model for PayloadsConnectorPayload.
@@ -345,6 +370,7 @@ type PayloadsFullConnector struct {
 // PayloadsFullPipeline defines model for PayloadsFullPipeline.
 type PayloadsFullPipeline struct {
 	AdvancedSettings         PayloadsPipelineAdvancedSettings `json:"advancedSettings"`
+	ColumnHashingSaltUUID    *openapi_types.UUID              `json:"columnHashingSaltUUID,omitempty"`
 	CompanyUUID              openapi_types.UUID               `json:"companyUUID"`
 	CreatedAt                time.Time                        `json:"createdAt"`
 	DataPlaneName            string                           `json:"dataPlaneName"`
@@ -379,6 +405,7 @@ type PayloadsIngestionAPIKey struct {
 
 // PayloadsLightPipeline defines model for PayloadsLightPipeline.
 type PayloadsLightPipeline struct {
+	ColumnHashingSaltUUID    *openapi_types.UUID  `json:"columnHashingSaltUUID,omitempty"`
 	CompanyUUID              openapi_types.UUID   `json:"companyUUID"`
 	CreatedAt                time.Time            `json:"createdAt"`
 	DataPlaneName            string               `json:"dataPlaneName"`
@@ -448,6 +475,7 @@ type PayloadsPipelineAdvancedSettings struct {
 // PayloadsPipelinePayload defines model for PayloadsPipelinePayload.
 type PayloadsPipelinePayload struct {
 	AdvancedSettings         *PayloadsAdvancedPipelineSettingsPayload `json:"advancedSettings,omitempty"`
+	ColumnHashingSaltUUID    *openapi_types.UUID                      `json:"columnHashingSaltUUID,omitempty"`
 	DataPlaneName            *string                                  `json:"dataPlaneName,omitempty"`
 	DestinationUUID          *openapi_types.UUID                      `json:"destinationUUID,omitempty"`
 	EncryptionKeyUUID        *openapi_types.UUID                      `json:"encryptionKeyUUID,omitempty"`
@@ -627,6 +655,7 @@ type PayloadsTableAdvancedSettings struct {
 	ColumnsToEncrypt                *[]string                  `json:"columnsToEncrypt,omitempty"`
 	ColumnsToHash                   *[]string                  `json:"columnsToHash,omitempty"`
 	CtidSettings                    *PayloadsCTIDSettings      `json:"ctidSettings,omitempty"`
+	EncryptJSONBColumns             *bool                      `json:"encryptJSONBColumns,omitempty"`
 	EndingPrimaryKey                *string                    `json:"endingPrimaryKey,omitempty"`
 	ExcludeColumns                  *[]string                  `json:"excludeColumns,omitempty"`
 	FlushIntervalSeconds            *int                       `json:"flushIntervalSeconds,omitempty"`
@@ -722,6 +751,19 @@ type RouterConnectorStartDynamoDBExportResponse struct {
 	ExportARN string `json:"exportARN"`
 }
 
+// RouterCreateColumnHashingSaltRequest defines model for RouterCreateColumnHashingSaltRequest.
+type RouterCreateColumnHashingSaltRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        string  `json:"name"`
+	Salt        *string `json:"salt,omitempty"`
+}
+
+// RouterCreateColumnHashingSaltResponse defines model for RouterCreateColumnHashingSaltResponse.
+type RouterCreateColumnHashingSaltResponse struct {
+	ColumnHashingSalt PayloadsColumnHashingSalt `json:"columnHashingSalt"`
+	Salt              string                    `json:"salt"`
+}
+
 // RouterCreateEncryptionKeyRequest defines model for RouterCreateEncryptionKeyRequest.
 type RouterCreateEncryptionKeyRequest struct {
 	Description *string             `json:"description,omitempty"`
@@ -786,6 +828,16 @@ type RouterPipelineUpdateRequest struct {
 	Pipeline PayloadsPipelinePayload `json:"pipeline"`
 }
 
+// RouterPipelineUpdateStatusRequest defines model for RouterPipelineUpdateStatusRequest.
+type RouterPipelineUpdateStatusRequest struct {
+	Status EnumsPipelineStatus `json:"status"`
+}
+
+// RouterPipelineUpdateStatusResponse defines model for RouterPipelineUpdateStatusResponse.
+type RouterPipelineUpdateStatusResponse struct {
+	Pipeline PayloadsFullPipeline `json:"pipeline"`
+}
+
 // RouterPipelineUpdateWithSourceReaderRequest defines model for RouterPipelineUpdateWithSourceReaderRequest.
 type RouterPipelineUpdateWithSourceReaderRequest struct {
 	Pipeline     PayloadsPipelinePayload `json:"pipeline"`
@@ -818,6 +870,16 @@ type RouterPipelineValidateUnsavedSourceRequest struct {
 	SourceReaderUUID       *openapi_types.UUID             `json:"sourceReaderUUID,omitempty"`
 	Tables                 []PayloadsTable                 `json:"tables"`
 	ValidateTables         bool                            `json:"validateTables"`
+}
+
+// RouterPreviewColumnHashingSaltRequest defines model for RouterPreviewColumnHashingSaltRequest.
+type RouterPreviewColumnHashingSaltRequest struct {
+	Value string `json:"value"`
+}
+
+// RouterPreviewColumnHashingSaltResponse defines model for RouterPreviewColumnHashingSaltResponse.
+type RouterPreviewColumnHashingSaltResponse struct {
+	Hash string `json:"hash"`
 }
 
 // RouterPrivateLinkConnectionCreateRequest defines model for RouterPrivateLinkConnectionCreateRequest.
@@ -858,6 +920,11 @@ type RouterSourceReaderCreateRequest struct {
 	TablesConfig  *PayloadsSourceReaderTablesConfig    `json:"tablesConfig,omitempty"`
 }
 
+// RouterSourceReaderUpdateStatusRequest defines model for RouterSourceReaderUpdateStatusRequest.
+type RouterSourceReaderUpdateStatusRequest struct {
+	Status EnumsSourceReaderStatus `json:"status"`
+}
+
 // RouterSourceReaderValidateUnsavedRequest defines model for RouterSourceReaderValidateUnsavedRequest.
 type RouterSourceReaderValidateUnsavedRequest struct {
 	SourceReader PayloadsSourceReader `json:"sourceReader"`
@@ -866,6 +933,12 @@ type RouterSourceReaderValidateUnsavedRequest struct {
 // RouterSourceReaderValidateUnsavedResponse defines model for RouterSourceReaderValidateUnsavedResponse.
 type RouterSourceReaderValidateUnsavedResponse struct {
 	Error string `json:"error"`
+}
+
+// RouterUpdateColumnHashingSaltRequest defines model for RouterUpdateColumnHashingSaltRequest.
+type RouterUpdateColumnHashingSaltRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        string  `json:"name"`
 }
 
 // RouterUpdateEncryptionKeyRequest defines model for RouterUpdateEncryptionKeyRequest.
@@ -889,6 +962,15 @@ type RouterValidateErrorResponse struct {
 type GetPipelinesUuidParams struct {
 	IncludeRelatedObjects *bool `form:"includeRelatedObjects,omitempty" json:"includeRelatedObjects,omitempty"`
 }
+
+// PostColumnHashingSaltsJSONRequestBody defines body for PostColumnHashingSalts for application/json ContentType.
+type PostColumnHashingSaltsJSONRequestBody = RouterCreateColumnHashingSaltRequest
+
+// PostColumnHashingSaltsUuidJSONRequestBody defines body for PostColumnHashingSaltsUuid for application/json ContentType.
+type PostColumnHashingSaltsUuidJSONRequestBody = RouterUpdateColumnHashingSaltRequest
+
+// PostColumnHashingSaltsUuidPreviewJSONRequestBody defines body for PostColumnHashingSaltsUuidPreview for application/json ContentType.
+type PostColumnHashingSaltsUuidPreviewJSONRequestBody = RouterPreviewColumnHashingSaltRequest
 
 // PostConnectorsJSONRequestBody defines body for PostConnectors for application/json ContentType.
 type PostConnectorsJSONRequestBody = PayloadsConnectorPayload
@@ -953,6 +1035,9 @@ type PostPipelinesUuidBackfillCancelJSONRequestBody = RouterPipelineCancelBackfi
 // PostPipelinesUuidStartJSONRequestBody defines body for PostPipelinesUuidStart for application/json ContentType.
 type PostPipelinesUuidStartJSONRequestBody = RouterPipelineStartRequest
 
+// PostPipelinesUuidStatusJSONRequestBody defines body for PostPipelinesUuidStatus for application/json ContentType.
+type PostPipelinesUuidStatusJSONRequestBody = RouterPipelineUpdateStatusRequest
+
 // PostPipelinesUuidUpdateWithSourceReaderJSONRequestBody defines body for PostPipelinesUuidUpdateWithSourceReader for application/json ContentType.
 type PostPipelinesUuidUpdateWithSourceReaderJSONRequestBody = RouterPipelineUpdateWithSourceReaderRequest
 
@@ -970,6 +1055,9 @@ type PostSourceReadersValidateUnsavedJSONRequestBody = RouterSourceReaderValidat
 
 // PostSourceReadersUuidJSONRequestBody defines body for PostSourceReadersUuid for application/json ContentType.
 type PostSourceReadersUuidJSONRequestBody = PayloadsSourceReader
+
+// PostSourceReadersUuidStatusJSONRequestBody defines body for PostSourceReadersUuidStatus for application/json ContentType.
+type PostSourceReadersUuidStatusJSONRequestBody = RouterSourceReaderUpdateStatusRequest
 
 // PostSshTunnelsJSONRequestBody defines body for PostSshTunnels for application/json ContentType.
 type PostSshTunnelsJSONRequestBody = RouterSSHTunnelCreateRequest
@@ -1050,6 +1138,30 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetColumnHashingSalts request
+	GetColumnHashingSalts(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostColumnHashingSaltsWithBody request with any body
+	PostColumnHashingSaltsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostColumnHashingSalts(ctx context.Context, body PostColumnHashingSaltsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteColumnHashingSaltsUuid request
+	DeleteColumnHashingSaltsUuid(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetColumnHashingSaltsUuid request
+	GetColumnHashingSaltsUuid(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostColumnHashingSaltsUuidWithBody request with any body
+	PostColumnHashingSaltsUuidWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostColumnHashingSaltsUuid(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostColumnHashingSaltsUuidPreviewWithBody request with any body
+	PostColumnHashingSaltsUuidPreviewWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostColumnHashingSaltsUuidPreview(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidPreviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PostConnectorsWithBody request with any body
 	PostConnectorsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1182,6 +1294,11 @@ type ClientInterface interface {
 
 	PostPipelinesUuidStart(ctx context.Context, uuid string, body PostPipelinesUuidStartJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PostPipelinesUuidStatusWithBody request with any body
+	PostPipelinesUuidStatusWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostPipelinesUuidStatus(ctx context.Context, uuid string, body PostPipelinesUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PostPipelinesUuidUpdateWithSourceReaderWithBody request with any body
 	PostPipelinesUuidUpdateWithSourceReaderWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1230,6 +1347,11 @@ type ClientInterface interface {
 	// PostSourceReadersUuidDeploy request
 	PostSourceReadersUuidDeploy(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PostSourceReadersUuidStatusWithBody request with any body
+	PostSourceReadersUuidStatusWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostSourceReadersUuidStatus(ctx context.Context, uuid string, body PostSourceReadersUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PostSshTunnelsWithBody request with any body
 	PostSshTunnelsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1245,6 +1367,114 @@ type ClientInterface interface {
 	PostSshTunnelsUuidWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostSshTunnelsUuid(ctx context.Context, uuid string, body PostSshTunnelsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) GetColumnHashingSalts(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetColumnHashingSaltsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostColumnHashingSaltsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostColumnHashingSaltsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostColumnHashingSalts(ctx context.Context, body PostColumnHashingSaltsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostColumnHashingSaltsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteColumnHashingSaltsUuid(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteColumnHashingSaltsUuidRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetColumnHashingSaltsUuid(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetColumnHashingSaltsUuidRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostColumnHashingSaltsUuidWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostColumnHashingSaltsUuidRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostColumnHashingSaltsUuid(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostColumnHashingSaltsUuidRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostColumnHashingSaltsUuidPreviewWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostColumnHashingSaltsUuidPreviewRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostColumnHashingSaltsUuidPreview(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidPreviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostColumnHashingSaltsUuidPreviewRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) PostConnectorsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1859,6 +2089,30 @@ func (c *Client) PostPipelinesUuidStart(ctx context.Context, uuid string, body P
 	return c.Client.Do(req)
 }
 
+func (c *Client) PostPipelinesUuidStatusWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostPipelinesUuidStatusRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostPipelinesUuidStatus(ctx context.Context, uuid string, body PostPipelinesUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostPipelinesUuidStatusRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) PostPipelinesUuidUpdateWithSourceReaderWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostPipelinesUuidUpdateWithSourceReaderRequestWithBody(c.Server, uuid, contentType, body)
 	if err != nil {
@@ -2075,6 +2329,30 @@ func (c *Client) PostSourceReadersUuidDeploy(ctx context.Context, uuid string, r
 	return c.Client.Do(req)
 }
 
+func (c *Client) PostSourceReadersUuidStatusWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostSourceReadersUuidStatusRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostSourceReadersUuidStatus(ctx context.Context, uuid string, body PostSourceReadersUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostSourceReadersUuidStatusRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) PostSshTunnelsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostSshTunnelsRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -2145,6 +2423,235 @@ func (c *Client) PostSshTunnelsUuid(ctx context.Context, uuid string, body PostS
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetColumnHashingSaltsRequest generates requests for GetColumnHashingSalts
+func NewGetColumnHashingSaltsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/column-hashing-salts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostColumnHashingSaltsRequest calls the generic PostColumnHashingSalts builder with application/json body
+func NewPostColumnHashingSaltsRequest(server string, body PostColumnHashingSaltsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostColumnHashingSaltsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostColumnHashingSaltsRequestWithBody generates requests for PostColumnHashingSalts with any type of body
+func NewPostColumnHashingSaltsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/column-hashing-salts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteColumnHashingSaltsUuidRequest generates requests for DeleteColumnHashingSaltsUuid
+func NewDeleteColumnHashingSaltsUuidRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/column-hashing-salts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetColumnHashingSaltsUuidRequest generates requests for GetColumnHashingSaltsUuid
+func NewGetColumnHashingSaltsUuidRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/column-hashing-salts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostColumnHashingSaltsUuidRequest calls the generic PostColumnHashingSaltsUuid builder with application/json body
+func NewPostColumnHashingSaltsUuidRequest(server string, uuid string, body PostColumnHashingSaltsUuidJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostColumnHashingSaltsUuidRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewPostColumnHashingSaltsUuidRequestWithBody generates requests for PostColumnHashingSaltsUuid with any type of body
+func NewPostColumnHashingSaltsUuidRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/column-hashing-salts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostColumnHashingSaltsUuidPreviewRequest calls the generic PostColumnHashingSaltsUuidPreview builder with application/json body
+func NewPostColumnHashingSaltsUuidPreviewRequest(server string, uuid string, body PostColumnHashingSaltsUuidPreviewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostColumnHashingSaltsUuidPreviewRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewPostColumnHashingSaltsUuidPreviewRequestWithBody generates requests for PostColumnHashingSaltsUuidPreview with any type of body
+func NewPostColumnHashingSaltsUuidPreviewRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/column-hashing-salts/%s/preview", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 // NewPostConnectorsRequest calls the generic PostConnectors builder with application/json body
@@ -3364,6 +3871,53 @@ func NewPostPipelinesUuidStartRequestWithBody(server string, uuid string, conten
 	return req, nil
 }
 
+// NewPostPipelinesUuidStatusRequest calls the generic PostPipelinesUuidStatus builder with application/json body
+func NewPostPipelinesUuidStatusRequest(server string, uuid string, body PostPipelinesUuidStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostPipelinesUuidStatusRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewPostPipelinesUuidStatusRequestWithBody generates requests for PostPipelinesUuidStatus with any type of body
+func NewPostPipelinesUuidStatusRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/pipelines/%s/status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewPostPipelinesUuidUpdateWithSourceReaderRequest calls the generic PostPipelinesUuidUpdateWithSourceReader builder with application/json body
 func NewPostPipelinesUuidUpdateWithSourceReaderRequest(server string, uuid string, body PostPipelinesUuidUpdateWithSourceReaderJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3822,6 +4376,53 @@ func NewPostSourceReadersUuidDeployRequest(server string, uuid string) (*http.Re
 	return req, nil
 }
 
+// NewPostSourceReadersUuidStatusRequest calls the generic PostSourceReadersUuidStatus builder with application/json body
+func NewPostSourceReadersUuidStatusRequest(server string, uuid string, body PostSourceReadersUuidStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostSourceReadersUuidStatusRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewPostSourceReadersUuidStatusRequestWithBody generates requests for PostSourceReadersUuidStatus with any type of body
+func NewPostSourceReadersUuidStatusRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/source-readers/%s/status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewPostSshTunnelsRequest calls the generic PostSshTunnels builder with application/json body
 func NewPostSshTunnelsRequest(server string, body PostSshTunnelsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4020,6 +4621,30 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetColumnHashingSaltsWithResponse request
+	GetColumnHashingSaltsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetColumnHashingSaltsResponse, error)
+
+	// PostColumnHashingSaltsWithBodyWithResponse request with any body
+	PostColumnHashingSaltsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsResponse, error)
+
+	PostColumnHashingSaltsWithResponse(ctx context.Context, body PostColumnHashingSaltsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsResponse, error)
+
+	// DeleteColumnHashingSaltsUuidWithResponse request
+	DeleteColumnHashingSaltsUuidWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*DeleteColumnHashingSaltsUuidResponse, error)
+
+	// GetColumnHashingSaltsUuidWithResponse request
+	GetColumnHashingSaltsUuidWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*GetColumnHashingSaltsUuidResponse, error)
+
+	// PostColumnHashingSaltsUuidWithBodyWithResponse request with any body
+	PostColumnHashingSaltsUuidWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidResponse, error)
+
+	PostColumnHashingSaltsUuidWithResponse(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidResponse, error)
+
+	// PostColumnHashingSaltsUuidPreviewWithBodyWithResponse request with any body
+	PostColumnHashingSaltsUuidPreviewWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidPreviewResponse, error)
+
+	PostColumnHashingSaltsUuidPreviewWithResponse(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidPreviewJSONRequestBody, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidPreviewResponse, error)
+
 	// PostConnectorsWithBodyWithResponse request with any body
 	PostConnectorsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsResponse, error)
 
@@ -4152,6 +4777,11 @@ type ClientWithResponsesInterface interface {
 
 	PostPipelinesUuidStartWithResponse(ctx context.Context, uuid string, body PostPipelinesUuidStartJSONRequestBody, reqEditors ...RequestEditorFn) (*PostPipelinesUuidStartResponse, error)
 
+	// PostPipelinesUuidStatusWithBodyWithResponse request with any body
+	PostPipelinesUuidStatusWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostPipelinesUuidStatusResponse, error)
+
+	PostPipelinesUuidStatusWithResponse(ctx context.Context, uuid string, body PostPipelinesUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostPipelinesUuidStatusResponse, error)
+
 	// PostPipelinesUuidUpdateWithSourceReaderWithBodyWithResponse request with any body
 	PostPipelinesUuidUpdateWithSourceReaderWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostPipelinesUuidUpdateWithSourceReaderResponse, error)
 
@@ -4200,6 +4830,11 @@ type ClientWithResponsesInterface interface {
 	// PostSourceReadersUuidDeployWithResponse request
 	PostSourceReadersUuidDeployWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PostSourceReadersUuidDeployResponse, error)
 
+	// PostSourceReadersUuidStatusWithBodyWithResponse request with any body
+	PostSourceReadersUuidStatusWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostSourceReadersUuidStatusResponse, error)
+
+	PostSourceReadersUuidStatusWithResponse(ctx context.Context, uuid string, body PostSourceReadersUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostSourceReadersUuidStatusResponse, error)
+
 	// PostSshTunnelsWithBodyWithResponse request with any body
 	PostSshTunnelsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostSshTunnelsResponse, error)
 
@@ -4215,6 +4850,137 @@ type ClientWithResponsesInterface interface {
 	PostSshTunnelsUuidWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostSshTunnelsUuidResponse, error)
 
 	PostSshTunnelsUuidWithResponse(ctx context.Context, uuid string, body PostSshTunnelsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*PostSshTunnelsUuidResponse, error)
+}
+
+type GetColumnHashingSaltsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListResponseBodyColumnHashingSalt
+}
+
+// Status returns HTTPResponse.Status
+func (r GetColumnHashingSaltsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetColumnHashingSaltsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostColumnHashingSaltsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouterCreateColumnHashingSaltResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r PostColumnHashingSaltsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostColumnHashingSaltsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteColumnHashingSaltsUuidResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteColumnHashingSaltsUuidResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteColumnHashingSaltsUuidResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetColumnHashingSaltsUuidResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PayloadsColumnHashingSaltDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetColumnHashingSaltsUuidResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetColumnHashingSaltsUuidResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostColumnHashingSaltsUuidResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PayloadsColumnHashingSalt
+}
+
+// Status returns HTTPResponse.Status
+func (r PostColumnHashingSaltsUuidResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostColumnHashingSaltsUuidResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostColumnHashingSaltsUuidPreviewResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouterPreviewColumnHashingSaltResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r PostColumnHashingSaltsUuidPreviewResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostColumnHashingSaltsUuidPreviewResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type PostConnectorsResponse struct {
@@ -4867,6 +5633,28 @@ func (r PostPipelinesUuidStartResponse) StatusCode() int {
 	return 0
 }
 
+type PostPipelinesUuidStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouterPipelineUpdateStatusResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r PostPipelinesUuidStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostPipelinesUuidStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type PostPipelinesUuidUpdateWithSourceReaderResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5128,6 +5916,28 @@ func (r PostSourceReadersUuidDeployResponse) StatusCode() int {
 	return 0
 }
 
+type PostSourceReadersUuidStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PayloadsSourceReader
+}
+
+// Status returns HTTPResponse.Status
+func (r PostSourceReadersUuidStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostSourceReadersUuidStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type PostSshTunnelsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5213,6 +6023,84 @@ func (r PostSshTunnelsUuidResponse) StatusCode() int {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
+}
+
+// GetColumnHashingSaltsWithResponse request returning *GetColumnHashingSaltsResponse
+func (c *ClientWithResponses) GetColumnHashingSaltsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetColumnHashingSaltsResponse, error) {
+	rsp, err := c.GetColumnHashingSalts(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetColumnHashingSaltsResponse(rsp)
+}
+
+// PostColumnHashingSaltsWithBodyWithResponse request with arbitrary body returning *PostColumnHashingSaltsResponse
+func (c *ClientWithResponses) PostColumnHashingSaltsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsResponse, error) {
+	rsp, err := c.PostColumnHashingSaltsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostColumnHashingSaltsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostColumnHashingSaltsWithResponse(ctx context.Context, body PostColumnHashingSaltsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsResponse, error) {
+	rsp, err := c.PostColumnHashingSalts(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostColumnHashingSaltsResponse(rsp)
+}
+
+// DeleteColumnHashingSaltsUuidWithResponse request returning *DeleteColumnHashingSaltsUuidResponse
+func (c *ClientWithResponses) DeleteColumnHashingSaltsUuidWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*DeleteColumnHashingSaltsUuidResponse, error) {
+	rsp, err := c.DeleteColumnHashingSaltsUuid(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteColumnHashingSaltsUuidResponse(rsp)
+}
+
+// GetColumnHashingSaltsUuidWithResponse request returning *GetColumnHashingSaltsUuidResponse
+func (c *ClientWithResponses) GetColumnHashingSaltsUuidWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*GetColumnHashingSaltsUuidResponse, error) {
+	rsp, err := c.GetColumnHashingSaltsUuid(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetColumnHashingSaltsUuidResponse(rsp)
+}
+
+// PostColumnHashingSaltsUuidWithBodyWithResponse request with arbitrary body returning *PostColumnHashingSaltsUuidResponse
+func (c *ClientWithResponses) PostColumnHashingSaltsUuidWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidResponse, error) {
+	rsp, err := c.PostColumnHashingSaltsUuidWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostColumnHashingSaltsUuidResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostColumnHashingSaltsUuidWithResponse(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidResponse, error) {
+	rsp, err := c.PostColumnHashingSaltsUuid(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostColumnHashingSaltsUuidResponse(rsp)
+}
+
+// PostColumnHashingSaltsUuidPreviewWithBodyWithResponse request with arbitrary body returning *PostColumnHashingSaltsUuidPreviewResponse
+func (c *ClientWithResponses) PostColumnHashingSaltsUuidPreviewWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidPreviewResponse, error) {
+	rsp, err := c.PostColumnHashingSaltsUuidPreviewWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostColumnHashingSaltsUuidPreviewResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostColumnHashingSaltsUuidPreviewWithResponse(ctx context.Context, uuid string, body PostColumnHashingSaltsUuidPreviewJSONRequestBody, reqEditors ...RequestEditorFn) (*PostColumnHashingSaltsUuidPreviewResponse, error) {
+	rsp, err := c.PostColumnHashingSaltsUuidPreview(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostColumnHashingSaltsUuidPreviewResponse(rsp)
 }
 
 // PostConnectorsWithBodyWithResponse request with arbitrary body returning *PostConnectorsResponse
@@ -5653,6 +6541,23 @@ func (c *ClientWithResponses) PostPipelinesUuidStartWithResponse(ctx context.Con
 	return ParsePostPipelinesUuidStartResponse(rsp)
 }
 
+// PostPipelinesUuidStatusWithBodyWithResponse request with arbitrary body returning *PostPipelinesUuidStatusResponse
+func (c *ClientWithResponses) PostPipelinesUuidStatusWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostPipelinesUuidStatusResponse, error) {
+	rsp, err := c.PostPipelinesUuidStatusWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostPipelinesUuidStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostPipelinesUuidStatusWithResponse(ctx context.Context, uuid string, body PostPipelinesUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostPipelinesUuidStatusResponse, error) {
+	rsp, err := c.PostPipelinesUuidStatus(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostPipelinesUuidStatusResponse(rsp)
+}
+
 // PostPipelinesUuidUpdateWithSourceReaderWithBodyWithResponse request with arbitrary body returning *PostPipelinesUuidUpdateWithSourceReaderResponse
 func (c *ClientWithResponses) PostPipelinesUuidUpdateWithSourceReaderWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostPipelinesUuidUpdateWithSourceReaderResponse, error) {
 	rsp, err := c.PostPipelinesUuidUpdateWithSourceReaderWithBody(ctx, uuid, contentType, body, reqEditors...)
@@ -5809,6 +6714,23 @@ func (c *ClientWithResponses) PostSourceReadersUuidDeployWithResponse(ctx contex
 	return ParsePostSourceReadersUuidDeployResponse(rsp)
 }
 
+// PostSourceReadersUuidStatusWithBodyWithResponse request with arbitrary body returning *PostSourceReadersUuidStatusResponse
+func (c *ClientWithResponses) PostSourceReadersUuidStatusWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostSourceReadersUuidStatusResponse, error) {
+	rsp, err := c.PostSourceReadersUuidStatusWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostSourceReadersUuidStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostSourceReadersUuidStatusWithResponse(ctx context.Context, uuid string, body PostSourceReadersUuidStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostSourceReadersUuidStatusResponse, error) {
+	rsp, err := c.PostSourceReadersUuidStatus(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostSourceReadersUuidStatusResponse(rsp)
+}
+
 // PostSshTunnelsWithBodyWithResponse request with arbitrary body returning *PostSshTunnelsResponse
 func (c *ClientWithResponses) PostSshTunnelsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostSshTunnelsResponse, error) {
 	rsp, err := c.PostSshTunnelsWithBody(ctx, contentType, body, reqEditors...)
@@ -5859,6 +6781,152 @@ func (c *ClientWithResponses) PostSshTunnelsUuidWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParsePostSshTunnelsUuidResponse(rsp)
+}
+
+// ParseGetColumnHashingSaltsResponse parses an HTTP response from a GetColumnHashingSaltsWithResponse call
+func ParseGetColumnHashingSaltsResponse(rsp *http.Response) (*GetColumnHashingSaltsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetColumnHashingSaltsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyColumnHashingSalt
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostColumnHashingSaltsResponse parses an HTTP response from a PostColumnHashingSaltsWithResponse call
+func ParsePostColumnHashingSaltsResponse(rsp *http.Response) (*PostColumnHashingSaltsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostColumnHashingSaltsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterCreateColumnHashingSaltResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteColumnHashingSaltsUuidResponse parses an HTTP response from a DeleteColumnHashingSaltsUuidWithResponse call
+func ParseDeleteColumnHashingSaltsUuidResponse(rsp *http.Response) (*DeleteColumnHashingSaltsUuidResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteColumnHashingSaltsUuidResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetColumnHashingSaltsUuidResponse parses an HTTP response from a GetColumnHashingSaltsUuidWithResponse call
+func ParseGetColumnHashingSaltsUuidResponse(rsp *http.Response) (*GetColumnHashingSaltsUuidResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetColumnHashingSaltsUuidResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsColumnHashingSaltDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostColumnHashingSaltsUuidResponse parses an HTTP response from a PostColumnHashingSaltsUuidWithResponse call
+func ParsePostColumnHashingSaltsUuidResponse(rsp *http.Response) (*PostColumnHashingSaltsUuidResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostColumnHashingSaltsUuidResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsColumnHashingSalt
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostColumnHashingSaltsUuidPreviewResponse parses an HTTP response from a PostColumnHashingSaltsUuidPreviewWithResponse call
+func ParsePostColumnHashingSaltsUuidPreviewResponse(rsp *http.Response) (*PostColumnHashingSaltsUuidPreviewResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostColumnHashingSaltsUuidPreviewResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterPreviewColumnHashingSaltResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParsePostConnectorsResponse parses an HTTP response from a PostConnectorsWithResponse call
@@ -6541,6 +7609,32 @@ func ParsePostPipelinesUuidStartResponse(rsp *http.Response) (*PostPipelinesUuid
 	return response, nil
 }
 
+// ParsePostPipelinesUuidStatusResponse parses an HTTP response from a PostPipelinesUuidStatusWithResponse call
+func ParsePostPipelinesUuidStatusResponse(rsp *http.Response) (*PostPipelinesUuidStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostPipelinesUuidStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterPipelineUpdateStatusResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParsePostPipelinesUuidUpdateWithSourceReaderResponse parses an HTTP response from a PostPipelinesUuidUpdateWithSourceReaderWithResponse call
 func ParsePostPipelinesUuidUpdateWithSourceReaderResponse(rsp *http.Response) (*PostPipelinesUuidUpdateWithSourceReaderResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6818,6 +7912,32 @@ func ParsePostSourceReadersUuidDeployResponse(rsp *http.Response) (*PostSourceRe
 	response := &PostSourceReadersUuidDeployResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostSourceReadersUuidStatusResponse parses an HTTP response from a PostSourceReadersUuidStatusWithResponse call
+func ParsePostSourceReadersUuidStatusResponse(rsp *http.Response) (*PostSourceReadersUuidStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostSourceReadersUuidStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsSourceReader
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
