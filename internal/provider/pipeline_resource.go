@@ -38,7 +38,7 @@ func NewPipelineResource() resource.Resource {
 }
 
 type PipelineResource struct {
-	client       artieclient.Client
+	client        artieclient.Client
 	openAPIClient *openapi.ClientWithResponses
 }
 
