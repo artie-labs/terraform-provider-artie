@@ -399,11 +399,7 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline, planData.StatusOverride)
 
-	if planData.StatusOverride.ValueString() == "paused" {
-		if err := r.client.Pipelines().UpdateStatus(ctx, createdPipeline.UUID.String(), "paused"); err != nil {
-			resp.Diagnostics.AddError("Unable to pause Pipeline", err.Error())
-		}
-	} else {
+	if planData.StatusOverride.ValueString() != "paused" {
 		if err := r.client.Pipelines().StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 		}

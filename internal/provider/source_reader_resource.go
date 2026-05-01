@@ -235,11 +235,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, planData.StatusOverride)
 
-	if planData.StatusOverride.ValueString() == "paused" {
-		if err := r.sourceReaders.UpdateStatus(ctx, sourceReader.Uuid.String(), "paused"); err != nil {
-			resp.Diagnostics.AddError("Unable to pause Source Reader", err.Error())
-		}
-	} else if lib.RemovePtr(sourceReader.IsShared) {
+	if planData.StatusOverride.ValueString() != "paused" && lib.RemovePtr(sourceReader.IsShared) {
 		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
