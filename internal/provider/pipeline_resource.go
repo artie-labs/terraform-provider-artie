@@ -242,7 +242,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"write_raw_binary_values":                              schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, binary columns (e.g. BINARY type) are created in the destination table for raw binary data instead of creating string columns that store Base64-encoded values. It only applies when the destination is Databricks."},
 			"status_override": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "Override the pipeline status after create/update. Currently only `paused` is supported. If set to `paused`, the pipeline will not be started after creation or update.",
+				MarkdownDescription: "Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.",
 				Validators:          []validator.String{stringvalidator.OneOf("paused")},
 			},
 			"static_columns": schema.ListNestedAttribute{
