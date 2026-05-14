@@ -63,7 +63,6 @@ type Table struct {
 	Schema             string                `json:"schema"`
 	EnableHistoryMode  bool                  `json:"enableHistoryMode"`
 	DisableReplication bool                  `json:"disableReplication"`
-	IsPartitioned      bool                  `json:"isPartitioned"`
 	AdvancedSettings   AdvancedTableSettings `json:"advancedSettings"`
 }
 

@@ -17,7 +17,6 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		AttrTypes: map[string]attr.Type{
 			"name":                        types.StringType,
 			"schema":                      types.StringType,
-			"is_partitioned":              types.BoolType,
 			"columns_to_exclude":          types.ListType{ElemType: types.StringType},
 			"columns_to_include":          types.ListType{ElemType: types.StringType},
 			"child_partition_schema_name": types.StringType,
@@ -79,7 +78,6 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 						map[string]attr.Value{
 							"name":                        types.StringValue("test_table"),
 							"schema":                      types.StringValue(""),
-							"is_partitioned":              types.BoolValue(false),
 							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
 							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
 							"child_partition_schema_name": types.StringValue(""),
@@ -107,7 +105,6 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 						map[string]attr.Value{
 							"name":                        types.StringValue("test_table"),
 							"schema":                      types.StringValue("public"),
-							"is_partitioned":              types.BoolValue(false),
 							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
 							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
 							"child_partition_schema_name": types.StringValue(""),
@@ -135,7 +132,6 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 						map[string]attr.Value{
 							"name":                        types.StringValue("test_table"),
 							"schema":                      types.StringValue("public"),
-							"is_partitioned":              types.BoolValue(false),
 							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col1")}),
 							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col2")}),
 							"child_partition_schema_name": types.StringValue(""),

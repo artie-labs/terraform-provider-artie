@@ -14,7 +14,6 @@ import (
 type SourceReaderTable struct {
 	Name                     types.String `tfsdk:"name"`
 	Schema                   types.String `tfsdk:"schema"`
-	IsPartitioned            types.Bool   `tfsdk:"is_partitioned"`
 	ColumnsToExclude         types.List   `tfsdk:"columns_to_exclude"`
 	ColumnsToInclude         types.List   `tfsdk:"columns_to_include"`
 	ChildPartitionSchemaName types.String `tfsdk:"child_partition_schema_name"`
@@ -25,7 +24,6 @@ type SourceReaderTable struct {
 var SourceReaderTableAttrTypes = map[string]attr.Type{
 	"name":                        types.StringType,
 	"schema":                      types.StringType,
-	"is_partitioned":              types.BoolType,
 	"columns_to_exclude":          types.ListType{ElemType: types.StringType},
 	"columns_to_include":          types.ListType{ElemType: types.StringType},
 	"child_partition_schema_name": types.StringType,
@@ -41,7 +39,6 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (openapi.PayloadsSour
 	return openapi.PayloadsSourceReaderTable{
 		Name:                 s.Name.ValueStringPointer(),
 		Schema:               s.Schema.ValueStringPointer(),
-		IsPartitioned:        s.IsPartitioned.ValueBoolPointer(),
 		ExcludeColumns:       colsToExclude,
 		IncludeColumns:       colsToInclude,
 		UnifyAcrossSchemas:   s.UnifyAcrossSchemas.ValueBoolPointer(),
@@ -72,7 +69,6 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesConfig *openap
 			tables[key] = SourceReaderTable{
 				Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
 				Schema:                   types.StringValue(lib.RemovePtr(apiTable.Schema)),
-				IsPartitioned:            types.BoolValue(lib.RemovePtr(apiTable.IsPartitioned)),
 				ColumnsToExclude:         colsToExclude,
 				ColumnsToInclude:         colsToInclude,
 				ChildPartitionSchemaName: types.StringValue(""),

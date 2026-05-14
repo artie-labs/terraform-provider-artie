@@ -595,7 +595,6 @@ type PayloadsSourceReaderSettingsPayload struct {
 type PayloadsSourceReaderTable struct {
 	ExcludeColumns       *[]string `json:"excludeColumns,omitempty"`
 	IncludeColumns       *[]string `json:"includeColumns,omitempty"`
-	IsPartitioned        *bool     `json:"isPartitioned,omitempty"`
 	Name                 *string   `json:"name,omitempty"`
 	Schema               *string   `json:"schema,omitempty"`
 	UnifyAcrossDatabases *bool     `json:"unifyAcrossDatabases,omitempty"`
@@ -636,7 +635,6 @@ type PayloadsTable struct {
 	EnableHistoryMode    *bool                          `json:"enableHistoryMode,omitempty"`
 	HistoryTableStatus   *string                        `json:"historyTableStatus,omitempty"`
 	IndividualDeployment *bool                          `json:"individualDeployment,omitempty"`
-	IsPartitioned        *bool                          `json:"isPartitioned,omitempty"`
 	Name                 *string                        `json:"name,omitempty"`
 	Schema               *string                        `json:"schema,omitempty"`
 	Status               *string                        `json:"status,omitempty"`
@@ -685,7 +683,6 @@ type PayloadsTablePayload struct {
 	DisableReplication   *bool                                 `json:"disableReplication,omitempty"`
 	EnableHistoryMode    *bool                                 `json:"enableHistoryMode,omitempty"`
 	IndividualDeployment *bool                                 `json:"individualDeployment,omitempty"`
-	IsPartitioned        *bool                                 `json:"isPartitioned,omitempty"`
 	Name                 *string                               `json:"name,omitempty"`
 	Schema               *string                               `json:"schema,omitempty"`
 	Status               *string                               `json:"status,omitempty"`
