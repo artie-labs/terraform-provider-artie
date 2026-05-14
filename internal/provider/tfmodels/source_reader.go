@@ -41,7 +41,6 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (openapi.PayloadsSour
 	return openapi.PayloadsSourceReaderTable{
 		Name:                 s.Name.ValueStringPointer(),
 		Schema:               s.Schema.ValueStringPointer(),
-		IsPartitioned:        s.IsPartitioned.ValueBoolPointer(),
 		ExcludeColumns:       colsToExclude,
 		IncludeColumns:       colsToInclude,
 		UnifyAcrossSchemas:   s.UnifyAcrossSchemas.ValueBoolPointer(),
@@ -72,7 +71,7 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesConfig *openap
 			tables[key] = SourceReaderTable{
 				Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
 				Schema:                   types.StringValue(lib.RemovePtr(apiTable.Schema)),
-				IsPartitioned:            types.BoolValue(lib.RemovePtr(apiTable.IsPartitioned)),
+				IsPartitioned:            types.BoolValue(false),
 				ColumnsToExclude:         colsToExclude,
 				ColumnsToInclude:         colsToInclude,
 				ChildPartitionSchemaName: types.StringValue(""),

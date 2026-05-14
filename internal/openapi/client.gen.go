@@ -153,6 +153,11 @@ type ListResponseBodyColumnHashingSalt struct {
 	Items []PayloadsColumnHashingSalt `json:"items"`
 }
 
+// ListResponseBodyConnectorTable defines model for ListResponseBodyConnectorTable.
+type ListResponseBodyConnectorTable struct {
+	Items []RouterConnectorTable `json:"items"`
+}
+
 // ListResponseBodyDataCatalogMatch defines model for ListResponseBodyDataCatalogMatch.
 type ListResponseBodyDataCatalogMatch struct {
 	Items []PayloadsDataCatalogMatch `json:"items"`
@@ -166,6 +171,11 @@ type ListResponseBodyEncryptionKey struct {
 // ListResponseBodyLightPipeline defines model for ListResponseBodyLightPipeline.
 type ListResponseBodyLightPipeline struct {
 	Items []PayloadsLightPipeline `json:"items"`
+}
+
+// ListResponseBodyPostgresPublication defines model for ListResponseBodyPostgresPublication.
+type ListResponseBodyPostgresPublication struct {
+	Items []PayloadsPostgresPublication `json:"items"`
 }
 
 // PayloadsAdvancedPipelineSettingsPayload defines model for PayloadsAdvancedPipelineSettingsPayload.
@@ -251,6 +261,13 @@ type PayloadsCTIDSettings struct {
 	MaxParallelism *int  `json:"maxParallelism,omitempty"`
 }
 
+// PayloadsCatalogTableProperty defines model for PayloadsCatalogTableProperty.
+type PayloadsCatalogTableProperty struct {
+	IsDate *bool       `json:"isDate,omitempty"`
+	Key    *string     `json:"key,omitempty"`
+	Value  interface{} `json:"value,omitempty"`
+}
+
 // PayloadsColumnHashingSalt defines model for PayloadsColumnHashingSalt.
 type PayloadsColumnHashingSalt struct {
 	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
@@ -270,6 +287,27 @@ type PayloadsColumnHashingSaltDetail struct {
 	Uuid        openapi_types.UUID `json:"uuid"`
 }
 
+// PayloadsConnectorColumn defines model for PayloadsConnectorColumn.
+type PayloadsConnectorColumn struct {
+	Metadata *PayloadsConnectorColumnMetadata `json:"metadata,omitempty"`
+	Name     *string                          `json:"name,omitempty"`
+}
+
+// PayloadsConnectorColumnMetadata defines model for PayloadsConnectorColumnMetadata.
+type PayloadsConnectorColumnMetadata struct {
+	Comment      *string `json:"comment,omitempty"`
+	DataType     *string `json:"dataType,omitempty"`
+	DefaultValue *string `json:"defaultValue,omitempty"`
+	IsPrimaryKey *bool   `json:"isPrimaryKey,omitempty"`
+	NotNull      *bool   `json:"notNull,omitempty"`
+}
+
+// PayloadsConnectorFetchDatabasesResponse defines model for PayloadsConnectorFetchDatabasesResponse.
+type PayloadsConnectorFetchDatabasesResponse struct {
+	Items    *[]PayloadsDatabaseListItem     `json:"items,omitempty"`
+	Metadata *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
+}
+
 // PayloadsConnectorPayload defines model for PayloadsConnectorPayload.
 type PayloadsConnectorPayload struct {
 	DataPlaneName   *string                 `json:"dataPlaneName,omitempty"`
@@ -280,6 +318,18 @@ type PayloadsConnectorPayload struct {
 	SshTunnelUUID   *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
 	Type            *string                 `json:"type,omitempty"`
 	Uuid            *string                 `json:"uuid,omitempty"`
+}
+
+// PayloadsConnectorTableDetailResponse defines model for PayloadsConnectorTableDetailResponse.
+type PayloadsConnectorTableDetailResponse struct {
+	Columns    *[]PayloadsConnectorColumn      `json:"columns,omitempty"`
+	CreatedAt  *time.Time                      `json:"createdAt,omitempty"`
+	IsView     *bool                           `json:"isView,omitempty"`
+	Metadata   *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
+	ModifiedAt *time.Time                      `json:"modifiedAt,omitempty"`
+	Name       *string                         `json:"name,omitempty"`
+	Schema     *string                         `json:"schema,omitempty"`
+	Unreadable *bool                           `json:"unreadable,omitempty"`
 }
 
 // PayloadsDataCatalogDatabase defines model for PayloadsDataCatalogDatabase.
@@ -317,6 +367,11 @@ type PayloadsDataCatalogTable struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 	Name         *string `json:"name,omitempty"`
 	SchemaName   *string `json:"schemaName,omitempty"`
+}
+
+// PayloadsDatabaseListItem defines model for PayloadsDatabaseListItem.
+type PayloadsDatabaseListItem struct {
+	Name *string `json:"name,omitempty"`
 }
 
 // PayloadsDynamoDBSnapshotConfig defines model for PayloadsDynamoDBSnapshotConfig.
@@ -486,6 +541,13 @@ type PayloadsPipelinePayload struct {
 	Tables                   *[]PayloadsTablePayload                  `json:"tables,omitempty"`
 }
 
+// PayloadsPostgresPublication defines model for PayloadsPostgresPublication.
+type PayloadsPostgresPublication struct {
+	AllTables               *bool  `json:"allTables,omitempty"`
+	Name                    string `json:"name"`
+	PublishViaPartitionRoot *bool  `json:"publishViaPartitionRoot,omitempty"`
+}
+
 // PayloadsPrivateLinkConnection defines model for PayloadsPrivateLinkConnection.
 type PayloadsPrivateLinkConnection struct {
 	AvailabilityZoneIds []string           `json:"availabilityZoneIds"`
@@ -571,31 +633,32 @@ type PayloadsSourceReader struct {
 
 // PayloadsSourceReaderSettingsPayload defines model for PayloadsSourceReaderSettingsPayload.
 type PayloadsSourceReaderSettingsPayload struct {
-	AzureBlobStorageConfig             *PayloadsAzureBlobStorageConfig `json:"azureBlobStorageConfig,omitempty"`
-	BackfillBatchSize                  *int                            `json:"backfillBatchSize,omitempty"`
-	DatabasesToSync                    *[]string                       `json:"databasesToSync,omitempty"`
-	DisableAutoFetchTables             *bool                           `json:"disableAutoFetchTables,omitempty"`
-	DisableFullDocumentBeforeChange    *bool                           `json:"disableFullDocumentBeforeChange,omitempty"`
-	EnableClientSideFullDocumentLookup *bool                           `json:"enableClientSideFullDocumentLookup,omitempty"`
-	EnableHeartbeats                   *bool                           `json:"enableHeartbeats,omitempty"`
-	MssqlReplicationMethod             *string                         `json:"mssqlReplicationMethod,omitempty"`
-	OneTopicPerSchema                  *bool                           `json:"oneTopicPerSchema,omitempty"`
-	PublicationAutoCreateMode          *string                         `json:"publicationAutoCreateMode,omitempty"`
-	PublicationNameOverride            *string                         `json:"publicationNameOverride,omitempty"`
-	PublishViaPartitionRoot            *bool                           `json:"publishViaPartitionRoot,omitempty"`
-	ReplicationSlotOverride            *string                         `json:"replicationSlotOverride,omitempty"`
-	UnifyAcrossDatabases               *bool                           `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas                 *bool                           `json:"unifyAcrossSchemas,omitempty"`
-	UnifyAcrossSchemasRegex            *string                         `json:"unifyAcrossSchemasRegex,omitempty"`
-	UseAdvanceOnPrimaryKeepAlive       *bool                           `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
-	UseNumericTypesForMoney            *bool                           `json:"useNumericTypesForMoney,omitempty"`
+	AllowMSSQLCaptureInstancesViaReader *bool                           `json:"allowMSSQLCaptureInstancesViaReader,omitempty"`
+	AzureBlobStorageConfig              *PayloadsAzureBlobStorageConfig `json:"azureBlobStorageConfig,omitempty"`
+	BackfillBatchSize                   *int                            `json:"backfillBatchSize,omitempty"`
+	DatabasesToSync                     *[]string                       `json:"databasesToSync,omitempty"`
+	DisableAutoFetchTables              *bool                           `json:"disableAutoFetchTables,omitempty"`
+	DisableFullDocumentBeforeChange     *bool                           `json:"disableFullDocumentBeforeChange,omitempty"`
+	DisableNoCursorTimeout              *bool                           `json:"disableNoCursorTimeout,omitempty"`
+	EnableClientSideFullDocumentLookup  *bool                           `json:"enableClientSideFullDocumentLookup,omitempty"`
+	EnableHeartbeats                    *bool                           `json:"enableHeartbeats,omitempty"`
+	MssqlReplicationMethod              *string                         `json:"mssqlReplicationMethod,omitempty"`
+	OneTopicPerSchema                   *bool                           `json:"oneTopicPerSchema,omitempty"`
+	PublicationAutoCreateMode           *string                         `json:"publicationAutoCreateMode,omitempty"`
+	PublicationNameOverride             *string                         `json:"publicationNameOverride,omitempty"`
+	PublishViaPartitionRoot             *bool                           `json:"publishViaPartitionRoot,omitempty"`
+	ReplicationSlotOverride             *string                         `json:"replicationSlotOverride,omitempty"`
+	UnifyAcrossDatabases                *bool                           `json:"unifyAcrossDatabases,omitempty"`
+	UnifyAcrossSchemas                  *bool                           `json:"unifyAcrossSchemas,omitempty"`
+	UnifyAcrossSchemasRegex             *string                         `json:"unifyAcrossSchemasRegex,omitempty"`
+	UseAdvanceOnPrimaryKeepAlive        *bool                           `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
+	UseNumericTypesForMoney             *bool                           `json:"useNumericTypesForMoney,omitempty"`
 }
 
 // PayloadsSourceReaderTable defines model for PayloadsSourceReaderTable.
 type PayloadsSourceReaderTable struct {
 	ExcludeColumns       *[]string `json:"excludeColumns,omitempty"`
 	IncludeColumns       *[]string `json:"includeColumns,omitempty"`
-	IsPartitioned        *bool     `json:"isPartitioned,omitempty"`
 	Name                 *string   `json:"name,omitempty"`
 	Schema               *string   `json:"schema,omitempty"`
 	UnifyAcrossDatabases *bool     `json:"unifyAcrossDatabases,omitempty"`
@@ -636,7 +699,6 @@ type PayloadsTable struct {
 	EnableHistoryMode    *bool                          `json:"enableHistoryMode,omitempty"`
 	HistoryTableStatus   *string                        `json:"historyTableStatus,omitempty"`
 	IndividualDeployment *bool                          `json:"individualDeployment,omitempty"`
-	IsPartitioned        *bool                          `json:"isPartitioned,omitempty"`
 	Name                 *string                        `json:"name,omitempty"`
 	Schema               *string                        `json:"schema,omitempty"`
 	Status               *string                        `json:"status,omitempty"`
@@ -685,7 +747,6 @@ type PayloadsTablePayload struct {
 	DisableReplication   *bool                                 `json:"disableReplication,omitempty"`
 	EnableHistoryMode    *bool                                 `json:"enableHistoryMode,omitempty"`
 	IndividualDeployment *bool                                 `json:"individualDeployment,omitempty"`
-	IsPartitioned        *bool                                 `json:"isPartitioned,omitempty"`
 	Name                 *string                               `json:"name,omitempty"`
 	Schema               *string                               `json:"schema,omitempty"`
 	Status               *string                               `json:"status,omitempty"`
@@ -715,6 +776,26 @@ type RouterConnectorCreateSnowflakeWarehouseRequest struct {
 // RouterConnectorDropReplicationSlotRequest defines model for RouterConnectorDropReplicationSlotRequest.
 type RouterConnectorDropReplicationSlotRequest struct {
 	SlotName string `json:"slotName"`
+}
+
+// RouterConnectorFetchPostgresPublicationsRequest defines model for RouterConnectorFetchPostgresPublicationsRequest.
+type RouterConnectorFetchPostgresPublicationsRequest struct {
+	Connector    PayloadsConnectorPayload `json:"connector"`
+	DatabaseName string                   `json:"databaseName"`
+}
+
+// RouterConnectorFetchSchemasRequest defines model for RouterConnectorFetchSchemasRequest.
+type RouterConnectorFetchSchemasRequest struct {
+	Connector    PayloadsConnectorPayload `json:"connector"`
+	DatabaseName string                   `json:"databaseName"`
+}
+
+// RouterConnectorFetchTablesRequest defines model for RouterConnectorFetchTablesRequest.
+type RouterConnectorFetchTablesRequest struct {
+	Connector    PayloadsConnectorPayload `json:"connector"`
+	DatabaseName string                   `json:"databaseName"`
+	ForceRefresh *bool                    `json:"forceRefresh,omitempty"`
+	SchemaName   *string                  `json:"schemaName,omitempty"`
 }
 
 // RouterConnectorGenerateShadowScriptRequest defines model for RouterConnectorGenerateShadowScriptRequest.
@@ -749,6 +830,19 @@ type RouterConnectorStartDynamoDBExportRequest struct {
 // RouterConnectorStartDynamoDBExportResponse defines model for RouterConnectorStartDynamoDBExportResponse.
 type RouterConnectorStartDynamoDBExportResponse struct {
 	ExportARN string `json:"exportARN"`
+}
+
+// RouterConnectorTable defines model for RouterConnectorTable.
+type RouterConnectorTable struct {
+	ApproxDateAdded *time.Time                      `json:"approxDateAdded,omitempty"`
+	Columns         *[]PayloadsConnectorColumn      `json:"columns,omitempty"`
+	CreatedAt       *time.Time                      `json:"createdAt,omitempty"`
+	IsView          *bool                           `json:"isView,omitempty"`
+	Metadata        *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
+	ModifiedAt      *time.Time                      `json:"modifiedAt,omitempty"`
+	Name            *string                         `json:"name,omitempty"`
+	Schema          *string                         `json:"schema,omitempty"`
+	Unreadable      *bool                           `json:"unreadable,omitempty"`
 }
 
 // RouterCreateColumnHashingSaltRequest defines model for RouterCreateColumnHashingSaltRequest.
@@ -799,6 +893,7 @@ type RouterPipelineCancelBackfillRequest struct {
 // RouterPipelineCreateFromSourceRequest defines model for RouterPipelineCreateFromSourceRequest.
 type RouterPipelineCreateFromSourceRequest struct {
 	DataPlaneName       *string             `json:"dataPlaneName,omitempty"`
+	DestinationType     *string             `json:"destinationType,omitempty"`
 	EnvironmentUUID     *openapi_types.UUID `json:"environmentUUID,omitempty"`
 	SourceConnectorUUID *openapi_types.UUID `json:"sourceConnectorUUID,omitempty"`
 	SourceType          *string             `json:"sourceType,omitempty"`
@@ -975,6 +1070,9 @@ type PostColumnHashingSaltsUuidPreviewJSONRequestBody = RouterPreviewColumnHashi
 // PostConnectorsJSONRequestBody defines body for PostConnectors for application/json ContentType.
 type PostConnectorsJSONRequestBody = PayloadsConnectorPayload
 
+// PostConnectorsDatabasesJSONRequestBody defines body for PostConnectorsDatabases for application/json ContentType.
+type PostConnectorsDatabasesJSONRequestBody = PayloadsConnectorPayload
+
 // PostConnectorsNewDatabaseJSONRequestBody defines body for PostConnectorsNewDatabase for application/json ContentType.
 type PostConnectorsNewDatabaseJSONRequestBody = RouterConnectorCreateDatabaseRequest
 
@@ -986,6 +1084,15 @@ type PostConnectorsNewSnowflakeWarehouseJSONRequestBody = RouterConnectorCreateS
 
 // PostConnectorsPingJSONRequestBody defines body for PostConnectorsPing for application/json ContentType.
 type PostConnectorsPingJSONRequestBody = PayloadsConnectorPayload
+
+// PostConnectorsPostgresPublicationsJSONRequestBody defines body for PostConnectorsPostgresPublications for application/json ContentType.
+type PostConnectorsPostgresPublicationsJSONRequestBody = RouterConnectorFetchPostgresPublicationsRequest
+
+// PostConnectorsSchemasJSONRequestBody defines body for PostConnectorsSchemas for application/json ContentType.
+type PostConnectorsSchemasJSONRequestBody = RouterConnectorFetchSchemasRequest
+
+// PostConnectorsTablesJSONRequestBody defines body for PostConnectorsTables for application/json ContentType.
+type PostConnectorsTablesJSONRequestBody = RouterConnectorFetchTablesRequest
 
 // PostConnectorsUuidJSONRequestBody defines body for PostConnectorsUuid for application/json ContentType.
 type PostConnectorsUuidJSONRequestBody = PayloadsConnectorPayload
@@ -1167,6 +1274,11 @@ type ClientInterface interface {
 
 	PostConnectors(ctx context.Context, body PostConnectorsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PostConnectorsDatabasesWithBody request with any body
+	PostConnectorsDatabasesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConnectorsDatabases(ctx context.Context, body PostConnectorsDatabasesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PostConnectorsNewDatabaseWithBody request with any body
 	PostConnectorsNewDatabaseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1187,6 +1299,21 @@ type ClientInterface interface {
 
 	PostConnectorsPing(ctx context.Context, body PostConnectorsPingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PostConnectorsPostgresPublicationsWithBody request with any body
+	PostConnectorsPostgresPublicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConnectorsPostgresPublications(ctx context.Context, body PostConnectorsPostgresPublicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConnectorsSchemasWithBody request with any body
+	PostConnectorsSchemasWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConnectorsSchemas(ctx context.Context, body PostConnectorsSchemasJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConnectorsTablesWithBody request with any body
+	PostConnectorsTablesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConnectorsTables(ctx context.Context, body PostConnectorsTablesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteConnectorsUuid request
 	DeleteConnectorsUuid(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1197,6 +1324,9 @@ type ClientInterface interface {
 	PostConnectorsUuidWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostConnectorsUuid(ctx context.Context, uuid string, body PostConnectorsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConnectorsUuidDetail request
+	GetConnectorsUuidDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PostConnectorsUuidGenerateShadowScriptWithBody request with any body
 	PostConnectorsUuidGenerateShadowScriptWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1501,6 +1631,30 @@ func (c *Client) PostConnectors(ctx context.Context, body PostConnectorsJSONRequ
 	return c.Client.Do(req)
 }
 
+func (c *Client) PostConnectorsDatabasesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsDatabasesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConnectorsDatabases(ctx context.Context, body PostConnectorsDatabasesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsDatabasesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) PostConnectorsNewDatabaseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostConnectorsNewDatabaseRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -1597,6 +1751,78 @@ func (c *Client) PostConnectorsPing(ctx context.Context, body PostConnectorsPing
 	return c.Client.Do(req)
 }
 
+func (c *Client) PostConnectorsPostgresPublicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsPostgresPublicationsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConnectorsPostgresPublications(ctx context.Context, body PostConnectorsPostgresPublicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsPostgresPublicationsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConnectorsSchemasWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsSchemasRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConnectorsSchemas(ctx context.Context, body PostConnectorsSchemasJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsSchemasRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConnectorsTablesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsTablesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConnectorsTables(ctx context.Context, body PostConnectorsTablesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConnectorsTablesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) DeleteConnectorsUuid(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteConnectorsUuidRequest(c.Server, uuid)
 	if err != nil {
@@ -1635,6 +1861,18 @@ func (c *Client) PostConnectorsUuidWithBody(ctx context.Context, uuid string, co
 
 func (c *Client) PostConnectorsUuid(ctx context.Context, uuid string, body PostConnectorsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostConnectorsUuidRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConnectorsUuidDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConnectorsUuidDetailRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -2694,6 +2932,46 @@ func NewPostConnectorsRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
+// NewPostConnectorsDatabasesRequest calls the generic PostConnectorsDatabases builder with application/json body
+func NewPostConnectorsDatabasesRequest(server string, body PostConnectorsDatabasesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConnectorsDatabasesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostConnectorsDatabasesRequestWithBody generates requests for PostConnectorsDatabases with any type of body
+func NewPostConnectorsDatabasesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/databases")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewPostConnectorsNewDatabaseRequest calls the generic PostConnectorsNewDatabase builder with application/json body
 func NewPostConnectorsNewDatabaseRequest(server string, body PostConnectorsNewDatabaseJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -2854,6 +3132,126 @@ func NewPostConnectorsPingRequestWithBody(server string, contentType string, bod
 	return req, nil
 }
 
+// NewPostConnectorsPostgresPublicationsRequest calls the generic PostConnectorsPostgresPublications builder with application/json body
+func NewPostConnectorsPostgresPublicationsRequest(server string, body PostConnectorsPostgresPublicationsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConnectorsPostgresPublicationsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostConnectorsPostgresPublicationsRequestWithBody generates requests for PostConnectorsPostgresPublications with any type of body
+func NewPostConnectorsPostgresPublicationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/postgres-publications")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostConnectorsSchemasRequest calls the generic PostConnectorsSchemas builder with application/json body
+func NewPostConnectorsSchemasRequest(server string, body PostConnectorsSchemasJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConnectorsSchemasRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostConnectorsSchemasRequestWithBody generates requests for PostConnectorsSchemas with any type of body
+func NewPostConnectorsSchemasRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/schemas")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostConnectorsTablesRequest calls the generic PostConnectorsTables builder with application/json body
+func NewPostConnectorsTablesRequest(server string, body PostConnectorsTablesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConnectorsTablesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostConnectorsTablesRequestWithBody generates requests for PostConnectorsTables with any type of body
+func NewPostConnectorsTablesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/tables")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteConnectorsUuidRequest generates requests for DeleteConnectorsUuid
 func NewDeleteConnectorsUuidRequest(server string, uuid string) (*http.Request, error) {
 	var err error
@@ -2965,6 +3363,40 @@ func NewPostConnectorsUuidRequestWithBody(server string, uuid string, contentTyp
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConnectorsUuidDetailRequest generates requests for GetConnectorsUuidDetail
+func NewGetConnectorsUuidDetailRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/%s/detail", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -4650,6 +5082,11 @@ type ClientWithResponsesInterface interface {
 
 	PostConnectorsWithResponse(ctx context.Context, body PostConnectorsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsResponse, error)
 
+	// PostConnectorsDatabasesWithBodyWithResponse request with any body
+	PostConnectorsDatabasesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsDatabasesResponse, error)
+
+	PostConnectorsDatabasesWithResponse(ctx context.Context, body PostConnectorsDatabasesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsDatabasesResponse, error)
+
 	// PostConnectorsNewDatabaseWithBodyWithResponse request with any body
 	PostConnectorsNewDatabaseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsNewDatabaseResponse, error)
 
@@ -4670,6 +5107,21 @@ type ClientWithResponsesInterface interface {
 
 	PostConnectorsPingWithResponse(ctx context.Context, body PostConnectorsPingJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsPingResponse, error)
 
+	// PostConnectorsPostgresPublicationsWithBodyWithResponse request with any body
+	PostConnectorsPostgresPublicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsPostgresPublicationsResponse, error)
+
+	PostConnectorsPostgresPublicationsWithResponse(ctx context.Context, body PostConnectorsPostgresPublicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsPostgresPublicationsResponse, error)
+
+	// PostConnectorsSchemasWithBodyWithResponse request with any body
+	PostConnectorsSchemasWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsSchemasResponse, error)
+
+	PostConnectorsSchemasWithResponse(ctx context.Context, body PostConnectorsSchemasJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsSchemasResponse, error)
+
+	// PostConnectorsTablesWithBodyWithResponse request with any body
+	PostConnectorsTablesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsTablesResponse, error)
+
+	PostConnectorsTablesWithResponse(ctx context.Context, body PostConnectorsTablesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsTablesResponse, error)
+
 	// DeleteConnectorsUuidWithResponse request
 	DeleteConnectorsUuidWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*DeleteConnectorsUuidResponse, error)
 
@@ -4680,6 +5132,9 @@ type ClientWithResponsesInterface interface {
 	PostConnectorsUuidWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsUuidResponse, error)
 
 	PostConnectorsUuidWithResponse(ctx context.Context, uuid string, body PostConnectorsUuidJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsUuidResponse, error)
+
+	// GetConnectorsUuidDetailWithResponse request
+	GetConnectorsUuidDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*GetConnectorsUuidDetailResponse, error)
 
 	// PostConnectorsUuidGenerateShadowScriptWithBodyWithResponse request with any body
 	PostConnectorsUuidGenerateShadowScriptWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsUuidGenerateShadowScriptResponse, error)
@@ -5005,6 +5460,28 @@ func (r PostConnectorsResponse) StatusCode() int {
 	return 0
 }
 
+type PostConnectorsDatabasesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PayloadsConnectorFetchDatabasesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConnectorsDatabasesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConnectorsDatabasesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type PostConnectorsNewDatabaseResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5090,6 +5567,71 @@ func (r PostConnectorsPingResponse) StatusCode() int {
 	return 0
 }
 
+type PostConnectorsPostgresPublicationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListResponseBodyPostgresPublication
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConnectorsPostgresPublicationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConnectorsPostgresPublicationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConnectorsSchemasResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConnectorsSchemasResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConnectorsSchemasResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConnectorsTablesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListResponseBodyConnectorTable
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConnectorsTablesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConnectorsTablesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteConnectorsUuidResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5149,6 +5691,28 @@ func (r PostConnectorsUuidResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PostConnectorsUuidResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConnectorsUuidDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PayloadsConnectorTableDetailResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConnectorsUuidDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConnectorsUuidDetailResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6120,6 +6684,23 @@ func (c *ClientWithResponses) PostConnectorsWithResponse(ctx context.Context, bo
 	return ParsePostConnectorsResponse(rsp)
 }
 
+// PostConnectorsDatabasesWithBodyWithResponse request with arbitrary body returning *PostConnectorsDatabasesResponse
+func (c *ClientWithResponses) PostConnectorsDatabasesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsDatabasesResponse, error) {
+	rsp, err := c.PostConnectorsDatabasesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsDatabasesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConnectorsDatabasesWithResponse(ctx context.Context, body PostConnectorsDatabasesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsDatabasesResponse, error) {
+	rsp, err := c.PostConnectorsDatabases(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsDatabasesResponse(rsp)
+}
+
 // PostConnectorsNewDatabaseWithBodyWithResponse request with arbitrary body returning *PostConnectorsNewDatabaseResponse
 func (c *ClientWithResponses) PostConnectorsNewDatabaseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsNewDatabaseResponse, error) {
 	rsp, err := c.PostConnectorsNewDatabaseWithBody(ctx, contentType, body, reqEditors...)
@@ -6188,6 +6769,57 @@ func (c *ClientWithResponses) PostConnectorsPingWithResponse(ctx context.Context
 	return ParsePostConnectorsPingResponse(rsp)
 }
 
+// PostConnectorsPostgresPublicationsWithBodyWithResponse request with arbitrary body returning *PostConnectorsPostgresPublicationsResponse
+func (c *ClientWithResponses) PostConnectorsPostgresPublicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsPostgresPublicationsResponse, error) {
+	rsp, err := c.PostConnectorsPostgresPublicationsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsPostgresPublicationsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConnectorsPostgresPublicationsWithResponse(ctx context.Context, body PostConnectorsPostgresPublicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsPostgresPublicationsResponse, error) {
+	rsp, err := c.PostConnectorsPostgresPublications(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsPostgresPublicationsResponse(rsp)
+}
+
+// PostConnectorsSchemasWithBodyWithResponse request with arbitrary body returning *PostConnectorsSchemasResponse
+func (c *ClientWithResponses) PostConnectorsSchemasWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsSchemasResponse, error) {
+	rsp, err := c.PostConnectorsSchemasWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsSchemasResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConnectorsSchemasWithResponse(ctx context.Context, body PostConnectorsSchemasJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsSchemasResponse, error) {
+	rsp, err := c.PostConnectorsSchemas(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsSchemasResponse(rsp)
+}
+
+// PostConnectorsTablesWithBodyWithResponse request with arbitrary body returning *PostConnectorsTablesResponse
+func (c *ClientWithResponses) PostConnectorsTablesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConnectorsTablesResponse, error) {
+	rsp, err := c.PostConnectorsTablesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsTablesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConnectorsTablesWithResponse(ctx context.Context, body PostConnectorsTablesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConnectorsTablesResponse, error) {
+	rsp, err := c.PostConnectorsTables(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConnectorsTablesResponse(rsp)
+}
+
 // DeleteConnectorsUuidWithResponse request returning *DeleteConnectorsUuidResponse
 func (c *ClientWithResponses) DeleteConnectorsUuidWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*DeleteConnectorsUuidResponse, error) {
 	rsp, err := c.DeleteConnectorsUuid(ctx, uuid, reqEditors...)
@@ -6221,6 +6853,15 @@ func (c *ClientWithResponses) PostConnectorsUuidWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParsePostConnectorsUuidResponse(rsp)
+}
+
+// GetConnectorsUuidDetailWithResponse request returning *GetConnectorsUuidDetailResponse
+func (c *ClientWithResponses) GetConnectorsUuidDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*GetConnectorsUuidDetailResponse, error) {
+	rsp, err := c.GetConnectorsUuidDetail(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConnectorsUuidDetailResponse(rsp)
 }
 
 // PostConnectorsUuidGenerateShadowScriptWithBodyWithResponse request with arbitrary body returning *PostConnectorsUuidGenerateShadowScriptResponse
@@ -6955,6 +7596,32 @@ func ParsePostConnectorsResponse(rsp *http.Response) (*PostConnectorsResponse, e
 	return response, nil
 }
 
+// ParsePostConnectorsDatabasesResponse parses an HTTP response from a PostConnectorsDatabasesWithResponse call
+func ParsePostConnectorsDatabasesResponse(rsp *http.Response) (*PostConnectorsDatabasesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConnectorsDatabasesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsConnectorFetchDatabasesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParsePostConnectorsNewDatabaseResponse parses an HTTP response from a PostConnectorsNewDatabaseWithResponse call
 func ParsePostConnectorsNewDatabaseResponse(rsp *http.Response) (*PostConnectorsNewDatabaseResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -7029,6 +7696,74 @@ func ParsePostConnectorsPingResponse(rsp *http.Response) (*PostConnectorsPingRes
 	return response, nil
 }
 
+// ParsePostConnectorsPostgresPublicationsResponse parses an HTTP response from a PostConnectorsPostgresPublicationsWithResponse call
+func ParsePostConnectorsPostgresPublicationsResponse(rsp *http.Response) (*PostConnectorsPostgresPublicationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConnectorsPostgresPublicationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyPostgresPublication
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostConnectorsSchemasResponse parses an HTTP response from a PostConnectorsSchemasWithResponse call
+func ParsePostConnectorsSchemasResponse(rsp *http.Response) (*PostConnectorsSchemasResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConnectorsSchemasResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostConnectorsTablesResponse parses an HTTP response from a PostConnectorsTablesWithResponse call
+func ParsePostConnectorsTablesResponse(rsp *http.Response) (*PostConnectorsTablesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConnectorsTablesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyConnectorTable
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteConnectorsUuidResponse parses an HTTP response from a DeleteConnectorsUuidWithResponse call
 func ParseDeleteConnectorsUuidResponse(rsp *http.Response) (*DeleteConnectorsUuidResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -7087,6 +7822,32 @@ func ParsePostConnectorsUuidResponse(rsp *http.Response) (*PostConnectorsUuidRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PayloadsFullConnector
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConnectorsUuidDetailResponse parses an HTTP response from a GetConnectorsUuidDetailWithResponse call
+func ParseGetConnectorsUuidDetailResponse(rsp *http.Response) (*GetConnectorsUuidDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConnectorsUuidDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsConnectorTableDetailResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
