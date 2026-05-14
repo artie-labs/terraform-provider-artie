@@ -68,10 +68,10 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesConfig *openap
 				diags.Append(includeDiags...)
 			}
 
-		tables[key] = SourceReaderTable{
-			Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
-			Schema:                   types.StringValue(lib.RemovePtr(apiTable.Schema)),
-			IsPartitioned:            types.BoolValue(false),
+			tables[key] = SourceReaderTable{
+				Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
+				Schema:                   types.StringValue(lib.RemovePtr(apiTable.Schema)),
+				IsPartitioned:            types.BoolValue(false),
 				ColumnsToExclude:         colsToExclude,
 				ColumnsToInclude:         colsToInclude,
 				ChildPartitionSchemaName: types.StringValue(""),
