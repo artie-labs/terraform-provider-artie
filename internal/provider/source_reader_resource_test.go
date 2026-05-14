@@ -17,6 +17,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		AttrTypes: map[string]attr.Type{
 			"name":                        types.StringType,
 			"schema":                      types.StringType,
+			"is_partitioned":              types.BoolType,
 			"columns_to_exclude":          types.ListType{ElemType: types.StringType},
 			"columns_to_include":          types.ListType{ElemType: types.StringType},
 			"child_partition_schema_name": types.StringType,
@@ -76,22 +77,23 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 					"test_table": types.ObjectValueMust(
 						tableType.AttrTypes,
 						map[string]attr.Value{
-							"name":                        types.StringValue("test_table"),
-							"schema":                      types.StringValue(""),
-							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
-							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
-							"child_partition_schema_name": types.StringValue(""),
-							"unify_across_schemas":        types.BoolValue(false),
-							"unify_across_databases":      types.BoolValue(false),
-						},
-					),
-				},
-			),
-		}
+						"name":                        types.StringValue("test_table"),
+						"schema":                      types.StringValue(""),
+						"is_partitioned":              types.BoolValue(false),
+						"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
+						"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
+						"child_partition_schema_name": types.StringValue(""),
+						"unify_across_schemas":        types.BoolValue(false),
+						"unify_across_databases":      types.BoolValue(false),
+					},
+				),
+			},
+		),
+	}
 
-		diags := validateSourceReaderConfig(t.Context(), config)
-		assert.True(t, diags.HasError())
-		assert.Contains(t, diags.Errors()[0].Detail(), "You should not specify a `tables` block if `is_shared` is set to false.")
+	diags := validateSourceReaderConfig(t.Context(), config)
+	assert.True(t, diags.HasError())
+	assert.Contains(t, diags.Errors()[0].Detail(), "You should not specify a `tables` block if `is_shared` is set to false.")
 	}
 	{
 		config := tfmodels.SourceReader{
@@ -103,22 +105,23 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 					"wrong_key": types.ObjectValueMust(
 						tableType.AttrTypes,
 						map[string]attr.Value{
-							"name":                        types.StringValue("test_table"),
-							"schema":                      types.StringValue("public"),
-							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
-							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
-							"child_partition_schema_name": types.StringValue(""),
-							"unify_across_schemas":        types.BoolValue(false),
-							"unify_across_databases":      types.BoolValue(false),
-						},
-					),
-				},
-			),
-		}
+						"name":                        types.StringValue("test_table"),
+						"schema":                      types.StringValue("public"),
+						"is_partitioned":              types.BoolValue(false),
+						"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{}),
+						"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{}),
+						"child_partition_schema_name": types.StringValue(""),
+						"unify_across_schemas":        types.BoolValue(false),
+						"unify_across_databases":      types.BoolValue(false),
+					},
+				),
+			},
+		),
+	}
 
-		diags := validateSourceReaderConfig(t.Context(), config)
-		assert.True(t, diags.HasError())
-		assert.Contains(t, diags.Errors()[0].Detail(), "Table key \"wrong_key\" should be \"public.test_table\" instead.")
+	diags := validateSourceReaderConfig(t.Context(), config)
+	assert.True(t, diags.HasError())
+	assert.Contains(t, diags.Errors()[0].Detail(), "Table key \"wrong_key\" should be \"public.test_table\" instead.")
 	}
 	{
 		config := tfmodels.SourceReader{
@@ -130,10 +133,11 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 					"public.test_table": types.ObjectValueMust(
 						tableType.AttrTypes,
 						map[string]attr.Value{
-							"name":                        types.StringValue("test_table"),
-							"schema":                      types.StringValue("public"),
-							"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col1")}),
-							"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col2")}),
+						"name":                        types.StringValue("test_table"),
+						"schema":                      types.StringValue("public"),
+						"is_partitioned":              types.BoolValue(false),
+						"columns_to_exclude":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col1")}),
+						"columns_to_include":          types.ListValueMust(types.StringType, []attr.Value{types.StringValue("col2")}),
 							"child_partition_schema_name": types.StringValue(""),
 							"unify_across_schemas":        types.BoolValue(false),
 							"unify_across_databases":      types.BoolValue(false),
