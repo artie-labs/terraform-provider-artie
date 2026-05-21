@@ -102,9 +102,9 @@ type SourceReader struct {
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresPublicationMode         types.String `tfsdk:"postgres_publication_mode"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
-	PublishViaPartitionRoot              types.Bool   `tfsdk:"publish_via_partition_root"`
-	UseAdvanceOnPrimaryKeepAlive         types.Bool   `tfsdk:"use_advance_on_primary_keep_alive"`
-	EnableUnifyAcrossSchemas             types.Bool   `tfsdk:"enable_unify_across_schemas"`
+	PublishViaPartitionRoot         types.Bool   `tfsdk:"publish_via_partition_root"`
+	UseAdvanceOnPrimaryKeepAlive    types.Bool   `tfsdk:"use_advance_on_primary_keep_alive"`
+	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
 	MSSQLReplicationMethod          types.String `tfsdk:"mssql_replication_method"`
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
@@ -116,19 +116,19 @@ type SourceReader struct {
 func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSourceReaderSettingsPayload, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	settings := openapi.PayloadsSourceReaderSettingsPayload{
-		BackfillBatchSize:         lib.ToPtr(int(s.BackfillBatchSize.ValueInt64())),
-		EnableHeartbeats:          s.EnableHeartbeats.ValueBoolPointer(),
-		OneTopicPerSchema:         s.OneTopicPerSchema.ValueBoolPointer(),
-		PublicationNameOverride:   s.PostgresPublicationNameOverride.ValueStringPointer(),
-		PublicationAutoCreateMode: s.PostgresPublicationMode.ValueStringPointer(),
-		ReplicationSlotOverride:   s.PostgresReplicationSlotOverride.ValueStringPointer(),
-		PublishViaPartitionRoot:   s.PublishViaPartitionRoot.ValueBoolPointer(),
+		BackfillBatchSize:            lib.ToPtr(int(s.BackfillBatchSize.ValueInt64())),
+		EnableHeartbeats:             s.EnableHeartbeats.ValueBoolPointer(),
+		OneTopicPerSchema:            s.OneTopicPerSchema.ValueBoolPointer(),
+		PublicationNameOverride:      s.PostgresPublicationNameOverride.ValueStringPointer(),
+		PublicationAutoCreateMode:    s.PostgresPublicationMode.ValueStringPointer(),
+		ReplicationSlotOverride:      s.PostgresReplicationSlotOverride.ValueStringPointer(),
+		PublishViaPartitionRoot:      s.PublishViaPartitionRoot.ValueBoolPointer(),
 		UseAdvanceOnPrimaryKeepAlive: s.UseAdvanceOnPrimaryKeepAlive.ValueBoolPointer(),
-		UnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBoolPointer(),
-		UnifyAcrossSchemasRegex:   s.UnifyAcrossSchemasRegex.ValueStringPointer(),
-		MssqlReplicationMethod:    s.MSSQLReplicationMethod.ValueStringPointer(),
-		UnifyAcrossDatabases:      s.EnableUnifyAcrossDatabases.ValueBoolPointer(),
-		DisableAutoFetchTables:    s.DisableAutoFetchTables.ValueBoolPointer(),
+		UnifyAcrossSchemas:           s.EnableUnifyAcrossSchemas.ValueBoolPointer(),
+		UnifyAcrossSchemasRegex:      s.UnifyAcrossSchemasRegex.ValueStringPointer(),
+		MssqlReplicationMethod:       s.MSSQLReplicationMethod.ValueStringPointer(),
+		UnifyAcrossDatabases:         s.EnableUnifyAcrossDatabases.ValueBoolPointer(),
+		DisableAutoFetchTables:       s.DisableAutoFetchTables.ValueBoolPointer(),
 	}
 
 	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
