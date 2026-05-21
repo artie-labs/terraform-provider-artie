@@ -102,8 +102,9 @@ type SourceReader struct {
 	PostgresPublicationNameOverride types.String `tfsdk:"postgres_publication_name_override"`
 	PostgresPublicationMode         types.String `tfsdk:"postgres_publication_mode"`
 	PostgresReplicationSlotOverride types.String `tfsdk:"postgres_replication_slot_override"`
-	PublishViaPartitionRoot         types.Bool   `tfsdk:"publish_via_partition_root"`
-	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
+	PublishViaPartitionRoot              types.Bool   `tfsdk:"publish_via_partition_root"`
+	UseAdvanceOnPrimaryKeepAlive         types.Bool   `tfsdk:"use_advance_on_primary_keep_alive"`
+	EnableUnifyAcrossSchemas             types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
 	MSSQLReplicationMethod          types.String `tfsdk:"mssql_replication_method"`
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
@@ -122,6 +123,7 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		PublicationAutoCreateMode: s.PostgresPublicationMode.ValueStringPointer(),
 		ReplicationSlotOverride:   s.PostgresReplicationSlotOverride.ValueStringPointer(),
 		PublishViaPartitionRoot:   s.PublishViaPartitionRoot.ValueBoolPointer(),
+		UseAdvanceOnPrimaryKeepAlive: s.UseAdvanceOnPrimaryKeepAlive.ValueBoolPointer(),
 		UnifyAcrossSchemas:        s.EnableUnifyAcrossSchemas.ValueBoolPointer(),
 		UnifyAcrossSchemasRegex:   s.UnifyAcrossSchemasRegex.ValueStringPointer(),
 		MssqlReplicationMethod:    s.MSSQLReplicationMethod.ValueStringPointer(),
@@ -248,6 +250,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		PostgresPublicationMode:         types.StringValue(lib.RemovePtr(apiModel.Settings.PublicationAutoCreateMode)),
 		PostgresReplicationSlotOverride: types.StringValue(lib.RemovePtr(apiModel.Settings.ReplicationSlotOverride)),
 		PublishViaPartitionRoot:         types.BoolPointerValue(apiModel.Settings.PublishViaPartitionRoot),
+		UseAdvanceOnPrimaryKeepAlive:    types.BoolPointerValue(apiModel.Settings.UseAdvanceOnPrimaryKeepAlive),
 		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
 		MSSQLReplicationMethod:          types.StringValue(lib.RemovePtr(apiModel.Settings.MssqlReplicationMethod)),
