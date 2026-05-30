@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/artie-labs/transfer/lib/kafkalib"
 	"github.com/google/uuid"
 
 	"terraform-provider-artie/internal/openapi"
@@ -72,10 +71,10 @@ type MergePredicate struct {
 }
 
 type SoftPartitioning struct {
-	Enabled            bool                        `json:"enabled"`
-	PartitionFrequency kafkalib.PartitionFrequency `json:"partitionFrequency"`
-	PartitionColumn    string                      `json:"partitionColumn"`
-	MaxPartitions      int                         `json:"maxPartitions"`
+	Enabled            bool               `json:"enabled"`
+	PartitionFrequency PartitionFrequency `json:"partitionFrequency"`
+	PartitionColumn    string             `json:"partitionColumn"`
+	MaxPartitions      int                `json:"maxPartitions"`
 }
 
 type CTIDSettings struct {
