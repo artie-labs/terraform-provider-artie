@@ -1,7 +1,6 @@
 package maputil
 
 import (
-	"iter"
 	"slices"
 	"sort"
 )
@@ -28,23 +27,6 @@ func (s *SortedStringsMap[T]) Add(key string, value T) {
 	s.data[key] = value
 }
 
-func (s *SortedStringsMap[T]) Get(key string) (T, bool) {
-	val, ok := s.data[key]
-	return val, ok
-}
-
 func (s *SortedStringsMap[T]) Keys() []string {
 	return slices.Clone(s.keys)
-}
-
-func (s *SortedStringsMap[T]) All() iter.Seq2[string, T] {
-	return func(yield func(string, T) bool) {
-		for _, key := range s.keys {
-			if value, ok := s.Get(key); ok {
-				if !yield(key, value) {
-					break
-				}
-			}
-		}
-	}
 }

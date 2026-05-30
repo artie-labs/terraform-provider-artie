@@ -9,12 +9,6 @@ testacc:
 generate:
 	go generate ./...
 
-.PHONY: upgrade
-upgrade:
-	go get github.com/artie-labs/transfer
-	go mod tidy
-	echo "Upgrade complete"
-
 install:
 	go install ./...
 
