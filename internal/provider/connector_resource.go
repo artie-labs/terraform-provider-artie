@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/artie-labs/transfer/lib/maputil"
+	"terraform-provider-artie/internal/maputil"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"

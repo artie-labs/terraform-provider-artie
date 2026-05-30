@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/artie-labs/transfer/lib/kafkalib"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -65,7 +64,7 @@ type SoftPartitioning struct {
 func (s SoftPartitioning) ToAPIModel() *artieclient.SoftPartitioning {
 	return &artieclient.SoftPartitioning{
 		Enabled:            s.Enabled.ValueBool(),
-		PartitionFrequency: kafkalib.PartitionFrequency(s.PartitionFrequency.ValueString()),
+		PartitionFrequency: artieclient.PartitionFrequency(s.PartitionFrequency.ValueString()),
 		PartitionColumn:    s.PartitionColumn.ValueString(),
 		MaxPartitions:      int(s.MaxPartitions.ValueInt32()),
 	}
