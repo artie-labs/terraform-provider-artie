@@ -71,10 +71,10 @@ type MergePredicate struct {
 }
 
 type SoftPartitioning struct {
-	Enabled            bool                        `json:"enabled"`
+	Enabled            bool               `json:"enabled"`
 	PartitionFrequency PartitionFrequency `json:"partitionFrequency"`
-	PartitionColumn    string                      `json:"partitionColumn"`
-	MaxPartitions      int                         `json:"maxPartitions"`
+	PartitionColumn    string             `json:"partitionColumn"`
+	MaxPartitions      int                `json:"maxPartitions"`
 }
 
 type CTIDSettings struct {
