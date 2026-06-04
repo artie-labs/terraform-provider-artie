@@ -53,6 +53,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 ### Optional
 
 - `backfill_batch_size` (Number) The number of rows to read from the source database in each batch while backfilling. Maximum allowed value is 50,000. Default is 5,000.
+- `composite_types_as_text` (Boolean) If set to true, Postgres composite (row) type columns will be replicated as their text representation (e.g. (book,abc123)) instead of being stored as Base64 encoded strings. This is only applicable if the source type is PostgreSQL. Defaults to false.
 - `data_plane_name` (String) The name of the data plane to deploy this source reader in. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.
 - `database_name` (String) The name of the database we should read data from in the source connector. This should be specified if the source connector's type is DocumentDB, MongoDB, MySQL, MS SQL, Oracle (this maps to the service name), or PostgreSQL.
 - `databases_to_unify` (List of String) If `enable_unify_across_databases` is set to true, this should be a list of databases within your Microsoft SQL Server that we should sync data from. All tables that you opt into being unified should exist in each of these databases. This is only applicable if the source type is Microsoft SQL Server.

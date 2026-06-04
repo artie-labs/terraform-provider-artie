@@ -181,6 +181,7 @@ type ListResponseBodyPostgresPublication struct {
 // PayloadsAdvancedPipelineSettingsPayload defines model for PayloadsAdvancedPipelineSettingsPayload.
 type PayloadsAdvancedPipelineSettingsPayload struct {
 	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
+	AutoEnableHistoryForNewTables                *bool                           `json:"autoEnableHistoryForNewTables,omitempty"`
 	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
 	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
@@ -310,14 +311,16 @@ type PayloadsConnectorFetchDatabasesResponse struct {
 
 // PayloadsConnectorPayload defines model for PayloadsConnectorPayload.
 type PayloadsConnectorPayload struct {
-	DataPlaneName   *string                 `json:"dataPlaneName,omitempty"`
-	DefaultDatabase *string                 `json:"defaultDatabase,omitempty"`
-	EnvironmentUUID *openapi_types.UUID     `json:"environmentUUID,omitempty"`
-	Label           *string                 `json:"label,omitempty"`
-	SharedConfig    *map[string]interface{} `json:"sharedConfig,omitempty"`
-	SshTunnelUUID   *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
-	Type            *string                 `json:"type,omitempty"`
-	Uuid            *string                 `json:"uuid,omitempty"`
+	DataPlaneName           *string                 `json:"dataPlaneName,omitempty"`
+	DefaultDatabase         *string                 `json:"defaultDatabase,omitempty"`
+	EnvironmentUUID         *openapi_types.UUID     `json:"environmentUUID,omitempty"`
+	Label                   *string                 `json:"label,omitempty"`
+	PrivateLinkUUID         *openapi_types.UUID     `json:"privateLinkUUID,omitempty"`
+	SharedConfig            *map[string]interface{} `json:"sharedConfig,omitempty"`
+	SnapshotPrivateLinkUUID *openapi_types.UUID     `json:"snapshotPrivateLinkUUID,omitempty"`
+	SshTunnelUUID           *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
+	Type                    *string                 `json:"type,omitempty"`
+	Uuid                    *string                 `json:"uuid,omitempty"`
 }
 
 // PayloadsConnectorTableDetailResponse defines model for PayloadsConnectorTableDetailResponse.
@@ -407,19 +410,21 @@ type PayloadsEncryptionKeyDetail struct {
 
 // PayloadsFullConnector defines model for PayloadsFullConnector.
 type PayloadsFullConnector struct {
-	CompanyUUID     openapi_types.UUID  `json:"companyUUID"`
-	ConnectionLabel *string             `json:"connectionLabel,omitempty"`
-	CreatedAt       time.Time           `json:"createdAt"`
-	DataPlaneName   *string             `json:"dataPlaneName,omitempty"`
-	DefaultDatabase *string             `json:"defaultDatabase,omitempty"`
-	EnvironmentUUID openapi_types.UUID  `json:"environmentUUID"`
-	IsValid         bool                `json:"isValid"`
-	Label           string              `json:"label"`
-	SharedConfig    interface{}         `json:"sharedConfig,omitempty"`
-	SshTunnelUUID   *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
-	Type            EnumsConnectorSlug  `json:"type"`
-	UpdatedAt       time.Time           `json:"updatedAt"`
-	Uuid            openapi_types.UUID  `json:"uuid"`
+	CompanyUUID             openapi_types.UUID  `json:"companyUUID"`
+	ConnectionLabel         *string             `json:"connectionLabel,omitempty"`
+	CreatedAt               time.Time           `json:"createdAt"`
+	DataPlaneName           *string             `json:"dataPlaneName,omitempty"`
+	DefaultDatabase         *string             `json:"defaultDatabase,omitempty"`
+	EnvironmentUUID         openapi_types.UUID  `json:"environmentUUID"`
+	IsValid                 bool                `json:"isValid"`
+	Label                   string              `json:"label"`
+	PrivateLinkUUID         *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
+	SharedConfig            interface{}         `json:"sharedConfig,omitempty"`
+	SnapshotPrivateLinkUUID *openapi_types.UUID `json:"snapshotPrivateLinkUUID,omitempty"`
+	SshTunnelUUID           *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
+	Type                    EnumsConnectorSlug  `json:"type"`
+	UpdatedAt               time.Time           `json:"updatedAt"`
+	Uuid                    openapi_types.UUID  `json:"uuid"`
 }
 
 // PayloadsFullPipeline defines model for PayloadsFullPipeline.
@@ -432,6 +437,7 @@ type PayloadsFullPipeline struct {
 	DestinationUUID          *openapi_types.UUID              `json:"destinationUUID,omitempty"`
 	EncryptionKeyUUID        *openapi_types.UUID              `json:"encryptionKeyUUID,omitempty"`
 	EnvironmentUUID          openapi_types.UUID               `json:"environmentUUID"`
+	HasBackfillingTables     *bool                            `json:"hasBackfillingTables,omitempty"`
 	HasUndeployedChanges     bool                             `json:"hasUndeployedChanges"`
 	IsDeploying              bool                             `json:"isDeploying"`
 	LastDeployedAt           *time.Time                       `json:"lastDeployedAt,omitempty"`
@@ -467,6 +473,7 @@ type PayloadsLightPipeline struct {
 	DestinationUUID          *openapi_types.UUID  `json:"destinationUUID,omitempty"`
 	EncryptionKeyUUID        *openapi_types.UUID  `json:"encryptionKeyUUID,omitempty"`
 	EnvironmentUUID          openapi_types.UUID   `json:"environmentUUID"`
+	HasBackfillingTables     *bool                `json:"hasBackfillingTables,omitempty"`
 	HasUndeployedChanges     bool                 `json:"hasUndeployedChanges"`
 	IsDeploying              bool                 `json:"isDeploying"`
 	LastDeployedAt           *time.Time           `json:"lastDeployedAt,omitempty"`
@@ -489,6 +496,7 @@ type PayloadsMergePredicates struct {
 // PayloadsPipelineAdvancedSettings defines model for PayloadsPipelineAdvancedSettings.
 type PayloadsPipelineAdvancedSettings struct {
 	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
+	AutoEnableHistoryForNewTables                *bool                           `json:"autoEnableHistoryForNewTables,omitempty"`
 	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
 	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
@@ -634,14 +642,18 @@ type PayloadsSourceReader struct {
 // PayloadsSourceReaderSettingsPayload defines model for PayloadsSourceReaderSettingsPayload.
 type PayloadsSourceReaderSettingsPayload struct {
 	AllowMSSQLCaptureInstancesViaReader *bool                           `json:"allowMSSQLCaptureInstancesViaReader,omitempty"`
+	ArchiveLogPassword                  *string                         `json:"archiveLogPassword,omitempty"`
+	ArchiveLogPath                      *string                         `json:"archiveLogPath,omitempty"`
 	AzureBlobStorageConfig              *PayloadsAzureBlobStorageConfig `json:"azureBlobStorageConfig,omitempty"`
 	BackfillBatchSize                   *int                            `json:"backfillBatchSize,omitempty"`
+	CompositeTypesAsText                *bool                           `json:"compositeTypesAsText,omitempty"`
 	DatabasesToSync                     *[]string                       `json:"databasesToSync,omitempty"`
 	DisableAutoFetchTables              *bool                           `json:"disableAutoFetchTables,omitempty"`
 	DisableFullDocumentBeforeChange     *bool                           `json:"disableFullDocumentBeforeChange,omitempty"`
 	DisableNoCursorTimeout              *bool                           `json:"disableNoCursorTimeout,omitempty"`
 	EnableClientSideFullDocumentLookup  *bool                           `json:"enableClientSideFullDocumentLookup,omitempty"`
 	EnableHeartbeats                    *bool                           `json:"enableHeartbeats,omitempty"`
+	EnableSchemaHistoryCompaction       *bool                           `json:"enableSchemaHistoryCompaction,omitempty"`
 	MssqlReplicationMethod              *string                         `json:"mssqlReplicationMethod,omitempty"`
 	OneTopicPerSchema                   *bool                           `json:"oneTopicPerSchema,omitempty"`
 	PublicationAutoCreateMode           *string                         `json:"publicationAutoCreateMode,omitempty"`
@@ -1418,6 +1430,9 @@ type ClientInterface interface {
 	PostPipelinesUuidBackfillCancelWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostPipelinesUuidBackfillCancel(ctx context.Context, uuid string, body PostPipelinesUuidBackfillCancelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostPipelinesUuidDetectSchemaChanges request
+	PostPipelinesUuidDetectSchemaChanges(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PostPipelinesUuidStartWithBody request with any body
 	PostPipelinesUuidStartWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2293,6 +2308,18 @@ func (c *Client) PostPipelinesUuidBackfillCancelWithBody(ctx context.Context, uu
 
 func (c *Client) PostPipelinesUuidBackfillCancel(ctx context.Context, uuid string, body PostPipelinesUuidBackfillCancelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostPipelinesUuidBackfillCancelRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostPipelinesUuidDetectSchemaChanges(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostPipelinesUuidDetectSchemaChangesRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -4256,6 +4283,40 @@ func NewPostPipelinesUuidBackfillCancelRequestWithBody(server string, uuid strin
 	return req, nil
 }
 
+// NewPostPipelinesUuidDetectSchemaChangesRequest generates requests for PostPipelinesUuidDetectSchemaChanges
+func NewPostPipelinesUuidDetectSchemaChangesRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/pipelines/%s/detect-schema-changes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewPostPipelinesUuidStartRequest calls the generic PostPipelinesUuidStart builder with application/json body
 func NewPostPipelinesUuidStartRequest(server string, uuid string, body PostPipelinesUuidStartJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -5227,6 +5288,9 @@ type ClientWithResponsesInterface interface {
 
 	PostPipelinesUuidBackfillCancelWithResponse(ctx context.Context, uuid string, body PostPipelinesUuidBackfillCancelJSONRequestBody, reqEditors ...RequestEditorFn) (*PostPipelinesUuidBackfillCancelResponse, error)
 
+	// PostPipelinesUuidDetectSchemaChangesWithResponse request
+	PostPipelinesUuidDetectSchemaChangesWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PostPipelinesUuidDetectSchemaChangesResponse, error)
+
 	// PostPipelinesUuidStartWithBodyWithResponse request with any body
 	PostPipelinesUuidStartWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostPipelinesUuidStartResponse, error)
 
@@ -6170,6 +6234,27 @@ func (r PostPipelinesUuidBackfillCancelResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PostPipelinesUuidBackfillCancelResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostPipelinesUuidDetectSchemaChangesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostPipelinesUuidDetectSchemaChangesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostPipelinesUuidDetectSchemaChangesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7163,6 +7248,15 @@ func (c *ClientWithResponses) PostPipelinesUuidBackfillCancelWithResponse(ctx co
 		return nil, err
 	}
 	return ParsePostPipelinesUuidBackfillCancelResponse(rsp)
+}
+
+// PostPipelinesUuidDetectSchemaChangesWithResponse request returning *PostPipelinesUuidDetectSchemaChangesResponse
+func (c *ClientWithResponses) PostPipelinesUuidDetectSchemaChangesWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PostPipelinesUuidDetectSchemaChangesResponse, error) {
+	rsp, err := c.PostPipelinesUuidDetectSchemaChanges(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostPipelinesUuidDetectSchemaChangesResponse(rsp)
 }
 
 // PostPipelinesUuidStartWithBodyWithResponse request with arbitrary body returning *PostPipelinesUuidStartResponse
@@ -8347,6 +8441,22 @@ func ParsePostPipelinesUuidBackfillCancelResponse(rsp *http.Response) (*PostPipe
 	}
 
 	response := &PostPipelinesUuidBackfillCancelResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostPipelinesUuidDetectSchemaChangesResponse parses an HTTP response from a PostPipelinesUuidDetectSchemaChangesWithResponse call
+func ParsePostPipelinesUuidDetectSchemaChangesResponse(rsp *http.Response) (*PostPipelinesUuidDetectSchemaChangesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostPipelinesUuidDetectSchemaChangesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
