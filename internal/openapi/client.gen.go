@@ -24,26 +24,28 @@ const (
 
 // Defines values for EnumsConnectorSlug.
 const (
-	Api        EnumsConnectorSlug = "api"
-	Bigquery   EnumsConnectorSlug = "bigquery"
-	Clickhouse EnumsConnectorSlug = "clickhouse"
-	Cockroach  EnumsConnectorSlug = "cockroach"
-	Databricks EnumsConnectorSlug = "databricks"
-	Documentdb EnumsConnectorSlug = "documentdb"
-	Dynamodb   EnumsConnectorSlug = "dynamodb"
-	Gcs        EnumsConnectorSlug = "gcs"
-	Iceberg    EnumsConnectorSlug = "iceberg"
-	Keyspaces  EnumsConnectorSlug = "keyspaces"
-	Mongodb    EnumsConnectorSlug = "mongodb"
-	Motherduck EnumsConnectorSlug = "motherduck"
-	Mssql      EnumsConnectorSlug = "mssql"
-	Mysql      EnumsConnectorSlug = "mysql"
-	Oracle     EnumsConnectorSlug = "oracle"
-	Postgresql EnumsConnectorSlug = "postgresql"
-	Redis      EnumsConnectorSlug = "redis"
-	Redshift   EnumsConnectorSlug = "redshift"
-	S3         EnumsConnectorSlug = "s3"
-	Snowflake  EnumsConnectorSlug = "snowflake"
+	Api         EnumsConnectorSlug = "api"
+	Bigquery    EnumsConnectorSlug = "bigquery"
+	Clickhouse  EnumsConnectorSlug = "clickhouse"
+	Cockroach   EnumsConnectorSlug = "cockroach"
+	Databricks  EnumsConnectorSlug = "databricks"
+	Delta       EnumsConnectorSlug = "delta"
+	Documentdb  EnumsConnectorSlug = "documentdb"
+	Dynamodb    EnumsConnectorSlug = "dynamodb"
+	Gcs         EnumsConnectorSlug = "gcs"
+	Iceberg     EnumsConnectorSlug = "iceberg"
+	Keyspaces   EnumsConnectorSlug = "keyspaces"
+	Mongodb     EnumsConnectorSlug = "mongodb"
+	Motherduck  EnumsConnectorSlug = "motherduck"
+	Mssql       EnumsConnectorSlug = "mssql"
+	Mysql       EnumsConnectorSlug = "mysql"
+	Oracle      EnumsConnectorSlug = "oracle"
+	Planetscale EnumsConnectorSlug = "planetscale"
+	Postgresql  EnumsConnectorSlug = "postgresql"
+	Redis       EnumsConnectorSlug = "redis"
+	Redshift    EnumsConnectorSlug = "redshift"
+	S3          EnumsConnectorSlug = "s3"
+	Snowflake   EnumsConnectorSlug = "snowflake"
 )
 
 // Valid indicates whether the value is a known member of the EnumsConnectorSlug enum.
@@ -58,6 +60,8 @@ func (e EnumsConnectorSlug) Valid() bool {
 	case Cockroach:
 		return true
 	case Databricks:
+		return true
+	case Delta:
 		return true
 	case Documentdb:
 		return true
@@ -78,6 +82,8 @@ func (e EnumsConnectorSlug) Valid() bool {
 	case Mysql:
 		return true
 	case Oracle:
+		return true
+	case Planetscale:
 		return true
 	case Postgresql:
 		return true
@@ -558,13 +564,16 @@ type PayloadsPostgresPublication struct {
 
 // PayloadsPrivateLinkConnection defines model for PayloadsPrivateLinkConnection.
 type PayloadsPrivateLinkConnection struct {
+	ApprovedAt          *time.Time         `json:"approvedAt,omitempty"`
 	AvailabilityZoneIds []string           `json:"availabilityZoneIds"`
 	CompanyUUID         openapi_types.UUID `json:"companyUUID"`
 	CreatedAt           time.Time          `json:"createdAt"`
+	CreatedBy           *string            `json:"createdBy,omitempty"`
 	DataPlaneName       *string            `json:"dataPlaneName,omitempty"`
 	DnsEntry            string             `json:"dnsEntry"`
 	EnvironmentUUID     openapi_types.UUID `json:"environmentUUID"`
 	Name                string             `json:"name"`
+	ProvisioningError   *string            `json:"provisioningError,omitempty"`
 	Region              string             `json:"region"`
 	Status              string             `json:"status"`
 	UpdatedAt           time.Time          `json:"updatedAt"`
@@ -665,6 +674,7 @@ type PayloadsSourceReaderSettingsPayload struct {
 	UnifyAcrossSchemasRegex             *string                         `json:"unifyAcrossSchemasRegex,omitempty"`
 	UseAdvanceOnPrimaryKeepAlive        *bool                           `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
 	UseNumericTypesForMoney             *bool                           `json:"useNumericTypesForMoney,omitempty"`
+	UseReaderForOracleStreaming         *bool                           `json:"useReaderForOracleStreaming,omitempty"`
 }
 
 // PayloadsSourceReaderTable defines model for PayloadsSourceReaderTable.
@@ -683,6 +693,7 @@ type PayloadsSourceReaderTablesConfig map[string]PayloadsSourceReaderTable
 // PayloadsSpecificConfig defines model for PayloadsSpecificConfig.
 type PayloadsSpecificConfig struct {
 	BucketName                  *string `json:"bucketName,omitempty"`
+	CheckpointInterval          *int    `json:"checkpointInterval,omitempty"`
 	ContainerName               *string `json:"containerName,omitempty"`
 	Database                    *string `json:"database,omitempty"`
 	DynamicallyCreateNamespaces *bool   `json:"dynamicallyCreateNamespaces,omitempty"`
