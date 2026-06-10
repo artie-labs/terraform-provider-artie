@@ -335,7 +335,7 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 		)
 	}
 
-	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+	if tfmodels.IsKnown(configData.Tables) {
 		tables := map[string]tfmodels.Table{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
 
@@ -351,7 +351,7 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 			if !table.UUID.IsNull() {
 				resp.Diagnostics.AddError("Table.uuid is Read-Only", fmt.Sprintf("%q table should not have `uuid` specified. Please remove this attribute from your config.", tableKey))
 			}
-			if !table.CTIDBackfill.IsNull() && !table.CTIDBackfill.IsUnknown() && table.CTIDBackfill.ValueBool() {
+			if tfmodels.IsKnown(table.CTIDBackfill) && table.CTIDBackfill.ValueBool() {
 				if table.CTIDChunkSize.IsNull() || table.CTIDChunkSize.IsUnknown() {
 					resp.Diagnostics.AddError("CTID chunk size is required", "ctid_chunk_size is required when CTID backfill is enabled.")
 				}
@@ -359,7 +359,7 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 					resp.Diagnostics.AddError("CTID max parallelism is required", "ctid_max_parallelism is required when CTID backfill is enabled.")
 				}
 			}
-			if !table.ColumnsToEncrypt.IsNull() && !table.ColumnsToEncrypt.IsUnknown() && len(table.ColumnsToEncrypt.Elements()) > 0 {
+			if tfmodels.IsKnown(table.ColumnsToEncrypt) && len(table.ColumnsToEncrypt.Elements()) > 0 {
 				hasColumnsToEncrypt = true
 			}
 			if tfmodels.IsExplicitlyTrue(table.EncryptJSONBColumns) {

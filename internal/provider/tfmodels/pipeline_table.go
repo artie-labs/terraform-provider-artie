@@ -187,7 +187,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	diags.Append(softPartitioningDiags...)
 
 	var clientCTIDSettings *artieclient.CTIDSettings
-	if !t.CTIDBackfill.IsNull() && !t.CTIDBackfill.IsUnknown() {
+	if IsKnown(t.CTIDBackfill) {
 		clientCTIDSettings = &artieclient.CTIDSettings{
 			Enabled:        t.CTIDBackfill.ValueBool(),
 			ChunkSize:      uint(t.CTIDChunkSize.ValueInt64()),

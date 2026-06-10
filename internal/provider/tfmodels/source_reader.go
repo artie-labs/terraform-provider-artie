@@ -139,7 +139,7 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		settings.MessageCompression = &mc
 	}
 
-	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
+	if IsKnown(s.DatabasesToUnify) {
 		databasesToUnify, listDiags := parseOptionalList[string](ctx, s.DatabasesToUnify)
 		diags.Append(listDiags...)
 		if diags.HasError() {
