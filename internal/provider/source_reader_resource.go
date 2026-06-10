@@ -160,7 +160,7 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 			diags.AddError("Invalid table configuration", "You must specify at least one table in the `tables` block if `is_shared` is set to true.")
 		}
 	} else {
-		if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+		if tfmodels.IsKnown(configData.Tables) {
 			diags.AddError("Invalid table configuration", "You should not specify a `tables` block if `is_shared` is set to false.")
 		}
 		if configData.StatusOverride.ValueString() != "" {
@@ -168,7 +168,7 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 		}
 	}
 
-	if !configData.Tables.IsNull() && !configData.Tables.IsUnknown() {
+	if tfmodels.IsKnown(configData.Tables) {
 		tables := map[string]tfmodels.SourceReaderTable{}
 		diags.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
 		for tableKey, table := range tables {

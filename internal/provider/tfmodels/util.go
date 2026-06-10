@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -100,16 +101,16 @@ func IsKnownAndNonEmpty(value types.String) bool {
 }
 
 // IsKnown returns true if the value is neither null nor unknown.
-func IsKnown(value types.String) bool {
+func IsKnown[T attr.Value](value T) bool {
 	return !value.IsNull() && !value.IsUnknown()
 }
 
 // IsExplicitlyTrue returns true if the value is explicitly set (not null/unknown) and is true.
 func IsExplicitlyTrue(value types.Bool) bool {
-	return !value.IsNull() && !value.IsUnknown() && value.ValueBool()
+	return IsKnown(value) && value.ValueBool()
 }
 
 // IsExplicitlyFalse returns true if the value is explicitly set (not null/unknown) and is false.
 func IsExplicitlyFalse(value types.Bool) bool {
-	return !value.IsNull() && !value.IsUnknown() && !value.ValueBool()
+	return IsKnown(value) && !value.ValueBool()
 }
