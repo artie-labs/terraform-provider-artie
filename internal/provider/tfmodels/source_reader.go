@@ -134,8 +134,10 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		DisableAutoFetchTables:       s.DisableAutoFetchTables.ValueBoolPointer(),
 	}
 
-	mc := openapi.PayloadsSourceReaderSettingsPayloadMessageCompression(s.MessageCompression.ValueString())
-	settings.MessageCompression = &mc
+	if !s.MessageCompression.IsNull() && !s.MessageCompression.IsUnknown() {
+		mc := openapi.PayloadsSourceReaderSettingsPayloadMessageCompression(s.MessageCompression.ValueString())
+		settings.MessageCompression = &mc
+	}
 
 	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
 		databasesToUnify, listDiags := parseOptionalList[string](ctx, s.DatabasesToUnify)
