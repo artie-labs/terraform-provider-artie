@@ -111,6 +111,7 @@ type SourceReader struct {
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
 	DatabasesToUnify                types.List   `tfsdk:"databases_to_unify"`
 	DisableAutoFetchTables          types.Bool   `tfsdk:"disable_auto_fetch_tables"`
+	MessageCompression              types.String `tfsdk:"message_compression"`
 	Tables                          types.Map    `tfsdk:"tables"`
 }
 
@@ -131,6 +132,11 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		MssqlReplicationMethod:       s.MSSQLReplicationMethod.ValueStringPointer(),
 		UnifyAcrossDatabases:         s.EnableUnifyAcrossDatabases.ValueBoolPointer(),
 		DisableAutoFetchTables:       s.DisableAutoFetchTables.ValueBoolPointer(),
+	}
+
+	if mc := s.MessageCompression.ValueString(); mc != "" {
+		val := openapi.PayloadsSourceReaderSettingsPayloadMessageCompression(mc)
+		settings.MessageCompression = &val
 	}
 
 	if !s.DatabasesToUnify.IsNull() && !s.DatabasesToUnify.IsUnknown() {
@@ -261,6 +267,10 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		DatabasesToUnify:                databasesToUnify,
 		DisableAutoFetchTables:          types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),
 		Tables:                          tablesMap,
+	}
+
+	if apiModel.Settings.MessageCompression != nil {
+		sourceReader.MessageCompression = types.StringValue(string(*apiModel.Settings.MessageCompression))
 	}
 
 	return sourceReader, diags

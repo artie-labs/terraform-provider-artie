@@ -145,6 +145,24 @@ func (e EnumsSourceReaderStatus) Valid() bool {
 	}
 }
 
+// Defines values for PayloadsSourceReaderSettingsPayloadMessageCompression.
+const (
+	Empty PayloadsSourceReaderSettingsPayloadMessageCompression = ""
+	Gzip  PayloadsSourceReaderSettingsPayloadMessageCompression = "gzip"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsSourceReaderSettingsPayloadMessageCompression enum.
+func (e PayloadsSourceReaderSettingsPayloadMessageCompression) Valid() bool {
+	switch e {
+	case Empty:
+		return true
+	case Gzip:
+		return true
+	default:
+		return false
+	}
+}
+
 // EnumsConnectorSlug defines model for EnumsConnectorSlug.
 type EnumsConnectorSlug string
 
@@ -650,32 +668,36 @@ type PayloadsSourceReader struct {
 
 // PayloadsSourceReaderSettingsPayload defines model for PayloadsSourceReaderSettingsPayload.
 type PayloadsSourceReaderSettingsPayload struct {
-	AllowMSSQLCaptureInstancesViaReader *bool                           `json:"allowMSSQLCaptureInstancesViaReader,omitempty"`
-	ArchiveLogPassword                  *string                         `json:"archiveLogPassword,omitempty"`
-	ArchiveLogPath                      *string                         `json:"archiveLogPath,omitempty"`
-	AzureBlobStorageConfig              *PayloadsAzureBlobStorageConfig `json:"azureBlobStorageConfig,omitempty"`
-	BackfillBatchSize                   *int                            `json:"backfillBatchSize,omitempty"`
-	CompositeTypesAsText                *bool                           `json:"compositeTypesAsText,omitempty"`
-	DatabasesToSync                     *[]string                       `json:"databasesToSync,omitempty"`
-	DisableAutoFetchTables              *bool                           `json:"disableAutoFetchTables,omitempty"`
-	DisableFullDocumentBeforeChange     *bool                           `json:"disableFullDocumentBeforeChange,omitempty"`
-	DisableNoCursorTimeout              *bool                           `json:"disableNoCursorTimeout,omitempty"`
-	EnableClientSideFullDocumentLookup  *bool                           `json:"enableClientSideFullDocumentLookup,omitempty"`
-	EnableHeartbeats                    *bool                           `json:"enableHeartbeats,omitempty"`
-	EnableSchemaHistoryCompaction       *bool                           `json:"enableSchemaHistoryCompaction,omitempty"`
-	MssqlReplicationMethod              *string                         `json:"mssqlReplicationMethod,omitempty"`
-	OneTopicPerSchema                   *bool                           `json:"oneTopicPerSchema,omitempty"`
-	PublicationAutoCreateMode           *string                         `json:"publicationAutoCreateMode,omitempty"`
-	PublicationNameOverride             *string                         `json:"publicationNameOverride,omitempty"`
-	PublishViaPartitionRoot             *bool                           `json:"publishViaPartitionRoot,omitempty"`
-	ReplicationSlotOverride             *string                         `json:"replicationSlotOverride,omitempty"`
-	UnifyAcrossDatabases                *bool                           `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas                  *bool                           `json:"unifyAcrossSchemas,omitempty"`
-	UnifyAcrossSchemasRegex             *string                         `json:"unifyAcrossSchemasRegex,omitempty"`
-	UseAdvanceOnPrimaryKeepAlive        *bool                           `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
-	UseNumericTypesForMoney             *bool                           `json:"useNumericTypesForMoney,omitempty"`
-	UseReaderForOracleStreaming         *bool                           `json:"useReaderForOracleStreaming,omitempty"`
+	AllowMSSQLCaptureInstancesViaReader *bool                                                  `json:"allowMSSQLCaptureInstancesViaReader,omitempty"`
+	ArchiveLogPassword                  *string                                                `json:"archiveLogPassword,omitempty"`
+	ArchiveLogPath                      *string                                                `json:"archiveLogPath,omitempty"`
+	AzureBlobStorageConfig              *PayloadsAzureBlobStorageConfig                        `json:"azureBlobStorageConfig,omitempty"`
+	BackfillBatchSize                   *int                                                   `json:"backfillBatchSize,omitempty"`
+	CompositeTypesAsText                *bool                                                  `json:"compositeTypesAsText,omitempty"`
+	DatabasesToSync                     *[]string                                              `json:"databasesToSync,omitempty"`
+	DisableAutoFetchTables              *bool                                                  `json:"disableAutoFetchTables,omitempty"`
+	DisableFullDocumentBeforeChange     *bool                                                  `json:"disableFullDocumentBeforeChange,omitempty"`
+	DisableNoCursorTimeout              *bool                                                  `json:"disableNoCursorTimeout,omitempty"`
+	EnableClientSideFullDocumentLookup  *bool                                                  `json:"enableClientSideFullDocumentLookup,omitempty"`
+	EnableHeartbeats                    *bool                                                  `json:"enableHeartbeats,omitempty"`
+	EnableSchemaHistoryCompaction       *bool                                                  `json:"enableSchemaHistoryCompaction,omitempty"`
+	MessageCompression                  *PayloadsSourceReaderSettingsPayloadMessageCompression `json:"messageCompression,omitempty"`
+	MssqlReplicationMethod              *string                                                `json:"mssqlReplicationMethod,omitempty"`
+	OneTopicPerSchema                   *bool                                                  `json:"oneTopicPerSchema,omitempty"`
+	PublicationAutoCreateMode           *string                                                `json:"publicationAutoCreateMode,omitempty"`
+	PublicationNameOverride             *string                                                `json:"publicationNameOverride,omitempty"`
+	PublishViaPartitionRoot             *bool                                                  `json:"publishViaPartitionRoot,omitempty"`
+	ReplicationSlotOverride             *string                                                `json:"replicationSlotOverride,omitempty"`
+	UnifyAcrossDatabases                *bool                                                  `json:"unifyAcrossDatabases,omitempty"`
+	UnifyAcrossSchemas                  *bool                                                  `json:"unifyAcrossSchemas,omitempty"`
+	UnifyAcrossSchemasRegex             *string                                                `json:"unifyAcrossSchemasRegex,omitempty"`
+	UseAdvanceOnPrimaryKeepAlive        *bool                                                  `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
+	UseNumericTypesForMoney             *bool                                                  `json:"useNumericTypesForMoney,omitempty"`
+	UseReaderForOracleStreaming         *bool                                                  `json:"useReaderForOracleStreaming,omitempty"`
 }
+
+// PayloadsSourceReaderSettingsPayloadMessageCompression defines model for PayloadsSourceReaderSettingsPayload.MessageCompression.
+type PayloadsSourceReaderSettingsPayloadMessageCompression string
 
 // PayloadsSourceReaderTable defines model for PayloadsSourceReaderTable.
 type PayloadsSourceReaderTable struct {
