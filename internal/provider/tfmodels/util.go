@@ -99,6 +99,11 @@ func IsKnownAndNonEmpty(value types.String) bool {
 	return !value.IsUnknown() && value.ValueString() != ""
 }
 
+// IsKnown returns true if the value is neither null nor unknown.
+func IsKnown(value types.String) bool {
+	return !value.IsNull() && !value.IsUnknown()
+}
+
 // IsExplicitlyTrue returns true if the value is explicitly set (not null/unknown) and is true.
 func IsExplicitlyTrue(value types.Bool) bool {
 	return !value.IsNull() && !value.IsUnknown() && value.ValueBool()

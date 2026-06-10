@@ -80,6 +80,7 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 				Validators:          []validator.String{stringvalidator.OneOf("paused")},
 			},
 			"disable_auto_fetch_tables": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will not automatically fetch tables from the source database on the UI. This is useful if you have a large number of tables and you want to manually specify the schema before we fetch all the tables."},
+			"message_compression":       schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Validators: []validator.String{stringvalidator.OneOf("gzip", "")}, MarkdownDescription: "When set to `gzip`, large Kafka messages produced by this source reader will be gzip-compressed before being sent. Transfer must be deployed with decompression support before enabling this. Valid values: `gzip` or omit/empty to disable."},
 			"tables": schema.MapNestedAttribute{
 				Optional:            true,
 				Computed:            true,
