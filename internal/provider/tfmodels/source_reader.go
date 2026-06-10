@@ -271,6 +271,8 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 
 	if apiModel.Settings.MessageCompression != nil {
 		sourceReader.MessageCompression = types.StringValue(string(*apiModel.Settings.MessageCompression))
+	} else {
+		sourceReader.MessageCompression = types.StringValue("")
 	}
 
 	return sourceReader, diags
