@@ -134,7 +134,7 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		DisableAutoFetchTables:       s.DisableAutoFetchTables.ValueBoolPointer(),
 	}
 
-	if isKnown(s.MessageCompression) {
+	if IsKnown(s.MessageCompression) {
 		mc := openapi.PayloadsSourceReaderSettingsPayloadMessageCompression(s.MessageCompression.ValueString())
 		settings.MessageCompression = &mc
 	}

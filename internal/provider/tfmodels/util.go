@@ -99,8 +99,8 @@ func IsKnownAndNonEmpty(value types.String) bool {
 	return !value.IsUnknown() && value.ValueString() != ""
 }
 
-// isKnown returns true if the value is neither null nor unknown.
-func isKnown(value types.String) bool {
+// IsKnown returns true if the value is neither null nor unknown.
+func IsKnown(value types.String) bool {
 	return !value.IsNull() && !value.IsUnknown()
 }
 
