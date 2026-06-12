@@ -268,29 +268,32 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		}
 
 		tables[tableKey] = Table{
-			UUID:                 types.StringValue(apiTable.UUID.String()),
-			Name:                 types.StringValue(apiTable.Name),
-			Schema:               types.StringValue(apiTable.Schema),
-			EnableHistoryMode:    types.BoolValue(apiTable.EnableHistoryMode),
-			DisableReplication:   types.BoolValue(apiTable.DisableReplication),
-			Alias:                types.StringPointerValue(apiTable.AdvancedSettings.Alias),
-			ExcludeColumns:       colsToExclude,
-			IncludeColumns:       colsToInclude,
-			ColumnsToHash:        colsToHash,
-			ColumnsToCompress:    colsToCompress,
-			ColumnsToEncrypt:     colsToEncrypt,
-			EncryptJSONBColumns:  types.BoolPointerValue(apiTable.AdvancedSettings.EncryptJSONBColumns),
-			SkipDeletes:          types.BoolPointerValue(apiTable.AdvancedSettings.SkipDeletes),
-			UnifyAcrossSchemas:   types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossSchemas),
-			UnifyAcrossDatabases: types.BoolPointerValue(apiTable.AdvancedSettings.UnifyAcrossDatabases),
+			UUID:               types.StringValue(apiTable.UUID.String()),
+			Name:               types.StringValue(apiTable.Name),
+			Schema:             types.StringValue(apiTable.Schema),
+			EnableHistoryMode:  types.BoolValue(apiTable.EnableHistoryMode),
+			DisableReplication: types.BoolValue(apiTable.DisableReplication),
+			Alias:              types.StringPointerValue(apiTable.AdvancedSettings.Alias),
+			ExcludeColumns:     colsToExclude,
+			IncludeColumns:     colsToInclude,
+			ColumnsToHash:      colsToHash,
+			ColumnsToCompress:  colsToCompress,
+			ColumnsToEncrypt:   colsToEncrypt,
+			// These "absent means off" toggles are stored as nil by the API when false. Coalesce
+			// nil to false (instead of null) so an explicit `false` in the config round-trips
+			// consistently and Terraform's post-apply consistency check doesn't error on false -> null.
+			EncryptJSONBColumns:  boolPointerValueOrFalse(apiTable.AdvancedSettings.EncryptJSONBColumns),
+			SkipDeletes:          boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipDeletes),
+			UnifyAcrossSchemas:   boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossSchemas),
+			UnifyAcrossDatabases: boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossDatabases),
 			MergePredicates:      mergePredicates,
 			SoftPartitioning:     softPartitioning,
-			BackfillHistoryTable: types.BoolPointerValue(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
+			BackfillHistoryTable: boolPointerValueOrFalse(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
 			CTIDBackfill:         ctidBackfill,
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
-			SkipBackfill:         types.BoolPointerValue(apiTable.AdvancedSettings.SkipBackfill),
-			SkipNoOpUpdates:      types.BoolPointerValue(apiTable.AdvancedSettings.SkipNoOpUpdates),
+			SkipBackfill:         boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipBackfill),
+			SkipNoOpUpdates:      boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipNoOpUpdates),
 		}
 	}
 
