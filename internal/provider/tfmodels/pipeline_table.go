@@ -279,9 +279,8 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ColumnsToHash:      colsToHash,
 			ColumnsToCompress:  colsToCompress,
 			ColumnsToEncrypt:   colsToEncrypt,
-			// These "absent means off" toggles are stored as nil by the API when false. Coalesce
-			// nil to false (instead of null) so an explicit `false` in the config round-trips
-			// consistently and Terraform's post-apply consistency check doesn't error on false -> null.
+			// The API stores these "absent means off" toggles as nil when false; coalesce nil to
+			// false so an explicit `false` round-trips without a post-apply consistency error.
 			EncryptJSONBColumns:  boolPointerValueOrFalse(apiTable.AdvancedSettings.EncryptJSONBColumns),
 			SkipDeletes:          boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipDeletes),
 			UnifyAcrossSchemas:   boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossSchemas),
