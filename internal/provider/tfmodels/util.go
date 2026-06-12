@@ -90,6 +90,16 @@ func parseOptionalObject[T any](ctx context.Context, value *types.Object) (*T, d
 	return &t, diags
 }
 
+// boolPointerValueOrFalse converts a *bool from the API into a Terraform Bool, treating nil
+// as false rather than null. The API stores these "absent means off" toggles as nil when
+// false, so this lets an explicit `false` round-trip without a post-apply consistency error.
+func boolPointerValueOrFalse(value *bool) types.Bool {
+	if value == nil {
+		return types.BoolValue(false)
+	}
+	return types.BoolValue(*value)
+}
+
 // IsKnownAndEmpty returns true if the value is known (not null/unknown) and is an empty string.
 func IsKnownAndEmpty(value types.String) bool {
 	return !value.IsUnknown() && value.ValueString() == ""
