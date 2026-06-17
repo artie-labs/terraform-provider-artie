@@ -3,10 +3,53 @@ package tfmodels
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+
+	"terraform-provider-artie/internal/artieclient"
 )
+
+func ptr[T any](v T) *T { return &v }
+
+func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
+	// disable_alerts is an "absent means off" toggle. The backend persists false as
+	// nil, so both an omitted value and an explicit false must read back as a stable
+	// false (never null), otherwise Terraform's post-apply consistency check errors:
+	// ".disable_alerts: was cty.False, but now null".
+	base := artieclient.Pipeline{
+		UUID: uuid.New(),
+		BasePipeline: artieclient.BasePipeline{
+			Name:             "test",
+			Tables:           []artieclient.Table{},
+			AdvancedSettings: &artieclient.AdvancedSettings{},
+		},
+	}
+
+	{
+		// DisableAlerts omitted (nil) -> false
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.False(t, pipeline.DisableAlerts.IsNull(), "disable_alerts should not be null when omitted")
+		assert.False(t, pipeline.DisableAlerts.ValueBool())
+	}
+	{
+		// DisableAlerts explicitly false -> false
+		base.AdvancedSettings.DisableAlerts = ptr(false)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.False(t, pipeline.DisableAlerts.IsNull(), "disable_alerts should not be null when false")
+		assert.False(t, pipeline.DisableAlerts.ValueBool())
+	}
+	{
+		// DisableAlerts explicitly true -> true
+		base.AdvancedSettings.DisableAlerts = ptr(true)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.DisableAlerts.ValueBool())
+	}
+}
 
 func TestFlushConfigFromAPIModel(t *testing.T) {
 	{
