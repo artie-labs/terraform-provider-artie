@@ -322,10 +322,10 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var stagingSchema types.String
 	var forceUTCTimezone types.Bool
 	var writeRawBinaryValues types.Bool
-	var disableAlerts types.Bool
 
-	// This should default to false even if it's omitted from the API response.
+	// These should default to false even if they're omitted from the API response.
 	autoReplicateNewTables := types.BoolValue(false)
+	disableAlerts := types.BoolValue(false)
 	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
 	diags.Append(staticColumnsDiags...)
 	if diags.HasError() {
@@ -378,9 +378,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		if apiModel.AdvancedSettings.WriteRawBinaryValues != nil {
 			writeRawBinaryValues = types.BoolValue(*apiModel.AdvancedSettings.WriteRawBinaryValues)
 		}
-		if apiModel.AdvancedSettings.DisableAlerts != nil {
-			disableAlerts = types.BoolValue(*apiModel.AdvancedSettings.DisableAlerts)
-		}
+		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
 			flushConfigMap["flush_interval_seconds"] = types.Int64Value(*apiModel.AdvancedSettings.FlushIntervalSeconds)
