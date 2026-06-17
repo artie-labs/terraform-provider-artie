@@ -378,9 +378,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		if apiModel.AdvancedSettings.WriteRawBinaryValues != nil {
 			writeRawBinaryValues = types.BoolValue(*apiModel.AdvancedSettings.WriteRawBinaryValues)
 		}
-		if apiModel.AdvancedSettings.DisableAlerts != nil {
-			disableAlerts = types.BoolValue(*apiModel.AdvancedSettings.DisableAlerts)
-		}
+		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
 			flushConfigMap["flush_interval_seconds"] = types.Int64Value(*apiModel.AdvancedSettings.FlushIntervalSeconds)
