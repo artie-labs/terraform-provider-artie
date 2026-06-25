@@ -91,8 +91,6 @@ func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *arti
 	})
 }
 
-
-
 type Table struct {
 	UUID               types.String `tfsdk:"uuid"`
 	Name               types.String `tfsdk:"name"`
@@ -117,10 +115,10 @@ type Table struct {
 	CTIDBackfill         types.Bool   `tfsdk:"ctid_backfill"`
 	CTIDChunkSize        types.Int64  `tfsdk:"ctid_chunk_size"`
 	CTIDMaxParallelism   types.Int64  `tfsdk:"ctid_max_parallelism"`
-	RangeEnabled        types.Bool  `tfsdk:"range_enabled"`
-	RangeChunkSize      types.Int64 `tfsdk:"range_chunk_size"`
-	RangeMaxParallelism types.Int64 `tfsdk:"range_max_parallelism"`
-	RangeBatchSize      types.Int64 `tfsdk:"range_batch_size"`
+	RangeEnabled         types.Bool   `tfsdk:"range_enabled"`
+	RangeChunkSize       types.Int64  `tfsdk:"range_chunk_size"`
+	RangeMaxParallelism  types.Int64  `tfsdk:"range_max_parallelism"`
+	RangeBatchSize       types.Int64  `tfsdk:"range_batch_size"`
 	SkipBackfill         types.Bool   `tfsdk:"skip_backfill"`
 	SkipNoOpUpdates      types.Bool   `tfsdk:"skip_no_op_updates"`
 }
@@ -324,10 +322,10 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			CTIDBackfill:         ctidBackfill,
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
-			RangeEnabled:        rangeEnabled,
-			RangeChunkSize:      rangeChunkSize,
-			RangeMaxParallelism: rangeMaxParallelism,
-			RangeBatchSize:      rangeBatchSize,
+			RangeEnabled:         rangeEnabled,
+			RangeChunkSize:       rangeChunkSize,
+			RangeMaxParallelism:  rangeMaxParallelism,
+			RangeBatchSize:       rangeBatchSize,
 			SkipBackfill:         boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipBackfill),
 			SkipNoOpUpdates:      boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipNoOpUpdates),
 		}
