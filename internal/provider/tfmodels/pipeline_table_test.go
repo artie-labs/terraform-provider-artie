@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -83,18 +82,13 @@ func TestTablesFromAPIModel_BoolSettingsRoundTripExplicitValues(t *testing.T) {
 }
 
 func TestTableToAPIModel_RangeSettings(t *testing.T) {
-	rangeSettings, rangeDiags := types.ObjectValueFrom(t.Context(), RangeSettingsAttrTypes, RangeSettings{
-		Enabled:        types.BoolValue(true),
-		ChunkSize:      types.Int64Value(5000000),
-		MaxParallelism: types.Int64Value(5),
-		BatchSize:      types.Int64Value(0),
-	})
-	assert.False(t, rangeDiags.HasError(), "unexpected diagnostics: %v", rangeDiags)
-
 	table := Table{
-		Name:          types.StringValue("offers"),
-		Schema:        types.StringValue("public"),
-		RangeSettings: rangeSettings,
+		Name:                types.StringValue("offers"),
+		Schema:              types.StringValue("public"),
+		RangeEnabled:        types.BoolValue(true),
+		RangeChunkSize:      types.Int64Value(5000000),
+		RangeMaxParallelism: types.Int64Value(5),
+		RangeBatchSize:      types.Int64Value(0),
 	}
 
 	apiTable, diags := table.ToAPIModel(t.Context())
@@ -127,15 +121,10 @@ func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
 	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 
 	table := tables["public.offers"]
-	assert.False(t, table.RangeSettings.IsNull(), "range_settings should round-trip from API")
-
-	var rangeSettings RangeSettings
-	diags = table.RangeSettings.As(t.Context(), &rangeSettings, basetypes.ObjectAsOptions{})
-	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
-	assert.True(t, rangeSettings.Enabled.ValueBool())
-	assert.Equal(t, int64(5000000), rangeSettings.ChunkSize.ValueInt64())
-	assert.Equal(t, int64(5), rangeSettings.MaxParallelism.ValueInt64())
-	assert.Equal(t, int64(0), rangeSettings.BatchSize.ValueInt64())
+	assert.True(t, table.RangeEnabled.ValueBool(), "range_enabled should round-trip from API")
+	assert.Equal(t, int64(5000000), table.RangeChunkSize.ValueInt64())
+	assert.Equal(t, int64(5), table.RangeMaxParallelism.ValueInt64())
+	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
 }
 
 func TestBoolPointerValueOrFalse(t *testing.T) {
