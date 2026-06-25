@@ -82,40 +82,12 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"ctid_backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, enables CTID backfill for this table. This is only applicable if the source type is `postgres`."},
 						"ctid_chunk_size":        schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.Between(100000, 1000000)}, MarkdownDescription: "The chunk size to use for CTID backfill. This should be between 100,000 and 1,000,000. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true."},
 						"ctid_max_parallelism":   schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.Between(5, 20)}, MarkdownDescription: "The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true."},
-						"range_settings": schema.SingleNestedAttribute{
-							Optional:            true,
-							PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
-							MarkdownDescription: "Optional: configuration for range-based parallel backfill. This is typically used for large tables with an integer primary key or another suitable monotonic range column.",
-							Attributes: map[string]schema.Attribute{
-								"enabled": schema.BoolAttribute{
-									Required:            true,
-									MarkdownDescription: "Whether range-based parallel backfill is enabled for this table.",
-								},
-								"chunk_size": schema.Int64Attribute{
-									Required:            true,
-									MarkdownDescription: "The number of source rows or range units Artie should target per range backfill chunk.",
-									Validators: []validator.Int64{
-										int64validator.AtLeast(0),
-									},
-								},
-								"max_parallelism": schema.Int64Attribute{
-									Required:            true,
-									MarkdownDescription: "The maximum number of range backfill chunks Artie should process in parallel for this table.",
-									Validators: []validator.Int64{
-										int64validator.AtLeast(0),
-									},
-								},
-								"batch_size": schema.Int64Attribute{
-									Required:            true,
-									MarkdownDescription: "The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default.",
-									Validators: []validator.Int64{
-										int64validator.AtLeast(0),
-									},
-								},
-							},
-						},
-						"skip_backfill":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will skip backfilling this table and only process new changes going forward."},
-						"skip_no_op_updates": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL."},
+						"range_backfill":         schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, enables range-based parallel backfill for this table."},
+						"range_chunk_size":       schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of source rows or range units Artie should target per range backfill chunk. This is only applicable if `range_backfill` is set to true."},
+						"range_max_parallelism":  schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The maximum number of range backfill chunks Artie should process in parallel for this table. This is only applicable if `range_backfill` is set to true."},
+						"range_batch_size":       schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true."},
+						"skip_backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will skip backfilling this table and only process new changes going forward."},
+						"skip_no_op_updates":     schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL."},
 						"merge_predicates": schema.ListNestedAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -390,6 +362,17 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 				}
 				if table.CTIDMaxParallelism.IsNull() || table.CTIDMaxParallelism.IsUnknown() {
 					resp.Diagnostics.AddError("CTID max parallelism is required", "ctid_max_parallelism is required when CTID backfill is enabled.")
+				}
+			}
+			if tfmodels.IsKnown(table.RangeBackfill) && table.RangeBackfill.ValueBool() {
+				if table.RangeChunkSize.IsNull() || table.RangeChunkSize.IsUnknown() {
+					resp.Diagnostics.AddError("Range chunk size is required", "range_chunk_size is required when range_backfill is enabled.")
+				}
+				if table.RangeMaxParallelism.IsNull() || table.RangeMaxParallelism.IsUnknown() {
+					resp.Diagnostics.AddError("Range max parallelism is required", "range_max_parallelism is required when range_backfill is enabled.")
+				}
+				if table.RangeBatchSize.IsNull() || table.RangeBatchSize.IsUnknown() {
+					resp.Diagnostics.AddError("Range batch size is required", "range_batch_size is required when range_backfill is enabled.")
 				}
 			}
 			if tfmodels.IsKnown(table.ColumnsToEncrypt) && len(table.ColumnsToEncrypt.Elements()) > 0 {
