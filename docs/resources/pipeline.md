@@ -117,6 +117,7 @@ Optional:
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `encrypt_jsonb_columns` (Boolean) If set to true, all JSONB (struct) columns will be automatically encrypted before writing to the destination. Requires `encryption_key_uuid` to be set on the pipeline.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range-partitioned column; set `partition_type` to 'time' or 'integer' accordingly. (see [below for nested schema](#nestedatt--tables--merge_predicates))
+- `range_settings` (Attributes) Optional: configuration for range-based parallel backfill. This is typically used for large tables with an integer primary key or another suitable monotonic range column. (see [below for nested schema](#nestedatt--tables--range_settings))
 - `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
 - `skip_backfill` (Boolean) If set to true, Artie will skip backfilling this table and only process new changes going forward.
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
@@ -139,6 +140,17 @@ Required:
 Optional:
 
 - `partition_type` (String) The type of partition to use. One of 'time' or 'integer'. Required for BigQuery.
+
+
+<a id="nestedatt--tables--range_settings"></a>
+### Nested Schema for `tables.range_settings`
+
+Required:
+
+- `batch_size` (Number) The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default.
+- `chunk_size` (Number) The number of source rows or range units Artie should target per range backfill chunk.
+- `enabled` (Boolean) Whether range-based parallel backfill is enabled for this table.
+- `max_parallelism` (Number) The maximum number of range backfill chunks Artie should process in parallel for this table.
 
 
 <a id="nestedatt--tables--soft_partitioning"></a>
