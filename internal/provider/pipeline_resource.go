@@ -364,6 +364,14 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 					resp.Diagnostics.AddError("CTID max parallelism is required", "ctid_max_parallelism is required when CTID backfill is enabled.")
 				}
 			}
+			if tfmodels.IsKnown(table.RangeEnabled) && table.RangeEnabled.ValueBool() {
+				if table.RangeChunkSize.IsNull() || table.RangeChunkSize.IsUnknown() {
+					resp.Diagnostics.AddError("Range chunk size is required", "range_chunk_size is required when range backfill is enabled.")
+				}
+				if table.RangeMaxParallelism.IsNull() || table.RangeMaxParallelism.IsUnknown() {
+					resp.Diagnostics.AddError("Range max parallelism is required", "range_max_parallelism is required when range backfill is enabled.")
+				}
+			}
 			if tfmodels.IsKnown(table.ColumnsToEncrypt) && len(table.ColumnsToEncrypt.Elements()) > 0 {
 				hasColumnsToEncrypt = true
 			}
