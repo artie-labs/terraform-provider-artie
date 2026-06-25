@@ -34,6 +34,9 @@ resource "artie_pipeline" "postgres_to_snowflake" {
   }
   soft_delete_rows                = true
   include_artie_updated_at_column = true
+  turbo_warehouse                 = "ARTIE_WEB_WH_LARGE"
+  turbo_row_threshold             = 500000
+  turbo_latency_threshold_minutes = 30
 }
 ```
 
@@ -71,6 +74,9 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `staging_schema` (String) If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces.
 - `static_columns` (Attributes List) Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc. (see [below for nested schema](#nestedatt--static_columns))
 - `status_override` (String) Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.
+- `turbo_latency_threshold_minutes` (Number) The replication latency threshold, in minutes, for enabling Turbo mode on Snowflake pipelines.
+- `turbo_row_threshold` (Number) The source row threshold for enabling Turbo mode on Snowflake pipelines.
+- `turbo_warehouse` (String) The Snowflake warehouse Artie should use for Turbo mode.
 - `write_raw_binary_values` (Boolean) If set to true, binary columns (e.g. BINARY type) are created in the destination table for raw binary data instead of creating string columns that store Base64-encoded values. It only applies when the destination is Databricks.
 
 ### Read-Only
