@@ -84,4 +84,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
   }
   soft_delete_rows                = true
   include_artie_updated_at_column = true
+  turbo_warehouse                 = "ARTIE_WEB_WH_LARGE"
+  turbo_row_threshold             = 500000
+  turbo_latency_threshold_minutes = 30
 }

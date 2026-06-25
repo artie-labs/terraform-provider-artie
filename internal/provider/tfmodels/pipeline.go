@@ -175,6 +175,9 @@ type Pipeline struct {
 	ForceUTCTimezone                             types.Bool   `tfsdk:"force_utc_timezone"`
 	WriteRawBinaryValues                         types.Bool   `tfsdk:"write_raw_binary_values"`
 	DisableAlerts                                types.Bool   `tfsdk:"disable_alerts"`
+	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
+	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
+	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -254,6 +257,9 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		ForceUTCTimezone:                             p.ForceUTCTimezone.ValueBoolPointer(),
 		WriteRawBinaryValues:                         p.WriteRawBinaryValues.ValueBoolPointer(),
 		DisableAlerts:                                p.DisableAlerts.ValueBoolPointer(),
+		TurboWarehouse:                               p.TurboWarehouse.ValueStringPointer(),
+		TurboRowThreshold:                            p.TurboRowThreshold.ValueInt64Pointer(),
+		TurboLatencyThresholdMinutes:                 p.TurboLatencyThresholdMinutes.ValueInt64Pointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -322,6 +328,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var stagingSchema types.String
 	var forceUTCTimezone types.Bool
 	var writeRawBinaryValues types.Bool
+	var turboWarehouse types.String
+	var turboRowThreshold types.Int64
+	var turboLatencyThresholdMinutes types.Int64
 
 	// These should default to false even if they're omitted from the API response.
 	autoReplicateNewTables := types.BoolValue(false)
@@ -377,6 +386,15 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.WriteRawBinaryValues != nil {
 			writeRawBinaryValues = types.BoolValue(*apiModel.AdvancedSettings.WriteRawBinaryValues)
+		}
+		if apiModel.AdvancedSettings.TurboWarehouse != nil {
+			turboWarehouse = types.StringValue(*apiModel.AdvancedSettings.TurboWarehouse)
+		}
+		if apiModel.AdvancedSettings.TurboRowThreshold != nil {
+			turboRowThreshold = types.Int64Value(*apiModel.AdvancedSettings.TurboRowThreshold)
+		}
+		if apiModel.AdvancedSettings.TurboLatencyThresholdMinutes != nil {
+			turboLatencyThresholdMinutes = types.Int64Value(*apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
 		}
 		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
 		flushConfigMap := map[string]attr.Value{}
@@ -438,5 +456,8 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		ForceUTCTimezone:                             forceUTCTimezone,
 		WriteRawBinaryValues:                         writeRawBinaryValues,
 		DisableAlerts:                                disableAlerts,
+		TurboWarehouse:                               turboWarehouse,
+		TurboRowThreshold:                            turboRowThreshold,
+		TurboLatencyThresholdMinutes:                 turboLatencyThresholdMinutes,
 	}, diags
 }
