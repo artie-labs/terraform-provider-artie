@@ -115,6 +115,10 @@ type Table struct {
 	CTIDBackfill         types.Bool   `tfsdk:"ctid_backfill"`
 	CTIDChunkSize        types.Int64  `tfsdk:"ctid_chunk_size"`
 	CTIDMaxParallelism   types.Int64  `tfsdk:"ctid_max_parallelism"`
+	RangeBackfill        types.Bool   `tfsdk:"range_backfill"`
+	RangeChunkSize       types.Int64  `tfsdk:"range_chunk_size"`
+	RangeMaxParallelism  types.Int64  `tfsdk:"range_max_parallelism"`
+	RangeBatchSize       types.Int64  `tfsdk:"range_batch_size"`
 	SkipBackfill         types.Bool   `tfsdk:"skip_backfill"`
 	SkipNoOpUpdates      types.Bool   `tfsdk:"skip_no_op_updates"`
 }
@@ -141,6 +145,10 @@ var TableAttrTypes = map[string]attr.Type{
 	"ctid_backfill":          types.BoolType,
 	"ctid_chunk_size":        types.Int64Type,
 	"ctid_max_parallelism":   types.Int64Type,
+	"range_backfill":         types.BoolType,
+	"range_chunk_size":       types.Int64Type,
+	"range_max_parallelism":  types.Int64Type,
+	"range_batch_size":       types.Int64Type,
 	"skip_backfill":          types.BoolType,
 	"skip_no_op_updates":     types.BoolType,
 }
@@ -195,6 +203,16 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		}
 	}
 
+	var clientRangeSettings *artieclient.RangeSettings
+	if IsKnown(t.RangeBackfill) {
+		clientRangeSettings = &artieclient.RangeSettings{
+			Enabled:        t.RangeBackfill.ValueBool(),
+			ChunkSize:      int(t.RangeChunkSize.ValueInt64()),
+			MaxParallelism: int(t.RangeMaxParallelism.ValueInt64()),
+			BatchSize:      int(t.RangeBatchSize.ValueInt64()),
+		}
+	}
+
 	if diags.HasError() {
 		return artieclient.Table{}, diags
 	}
@@ -220,6 +238,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			SoftPartitioning:           clientSoftPartitioning,
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
 			CTIDSettings:               clientCTIDSettings,
+			RangeSettings:              clientRangeSettings,
 			SkipBackfill:               t.SkipBackfill.ValueBoolPointer(),
 			SkipNoOpUpdates:            t.SkipNoOpUpdates.ValueBoolPointer(),
 		},
@@ -267,6 +286,17 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ctidMaxParallelism = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.MaxParallelism))
 		}
 
+		rangeBackfill := types.BoolValue(false)
+		rangeChunkSize := types.Int64Value(0)
+		rangeMaxParallelism := types.Int64Value(0)
+		rangeBatchSize := types.Int64Value(0)
+		if apiTable.AdvancedSettings.RangeSettings != nil {
+			rangeBackfill = types.BoolValue(apiTable.AdvancedSettings.RangeSettings.Enabled)
+			rangeChunkSize = types.Int64Value(int64(apiTable.AdvancedSettings.RangeSettings.ChunkSize))
+			rangeMaxParallelism = types.Int64Value(int64(apiTable.AdvancedSettings.RangeSettings.MaxParallelism))
+			rangeBatchSize = types.Int64Value(int64(apiTable.AdvancedSettings.RangeSettings.BatchSize))
+		}
+
 		tables[tableKey] = Table{
 			UUID:               types.StringValue(apiTable.UUID.String()),
 			Name:               types.StringValue(apiTable.Name),
@@ -291,6 +321,10 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			CTIDBackfill:         ctidBackfill,
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
+			RangeBackfill:        rangeBackfill,
+			RangeChunkSize:       rangeChunkSize,
+			RangeMaxParallelism:  rangeMaxParallelism,
+			RangeBatchSize:       rangeBatchSize,
 			SkipBackfill:         boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipBackfill),
 			SkipNoOpUpdates:      boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipNoOpUpdates),
 		}

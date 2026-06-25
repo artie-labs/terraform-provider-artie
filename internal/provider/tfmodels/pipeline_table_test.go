@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -78,6 +79,86 @@ func TestTablesFromAPIModel_BoolSettingsRoundTripExplicitValues(t *testing.T) {
 	assert.True(t, table.EncryptJSONBColumns.ValueBool(), "explicit true should round-trip as true")
 	assert.False(t, table.SkipDeletes.IsNull(), "explicit false should not read back as null")
 	assert.False(t, table.SkipDeletes.ValueBool(), "explicit false should round-trip as false")
+}
+
+func TestTableToAPIModel_RangeSettings(t *testing.T) {
+	table := Table{
+		Name:                types.StringValue("offers"),
+		Schema:              types.StringValue("public"),
+		RangeBackfill:       types.BoolValue(true),
+		RangeChunkSize:      types.Int64Value(5000000),
+		RangeMaxParallelism: types.Int64Value(5),
+		RangeBatchSize:      types.Int64Value(0),
+	}
+
+	apiTable, diags := table.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.NotNil(t, apiTable.AdvancedSettings.RangeSettings)
+	assert.True(t, apiTable.AdvancedSettings.RangeSettings.Enabled)
+	assert.Equal(t, 5000000, apiTable.AdvancedSettings.RangeSettings.ChunkSize)
+	assert.Equal(t, 5, apiTable.AdvancedSettings.RangeSettings.MaxParallelism)
+	assert.Equal(t, 0, apiTable.AdvancedSettings.RangeSettings.BatchSize)
+}
+
+func TestTableToAPIModel_NullRangeBackfillOmitsRangeSettings(t *testing.T) {
+	table := Table{
+		Name:   types.StringValue("offers"),
+		Schema: types.StringValue("public"),
+	}
+
+	apiTable, diags := table.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.Nil(t, apiTable.AdvancedSettings.RangeSettings)
+}
+
+func TestTablesFromAPIModel_NilRangeSettingsReadBackAsDisabled(t *testing.T) {
+	apiTables := []artieclient.Table{
+		{
+			UUID:   uuid.New(),
+			Name:   "offers",
+			Schema: "public",
+			AdvancedSettings: artieclient.AdvancedTableSettings{
+				RangeSettings: nil,
+			},
+		},
+	}
+
+	tables, diags := TablesFromAPIModel(t.Context(), apiTables)
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+	table := tables["public.offers"]
+	assert.False(t, table.RangeBackfill.IsNull(), "range_backfill should not read back as null")
+	assert.False(t, table.RangeBackfill.ValueBool())
+	assert.Equal(t, int64(0), table.RangeChunkSize.ValueInt64())
+	assert.Equal(t, int64(0), table.RangeMaxParallelism.ValueInt64())
+	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
+}
+
+func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
+	apiTables := []artieclient.Table{
+		{
+			UUID:   uuid.New(),
+			Name:   "offers",
+			Schema: "public",
+			AdvancedSettings: artieclient.AdvancedTableSettings{
+				RangeSettings: &artieclient.RangeSettings{
+					Enabled:        true,
+					ChunkSize:      5000000,
+					MaxParallelism: 5,
+					BatchSize:      0,
+				},
+			},
+		},
+	}
+
+	tables, diags := TablesFromAPIModel(t.Context(), apiTables)
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+	table := tables["public.offers"]
+	assert.True(t, table.RangeBackfill.ValueBool())
+	assert.Equal(t, int64(5000000), table.RangeChunkSize.ValueInt64())
+	assert.Equal(t, int64(5), table.RangeMaxParallelism.ValueInt64())
+	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
 }
 
 func TestBoolPointerValueOrFalse(t *testing.T) {

@@ -84,6 +84,13 @@ type CTIDSettings struct {
 	MaxParallelism uint `json:"maxParallelism"`
 }
 
+type RangeSettings struct {
+	Enabled        bool `json:"enabled"`
+	ChunkSize      int  `json:"chunksSize"`
+	MaxParallelism int  `json:"maxParallelism"`
+	BatchSize      int  `json:"batchSize"`
+}
+
 type AdvancedTableSettings struct {
 	Alias                      *string           `json:"alias"`
 	ExcludeColumns             *[]string         `json:"excludeColumns"`
@@ -99,6 +106,7 @@ type AdvancedTableSettings struct {
 	SoftPartitioning           *SoftPartitioning `json:"softPartitioning,omitempty"`
 	ShouldBackfillHistoryTable *bool             `json:"shouldBackfillHistoryTable"`
 	CTIDSettings               *CTIDSettings     `json:"ctidSettings,omitempty"`
+	RangeSettings              *RangeSettings    `json:"rangeSettings,omitempty"`
 	SkipBackfill               *bool             `json:"skipBackfill"`
 	SkipNoOpUpdates            *bool             `json:"skipNoOpUpdates"`
 }
