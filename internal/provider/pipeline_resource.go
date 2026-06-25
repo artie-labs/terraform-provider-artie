@@ -84,7 +84,6 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"ctid_max_parallelism":   schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.Between(5, 20)}, MarkdownDescription: "The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true."},
 						"range_settings": schema.SingleNestedAttribute{
 							Optional:            true,
-							Computed:            true,
 							PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
 							MarkdownDescription: "Optional: configuration for range-based parallel backfill. This is typically used for large tables with an integer primary key or another suitable monotonic range column.",
 							Attributes: map[string]schema.Attribute{
