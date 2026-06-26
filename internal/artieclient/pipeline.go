@@ -28,6 +28,7 @@ type AdvancedSettings struct {
 	FlushIntervalSeconds                         *int64          `json:"flushIntervalSeconds"`
 	BufferRows                                   *int64          `json:"bufferRows"`
 	FlushSizeKB                                  *int64          `json:"flushSizeKb"`
+	MaxConcurrentSnapshots                       *int64          `json:"maxConcurrentSnapshots,omitempty"`
 	DefaultSourceSchema                          *string         `json:"defaultSourceSchema"`
 	SplitEventsByType                            *bool           `json:"splitEventsByType"`
 	StaticColumns                                *[]StaticColumn `json:"staticColumns,omitempty"`
