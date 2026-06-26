@@ -175,6 +175,7 @@ type Pipeline struct {
 	ForceUTCTimezone                             types.Bool   `tfsdk:"force_utc_timezone"`
 	WriteRawBinaryValues                         types.Bool   `tfsdk:"write_raw_binary_values"`
 	DisableAlerts                                types.Bool   `tfsdk:"disable_alerts"`
+	MaxConcurrentSnapshots                       types.Int64  `tfsdk:"max_concurrent_snapshots"`
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
@@ -257,6 +258,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		ForceUTCTimezone:                             p.ForceUTCTimezone.ValueBoolPointer(),
 		WriteRawBinaryValues:                         p.WriteRawBinaryValues.ValueBoolPointer(),
 		DisableAlerts:                                p.DisableAlerts.ValueBoolPointer(),
+		MaxConcurrentSnapshots:                       p.MaxConcurrentSnapshots.ValueInt64Pointer(),
 		TurboWarehouse:                               p.TurboWarehouse.ValueStringPointer(),
 		TurboRowThreshold:                            p.TurboRowThreshold.ValueInt64Pointer(),
 		TurboLatencyThresholdMinutes:                 p.TurboLatencyThresholdMinutes.ValueInt64Pointer(),
@@ -328,6 +330,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var stagingSchema types.String
 	var forceUTCTimezone types.Bool
 	var writeRawBinaryValues types.Bool
+	var maxConcurrentSnapshots types.Int64
 	var turboWarehouse types.String
 	var turboRowThreshold types.Int64
 	var turboLatencyThresholdMinutes types.Int64
@@ -396,6 +399,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		if apiModel.AdvancedSettings.TurboLatencyThresholdMinutes != nil {
 			turboLatencyThresholdMinutes = types.Int64Value(*apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
 		}
+		if apiModel.AdvancedSettings.MaxConcurrentSnapshots != nil {
+			maxConcurrentSnapshots = types.Int64Value(*apiModel.AdvancedSettings.MaxConcurrentSnapshots)
+		}
 		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
@@ -456,6 +462,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		ForceUTCTimezone:                             forceUTCTimezone,
 		WriteRawBinaryValues:                         writeRawBinaryValues,
 		DisableAlerts:                                disableAlerts,
+		MaxConcurrentSnapshots:                       maxConcurrentSnapshots,
 		TurboWarehouse:                               turboWarehouse,
 		TurboRowThreshold:                            turboRowThreshold,
 		TurboLatencyThresholdMinutes:                 turboLatencyThresholdMinutes,

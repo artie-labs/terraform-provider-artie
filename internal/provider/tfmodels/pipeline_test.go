@@ -72,6 +72,56 @@ func TestPipelineToAPIBaseModel_TurboSettings(t *testing.T) {
 	assert.Equal(t, int64(30), *apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
 }
 
+func TestPipelineToAPIBaseModel_MaxConcurrentSnapshots(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                   types.StringValue("test"),
+		Tables:                 tablesMap,
+		DestinationConfig:      &PipelineDestinationConfig{},
+		MaxConcurrentSnapshots: types.Int64Value(6),
+	}
+
+	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.NotNil(t, apiModel.AdvancedSettings)
+	assert.Equal(t, int64(6), *apiModel.AdvancedSettings.MaxConcurrentSnapshots)
+}
+
+func TestPipelineToAPIBaseModel_OmittedMaxConcurrentSnapshots(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:              types.StringValue("test"),
+		Tables:            tablesMap,
+		DestinationConfig: &PipelineDestinationConfig{},
+	}
+
+	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.NotNil(t, apiModel.AdvancedSettings)
+	assert.Nil(t, apiModel.AdvancedSettings.MaxConcurrentSnapshots)
+}
+
+func TestPipelineFromAPIModel_MaxConcurrentSnapshots(t *testing.T) {
+	apiModel := artieclient.Pipeline{
+		UUID: uuid.New(),
+		BasePipeline: artieclient.BasePipeline{
+			Name:   "test",
+			Tables: []artieclient.Table{},
+			AdvancedSettings: &artieclient.AdvancedSettings{
+				MaxConcurrentSnapshots: ptr[int64](6),
+			},
+		},
+	}
+
+	pipeline, diags := PipelineFromAPIModel(t.Context(), apiModel)
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, int64(6), pipeline.MaxConcurrentSnapshots.ValueInt64())
+}
+
 func TestPipelineToAPIBaseModel_OmittedTurboSettings(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
