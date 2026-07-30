@@ -32,6 +32,7 @@ type AdvancedSettings struct {
 	DefaultSourceSchema                          *string         `json:"defaultSourceSchema"`
 	SplitEventsByType                            *bool           `json:"splitEventsByType"`
 	StaticColumns                                *[]StaticColumn `json:"staticColumns,omitempty"`
+	AutoEnableHistoryForNewTables                *bool           `json:"autoEnableHistoryForNewTables"`
 	AutoReplicateNewTables                       *bool           `json:"autoReplicateNewTables"`
 	AppendOnly                                   *bool           `json:"appendOnly"`
 	StagingSchema                                *string         `json:"stagingSchema"`
