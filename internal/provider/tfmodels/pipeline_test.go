@@ -13,6 +13,47 @@ import (
 
 func ptr[T any](v T) *T { return &v }
 
+func TestPipelineAutoEnableHistoryForNewTables(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                          types.StringValue("test"),
+		Tables:                        tablesMap,
+		DestinationConfig:             &PipelineDestinationConfig{},
+		AutoEnableHistoryForNewTables: types.BoolValue(true),
+	}
+
+	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.True(t, *apiModel.AdvancedSettings.AutoEnableHistoryForNewTables)
+
+	base := artieclient.Pipeline{
+		UUID: uuid.New(),
+		BasePipeline: artieclient.BasePipeline{
+			Name:             "test",
+			Tables:           []artieclient.Table{},
+			AdvancedSettings: &artieclient.AdvancedSettings{},
+		},
+	}
+
+	model, diags := PipelineFromAPIModel(t.Context(), base)
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.False(t, model.AutoEnableHistoryForNewTables.IsNull(), "auto_enable_history_for_new_tables should not be null when omitted")
+	assert.False(t, model.AutoEnableHistoryForNewTables.ValueBool())
+
+	base.AdvancedSettings.AutoEnableHistoryForNewTables = ptr(false)
+	model, diags = PipelineFromAPIModel(t.Context(), base)
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.False(t, model.AutoEnableHistoryForNewTables.IsNull(), "auto_enable_history_for_new_tables should not be null when false")
+	assert.False(t, model.AutoEnableHistoryForNewTables.ValueBool())
+
+	base.AdvancedSettings.AutoEnableHistoryForNewTables = ptr(true)
+	model, diags = PipelineFromAPIModel(t.Context(), base)
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.True(t, model.AutoEnableHistoryForNewTables.ValueBool())
+}
+
 func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	// disable_alerts is an "absent means off" toggle. The backend persists false as
 	// nil, so both an omitted value and an explicit false must read back as a stable
