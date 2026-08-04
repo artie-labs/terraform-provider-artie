@@ -55,6 +55,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 - `append_only` (Boolean) If set to true, data will always be appended instead of merged into the destination table. This should only be used for data that is known to be append-only (e.g. event tracking data). Rows will not be deduplicated.
 - `auto_enable_history_for_new_tables` (Boolean) If set to true, Artie will automatically enable history mode for new tables that are created in the source database.
+- `auto_enable_history_ignore_regex` (String) An optional regular expression for excluding newly discovered tables from auto-enable history mode.
 - `auto_replicate_ignore_regex` (String) An optional regular expression for excluding newly discovered tables from auto-replication.
 - `auto_replicate_new_tables` (Boolean) If set to true, Artie will automatically start replicating any new tables that are created in the source database.
 - `column_hashing_salt_uuid` (String) UUID of an `artie_column_hashing_salt` used when hashing column values. Required if any table has `columns_to_hash` set.

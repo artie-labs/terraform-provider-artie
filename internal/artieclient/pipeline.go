@@ -33,6 +33,7 @@ type AdvancedSettings struct {
 	SplitEventsByType                            *bool           `json:"splitEventsByType"`
 	StaticColumns                                *[]StaticColumn `json:"staticColumns,omitempty"`
 	AutoEnableHistoryForNewTables                *bool           `json:"autoEnableHistoryForNewTables"`
+	AutoEnableHistoryIgnoreRegex                 *string         `json:"autoEnableHistoryIgnoreRegex"`
 	AutoReplicateIgnoreRegex                     *string         `json:"autoReplicateIgnoreRegex"`
 	AutoReplicateNewTables                       *bool           `json:"autoReplicateNewTables"`
 	AppendOnly                                   *bool           `json:"appendOnly"`

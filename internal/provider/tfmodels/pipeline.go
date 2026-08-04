@@ -169,6 +169,7 @@ type Pipeline struct {
 	SplitEventsByType                            types.Bool   `tfsdk:"split_events_by_type"`
 	IncludeSourceMetadataColumn                  types.Bool   `tfsdk:"include_source_metadata_column"`
 	AutoEnableHistoryForNewTables                types.Bool   `tfsdk:"auto_enable_history_for_new_tables"`
+	AutoEnableHistoryIgnoreRegex                 types.String `tfsdk:"auto_enable_history_ignore_regex"`
 	AutoReplicateIgnoreRegex                     types.String `tfsdk:"auto_replicate_ignore_regex"`
 	AutoReplicateNewTables                       types.Bool   `tfsdk:"auto_replicate_new_tables"`
 	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
@@ -254,6 +255,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		SplitEventsByType:                            p.SplitEventsByType.ValueBoolPointer(),
 		IncludeSourceMetadataColumn:                  p.IncludeSourceMetadataColumn.ValueBoolPointer(),
 		AutoEnableHistoryForNewTables:                p.AutoEnableHistoryForNewTables.ValueBoolPointer(),
+		AutoEnableHistoryIgnoreRegex:                 p.AutoEnableHistoryIgnoreRegex.ValueStringPointer(),
 		AutoReplicateIgnoreRegex:                     p.AutoReplicateIgnoreRegex.ValueStringPointer(),
 		AutoReplicateNewTables:                       p.AutoReplicateNewTables.ValueBoolPointer(),
 		AppendOnly:                                   p.AppendOnly.ValueBoolPointer(),
@@ -330,6 +332,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
 	var includeSourceMetadataColumn types.Bool
+	var autoEnableHistoryIgnoreRegex types.String
 	var autoReplicateIgnoreRegex types.String
 	// These should default to false even if they're omitted from the API response.
 	autoEnableHistoryForNewTables := types.BoolValue(false)
@@ -383,6 +386,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		}
 		if apiModel.AdvancedSettings.AutoEnableHistoryForNewTables != nil {
 			autoEnableHistoryForNewTables = types.BoolValue(*apiModel.AdvancedSettings.AutoEnableHistoryForNewTables)
+		}
+		if apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex != nil {
+			autoEnableHistoryIgnoreRegex = types.StringValue(*apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex)
 		}
 		if apiModel.AdvancedSettings.AutoReplicateIgnoreRegex != nil {
 			autoReplicateIgnoreRegex = types.StringValue(*apiModel.AdvancedSettings.AutoReplicateIgnoreRegex)
@@ -468,6 +474,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		SplitEventsByType:                            splitEventsByType,
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
+		AutoEnableHistoryIgnoreRegex:                 autoEnableHistoryIgnoreRegex,
 		AutoReplicateIgnoreRegex:                     autoReplicateIgnoreRegex,
 		AutoReplicateNewTables:                       autoReplicateNewTables,
 		AppendOnly:                                   appendOnly,
