@@ -82,6 +82,34 @@ func TestPipelineAutoReplicateIgnoreRegex(t *testing.T) {
 	assert.Equal(t, "^public\\.archive_.*", model.AutoReplicateIgnoreRegex.ValueString())
 }
 
+func TestPipelineAutoEnableHistoryIgnoreRegex(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                         types.StringValue("test"),
+		Tables:                       tablesMap,
+		DestinationConfig:            &PipelineDestinationConfig{},
+		AutoEnableHistoryIgnoreRegex: types.StringValue("^audit\\..*"),
+	}
+
+	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "^audit\\..*", *apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex)
+
+	apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex = ptr("^archive\\..*")
+	model, diags := PipelineFromAPIModel(t.Context(), artieclient.Pipeline{
+		UUID: uuid.New(),
+		BasePipeline: artieclient.BasePipeline{
+			Name:             "test",
+			Tables:           []artieclient.Table{},
+			AdvancedSettings: apiModel.AdvancedSettings,
+		},
+	})
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "^archive\\..*", model.AutoEnableHistoryIgnoreRegex.ValueString())
+}
+
 func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	// disable_alerts is an "absent means off" toggle. The backend persists false as
 	// nil, so both an omitted value and an explicit false must read back as a stable
