@@ -102,6 +102,7 @@ type Table struct {
 	Alias                types.String `tfsdk:"alias"`
 	ExcludeColumns       types.List   `tfsdk:"columns_to_exclude"`
 	IncludeColumns       types.List   `tfsdk:"columns_to_include"`
+	PrimaryKeysOverride  types.List   `tfsdk:"primary_keys_override"`
 	ColumnsToHash        types.List   `tfsdk:"columns_to_hash"`
 	ColumnsToCompress    types.List   `tfsdk:"columns_to_compress"`
 	ColumnsToEncrypt     types.List   `tfsdk:"columns_to_encrypt"`
@@ -132,6 +133,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"alias":                  types.StringType,
 	"columns_to_exclude":     types.ListType{ElemType: types.StringType},
 	"columns_to_include":     types.ListType{ElemType: types.StringType},
+	"primary_keys_override":  types.ListType{ElemType: types.StringType},
 	"columns_to_hash":        types.ListType{ElemType: types.StringType},
 	"columns_to_compress":    types.ListType{ElemType: types.StringType},
 	"columns_to_encrypt":     types.ListType{ElemType: types.StringType},
@@ -165,6 +167,9 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 
 	colsToInclude, includeDiags := parseOptionalList[string](ctx, t.IncludeColumns)
 	diags.Append(includeDiags...)
+
+	primaryKeysOverride, primaryKeysOverrideDiags := parseOptionalList[string](ctx, t.PrimaryKeysOverride)
+	diags.Append(primaryKeysOverrideDiags...)
 
 	colsToHash, hashDiags := parseOptionalList[string](ctx, t.ColumnsToHash)
 	diags.Append(hashDiags...)
@@ -227,6 +232,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			Alias:                      t.Alias.ValueStringPointer(),
 			ExcludeColumns:             colsToExclude,
 			IncludeColumns:             colsToInclude,
+			PrimaryKeysOverride:        primaryKeysOverride,
 			ColumnsToHash:              colsToHash,
 			ColumnsToCompress:          colsToCompress,
 			ColumnsToEncrypt:           colsToEncrypt,
@@ -259,6 +265,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 
 		colsToInclude, includeDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.IncludeColumns)
 		diags.Append(includeDiags...)
+
+		primaryKeysOverride, primaryKeysOverrideDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.PrimaryKeysOverride)
+		diags.Append(primaryKeysOverrideDiags...)
 
 		colsToHash, hashDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToHash)
 		diags.Append(hashDiags...)
@@ -298,17 +307,18 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		}
 
 		tables[tableKey] = Table{
-			UUID:               types.StringValue(apiTable.UUID.String()),
-			Name:               types.StringValue(apiTable.Name),
-			Schema:             types.StringValue(apiTable.Schema),
-			EnableHistoryMode:  types.BoolValue(apiTable.EnableHistoryMode),
-			DisableReplication: types.BoolValue(apiTable.DisableReplication),
-			Alias:              types.StringPointerValue(apiTable.AdvancedSettings.Alias),
-			ExcludeColumns:     colsToExclude,
-			IncludeColumns:     colsToInclude,
-			ColumnsToHash:      colsToHash,
-			ColumnsToCompress:  colsToCompress,
-			ColumnsToEncrypt:   colsToEncrypt,
+			UUID:                types.StringValue(apiTable.UUID.String()),
+			Name:                types.StringValue(apiTable.Name),
+			Schema:              types.StringValue(apiTable.Schema),
+			EnableHistoryMode:   types.BoolValue(apiTable.EnableHistoryMode),
+			DisableReplication:  types.BoolValue(apiTable.DisableReplication),
+			Alias:               types.StringPointerValue(apiTable.AdvancedSettings.Alias),
+			ExcludeColumns:      colsToExclude,
+			IncludeColumns:      colsToInclude,
+			PrimaryKeysOverride: primaryKeysOverride,
+			ColumnsToHash:       colsToHash,
+			ColumnsToCompress:   colsToCompress,
+			ColumnsToEncrypt:    colsToEncrypt,
 			// The API stores these "absent means off" toggles as nil when false; coalesce nil to
 			// false so an explicit `false` round-trips without a post-apply consistency error.
 			EncryptJSONBColumns:  boolPointerValueOrFalse(apiTable.AdvancedSettings.EncryptJSONBColumns),
