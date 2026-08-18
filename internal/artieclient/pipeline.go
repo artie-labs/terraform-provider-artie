@@ -102,6 +102,7 @@ type AdvancedTableSettings struct {
 	Alias                      *string           `json:"alias"`
 	ExcludeColumns             *[]string         `json:"excludeColumns"`
 	IncludeColumns             *[]string         `json:"includeColumns"`
+	PrimaryKeysOverride        *[]string         `json:"primaryKeysOverride"`
 	ColumnsToHash              *[]string         `json:"columnsToHash"`
 	ColumnsToCompress          *[]string         `json:"columnsToCompress"`
 	ColumnsToEncrypt           *[]string         `json:"columnsToEncrypt"`

@@ -161,6 +161,25 @@ func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
 	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
 }
 
+func TestTablePrimaryKeysOverrideRoundTrip(t *testing.T) {
+	primaryKeysOverride, primaryKeysOverrideDiags := types.ListValueFrom(t.Context(), types.StringType, []string{"account_id", "region"})
+	assert.False(t, primaryKeysOverrideDiags.HasError(), "unexpected diagnostics: %v", primaryKeysOverrideDiags)
+
+	table := Table{
+		Name:                types.StringValue("accounts"),
+		Schema:              types.StringValue("public"),
+		PrimaryKeysOverride: primaryKeysOverride,
+	}
+
+	apiTable, diags := table.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.Equal(t, []string{"account_id", "region"}, *apiTable.AdvancedSettings.PrimaryKeysOverride)
+
+	tables, diags := TablesFromAPIModel(t.Context(), []artieclient.Table{apiTable})
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.Equal(t, primaryKeysOverride, tables["public.accounts"].PrimaryKeysOverride)
+}
+
 func TestBoolPointerValueOrFalse(t *testing.T) {
 	trueVal := true
 	falseVal := false
