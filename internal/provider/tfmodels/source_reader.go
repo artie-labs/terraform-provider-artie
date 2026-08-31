@@ -261,7 +261,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		PostgresReplicationSlotOverride: types.StringValue(lib.RemovePtr(apiModel.Settings.ReplicationSlotOverride)),
 		PublishViaPartitionRoot:         types.BoolPointerValue(apiModel.Settings.PublishViaPartitionRoot),
 		CompositeTypesAsText:            types.BoolPointerValue(apiModel.Settings.CompositeTypesAsText),
-		EnableRelationMessageCaching:    types.BoolValue(lib.RemovePtr(apiModel.Settings.EnableRelationMessageCaching)),
+		EnableRelationMessageCaching:    types.BoolPointerValue(apiModel.Settings.EnableRelationMessageCaching),
 		UseAdvanceOnPrimaryKeepAlive:    types.BoolPointerValue(apiModel.Settings.UseAdvanceOnPrimaryKeepAlive),
 		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
