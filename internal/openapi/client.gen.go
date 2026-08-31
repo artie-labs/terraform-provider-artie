@@ -827,7 +827,7 @@ type PayloadsJSONValue struct {
 }
 
 // PayloadsJsonValueArray defines model for PayloadsJsonValueArray.
-type PayloadsJsonValueArray = []PayloadsJsonValueArrayItem
+type PayloadsJsonValueArray = []*PayloadsJsonValueArrayItem
 
 // PayloadsJsonValueArrayItem defines model for PayloadsJsonValueArrayItem.
 type PayloadsJsonValueArrayItem struct {
@@ -838,7 +838,7 @@ type PayloadsJsonValueArrayItem struct {
 type PayloadsJsonValueBoolean = bool
 
 // PayloadsJsonValueNull defines model for PayloadsJsonValueNull.
-type PayloadsJsonValueNull = string
+type PayloadsJsonValueNull = any
 
 // PayloadsJsonValueNumber defines model for PayloadsJsonValueNumber.
 type PayloadsJsonValueNumber = float32
@@ -2624,32 +2624,6 @@ func (t *PayloadsJSONValue) MergePayloadsJsonValueArray(v PayloadsJsonValueArray
 	return err
 }
 
-// AsPayloadsJsonValueNull returns the union data inside the PayloadsJSONValue as a PayloadsJsonValueNull
-func (t PayloadsJSONValue) AsPayloadsJsonValueNull() (PayloadsJsonValueNull, error) {
-	var body PayloadsJsonValueNull
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromPayloadsJsonValueNull overwrites any union data inside the PayloadsJSONValue as the provided PayloadsJsonValueNull
-func (t *PayloadsJSONValue) FromPayloadsJsonValueNull(v PayloadsJsonValueNull) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergePayloadsJsonValueNull performs a merge with any union data inside the PayloadsJSONValue, using the provided PayloadsJsonValueNull
-func (t *PayloadsJSONValue) MergePayloadsJsonValueNull(v PayloadsJsonValueNull) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
 func (t PayloadsJSONValue) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -2754,32 +2728,6 @@ func (t *PayloadsJsonValueArrayItem) FromPayloadsJsonValueObject(v PayloadsJsonV
 
 // MergePayloadsJsonValueObject performs a merge with any union data inside the PayloadsJsonValueArrayItem, using the provided PayloadsJsonValueObject
 func (t *PayloadsJsonValueArrayItem) MergePayloadsJsonValueObject(v PayloadsJsonValueObject) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsPayloadsJsonValueNull returns the union data inside the PayloadsJsonValueArrayItem as a PayloadsJsonValueNull
-func (t PayloadsJsonValueArrayItem) AsPayloadsJsonValueNull() (PayloadsJsonValueNull, error) {
-	var body PayloadsJsonValueNull
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromPayloadsJsonValueNull overwrites any union data inside the PayloadsJsonValueArrayItem as the provided PayloadsJsonValueNull
-func (t *PayloadsJsonValueArrayItem) FromPayloadsJsonValueNull(v PayloadsJsonValueNull) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergePayloadsJsonValueNull performs a merge with any union data inside the PayloadsJsonValueArrayItem, using the provided PayloadsJsonValueNull
-func (t *PayloadsJsonValueArrayItem) MergePayloadsJsonValueNull(v PayloadsJsonValueNull) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
