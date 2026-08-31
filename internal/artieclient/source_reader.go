@@ -16,7 +16,7 @@ func NewSourceReaderClient(client *openapi.ClientWithResponses) SourceReaderClie
 }
 
 func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (*openapi.PayloadsSourceReader, error) {
-	resp, err := sc.client.GetSourceReadersUuidWithResponse(ctx, sourceReaderUUID)
+	resp, err := sc.client.SourceReaderDetailWithResponse(ctx, sourceReaderUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (sc SourceReaderClient) Get(ctx context.Context, sourceReaderUUID string) (
 }
 
 func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader openapi.PayloadsSourceReader) error {
-	resp, err := sc.client.PostSourceReadersValidateUnsavedWithResponse(ctx, openapi.RouterSourceReaderValidateUnsavedRequest{
+	resp, err := sc.client.SourceReaderValidateUnsavedWithResponse(ctx, openapi.RouterSourceReaderValidateUnsavedRequest{
 		SourceReader: sourceReader,
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func (sc SourceReaderClient) Validate(ctx context.Context, sourceReader openapi.
 }
 
 func (sc SourceReaderClient) Create(ctx context.Context, req openapi.RouterSourceReaderCreateRequest) (*openapi.PayloadsSourceReader, error) {
-	resp, err := sc.client.PostSourceReadersWithResponse(ctx, req)
+	resp, err := sc.client.SourceReaderCreateWithResponse(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (sc SourceReaderClient) Create(ctx context.Context, req openapi.RouterSourc
 }
 
 func (sc SourceReaderClient) Update(ctx context.Context, uuid string, sourceReader openapi.PayloadsSourceReader) (*openapi.PayloadsSourceReader, error) {
-	resp, err := sc.client.PostSourceReadersUuidWithResponse(ctx, uuid, sourceReader)
+	resp, err := sc.client.SourceReaderUpdateWithResponse(ctx, uuid, sourceReader)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (sc SourceReaderClient) Update(ctx context.Context, uuid string, sourceRead
 }
 
 func (sc SourceReaderClient) Delete(ctx context.Context, sourceReaderUUID string) error {
-	resp, err := sc.client.DeleteSourceReadersUuidWithResponse(ctx, sourceReaderUUID)
+	resp, err := sc.client.SourceReaderDeleteWithResponse(ctx, sourceReaderUUID)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (sc SourceReaderClient) Delete(ctx context.Context, sourceReaderUUID string
 }
 
 func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string) error {
-	resp, err := sc.client.PostSourceReadersUuidDeployWithResponse(ctx, sourceReaderUUID)
+	resp, err := sc.client.SourceReaderDeployWithResponse(ctx, sourceReaderUUID)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (sc SourceReaderClient) Deploy(ctx context.Context, sourceReaderUUID string
 }
 
 func (sc SourceReaderClient) UpdateStatus(ctx context.Context, sourceReaderUUID string, status string) error {
-	resp, err := sc.client.PostSourceReadersUuidStatusWithResponse(ctx, sourceReaderUUID, openapi.RouterSourceReaderUpdateStatusRequest{
+	resp, err := sc.client.SourceReaderUpdateStatusWithResponse(ctx, sourceReaderUUID, openapi.RouterSourceReaderUpdateStatusRequest{
 		Status: openapi.EnumsSourceReaderStatus(status),
 	})
 	if err != nil {
