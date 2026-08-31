@@ -141,7 +141,7 @@ func (c Client) SSHTunnels() SSHTunnelClient {
 }
 
 func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineClient {
-	return PipelineClient{client: c, openAPICient: openAPIClient}
+	return PipelineClient{client: c, openAPIClient: openAPIClient}
 }
 
 func (c Client) PrivateLinks() PrivateLinkClient {

@@ -139,7 +139,7 @@ type DestinationConfig struct {
 
 type PipelineClient struct {
 	client       Client
-	openAPICient *openapi.ClientWithResponses
+	openAPIClient *openapi.ClientWithResponses
 }
 
 func (PipelineClient) basePath() string {
@@ -247,7 +247,7 @@ func (pc PipelineClient) StartPipeline(ctx context.Context, pipelineUUID string)
 }
 
 func (pc PipelineClient) UpdateStatus(ctx context.Context, pipelineUUID string, status string) error {
-	resp, err := pc.openAPICient.PipelineUpdateStatusWithResponse(ctx, pipelineUUID, openapi.RouterPipelineUpdateStatusRequest{
+	resp, err := pc.openAPIClient.PipelineUpdateStatusWithResponse(ctx, pipelineUUID, openapi.RouterPipelineUpdateStatusRequest{
 		Status: openapi.EnumsPipelineStatus(status),
 	})
 	if err != nil {
