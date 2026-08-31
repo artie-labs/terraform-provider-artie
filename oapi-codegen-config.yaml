@@ -6,3 +6,4 @@ generate:
   client: true
 output-options:
   resolve-type-name-collisions: true
+  skip-prune: true
