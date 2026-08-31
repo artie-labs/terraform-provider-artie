@@ -138,7 +138,7 @@ type DestinationConfig struct {
 }
 
 type PipelineClient struct {
-	client       Client
+	client        Client
 	openAPIClient *openapi.ClientWithResponses
 }
 
