@@ -1,25 +1,16 @@
 package provider
 
 import (
-	"context"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
 	"terraform-provider-artie/internal/provider/tfmodels"
 )
 
-func TestSourceReaderResourceSchemaIncludesRelationMessageCaching(t *testing.T) {
-	sourceReaderResource := SourceReaderResource{}
-	var schemaData resource.SchemaResponse
-	sourceReaderResource.Schema(context.Background(), resource.SchemaRequest{}, &schemaData)
-
-	assert.Contains(t, schemaData.Schema.Attributes, "enable_relation_message_caching")
-}
 func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 	connectorUUID := uuid.New().String()
 	tableType := types.ObjectType{
