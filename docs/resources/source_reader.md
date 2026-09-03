@@ -76,6 +76,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 - `tables` (Attributes Map) A map of tables from the source database that you want this source reader to include CDC events for. This should be specified if (and only if) the source reader has `is_shared` set to true, and it must include all tables that are specified in the `tables` attribute of any pipeline that uses this source reader. The key for each table should be formatted as `schema_name.table_name` if your source database uses schemas, otherwise just `table_name`. (see [below for nested schema](#nestedatt--tables))
 - `unify_across_schemas_regex` (String) If unify across schemas is enabled, this is an additional regex pattern that you can use to filter which schemas should be unified. This is only applicable if the source type is PostgreSQL.
 - `use_advance_on_primary_keep_alive` (Boolean) If set to true, Artie will use the `pg_logical_emit_message` function to advance the replication slot LSN on keepalive messages from the primary. This is only applicable if the source type is PostgreSQL.
+- `use_failover_replication_slot` (Boolean) If set to true, Artie creates missing PostgreSQL logical replication slots with failover support so PostgreSQL 17 can synchronize them to physical standbys. Existing slots are reused unchanged. This is only applicable if the source type is PostgreSQL 17 or later. Defaults to false.
 
 ### Read-Only
 

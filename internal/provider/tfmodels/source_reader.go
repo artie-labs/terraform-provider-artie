@@ -105,6 +105,7 @@ type SourceReader struct {
 	PublishViaPartitionRoot         types.Bool   `tfsdk:"publish_via_partition_root"`
 	CompositeTypesAsText            types.Bool   `tfsdk:"composite_types_as_text"`
 	EnableRelationMessageCaching    types.Bool   `tfsdk:"enable_relation_message_caching"`
+	UseFailoverReplicationSlot      types.Bool   `tfsdk:"use_failover_replication_slot"`
 	UseAdvanceOnPrimaryKeepAlive    types.Bool   `tfsdk:"use_advance_on_primary_keep_alive"`
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
@@ -128,6 +129,7 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		PublishViaPartitionRoot:      s.PublishViaPartitionRoot.ValueBoolPointer(),
 		CompositeTypesAsText:         s.CompositeTypesAsText.ValueBoolPointer(),
 		EnableRelationMessageCaching: s.EnableRelationMessageCaching.ValueBoolPointer(),
+		UseFailoverReplicationSlot:   s.UseFailoverReplicationSlot.ValueBoolPointer(),
 		UseAdvanceOnPrimaryKeepAlive: s.UseAdvanceOnPrimaryKeepAlive.ValueBoolPointer(),
 		UnifyAcrossSchemas:           s.EnableUnifyAcrossSchemas.ValueBoolPointer(),
 		UnifyAcrossSchemasRegex:      s.UnifyAcrossSchemasRegex.ValueStringPointer(),
@@ -262,6 +264,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		PublishViaPartitionRoot:         types.BoolPointerValue(apiModel.Settings.PublishViaPartitionRoot),
 		CompositeTypesAsText:            types.BoolPointerValue(apiModel.Settings.CompositeTypesAsText),
 		EnableRelationMessageCaching:    types.BoolPointerValue(apiModel.Settings.EnableRelationMessageCaching),
+		UseFailoverReplicationSlot:      types.BoolPointerValue(apiModel.Settings.UseFailoverReplicationSlot),
 		UseAdvanceOnPrimaryKeepAlive:    types.BoolPointerValue(apiModel.Settings.UseAdvanceOnPrimaryKeepAlive),
 		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
