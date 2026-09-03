@@ -1088,6 +1088,7 @@ type PayloadsSourceReaderSettingsPayload struct {
 	UnifyAcrossSchemasMaxParallelism   *int                                                   `json:"unifyAcrossSchemasMaxParallelism,omitempty"`
 	UnifyAcrossSchemasRegex            *string                                                `json:"unifyAcrossSchemasRegex,omitempty"`
 	UseAdvanceOnPrimaryKeepAlive       *bool                                                  `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
+	UseFailoverReplicationSlot         *bool                                                  `json:"useFailoverReplicationSlot,omitempty"`
 	UseNumericTypesForMoney            *bool                                                  `json:"useNumericTypesForMoney,omitempty"`
 	UseReaderForOracleStreaming        *bool                                                  `json:"useReaderForOracleStreaming,omitempty"`
 }
@@ -2119,14 +2120,6 @@ type RouterPipelineCreateFromSourceRequest struct {
 // RouterPipelineCreateRequest defines model for RouterPipelineCreateRequest.
 type RouterPipelineCreateRequest struct {
 	Pipeline PayloadsPipelinePayload `json:"pipeline"`
-}
-
-// RouterPipelineDetailResponse defines model for RouterPipelineDetailResponse.
-type RouterPipelineDetailResponse struct {
-	DestinationConnector *PayloadsFullConnector `json:"destinationConnector,omitempty"`
-	Pipeline             PayloadsFullPipeline   `json:"pipeline"`
-	SourceConnector      PayloadsFullConnector  `json:"sourceConnector"`
-	SourceReader         PayloadsSourceReader   `json:"sourceReader"`
 }
 
 // RouterPipelineStartRequest defines model for RouterPipelineStartRequest.
@@ -4032,9 +4025,9 @@ type ClientInterface interface {
 	// Corresponds with DELETE /pipelines/{uuid} (the `PipelineDelete` operationId).
 	PipelineDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PipelineDetail Get pipeline by UUID
+	// PipelineDetail Get pipeline configuration
 	//
-	// Returns pipeline detail. With query includeRelatedObjects=true returns pipeline, sourceReader, sourceConnector, and optional destinationConnector; otherwise returns FullPipeline only.
+	// Returns FullPipeline for the pipeline uuid (tables with uuid/status, destinationUUID, specificDestCfg, sourceReaderUUID). MCP clients must omit includeRelatedObjects. The Dashboard UI may pass includeRelatedObjects=true to wrap sourceReader and connectors; that body is not the documented 200 schema.
 	//
 	// Corresponds with GET /pipelines/{uuid} (the `PipelineDetail` operationId).
 	PipelineDetail(ctx context.Context, uuid string, params *PipelineDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4270,14 +4263,14 @@ type ClientInterface interface {
 
 	// SourceReaderDetail Get a source reader
 	//
-	// Retrieves the details of a source reader by UUID, including its configuration, status, connector association, and table settings.
+	// Retrieves a source reader by UUID, including database, settings, and table configuration. Sensitive fields may be present. MCP clients should echo this payload into source_reader_update.
 	//
 	// Corresponds with GET /source-readers/{uuid} (the `SourceReaderDetail` operationId).
 	SourceReaderDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SourceReaderUpdateWithBody Update a source reader
 	//
-	// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+	// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4286,7 +4279,7 @@ type ClientInterface interface {
 
 	// SourceReaderUpdate Update a source reader
 	//
-	// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+	// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5608,9 +5601,9 @@ func (c *Client) PipelineDelete(ctx context.Context, uuid string, reqEditors ...
 	return c.Client.Do(req)
 }
 
-// PipelineDetail Get pipeline by UUID
+// PipelineDetail Get pipeline configuration
 //
-// Returns pipeline detail. With query includeRelatedObjects=true returns pipeline, sourceReader, sourceConnector, and optional destinationConnector; otherwise returns FullPipeline only.
+// Returns FullPipeline for the pipeline uuid (tables with uuid/status, destinationUUID, specificDestCfg, sourceReaderUUID). MCP clients must omit includeRelatedObjects. The Dashboard UI may pass includeRelatedObjects=true to wrap sourceReader and connectors; that body is not the documented 200 schema.
 //
 // Corresponds with GET /pipelines/{uuid} (the `PipelineDetail` operationId).
 func (c *Client) PipelineDetail(ctx context.Context, uuid string, params *PipelineDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6126,7 +6119,7 @@ func (c *Client) SourceReaderDelete(ctx context.Context, uuid string, reqEditors
 
 // SourceReaderDetail Get a source reader
 //
-// Retrieves the details of a source reader by UUID, including its configuration, status, connector association, and table settings.
+// Retrieves a source reader by UUID, including database, settings, and table configuration. Sensitive fields may be present. MCP clients should echo this payload into source_reader_update.
 //
 // Corresponds with GET /source-readers/{uuid} (the `SourceReaderDetail` operationId).
 func (c *Client) SourceReaderDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6143,7 +6136,7 @@ func (c *Client) SourceReaderDetail(ctx context.Context, uuid string, reqEditors
 
 // SourceReaderUpdateWithBody Update a source reader
 //
-// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6162,7 +6155,7 @@ func (c *Client) SourceReaderUpdateWithBody(ctx context.Context, uuid string, co
 
 // SourceReaderUpdate Update a source reader
 //
-// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9858,9 +9851,9 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /pipelines/{uuid} (the `PipelineDelete` operationId).
 	PipelineDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PipelineDeleteResponse, error)
 
-	// PipelineDetailWithResponse Get pipeline by UUID
+	// PipelineDetailWithResponse Get pipeline configuration
 	//
-	// Returns pipeline detail. With query includeRelatedObjects=true returns pipeline, sourceReader, sourceConnector, and optional destinationConnector; otherwise returns FullPipeline only.
+	// Returns FullPipeline for the pipeline uuid (tables with uuid/status, destinationUUID, specificDestCfg, sourceReaderUUID). MCP clients must omit includeRelatedObjects. The Dashboard UI may pass includeRelatedObjects=true to wrap sourceReader and connectors; that body is not the documented 200 schema.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -10112,7 +10105,7 @@ type ClientWithResponsesInterface interface {
 
 	// SourceReaderDetailWithResponse Get a source reader
 	//
-	// Retrieves the details of a source reader by UUID, including its configuration, status, connector association, and table settings.
+	// Retrieves a source reader by UUID, including database, settings, and table configuration. Sensitive fields may be present. MCP clients should echo this payload into source_reader_update.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -10121,7 +10114,7 @@ type ClientWithResponsesInterface interface {
 
 	// SourceReaderUpdateWithBodyWithResponse Update a source reader
 	//
-	// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+	// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -10130,7 +10123,7 @@ type ClientWithResponsesInterface interface {
 
 	// SourceReaderUpdateWithResponse Update a source reader
 	//
-	// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+	// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -11861,11 +11854,11 @@ type PipelineDetailResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *RouterPipelineDetailResponse
+	JSON200 *PayloadsFullPipeline
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r PipelineDetailResponse) GetJSON200() *RouterPipelineDetailResponse {
+func (r PipelineDetailResponse) GetJSON200() *PayloadsFullPipeline {
 	return r.JSON200
 }
 
@@ -13865,9 +13858,9 @@ func (c *ClientWithResponses) PipelineDeleteWithResponse(ctx context.Context, uu
 	return ParsePipelineDeleteResponse(rsp)
 }
 
-// PipelineDetailWithResponse Get pipeline by UUID
+// PipelineDetailWithResponse Get pipeline configuration
 //
-// Returns pipeline detail. With query includeRelatedObjects=true returns pipeline, sourceReader, sourceConnector, and optional destinationConnector; otherwise returns FullPipeline only.
+// Returns FullPipeline for the pipeline uuid (tables with uuid/status, destinationUUID, specificDestCfg, sourceReaderUUID). MCP clients must omit includeRelatedObjects. The Dashboard UI may pass includeRelatedObjects=true to wrap sourceReader and connectors; that body is not the documented 200 schema.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14287,7 +14280,7 @@ func (c *ClientWithResponses) SourceReaderDeleteWithResponse(ctx context.Context
 
 // SourceReaderDetailWithResponse Get a source reader
 //
-// Retrieves the details of a source reader by UUID, including its configuration, status, connector association, and table settings.
+// Retrieves a source reader by UUID, including database, settings, and table configuration. Sensitive fields may be present. MCP clients should echo this payload into source_reader_update.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14302,7 +14295,7 @@ func (c *ClientWithResponses) SourceReaderDetailWithResponse(ctx context.Context
 
 // SourceReaderUpdateWithBodyWithResponse Update a source reader
 //
-// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14317,7 +14310,7 @@ func (c *ClientWithResponses) SourceReaderUpdateWithBodyWithResponse(ctx context
 
 // SourceReaderUpdateWithResponse Update a source reader
 //
-// Updates an existing source reader by UUID. You can modify the name, settings, table configuration, and shared status of the source reader.
+// Updates an existing source reader by UUID. Echo the last source_reader_detail payload and change only the intended fields; omitting name, database, or connectorUUID overwrites them with empty values.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15623,7 +15616,7 @@ func ParsePipelineDetailResponse(rsp *http.Response) (*PipelineDetailResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RouterPipelineDetailResponse
+		var dest PayloadsFullPipeline
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
