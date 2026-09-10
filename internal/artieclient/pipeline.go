@@ -44,6 +44,7 @@ type AdvancedSettings struct {
 	TurboWarehouse                               *string         `json:"turboWarehouse"`
 	TurboRowThreshold                            *int64          `json:"turboRowThreshold"`
 	TurboLatencyThresholdMinutes                 *int64          `json:"turboLatencyThresholdMinutes"`
+	JSONAsVarchar                                *bool           `json:"jsonAsVarchar"`
 }
 
 type BasePipeline struct {
