@@ -346,7 +346,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var turboWarehouse types.String
 	var turboRowThreshold types.Int64
 	var turboLatencyThresholdMinutes types.Int64
-	jsonAsVarchar := types.BoolValue(false)
+	var jsonAsVarchar types.Bool
 
 	autoReplicateNewTables := types.BoolValue(false)
 	disableAlerts := types.BoolValue(false)
