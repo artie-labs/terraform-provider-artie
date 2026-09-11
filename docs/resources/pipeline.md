@@ -72,7 +72,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `include_full_source_table_name_column` (Boolean) If set to true, Artie will add a new column called `__artie_full_source_table_name` to the destination table containing the fully qualified source table name (e.g., schema.table). Useful when unifying tables across schemas/databases.
 - `include_full_source_table_name_column_as_primary_key` (Boolean) If set to true, includes the full source table name column as part of the primary key in destination tables. Requires `include_full_source_table_name_column` to be true.
 - `include_source_metadata_column` (Boolean) If set to true, Artie will add a new column called `__artie_source_metadata` to the destination table which will contain a JSON blob of metadata about the source event.
-- `json_as_varchar` (Boolean) If set to true, new JSON columns in Redshift are stored as VARCHAR(MAX) instead of SUPER.
+- `json_as_varchar` (Boolean) If set to true, new JSON columns in Redshift are stored as VARCHAR(MAX) instead of SUPER. JSON values larger than 65,535 bytes cannot fit.
 - `max_concurrent_snapshots` (Number) The maximum number of tables Artie should backfill concurrently for this pipeline.
 - `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
