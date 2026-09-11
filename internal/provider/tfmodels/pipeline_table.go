@@ -77,6 +77,71 @@ var SoftPartitioningAttrTypes = map[string]attr.Type{
 	"max_partitions":      types.Int32Type,
 }
 
+type PartitionRangeSettings struct {
+	Enabled types.Bool   `tfsdk:"enabled"`
+	Range   types.Object `tfsdk:"range"`
+}
+
+type PartitionRange struct {
+	Enabled        types.Bool  `tfsdk:"enabled"`
+	ChunkSize      types.Int64 `tfsdk:"chunk_size"`
+	MaxParallelism types.Int64 `tfsdk:"max_parallelism"`
+}
+
+var PartitionRangeAttrTypes = map[string]attr.Type{
+	"enabled":         types.BoolType,
+	"chunk_size":      types.Int64Type,
+	"max_parallelism": types.Int64Type,
+}
+
+var PartitionRangeSettingsAttrTypes = map[string]attr.Type{
+	"enabled": types.BoolType,
+	"range":   types.ObjectType{AttrTypes: PartitionRangeAttrTypes},
+}
+
+func ParsePartitionRangeSettings(ctx context.Context, value *types.Object) (*PartitionRangeSettings, diag.Diagnostics) {
+	return parseOptionalObject[PartitionRangeSettings](ctx, value)
+}
+
+func (s PartitionRangeSettings) ToAPIModel(ctx context.Context) (*artieclient.PartitionRangeSettings, diag.Diagnostics) {
+	settings := &artieclient.PartitionRangeSettings{Enabled: s.Enabled.ValueBool()}
+	rangeSettings, diags := parseOptionalObject[PartitionRange](ctx, &s.Range)
+	if diags.HasError() || rangeSettings == nil {
+		return settings, diags
+	}
+
+	settings.Range = &artieclient.RangeSettings{
+		Enabled:        rangeSettings.Enabled.ValueBool(),
+		ChunkSize:      int(rangeSettings.ChunkSize.ValueInt64()),
+		MaxParallelism: int(rangeSettings.MaxParallelism.ValueInt64()),
+	}
+	return settings, diags
+}
+
+func PartitionRangeSettingsFromAPIModel(ctx context.Context, apiSettings *artieclient.PartitionRangeSettings) (types.Object, diag.Diagnostics) {
+	if apiSettings == nil {
+		return types.ObjectNull(PartitionRangeSettingsAttrTypes), nil
+	}
+
+	rangeValue := types.ObjectNull(PartitionRangeAttrTypes)
+	if apiSettings.Range != nil {
+		var diags diag.Diagnostics
+		rangeValue, diags = types.ObjectValue(PartitionRangeAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(apiSettings.Range.Enabled),
+			"chunk_size":      types.Int64Value(int64(apiSettings.Range.ChunkSize)),
+			"max_parallelism": types.Int64Value(int64(apiSettings.Range.MaxParallelism)),
+		})
+		if diags.HasError() {
+			return types.ObjectNull(PartitionRangeSettingsAttrTypes), diags
+		}
+	}
+
+	return types.ObjectValue(PartitionRangeSettingsAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(apiSettings.Enabled),
+		"range":   rangeValue,
+	})
+}
+
 func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *artieclient.SoftPartitioning) (types.Object, diag.Diagnostics) {
 	attrTypes := SoftPartitioningAttrTypes
 	if apiSoftPartitioning == nil {
@@ -99,60 +164,62 @@ type Table struct {
 	DisableReplication types.Bool   `tfsdk:"disable_replication"`
 
 	// Advanced table settings
-	Alias                types.String `tfsdk:"alias"`
-	ExcludeColumns       types.List   `tfsdk:"columns_to_exclude"`
-	IncludeColumns       types.List   `tfsdk:"columns_to_include"`
-	PrimaryKeysOverride  types.List   `tfsdk:"primary_keys_override"`
-	ColumnsToHash        types.List   `tfsdk:"columns_to_hash"`
-	ColumnsToCompress    types.List   `tfsdk:"columns_to_compress"`
-	ColumnsToEncrypt     types.List   `tfsdk:"columns_to_encrypt"`
-	EncryptJSONBColumns  types.Bool   `tfsdk:"encrypt_jsonb_columns"`
-	SkipDeletes          types.Bool   `tfsdk:"skip_deletes"`
-	UnifyAcrossSchemas   types.Bool   `tfsdk:"unify_across_schemas"`
-	UnifyAcrossDatabases types.Bool   `tfsdk:"unify_across_databases"`
-	MergePredicates      types.List   `tfsdk:"merge_predicates"`
-	SoftPartitioning     types.Object `tfsdk:"soft_partitioning"`
-	BackfillHistoryTable types.Bool   `tfsdk:"backfill_history_table"`
-	CTIDBackfill         types.Bool   `tfsdk:"ctid_backfill"`
-	CTIDChunkSize        types.Int64  `tfsdk:"ctid_chunk_size"`
-	CTIDMaxParallelism   types.Int64  `tfsdk:"ctid_max_parallelism"`
-	RangeBackfill        types.Bool   `tfsdk:"range_backfill"`
-	RangeChunkSize       types.Int64  `tfsdk:"range_chunk_size"`
-	RangeMaxParallelism  types.Int64  `tfsdk:"range_max_parallelism"`
-	RangeBatchSize       types.Int64  `tfsdk:"range_batch_size"`
-	SkipBackfill         types.Bool   `tfsdk:"skip_backfill"`
-	SkipNoOpUpdates      types.Bool   `tfsdk:"skip_no_op_updates"`
+	Alias                  types.String `tfsdk:"alias"`
+	ExcludeColumns         types.List   `tfsdk:"columns_to_exclude"`
+	IncludeColumns         types.List   `tfsdk:"columns_to_include"`
+	PrimaryKeysOverride    types.List   `tfsdk:"primary_keys_override"`
+	ColumnsToHash          types.List   `tfsdk:"columns_to_hash"`
+	ColumnsToCompress      types.List   `tfsdk:"columns_to_compress"`
+	ColumnsToEncrypt       types.List   `tfsdk:"columns_to_encrypt"`
+	EncryptJSONBColumns    types.Bool   `tfsdk:"encrypt_jsonb_columns"`
+	SkipDeletes            types.Bool   `tfsdk:"skip_deletes"`
+	UnifyAcrossSchemas     types.Bool   `tfsdk:"unify_across_schemas"`
+	UnifyAcrossDatabases   types.Bool   `tfsdk:"unify_across_databases"`
+	MergePredicates        types.List   `tfsdk:"merge_predicates"`
+	SoftPartitioning       types.Object `tfsdk:"soft_partitioning"`
+	BackfillHistoryTable   types.Bool   `tfsdk:"backfill_history_table"`
+	CTIDBackfill           types.Bool   `tfsdk:"ctid_backfill"`
+	CTIDChunkSize          types.Int64  `tfsdk:"ctid_chunk_size"`
+	CTIDMaxParallelism     types.Int64  `tfsdk:"ctid_max_parallelism"`
+	RangeBackfill          types.Bool   `tfsdk:"range_backfill"`
+	RangeChunkSize         types.Int64  `tfsdk:"range_chunk_size"`
+	RangeMaxParallelism    types.Int64  `tfsdk:"range_max_parallelism"`
+	RangeBatchSize         types.Int64  `tfsdk:"range_batch_size"`
+	PartitionRangeSettings types.Object `tfsdk:"partition_range_settings"`
+	SkipBackfill           types.Bool   `tfsdk:"skip_backfill"`
+	SkipNoOpUpdates        types.Bool   `tfsdk:"skip_no_op_updates"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
-	"uuid":                   types.StringType,
-	"name":                   types.StringType,
-	"schema":                 types.StringType,
-	"enable_history_mode":    types.BoolType,
-	"disable_replication":    types.BoolType,
-	"alias":                  types.StringType,
-	"columns_to_exclude":     types.ListType{ElemType: types.StringType},
-	"columns_to_include":     types.ListType{ElemType: types.StringType},
-	"primary_keys_override":  types.ListType{ElemType: types.StringType},
-	"columns_to_hash":        types.ListType{ElemType: types.StringType},
-	"columns_to_compress":    types.ListType{ElemType: types.StringType},
-	"columns_to_encrypt":     types.ListType{ElemType: types.StringType},
-	"encrypt_jsonb_columns":  types.BoolType,
-	"skip_deletes":           types.BoolType,
-	"unify_across_schemas":   types.BoolType,
-	"unify_across_databases": types.BoolType,
-	"merge_predicates":       types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
-	"soft_partitioning":      types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
-	"backfill_history_table": types.BoolType,
-	"ctid_backfill":          types.BoolType,
-	"ctid_chunk_size":        types.Int64Type,
-	"ctid_max_parallelism":   types.Int64Type,
-	"range_backfill":         types.BoolType,
-	"range_chunk_size":       types.Int64Type,
-	"range_max_parallelism":  types.Int64Type,
-	"range_batch_size":       types.Int64Type,
-	"skip_backfill":          types.BoolType,
-	"skip_no_op_updates":     types.BoolType,
+	"uuid":                     types.StringType,
+	"name":                     types.StringType,
+	"schema":                   types.StringType,
+	"enable_history_mode":      types.BoolType,
+	"disable_replication":      types.BoolType,
+	"alias":                    types.StringType,
+	"columns_to_exclude":       types.ListType{ElemType: types.StringType},
+	"columns_to_include":       types.ListType{ElemType: types.StringType},
+	"primary_keys_override":    types.ListType{ElemType: types.StringType},
+	"columns_to_hash":          types.ListType{ElemType: types.StringType},
+	"columns_to_compress":      types.ListType{ElemType: types.StringType},
+	"columns_to_encrypt":       types.ListType{ElemType: types.StringType},
+	"encrypt_jsonb_columns":    types.BoolType,
+	"skip_deletes":             types.BoolType,
+	"unify_across_schemas":     types.BoolType,
+	"unify_across_databases":   types.BoolType,
+	"merge_predicates":         types.ListType{ElemType: types.ObjectType{AttrTypes: MergePredicateAttrTypes}},
+	"soft_partitioning":        types.ObjectType{AttrTypes: SoftPartitioningAttrTypes},
+	"backfill_history_table":   types.BoolType,
+	"ctid_backfill":            types.BoolType,
+	"ctid_chunk_size":          types.Int64Type,
+	"ctid_max_parallelism":     types.Int64Type,
+	"range_backfill":           types.BoolType,
+	"range_chunk_size":         types.Int64Type,
+	"range_max_parallelism":    types.Int64Type,
+	"range_batch_size":         types.Int64Type,
+	"partition_range_settings": types.ObjectType{AttrTypes: PartitionRangeSettingsAttrTypes},
+	"skip_backfill":            types.BoolType,
+	"skip_no_op_updates":       types.BoolType,
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
@@ -208,6 +275,15 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 		}
 	}
 
+	partitionRangeSettings, partitionRangeSettingsDiags := ParsePartitionRangeSettings(ctx, &t.PartitionRangeSettings)
+	diags.Append(partitionRangeSettingsDiags...)
+	var clientPartitionRangeSettings *artieclient.PartitionRangeSettings
+	if partitionRangeSettings != nil {
+		var partitionRangeSettingsDiags diag.Diagnostics
+		clientPartitionRangeSettings, partitionRangeSettingsDiags = partitionRangeSettings.ToAPIModel(ctx)
+		diags.Append(partitionRangeSettingsDiags...)
+	}
+
 	var clientRangeSettings *artieclient.RangeSettings
 	if IsKnown(t.RangeBackfill) {
 		clientRangeSettings = &artieclient.RangeSettings{
@@ -245,6 +321,7 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
 			CTIDSettings:               clientCTIDSettings,
 			RangeSettings:              clientRangeSettings,
+			PartitionRangeSettings:     clientPartitionRangeSettings,
 			SkipBackfill:               t.SkipBackfill.ValueBoolPointer(),
 			SkipNoOpUpdates:            t.SkipNoOpUpdates.ValueBoolPointer(),
 		},
@@ -295,6 +372,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ctidMaxParallelism = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.MaxParallelism))
 		}
 
+		partitionRangeSettings, partitionRangeSettingsDiags := PartitionRangeSettingsFromAPIModel(ctx, apiTable.AdvancedSettings.PartitionRangeSettings)
+		diags.Append(partitionRangeSettingsDiags...)
+
 		rangeBackfill := types.BoolValue(false)
 		rangeChunkSize := types.Int64Value(0)
 		rangeMaxParallelism := types.Int64Value(0)
@@ -321,22 +401,23 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ColumnsToEncrypt:    colsToEncrypt,
 			// The API stores these "absent means off" toggles as nil when false; coalesce nil to
 			// false so an explicit `false` round-trips without a post-apply consistency error.
-			EncryptJSONBColumns:  boolPointerValueOrFalse(apiTable.AdvancedSettings.EncryptJSONBColumns),
-			SkipDeletes:          boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipDeletes),
-			UnifyAcrossSchemas:   boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossSchemas),
-			UnifyAcrossDatabases: boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossDatabases),
-			MergePredicates:      mergePredicates,
-			SoftPartitioning:     softPartitioning,
-			BackfillHistoryTable: boolPointerValueOrFalse(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
-			CTIDBackfill:         ctidBackfill,
-			CTIDChunkSize:        ctidChunkSize,
-			CTIDMaxParallelism:   ctidMaxParallelism,
-			RangeBackfill:        rangeBackfill,
-			RangeChunkSize:       rangeChunkSize,
-			RangeMaxParallelism:  rangeMaxParallelism,
-			RangeBatchSize:       rangeBatchSize,
-			SkipBackfill:         boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipBackfill),
-			SkipNoOpUpdates:      boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipNoOpUpdates),
+			EncryptJSONBColumns:    boolPointerValueOrFalse(apiTable.AdvancedSettings.EncryptJSONBColumns),
+			SkipDeletes:            boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipDeletes),
+			UnifyAcrossSchemas:     boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossSchemas),
+			UnifyAcrossDatabases:   boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossDatabases),
+			MergePredicates:        mergePredicates,
+			SoftPartitioning:       softPartitioning,
+			BackfillHistoryTable:   boolPointerValueOrFalse(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
+			CTIDBackfill:           ctidBackfill,
+			CTIDChunkSize:          ctidChunkSize,
+			CTIDMaxParallelism:     ctidMaxParallelism,
+			RangeBackfill:          rangeBackfill,
+			RangeChunkSize:         rangeChunkSize,
+			RangeMaxParallelism:    rangeMaxParallelism,
+			RangeBatchSize:         rangeBatchSize,
+			PartitionRangeSettings: partitionRangeSettings,
+			SkipBackfill:           boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipBackfill),
+			SkipNoOpUpdates:        boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipNoOpUpdates),
 		}
 	}
 

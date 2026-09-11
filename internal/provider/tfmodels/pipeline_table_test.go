@@ -1,9 +1,11 @@
 package tfmodels
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
@@ -159,6 +161,61 @@ func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
 	assert.Equal(t, int64(5000000), table.RangeChunkSize.ValueInt64())
 	assert.Equal(t, int64(5), table.RangeMaxParallelism.ValueInt64())
 	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
+}
+
+func TestTablePartitionRangeSettingsRoundTrip(t *testing.T) {
+	rangeValue, rangeDiags := types.ObjectValue(PartitionRangeAttrTypes, map[string]attr.Value{
+		"enabled":         types.BoolValue(true),
+		"chunk_size":      types.Int64Value(5_000_000),
+		"max_parallelism": types.Int64Value(5),
+	})
+	assert.False(t, rangeDiags.HasError(), "unexpected diagnostics: %v", rangeDiags)
+	settingsValue, settingsDiags := types.ObjectValue(PartitionRangeSettingsAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true),
+		"range":   rangeValue,
+	})
+	assert.False(t, settingsDiags.HasError(), "unexpected diagnostics: %v", settingsDiags)
+
+	table := Table{
+		Name:                   types.StringValue("offers"),
+		Schema:                 types.StringValue("public"),
+		PartitionRangeSettings: settingsValue,
+	}
+
+	apiTable, diags := table.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.NotNil(t, apiTable.AdvancedSettings.PartitionRangeSettings)
+	assert.True(t, apiTable.AdvancedSettings.PartitionRangeSettings.Enabled)
+	assert.NotNil(t, apiTable.AdvancedSettings.PartitionRangeSettings.Range)
+	assert.True(t, apiTable.AdvancedSettings.PartitionRangeSettings.Range.Enabled)
+	assert.Equal(t, 5_000_000, apiTable.AdvancedSettings.PartitionRangeSettings.Range.ChunkSize)
+	assert.Equal(t, 5, apiTable.AdvancedSettings.PartitionRangeSettings.Range.MaxParallelism)
+	assert.Equal(t, 0, apiTable.AdvancedSettings.PartitionRangeSettings.Range.BatchSize)
+
+	payload, err := json.Marshal(apiTable)
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{"uuid":"00000000-0000-0000-0000-000000000000","name":"offers","schema":"public","enableHistoryMode":false,"disableReplication":false,"advancedSettings":{"alias":null,"excludeColumns":null,"includeColumns":null,"primaryKeysOverride":null,"columnsToHash":null,"columnsToCompress":null,"columnsToEncrypt":null,"encryptJSONBColumns":null,"skipDelete":null,"unifyAcrossSchemas":null,"unifyAcrossDatabases":null,"mergePredicates":null,"shouldBackfillHistoryTable":null,"partitionRangeSettings":{"enabled":true,"range":{"enabled":true,"chunksSize":5000000,"maxParallelism":5,"batchSize":0}},"skipBackfill":null,"skipNoOpUpdates":null}}`, string(payload))
+
+	tables, diags := TablesFromAPIModel(t.Context(), []artieclient.Table{apiTable})
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.Equal(t, settingsValue, tables["public.offers"].PartitionRangeSettings)
+}
+
+func TestTablePartitionRangeSettingsWithoutNestedRange(t *testing.T) {
+	settingsValue, settingsDiags := types.ObjectValue(PartitionRangeSettingsAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true),
+		"range":   types.ObjectNull(PartitionRangeAttrTypes),
+	})
+	assert.False(t, settingsDiags.HasError(), "unexpected diagnostics: %v", settingsDiags)
+
+	apiTable, diags := (Table{
+		Name:                   types.StringValue("offers"),
+		PartitionRangeSettings: settingsValue,
+	}).ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.NotNil(t, apiTable.AdvancedSettings.PartitionRangeSettings)
+	assert.True(t, apiTable.AdvancedSettings.PartitionRangeSettings.Enabled)
+	assert.Nil(t, apiTable.AdvancedSettings.PartitionRangeSettings.Range)
 }
 
 func TestTablePrimaryKeysOverrideRoundTrip(t *testing.T) {

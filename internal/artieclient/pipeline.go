@@ -98,25 +98,31 @@ type RangeSettings struct {
 	BatchSize      int  `json:"batchSize"`
 }
 
+type PartitionRangeSettings struct {
+	Enabled bool           `json:"enabled"`
+	Range   *RangeSettings `json:"range,omitempty"`
+}
+
 type AdvancedTableSettings struct {
-	Alias                      *string           `json:"alias"`
-	ExcludeColumns             *[]string         `json:"excludeColumns"`
-	IncludeColumns             *[]string         `json:"includeColumns"`
-	PrimaryKeysOverride        *[]string         `json:"primaryKeysOverride"`
-	ColumnsToHash              *[]string         `json:"columnsToHash"`
-	ColumnsToCompress          *[]string         `json:"columnsToCompress"`
-	ColumnsToEncrypt           *[]string         `json:"columnsToEncrypt"`
-	EncryptJSONBColumns        *bool             `json:"encryptJSONBColumns"`
-	SkipDeletes                *bool             `json:"skipDelete"`
-	UnifyAcrossSchemas         *bool             `json:"unifyAcrossSchemas"`
-	UnifyAcrossDatabases       *bool             `json:"unifyAcrossDatabases"`
-	MergePredicates            *[]MergePredicate `json:"mergePredicates"`
-	SoftPartitioning           *SoftPartitioning `json:"softPartitioning,omitempty"`
-	ShouldBackfillHistoryTable *bool             `json:"shouldBackfillHistoryTable"`
-	CTIDSettings               *CTIDSettings     `json:"ctidSettings,omitempty"`
-	RangeSettings              *RangeSettings    `json:"rangeSettings,omitempty"`
-	SkipBackfill               *bool             `json:"skipBackfill"`
-	SkipNoOpUpdates            *bool             `json:"skipNoOpUpdates"`
+	Alias                      *string                 `json:"alias"`
+	ExcludeColumns             *[]string               `json:"excludeColumns"`
+	IncludeColumns             *[]string               `json:"includeColumns"`
+	PrimaryKeysOverride        *[]string               `json:"primaryKeysOverride"`
+	ColumnsToHash              *[]string               `json:"columnsToHash"`
+	ColumnsToCompress          *[]string               `json:"columnsToCompress"`
+	ColumnsToEncrypt           *[]string               `json:"columnsToEncrypt"`
+	EncryptJSONBColumns        *bool                   `json:"encryptJSONBColumns"`
+	SkipDeletes                *bool                   `json:"skipDelete"`
+	UnifyAcrossSchemas         *bool                   `json:"unifyAcrossSchemas"`
+	UnifyAcrossDatabases       *bool                   `json:"unifyAcrossDatabases"`
+	MergePredicates            *[]MergePredicate       `json:"mergePredicates"`
+	SoftPartitioning           *SoftPartitioning       `json:"softPartitioning,omitempty"`
+	ShouldBackfillHistoryTable *bool                   `json:"shouldBackfillHistoryTable"`
+	CTIDSettings               *CTIDSettings           `json:"ctidSettings,omitempty"`
+	RangeSettings              *RangeSettings          `json:"rangeSettings,omitempty"`
+	PartitionRangeSettings     *PartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
+	SkipBackfill               *bool                   `json:"skipBackfill"`
+	SkipNoOpUpdates            *bool                   `json:"skipNoOpUpdates"`
 }
 
 type FlushConfig struct {
