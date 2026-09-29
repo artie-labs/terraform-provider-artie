@@ -178,6 +178,7 @@ type Pipeline struct {
 	ForceUTCTimezone                             types.Bool   `tfsdk:"force_utc_timezone"`
 	WriteRawBinaryValues                         types.Bool   `tfsdk:"write_raw_binary_values"`
 	DisableAlerts                                types.Bool   `tfsdk:"disable_alerts"`
+	DatabricksAutoLiquidClustering               types.Bool   `tfsdk:"databricks_auto_liquid_clustering"`
 	MaxConcurrentSnapshots                       types.Int64  `tfsdk:"max_concurrent_snapshots"`
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
@@ -264,6 +265,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		ForceUTCTimezone:                             p.ForceUTCTimezone.ValueBoolPointer(),
 		WriteRawBinaryValues:                         p.WriteRawBinaryValues.ValueBoolPointer(),
 		DisableAlerts:                                p.DisableAlerts.ValueBoolPointer(),
+		DatabricksAutoLiquidClustering:               p.DatabricksAutoLiquidClustering.ValueBoolPointer(),
 		MaxConcurrentSnapshots:                       p.MaxConcurrentSnapshots.ValueInt64Pointer(),
 		TurboWarehouse:                               p.TurboWarehouse.ValueStringPointer(),
 		TurboRowThreshold:                            p.TurboRowThreshold.ValueInt64Pointer(),
@@ -347,6 +349,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 
 	autoReplicateNewTables := types.BoolValue(false)
 	disableAlerts := types.BoolValue(false)
+	databricksAutoLiquidClustering := types.BoolValue(false)
 	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
 	diags.Append(staticColumnsDiags...)
 	if diags.HasError() {
@@ -421,6 +424,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 			maxConcurrentSnapshots = types.Int64Value(*apiModel.AdvancedSettings.MaxConcurrentSnapshots)
 		}
 		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
+		databricksAutoLiquidClustering = boolPointerValueOrFalse(apiModel.AdvancedSettings.DatabricksAutoLiquidClustering)
 		flushConfigMap := map[string]attr.Value{}
 		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
 			flushConfigMap["flush_interval_seconds"] = types.Int64Value(*apiModel.AdvancedSettings.FlushIntervalSeconds)
@@ -483,6 +487,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		ForceUTCTimezone:                             forceUTCTimezone,
 		WriteRawBinaryValues:                         writeRawBinaryValues,
 		DisableAlerts:                                disableAlerts,
+		DatabricksAutoLiquidClustering:               databricksAutoLiquidClustering,
 		MaxConcurrentSnapshots:                       maxConcurrentSnapshots,
 		TurboWarehouse:                               turboWarehouse,
 		TurboRowThreshold:                            turboRowThreshold,
