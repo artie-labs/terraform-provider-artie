@@ -41,6 +41,7 @@ type AdvancedSettings struct {
 	ForceUTCTimezone                             *bool           `json:"forceUTCTimezone"`
 	WriteRawBinaryValues                         *bool           `json:"writeRawBinaryValues"`
 	DisableAlerts                                *bool           `json:"disableAlerts"`
+	DatabricksAutoLiquidClustering               *bool           `json:"databricksAutoLiquidClustering"`
 	TurboWarehouse                               *string         `json:"turboWarehouse"`
 	TurboRowThreshold                            *int64          `json:"turboRowThreshold"`
 	TurboLatencyThresholdMinutes                 *int64          `json:"turboLatencyThresholdMinutes"`

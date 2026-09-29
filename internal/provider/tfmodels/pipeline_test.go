@@ -148,6 +148,32 @@ func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	}
 }
 
+func TestPipelineFromAPIModel_DatabricksAutoLiquidClustering(t *testing.T) {
+	base := artieclient.Pipeline{
+		UUID: uuid.New(),
+		BasePipeline: artieclient.BasePipeline{
+			Name:             "test",
+			Tables:           []artieclient.Table{},
+			AdvancedSettings: &artieclient.AdvancedSettings{},
+		},
+	}
+
+	{
+		// Omitted (nil) -> false
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.False(t, pipeline.DatabricksAutoLiquidClustering.IsNull())
+		assert.False(t, pipeline.DatabricksAutoLiquidClustering.ValueBool())
+	}
+	{
+		// Explicitly true -> true
+		base.AdvancedSettings.DatabricksAutoLiquidClustering = ptr(true)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.DatabricksAutoLiquidClustering.ValueBool())
+	}
+}
+
 func TestPipelineToAPIBaseModel_TurboSettings(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
