@@ -183,6 +183,7 @@ type Pipeline struct {
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
+	JSONAsVarchar                                types.Bool   `tfsdk:"json_as_varchar"`
 }
 
 func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
@@ -270,6 +271,7 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		TurboWarehouse:                               p.TurboWarehouse.ValueStringPointer(),
 		TurboRowThreshold:                            p.TurboRowThreshold.ValueInt64Pointer(),
 		TurboLatencyThresholdMinutes:                 p.TurboLatencyThresholdMinutes.ValueInt64Pointer(),
+		JSONAsVarchar:                                p.JSONAsVarchar.ValueBoolPointer(),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
@@ -346,6 +348,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var turboWarehouse types.String
 	var turboRowThreshold types.Int64
 	var turboLatencyThresholdMinutes types.Int64
+	var jsonAsVarchar types.Bool
 
 	autoReplicateNewTables := types.BoolValue(false)
 	disableAlerts := types.BoolValue(false)
@@ -423,6 +426,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		if apiModel.AdvancedSettings.MaxConcurrentSnapshots != nil {
 			maxConcurrentSnapshots = types.Int64Value(*apiModel.AdvancedSettings.MaxConcurrentSnapshots)
 		}
+		jsonAsVarchar = boolPointerValueOrFalse(apiModel.AdvancedSettings.JSONAsVarchar)
 		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
 		databricksAutoLiquidClustering = boolPointerValueOrFalse(apiModel.AdvancedSettings.DatabricksAutoLiquidClustering)
 		flushConfigMap := map[string]attr.Value{}
@@ -492,5 +496,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		TurboWarehouse:                               turboWarehouse,
 		TurboRowThreshold:                            turboRowThreshold,
 		TurboLatencyThresholdMinutes:                 turboLatencyThresholdMinutes,
+		JSONAsVarchar:                                jsonAsVarchar,
 	}, diags
 }

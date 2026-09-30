@@ -330,3 +330,29 @@ func TestFlushConfigFromAPIModel(t *testing.T) {
 		assert.Equal(t, apiFlushConfig.FlushSizeKB, int64(1000))
 	}
 }
+
+func TestPipelineJSONAsVarcharRoundTrip(t *testing.T) {
+	tablesMap, diags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+	pipeline := Pipeline{
+		Tables:            tablesMap,
+		DestinationConfig: &PipelineDestinationConfig{},
+		JSONAsVarchar:     types.BoolValue(true),
+	}
+
+	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.True(t, *apiModel.AdvancedSettings.JSONAsVarchar)
+
+	model, diags := PipelineFromAPIModel(t.Context(), artieclient.Pipeline{
+		UUID: uuid.New(),
+		BasePipeline: artieclient.BasePipeline{
+			Name:             "test",
+			Tables:           []artieclient.Table{},
+			AdvancedSettings: apiModel.AdvancedSettings,
+		},
+	})
+	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	assert.True(t, model.JSONAsVarchar.ValueBool())
+}
