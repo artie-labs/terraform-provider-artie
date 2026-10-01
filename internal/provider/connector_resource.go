@@ -207,7 +207,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `oracle`.",
 				Attributes: map[string]schema.Attribute{
-					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Oracle database. This must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled."},
+					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Oracle database. This can point to an Active Data Guard physical standby that is open read-only (contact Artie to enable streaming from a standby); otherwise it must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"port": schema.Int32Attribute{
 						Required:            true,
