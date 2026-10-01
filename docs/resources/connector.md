@@ -302,7 +302,7 @@ Optional:
 
 Required:
 
-- `host` (String) The hostname of the Oracle database. This must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled.
+- `host` (String) The hostname of the Oracle database. This can point to an Active Data Guard physical standby that is open read-only (contact Artie to enable streaming from a standby); otherwise it must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Oracle is 1521.
 - `username` (String) The username of the service account we will use to connect to the Oracle database.
