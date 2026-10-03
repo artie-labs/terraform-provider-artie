@@ -87,8 +87,28 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"range_chunk_size":       schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of source rows or range units Artie should target per range backfill chunk. This is only applicable if `range_backfill` is set to true."},
 						"range_max_parallelism":  schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The maximum number of range backfill chunks Artie should process in parallel for this table. This is only applicable if `range_backfill` is set to true."},
 						"range_batch_size":       schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true."},
-						"skip_backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will skip backfilling this table and only process new changes going forward."},
-						"skip_no_op_updates":     schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL."},
+						"partition_range_settings": schema.SingleNestedAttribute{
+							Optional:            true,
+							Computed:            true,
+							PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+							MarkdownDescription: "Optional: enables PostgreSQL partition range backfills. Without `range`, Artie creates one backfill shard per physical child or default partition. Set `range` to apply range backfill settings within each partition. Cannot be enabled with `range_backfill`.",
+							Attributes: map[string]schema.Attribute{
+								"enabled": schema.BoolAttribute{Required: true, MarkdownDescription: "Whether partition range backfills are enabled for this table."},
+								"range": schema.SingleNestedAttribute{
+									Optional:            true,
+									Computed:            true,
+									PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+									MarkdownDescription: "Optional range settings applied independently within each physical partition.",
+									Attributes: map[string]schema.Attribute{
+										"enabled":         schema.BoolAttribute{Required: true, MarkdownDescription: "Whether range backfill is enabled within each physical partition."},
+										"chunk_size":      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of source rows or range units Artie should target per partition range backfill chunk."},
+										"max_parallelism": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The maximum number of partition range backfill chunks Artie should process in parallel within each physical partition."},
+									},
+								},
+							},
+						},
+						"skip_backfill":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will skip backfilling this table and only process new changes going forward."},
+						"skip_no_op_updates": schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL."},
 						"merge_predicates": schema.ListNestedAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -372,6 +392,11 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 				if table.CTIDMaxParallelism.IsNull() || table.CTIDMaxParallelism.IsUnknown() {
 					resp.Diagnostics.AddError("CTID max parallelism is required", "ctid_max_parallelism is required when CTID backfill is enabled.")
 				}
+			}
+			partitionRangeSettings, partitionRangeSettingsDiags := tfmodels.ParsePartitionRangeSettings(ctx, &table.PartitionRangeSettings)
+			resp.Diagnostics.Append(partitionRangeSettingsDiags...)
+			if partitionRangeSettings != nil && partitionRangeSettings.Enabled.ValueBool() && tfmodels.IsKnown(table.RangeBackfill) && table.RangeBackfill.ValueBool() {
+				resp.Diagnostics.AddError("Conflicting range backfill settings", "range_backfill and partition_range_settings.enabled cannot both be true.")
 			}
 			if tfmodels.IsKnown(table.RangeBackfill) && table.RangeBackfill.ValueBool() {
 				if table.RangeChunkSize.IsNull() || table.RangeChunkSize.IsUnknown() {
