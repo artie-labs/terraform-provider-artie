@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -25,7 +26,7 @@ func NewColumnHashingSaltResource() resource.Resource {
 }
 
 type ColumnHashingSaltResource struct {
-	client artieclient.Client
+	client *openapi.ClientWithResponses
 }
 
 func (r *ColumnHashingSaltResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -72,7 +73,7 @@ func (r *ColumnHashingSaltResource) Configure(ctx context.Context, req resource.
 		return
 	}
 
-	client, err := providerData.NewClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
@@ -93,8 +94,8 @@ func (r *ColumnHashingSaltResource) GetPlanData(ctx context.Context, plan tfsdk.
 	return planData, diagnostics.HasError()
 }
 
-func (r *ColumnHashingSaltResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.ColumnHashingSalt) {
-	diagnostics.Append(state.Set(ctx, tfmodels.ColumnHashingSaltFromAPIModel(apiModel))...)
+func (r *ColumnHashingSaltResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, salt tfmodels.ColumnHashingSalt) {
+	diagnostics.Append(state.Set(ctx, salt)...)
 }
 
 func (r *ColumnHashingSaltResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -103,13 +104,13 @@ func (r *ColumnHashingSaltResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	salt, err := r.client.ColumnHashingSalts().Create(ctx, planData.ToAPIBaseModel())
+	created, err := artieclient.JSON200(r.client.ColumnHashingSaltCreateWithResponse(ctx, planData.ToAPICreateRequest()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Column Hashing Salt", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, salt)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, tfmodels.ColumnHashingSaltFromAPIModel(created.ColumnHashingSalt, created.Salt))
 }
 
 func (r *ColumnHashingSaltResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -119,15 +120,16 @@ func (r *ColumnHashingSaltResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	salt, err := r.client.ColumnHashingSalts().Get(ctx, stateData.UUID.ValueString())
+	detail, err := artieclient.JSON200(r.client.ColumnHashingSaltDetailWithResponse(ctx, stateData.UUID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read Column Hashing Salt", err.Error())
 		return
 	}
 
-	// The API only returns the salt value on Create, so preserve the value from state.
-	if salt.Salt == "" {
-		salt.Salt = stateData.Salt.ValueString()
+	salt := tfmodels.ColumnHashingSaltFromAPIDetail(*detail)
+	// Keep the salt from state if the API omits it.
+	if salt.Salt.ValueString() == "" {
+		salt.Salt = stateData.Salt
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, salt)
@@ -145,22 +147,14 @@ func (r *ColumnHashingSaltResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	saltUUID := planData.UUID.ValueString()
-	salt, err := r.client.ColumnHashingSalts().Update(ctx, saltUUID, artieclient.UpdateColumnHashingSaltRequest{
-		Name:        planData.Name.ValueString(),
-		Description: planData.Description.ValueString(),
-	})
+	updated, err := artieclient.JSON200(r.client.ColumnHashingSaltUpdateWithResponse(ctx, planData.UUID.ValueString(), planData.ToAPIUpdateRequest()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Column Hashing Salt", err.Error())
 		return
 	}
 
-	// The API only returns the salt value on Create, so preserve the value from state.
-	if salt.Salt == "" {
-		salt.Salt = stateData.Salt.ValueString()
-	}
-
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, salt)
+	// The update response has no salt value, so preserve the value from state.
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, tfmodels.ColumnHashingSaltFromAPIModel(*updated, stateData.Salt.ValueString()))
 }
 
 func (r *ColumnHashingSaltResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -169,7 +163,7 @@ func (r *ColumnHashingSaltResource) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	if err := r.client.ColumnHashingSalts().Delete(ctx, saltUUID); err != nil {
+	if err := artieclient.CheckResponse(r.client.ColumnHashingSaltDeleteWithResponse(ctx, saltUUID)); err != nil {
 		resp.Diagnostics.AddError("Unable to delete Column Hashing Salt", err.Error())
 	}
 }

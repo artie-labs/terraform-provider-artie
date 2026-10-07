@@ -4,7 +4,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 )
 
 type EncryptionKey struct {
@@ -16,31 +17,49 @@ type EncryptionKey struct {
 	Key         types.String `tfsdk:"key"`
 }
 
-func (e EncryptionKey) ToAPIBaseModel() (artieclient.BaseEncryptionKey, diag.Diagnostics) {
+func (e EncryptionKey) ToAPICreateRequest() (openapi.RouterCreateEncryptionKeyRequest, diag.Diagnostics) {
 	kmsKeyUUID, diags := parseOptionalUUID(e.KMSKeyUUID)
 	if diags.HasError() {
-		return artieclient.BaseEncryptionKey{}, diags
+		return openapi.RouterCreateEncryptionKeyRequest{}, diags
 	}
 
-	return artieclient.BaseEncryptionKey{
+	return openapi.RouterCreateEncryptionKeyRequest{
 		Name:        e.Name.ValueString(),
-		Description: e.Description.ValueString(),
-		KMSKeyUUID:  kmsKeyUUID,
+		Description: nonEmptyStringPointer(e.Description),
+		KmsKeyUUID:  kmsKeyUUID,
 	}, nil
 }
 
-func EncryptionKeyFromAPIModel(apiModel artieclient.EncryptionKey) EncryptionKey {
+func (e EncryptionKey) ToAPIUpdateRequest() openapi.RouterUpdateEncryptionKeyRequest {
+	return openapi.RouterUpdateEncryptionKeyRequest{
+		Name:        e.Name.ValueString(),
+		Description: nonEmptyStringPointer(e.Description),
+	}
+}
+
+// EncryptionKeyFromAPIModel builds the Terraform model; key is passed separately because the update response omits it.
+func EncryptionKeyFromAPIModel(apiModel openapi.PayloadsEncryptionKey, key string) EncryptionKey {
 	kmsKeyUUID := types.StringNull()
-	if apiModel.KMSKeyUUID != nil {
-		kmsKeyUUID = types.StringValue(apiModel.KMSKeyUUID.String())
+	if apiModel.KmsKeyUUID != nil {
+		kmsKeyUUID = types.StringValue(apiModel.KmsKeyUUID.String())
 	}
 
 	return EncryptionKey{
-		UUID:        types.StringValue(apiModel.UUID.String()),
+		UUID:        types.StringValue(apiModel.Uuid.String()),
 		Name:        types.StringValue(apiModel.Name),
-		Description: types.StringValue(apiModel.Description),
+		Description: types.StringValue(lib.RemovePtr(apiModel.Description)),
 		KMSKeyUUID:  kmsKeyUUID,
 		Type:        types.StringValue(apiModel.Type),
-		Key:         types.StringValue(apiModel.Key),
+		Key:         types.StringValue(key),
 	}
+}
+
+func EncryptionKeyFromAPIDetail(detail openapi.PayloadsEncryptionKeyDetail) EncryptionKey {
+	return EncryptionKeyFromAPIModel(openapi.PayloadsEncryptionKey{
+		Uuid:        detail.Uuid,
+		Name:        detail.Name,
+		Description: detail.Description,
+		KmsKeyUUID:  detail.KmsKeyUUID,
+		Type:        detail.Type,
+	}, detail.Key)
 }
