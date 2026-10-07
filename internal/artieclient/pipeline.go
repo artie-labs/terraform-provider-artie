@@ -138,6 +138,10 @@ type DestinationConfig struct {
 	CreateIcebergNamespaces bool   `json:"dynamicallyCreateNamespaces"`
 }
 
+type validationResponse struct {
+	Error string `json:"error"`
+}
+
 type PipelineClient struct {
 	client        Client
 	openAPIClient *openapi.ClientWithResponses

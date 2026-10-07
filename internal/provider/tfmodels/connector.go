@@ -6,7 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 )
 
 type Connector struct {
@@ -32,128 +33,115 @@ type Connector struct {
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
 }
 
-func (c Connector) ToAPIBaseModel() (artieclient.BaseConnector, diag.Diagnostics) {
-	var sharedConfig artieclient.ConnectorConfig
-	connectorType, err := artieclient.ConnectorTypeFromString(c.Type.ValueString())
-	if err != nil {
-		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert Connector to API model", err.Error(),
-		)}
-	}
-
-	switch connectorType {
-	case artieclient.API:
+func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnostics) {
+	var sharedConfig ConnectorConfig
+	switch openapi.EnumsConnectorSlug(c.Type.ValueString()) {
+	case openapi.EnumsConnectorSlugApi:
 		// No config needed
-	case artieclient.BigQuery:
+	case openapi.EnumsConnectorSlugBigquery:
 		sharedConfig = c.BigQueryConfig.ToAPIModel()
-	case artieclient.CockroachDB:
+	case openapi.EnumsConnectorSlugCockroach:
 		sharedConfig = c.CockroachDBConfig.ToAPIModel()
-	case artieclient.DynamoDB:
+	case openapi.EnumsConnectorSlugDynamodb:
 		sharedConfig = c.DynamoDBConfig.ToAPIModel()
-	case artieclient.GCS:
+	case openapi.EnumsConnectorSlugGcs:
 		sharedConfig = c.GCSConfig.ToAPIModel()
-	case artieclient.Iceberg:
+	case openapi.EnumsConnectorSlugIceberg:
 		sharedConfig = c.IcebergConfig.ToAPIModel()
-	case artieclient.MongoDB:
+	case openapi.EnumsConnectorSlugMongodb:
 		sharedConfig = c.MongoDBConfig.ToAPIModel()
-	case artieclient.MySQL:
+	case openapi.EnumsConnectorSlugMysql:
 		sharedConfig = c.MySQLConfig.ToAPIModel()
-	case artieclient.MSSQL:
+	case openapi.EnumsConnectorSlugMssql:
 		sharedConfig = c.MSSQLConfig.ToAPIModel()
-	case artieclient.Oracle:
+	case openapi.EnumsConnectorSlugOracle:
 		sharedConfig = c.OracleConfig.ToAPIModel()
-	case artieclient.PostgreSQL:
+	case openapi.EnumsConnectorSlugPostgresql:
 		sharedConfig = c.PostgresConfig.ToAPIModel()
-	case artieclient.Redshift:
+	case openapi.EnumsConnectorSlugRedshift:
 		sharedConfig = c.RedshiftConfig.ToAPIModel()
-	case artieclient.S3:
+	case openapi.EnumsConnectorSlugS3:
 		sharedConfig = c.S3Config.ToAPIModel()
-	case artieclient.Snowflake:
+	case openapi.EnumsConnectorSlugSnowflake:
 		sharedConfig = c.SnowflakeConfig.ToAPIModel()
-	case artieclient.Databricks:
+	case openapi.EnumsConnectorSlugDatabricks:
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
-	case artieclient.Keyspaces:
+	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
 	default:
-		return artieclient.BaseConnector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
+		return openapi.PayloadsConnectorPayload{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert Connector to API model", fmt.Sprintf("unhandled connector type: %s", c.Type.ValueString()),
 		)}
 	}
 
+	apiSharedConfig, err := sharedConfig.toAPIModel()
+	if err != nil {
+		return openapi.PayloadsConnectorPayload{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to convert Connector to API model", err.Error())}
+	}
+
 	sshTunnelUUID, diags := parseOptionalUUID(c.SSHTunnelUUID)
 	if diags.HasError() {
-		return artieclient.BaseConnector{}, diags
+		return openapi.PayloadsConnectorPayload{}, diags
 	}
 
-	return artieclient.BaseConnector{
-		Type:          connectorType,
-		DataPlaneName: c.DataPlaneName.ValueString(),
-		Label:         c.Name.ValueString(),
-		Config:        sharedConfig,
-		SSHTunnelUUID: sshTunnelUUID,
+	return openapi.PayloadsConnectorPayload{
+		// UUID is unknown on create; on update the API uses it to resolve masked sensitive values.
+		Uuid:          nonEmptyStringPointer(c.UUID),
+		Type:          c.Type.ValueStringPointer(),
+		DataPlaneName: nonEmptyStringPointer(c.DataPlaneName),
+		Label:         c.Name.ValueStringPointer(),
+		SharedConfig:  apiSharedConfig,
+		SshTunnelUUID: sshTunnelUUID,
 	}, diags
 }
 
-func (c Connector) ToAPIModel() (artieclient.Connector, diag.Diagnostics) {
-	baseModel, diags := c.ToAPIBaseModel()
-	if diags.HasError() {
-		return artieclient.Connector{}, diags
+func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector) (Connector, diag.Diagnostics) {
+	config, err := connectorConfigFromAPIModel(apiModel.SharedConfig)
+	if err != nil {
+		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to convert API model to Connector", err.Error())}
 	}
 
-	uuid, uuidDiags := parseUUID(c.UUID)
-	diags.Append(uuidDiags...)
-	if diags.HasError() {
-		return artieclient.Connector{}, diags
-	}
-
-	return artieclient.Connector{
-		UUID:          uuid,
-		BaseConnector: baseModel,
-	}, diags
-}
-
-func ConnectorFromAPIModel(apiModel artieclient.Connector) (Connector, diag.Diagnostics) {
 	connector := Connector{
-		UUID:          types.StringValue(apiModel.UUID.String()),
+		UUID:          types.StringValue(apiModel.Uuid.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
-		DataPlaneName: types.StringValue(apiModel.DataPlaneName),
+		DataPlaneName: types.StringValue(lib.RemovePtr(apiModel.DataPlaneName)),
 		Name:          types.StringValue(apiModel.Label),
-		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SSHTunnelUUID),
+		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SshTunnelUUID),
 	}
 
 	switch apiModel.Type {
-	case artieclient.API:
+	case openapi.EnumsConnectorSlugApi:
 		// No config needed
-	case artieclient.BigQuery:
-		connector.BigQueryConfig = BigQuerySharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.CockroachDB:
-		connector.CockroachDBConfig = CockroachDBSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.DynamoDB:
-		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(apiModel.Config)
-	case artieclient.GCS:
-		connector.GCSConfig = GCSSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Iceberg:
-		connector.IcebergConfig = IcebergSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.MongoDB:
-		connector.MongoDBConfig = MongoDBSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.MySQL:
-		connector.MySQLConfig = MySQLSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.MSSQL:
-		connector.MSSQLConfig = MSSQLSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Oracle:
-		connector.OracleConfig = OracleSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.PostgreSQL:
-		connector.PostgresConfig = PostgresSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Redshift:
-		connector.RedshiftConfig = RedshiftSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.S3:
-		connector.S3Config = S3SharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Snowflake:
-		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Databricks:
-		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(apiModel.Config)
-	case artieclient.Keyspaces:
-		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(apiModel.Config)
+	case openapi.EnumsConnectorSlugBigquery:
+		connector.BigQueryConfig = BigQuerySharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugCockroach:
+		connector.CockroachDBConfig = CockroachDBSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDynamodb:
+		connector.DynamoDBConfig = DynamoDBConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugGcs:
+		connector.GCSConfig = GCSSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugIceberg:
+		connector.IcebergConfig = IcebergSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugMongodb:
+		connector.MongoDBConfig = MongoDBSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugMysql:
+		connector.MySQLConfig = MySQLSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugMssql:
+		connector.MSSQLConfig = MSSQLSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugOracle:
+		connector.OracleConfig = OracleSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugPostgresql:
+		connector.PostgresConfig = PostgresSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugRedshift:
+		connector.RedshiftConfig = RedshiftSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugS3:
+		connector.S3Config = S3SharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugSnowflake:
+		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDatabricks:
+		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugKeyspaces:
+		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -169,15 +157,15 @@ type BigQuerySharedConfig struct {
 	CredentialsData types.String `tfsdk:"credentials_data"`
 }
 
-func (b BigQuerySharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (b BigQuerySharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		GCPProjectID:       b.ProjectID.ValueString(),
 		GCPLocation:        b.Location.ValueString(),
 		GCPCredentialsData: b.CredentialsData.ValueString(),
 	}
 }
 
-func BigQuerySharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *BigQuerySharedConfig {
+func BigQuerySharedConfigFromAPIModel(apiModel ConnectorConfig) *BigQuerySharedConfig {
 	return &BigQuerySharedConfig{
 		ProjectID:       types.StringValue(apiModel.GCPProjectID),
 		Location:        types.StringValue(apiModel.GCPLocation),
@@ -193,8 +181,8 @@ type DynamoDBConfig struct {
 	ExternalID         types.String `tfsdk:"external_id"`
 }
 
-func (d DynamoDBConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (d DynamoDBConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		DynamoStreamArn:    d.StreamArn.ValueString(),
 		AWSAccessKeyID:     d.AwsAccessKeyID.ValueString(),
 		AWSSecretAccessKey: d.AwsSecretAccessKey.ValueString(),
@@ -203,7 +191,7 @@ func (d DynamoDBConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func DynamoDBConfigFromAPIModel(apiDynamoCfg artieclient.ConnectorConfig) *DynamoDBConfig {
+func DynamoDBConfigFromAPIModel(apiDynamoCfg ConnectorConfig) *DynamoDBConfig {
 	return &DynamoDBConfig{
 		StreamArn:          types.StringValue(apiDynamoCfg.DynamoStreamArn),
 		AwsAccessKeyID:     types.StringValue(apiDynamoCfg.AWSAccessKeyID),
@@ -222,8 +210,8 @@ type CockroachDBSharedConfig struct {
 	Password     types.String `tfsdk:"password"`
 }
 
-func (c CockroachDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (c CockroachDBSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:         c.Host.ValueString(),
 		SnapshotHost: c.SnapshotHost.ValueString(),
 		SnapshotPort: c.SnapshotPort.ValueInt32(),
@@ -233,7 +221,7 @@ func (c CockroachDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func CockroachDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *CockroachDBSharedConfig {
+func CockroachDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *CockroachDBSharedConfig {
 	return &CockroachDBSharedConfig{
 		Host:         types.StringValue(apiModel.Host),
 		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
@@ -250,15 +238,15 @@ type MongoDBSharedConfig struct {
 	Password types.String `tfsdk:"password"`
 }
 
-func (m MongoDBSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (m MongoDBSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:     m.Host.ValueString(),
 		User:     m.Username.ValueString(),
 		Password: m.Password.ValueString(),
 	}
 }
 
-func MongoDBSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MongoDBSharedConfig {
+func MongoDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *MongoDBSharedConfig {
 	return &MongoDBSharedConfig{
 		Host:     types.StringValue(apiModel.Host),
 		Username: types.StringValue(apiModel.User),
@@ -276,8 +264,8 @@ type MySQLSharedConfig struct {
 	TLSMode      types.String `tfsdk:"tls_mode"`
 }
 
-func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (m MySQLSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:         m.Host.ValueString(),
 		SnapshotHost: m.SnapshotHost.ValueString(),
 		SnapshotPort: m.SnapshotPort.ValueInt32(),
@@ -288,7 +276,7 @@ func (m MySQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func MySQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MySQLSharedConfig {
+func MySQLSharedConfigFromAPIModel(apiModel ConnectorConfig) *MySQLSharedConfig {
 	return &MySQLSharedConfig{
 		Host:         types.StringValue(apiModel.Host),
 		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
@@ -308,8 +296,8 @@ type MSSQLSharedConfig struct {
 	Password     types.String `tfsdk:"password"`
 }
 
-func (r MSSQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (r MSSQLSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:         r.Host.ValueString(),
 		SnapshotHost: r.SnapshotHost.ValueString(),
 		Port:         r.Port.ValueInt32(),
@@ -318,7 +306,7 @@ func (r MSSQLSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func MSSQLSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *MSSQLSharedConfig {
+func MSSQLSharedConfigFromAPIModel(apiModel ConnectorConfig) *MSSQLSharedConfig {
 	return &MSSQLSharedConfig{
 		Host:         types.StringValue(apiModel.Host),
 		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
@@ -336,8 +324,8 @@ type OracleSharedConfig struct {
 	Password     types.String `tfsdk:"password"`
 }
 
-func (o OracleSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (o OracleSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:         o.Host.ValueString(),
 		SnapshotHost: o.SnapshotHost.ValueString(),
 		Port:         o.Port.ValueInt32(),
@@ -346,7 +334,7 @@ func (o OracleSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func OracleSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *OracleSharedConfig {
+func OracleSharedConfigFromAPIModel(apiModel ConnectorConfig) *OracleSharedConfig {
 	return &OracleSharedConfig{
 		Host:         types.StringValue(apiModel.Host),
 		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
@@ -364,8 +352,8 @@ type PostgresSharedConfig struct {
 	Password     types.String `tfsdk:"password"`
 }
 
-func (p PostgresSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (p PostgresSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:         p.Host.ValueString(),
 		SnapshotHost: p.SnapshotHost.ValueString(),
 		Port:         p.Port.ValueInt32(),
@@ -374,7 +362,7 @@ func (p PostgresSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func PostgresSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *PostgresSharedConfig {
+func PostgresSharedConfigFromAPIModel(apiModel ConnectorConfig) *PostgresSharedConfig {
 	return &PostgresSharedConfig{
 		Host:         types.StringValue(apiModel.Host),
 		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
@@ -390,15 +378,15 @@ type RedshiftSharedConfig struct {
 	Password types.String `tfsdk:"password"`
 }
 
-func (r RedshiftSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (r RedshiftSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Endpoint: r.Endpoint.ValueString(),
 		Username: r.Username.ValueString(),
 		Password: r.Password.ValueString(),
 	}
 }
 
-func RedshiftSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *RedshiftSharedConfig {
+func RedshiftSharedConfigFromAPIModel(apiModel ConnectorConfig) *RedshiftSharedConfig {
 	return &RedshiftSharedConfig{
 		Endpoint: types.StringValue(apiModel.Endpoint),
 		Username: types.StringValue(apiModel.Username),
@@ -414,8 +402,8 @@ type S3SharedConfig struct {
 	ExternalID      types.String `tfsdk:"external_id"`
 }
 
-func (s S3SharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (s S3SharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		AWSAccessKeyID:     s.AccessKeyID.ValueString(),
 		AWSSecretAccessKey: s.SecretAccessKey.ValueString(),
 		AWSRegion:          s.Region.ValueString(),
@@ -424,7 +412,7 @@ func (s S3SharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func S3SharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *S3SharedConfig {
+func S3SharedConfigFromAPIModel(apiModel ConnectorConfig) *S3SharedConfig {
 	return &S3SharedConfig{
 		AccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
 		SecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
@@ -443,8 +431,8 @@ type SnowflakeSharedConfig struct {
 	PrivateKey        types.String `tfsdk:"private_key"`
 }
 
-func (s SnowflakeSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (s SnowflakeSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		SnowflakeAccountIdentifier: s.AccountIdentifier.ValueString(),
 		SnowflakeAccountURL:        s.AccountURL.ValueString(),
 		SnowflakeVirtualDWH:        s.VirtualDWH.ValueString(),
@@ -454,7 +442,7 @@ func (s SnowflakeSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func SnowflakeSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *SnowflakeSharedConfig {
+func SnowflakeSharedConfigFromAPIModel(apiModel ConnectorConfig) *SnowflakeSharedConfig {
 	return &SnowflakeSharedConfig{
 		AccountIdentifier: types.StringValue(apiModel.SnowflakeAccountIdentifier),
 		AccountURL:        types.StringValue(apiModel.SnowflakeAccountURL),
@@ -474,8 +462,8 @@ type DatabricksSharedConfig struct {
 	Volume              types.String `tfsdk:"volume"`
 }
 
-func (d DatabricksSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (d DatabricksSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:                          d.Host.ValueString(),
 		DatabricksHttpPath:            d.HttpPath.ValueString(),
 		DatabricksPersonalAccessToken: d.PersonalAccessToken.ValueString(),
@@ -485,7 +473,7 @@ func (d DatabricksSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func DatabricksSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *DatabricksSharedConfig {
+func DatabricksSharedConfigFromAPIModel(apiModel ConnectorConfig) *DatabricksSharedConfig {
 	return &DatabricksSharedConfig{
 		Host:                types.StringValue(apiModel.Host),
 		HttpPath:            types.StringValue(apiModel.DatabricksHttpPath),
@@ -501,14 +489,14 @@ type GCSSharedConfig struct {
 	CredentialsData types.String `tfsdk:"credentials_data"`
 }
 
-func (g GCSSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (g GCSSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		GCPProjectID:       g.ProjectID.ValueString(),
 		GCPCredentialsData: g.CredentialsData.ValueString(),
 	}
 }
 
-func GCSSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *GCSSharedConfig {
+func GCSSharedConfigFromAPIModel(apiModel ConnectorConfig) *GCSSharedConfig {
 	return &GCSSharedConfig{
 		ProjectID:       types.StringValue(apiModel.GCPProjectID),
 		CredentialsData: types.StringValue(apiModel.GCPCredentialsData),
@@ -534,8 +522,8 @@ type IcebergSharedConfig struct {
 	Prefix     types.String `tfsdk:"prefix"`
 }
 
-func (i IcebergSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (i IcebergSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		IcebergProvider:    i.Provider.ValueString(),
 		AWSAccessKeyID:     i.AwsAccessKeyID.ValueString(),
 		AWSSecretAccessKey: i.AwsSecretAccessKey.ValueString(),
@@ -551,7 +539,7 @@ func (i IcebergSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func IcebergSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *IcebergSharedConfig {
+func IcebergSharedConfigFromAPIModel(apiModel ConnectorConfig) *IcebergSharedConfig {
 	return &IcebergSharedConfig{
 		Provider:           types.StringValue(apiModel.IcebergProvider),
 		AwsAccessKeyID:     types.StringValue(apiModel.AWSAccessKeyID),
@@ -578,8 +566,8 @@ type KeyspacesSharedConfig struct {
 	ExternalID         types.String `tfsdk:"external_id"`
 }
 
-func (k KeyspacesSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
-	return artieclient.ConnectorConfig{
+func (k KeyspacesSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
 		Host:               k.Host.ValueString(),
 		Port:               k.Port.ValueInt32(),
 		AWSRegion:          k.Region.ValueString(),
@@ -590,7 +578,7 @@ func (k KeyspacesSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 	}
 }
 
-func KeyspacesSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *KeyspacesSharedConfig {
+func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesSharedConfig {
 	return &KeyspacesSharedConfig{
 		Host:               types.StringValue(apiModel.Host),
 		Port:               types.Int32Value(apiModel.Port),
