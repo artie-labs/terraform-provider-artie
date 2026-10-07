@@ -2,6 +2,7 @@ package tfmodels
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -10,7 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 )
 
 type MergePredicate struct {
@@ -23,11 +25,11 @@ var MergePredicateAttrTypes = map[string]attr.Type{
 	"partition_type":  types.StringType,
 }
 
-func (m MergePredicate) ToAPIModel() artieclient.MergePredicate {
-	return artieclient.MergePredicate{PartitionField: m.PartitionField.ValueString(), PartitionType: m.PartitionType.ValueString()}
+func (m MergePredicate) ToAPIModel() openapi.PayloadsMergePredicates {
+	return openapi.PayloadsMergePredicates{PartitionField: lib.ToPtr(m.PartitionField.ValueString()), PartitionType: nonEmptyStringPointer(m.PartitionType)}
 }
 
-func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]artieclient.MergePredicate) (types.List, diag.Diagnostics) {
+func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]openapi.PayloadsMergePredicates) (types.List, diag.Diagnostics) {
 	attrTypes := MergePredicateAttrTypes
 	if apiMergePredicates == nil {
 		return types.ListValue(basetypes.ObjectType{AttrTypes: attrTypes}, []attr.Value{})
@@ -37,13 +39,13 @@ func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]arti
 	preds := []attr.Value{}
 	for _, mp := range *apiMergePredicates {
 		var partitionType types.String
-		if mp.PartitionType == "" {
+		if lib.RemovePtr(mp.PartitionType) == "" {
 			partitionType = types.StringNull()
 		} else {
-			partitionType = types.StringValue(mp.PartitionType)
+			partitionType = types.StringValue(*mp.PartitionType)
 		}
 
-		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(mp.PartitionField), PartitionType: partitionType})
+		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(lib.RemovePtr(mp.PartitionField)), PartitionType: partitionType})
 		diags.Append(predDiags...)
 		preds = append(preds, pred)
 	}
@@ -61,12 +63,12 @@ type SoftPartitioning struct {
 	MaxPartitions      types.Int32  `tfsdk:"max_partitions"`
 }
 
-func (s SoftPartitioning) ToAPIModel() *artieclient.SoftPartitioning {
-	return &artieclient.SoftPartitioning{
-		Enabled:            s.Enabled.ValueBool(),
-		PartitionFrequency: artieclient.PartitionFrequency(s.PartitionFrequency.ValueString()),
-		PartitionColumn:    s.PartitionColumn.ValueString(),
-		MaxPartitions:      int(s.MaxPartitions.ValueInt32()),
+func (s SoftPartitioning) ToAPIModel() *openapi.PayloadsSoftPartitioning {
+	return &openapi.PayloadsSoftPartitioning{
+		Enabled:            lib.ToPtr(s.Enabled.ValueBool()),
+		PartitionFrequency: lib.ToPtr(s.PartitionFrequency.ValueString()),
+		PartitionColumn:    lib.ToPtr(s.PartitionColumn.ValueString()),
+		MaxPartitions:      lib.ToPtr(int(s.MaxPartitions.ValueInt32())),
 	}
 }
 
@@ -77,17 +79,17 @@ var SoftPartitioningAttrTypes = map[string]attr.Type{
 	"max_partitions":      types.Int32Type,
 }
 
-func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *artieclient.SoftPartitioning) (types.Object, diag.Diagnostics) {
+func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *openapi.PayloadsSoftPartitioning) (types.Object, diag.Diagnostics) {
 	attrTypes := SoftPartitioningAttrTypes
 	if apiSoftPartitioning == nil {
 		return types.ObjectNull(attrTypes), nil
 	}
 
 	return types.ObjectValue(attrTypes, map[string]attr.Value{
-		"enabled":             types.BoolValue(apiSoftPartitioning.Enabled),
-		"partition_frequency": types.StringValue(string(apiSoftPartitioning.PartitionFrequency)),
-		"partition_column":    types.StringValue(apiSoftPartitioning.PartitionColumn),
-		"max_partitions":      types.Int32Value(int32(apiSoftPartitioning.MaxPartitions)),
+		"enabled":             types.BoolValue(lib.RemovePtr(apiSoftPartitioning.Enabled)),
+		"partition_frequency": types.StringValue(lib.RemovePtr(apiSoftPartitioning.PartitionFrequency)),
+		"partition_column":    types.StringValue(lib.RemovePtr(apiSoftPartitioning.PartitionColumn)),
+		"max_partitions":      types.Int32Value(int32(lib.RemovePtr(apiSoftPartitioning.MaxPartitions))),
 	})
 }
 
@@ -155,7 +157,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"skip_no_op_updates":     types.BoolType,
 }
 
-func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnostics) {
+func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, diag.Diagnostics) {
 	tableUUID := uuid.Nil
 	var diags diag.Diagnostics
 	if t.UUID.ValueString() != "" {
@@ -182,9 +184,9 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 
 	mergePredicates, mergePredDiags := parseOptionalList[MergePredicate](ctx, t.MergePredicates)
 	diags.Append(mergePredDiags...)
-	var clientMergePreds *[]artieclient.MergePredicate
+	var clientMergePreds *[]openapi.PayloadsMergePredicates
 	if mergePredicates != nil && len(*mergePredicates) > 0 {
-		var clientMPs []artieclient.MergePredicate
+		var clientMPs []openapi.PayloadsMergePredicates
 		for _, mp := range *mergePredicates {
 			clientMPs = append(clientMPs, mp.ToAPIModel())
 		}
@@ -193,42 +195,43 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	}
 
 	softPartitioning, softPartitioningDiags := parseOptionalObject[SoftPartitioning](ctx, &t.SoftPartitioning)
-	var clientSoftPartitioning *artieclient.SoftPartitioning
+	var clientSoftPartitioning *openapi.PayloadsSoftPartitioning
 	if softPartitioning != nil {
 		clientSoftPartitioning = softPartitioning.ToAPIModel()
 	}
 	diags.Append(softPartitioningDiags...)
 
-	var clientCTIDSettings *artieclient.CTIDSettings
+	var clientCTIDSettings *openapi.PayloadsCTIDSettings
 	if IsKnown(t.CTIDBackfill) {
-		clientCTIDSettings = &artieclient.CTIDSettings{
-			Enabled:        t.CTIDBackfill.ValueBool(),
-			ChunkSize:      uint(t.CTIDChunkSize.ValueInt64()),
-			MaxParallelism: uint(t.CTIDMaxParallelism.ValueInt64()),
+		clientCTIDSettings = &openapi.PayloadsCTIDSettings{
+			Enabled:        lib.ToPtr(t.CTIDBackfill.ValueBool()),
+			ChunkSize:      lib.ToPtr(int(t.CTIDChunkSize.ValueInt64())),
+			MaxParallelism: lib.ToPtr(int(t.CTIDMaxParallelism.ValueInt64())),
 		}
 	}
 
-	var clientRangeSettings *artieclient.RangeSettings
+	var clientRangeSettings *openapi.PayloadsRangeSettings
 	if IsKnown(t.RangeBackfill) {
-		clientRangeSettings = &artieclient.RangeSettings{
-			Enabled:        t.RangeBackfill.ValueBool(),
-			ChunkSize:      int(t.RangeChunkSize.ValueInt64()),
-			MaxParallelism: int(t.RangeMaxParallelism.ValueInt64()),
-			BatchSize:      int(t.RangeBatchSize.ValueInt64()),
+		clientRangeSettings = &openapi.PayloadsRangeSettings{
+			Enabled:        lib.ToPtr(t.RangeBackfill.ValueBool()),
+			ChunksSize:     lib.ToPtr(int(t.RangeChunkSize.ValueInt64())),
+			MaxParallelism: lib.ToPtr(int(t.RangeMaxParallelism.ValueInt64())),
+			BatchSize:      lib.ToPtr(int(t.RangeBatchSize.ValueInt64())),
 		}
 	}
 
 	if diags.HasError() {
-		return artieclient.Table{}, diags
+		return openapi.PayloadsTablePayload{}, diags
 	}
 
-	return artieclient.Table{
-		UUID:               tableUUID,
-		Name:               t.Name.ValueString(),
-		Schema:             t.Schema.ValueString(),
-		EnableHistoryMode:  t.EnableHistoryMode.ValueBool(),
-		DisableReplication: t.DisableReplication.ValueBool(),
-		AdvancedSettings: artieclient.AdvancedTableSettings{
+	return openapi.PayloadsTablePayload{
+		// New tables send the nil UUID, as the hand-written client did.
+		Uuid:               &tableUUID,
+		Name:               lib.ToPtr(t.Name.ValueString()),
+		Schema:             lib.ToPtr(t.Schema.ValueString()),
+		EnableHistoryMode:  lib.ToPtr(t.EnableHistoryMode.ValueBool()),
+		DisableReplication: lib.ToPtr(t.DisableReplication.ValueBool()),
+		AdvancedSettings: &openapi.PayloadsAdvancedTableSettingsPayload{
 			Alias:                      t.Alias.ValueStringPointer(),
 			ExcludeColumns:             colsToExclude,
 			IncludeColumns:             colsToInclude,
@@ -237,13 +240,13 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 			ColumnsToCompress:          colsToCompress,
 			ColumnsToEncrypt:           colsToEncrypt,
 			EncryptJSONBColumns:        t.EncryptJSONBColumns.ValueBoolPointer(),
-			SkipDeletes:                t.SkipDeletes.ValueBoolPointer(),
+			SkipDelete:                 t.SkipDeletes.ValueBoolPointer(),
 			UnifyAcrossSchemas:         t.UnifyAcrossSchemas.ValueBoolPointer(),
 			UnifyAcrossDatabases:       t.UnifyAcrossDatabases.ValueBoolPointer(),
 			MergePredicates:            clientMergePreds,
 			SoftPartitioning:           clientSoftPartitioning,
 			ShouldBackfillHistoryTable: t.BackfillHistoryTable.ValueBoolPointer(),
-			CTIDSettings:               clientCTIDSettings,
+			CtidSettings:               clientCTIDSettings,
 			RangeSettings:              clientRangeSettings,
 			SkipBackfill:               t.SkipBackfill.ValueBoolPointer(),
 			SkipNoOpUpdates:            t.SkipNoOpUpdates.ValueBoolPointer(),
@@ -251,37 +254,40 @@ func (t Table) ToAPIModel(ctx context.Context) (artieclient.Table, diag.Diagnost
 	}, diags
 }
 
-func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table) (map[string]Table, diag.Diagnostics) {
+func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTable) (map[string]Table, diag.Diagnostics) {
 	tables := map[string]Table{}
 	var diags diag.Diagnostics
 	for _, apiTable := range apiModelTables {
-		tableKey := apiTable.Name
-		if apiTable.Schema != "" {
-			tableKey = fmt.Sprintf("%s.%s", apiTable.Schema, apiTable.Name)
+		name := lib.RemovePtr(apiTable.Name)
+		schema := lib.RemovePtr(apiTable.Schema)
+		settings := lib.RemovePtr(apiTable.AdvancedSettings)
+		tableKey := name
+		if schema != "" {
+			tableKey = fmt.Sprintf("%s.%s", schema, name)
 		}
 
-		colsToExclude, excludeDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ExcludeColumns)
+		colsToExclude, excludeDiags := optionalStringListToListValue(ctx, settings.ExcludeColumns)
 		diags.Append(excludeDiags...)
 
-		colsToInclude, includeDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.IncludeColumns)
+		colsToInclude, includeDiags := optionalStringListToListValue(ctx, settings.IncludeColumns)
 		diags.Append(includeDiags...)
 
-		primaryKeysOverride, primaryKeysOverrideDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.PrimaryKeysOverride)
+		primaryKeysOverride, primaryKeysOverrideDiags := optionalStringListToListValue(ctx, settings.PrimaryKeysOverride)
 		diags.Append(primaryKeysOverrideDiags...)
 
-		colsToHash, hashDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToHash)
+		colsToHash, hashDiags := optionalStringListToListValue(ctx, settings.ColumnsToHash)
 		diags.Append(hashDiags...)
 
-		colsToCompress, compressDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToCompress)
+		colsToCompress, compressDiags := optionalStringListToListValue(ctx, settings.ColumnsToCompress)
 		diags.Append(compressDiags...)
 
-		colsToEncrypt, encryptDiags := optionalStringListToListValue(ctx, apiTable.AdvancedSettings.ColumnsToEncrypt)
+		colsToEncrypt, encryptDiags := optionalStringListToListValue(ctx, settings.ColumnsToEncrypt)
 		diags.Append(encryptDiags...)
 
-		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, apiTable.AdvancedSettings.MergePredicates)
+		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, settings.MergePredicates)
 		diags.Append(mergePredDiags...)
 
-		softPartitioning, softPartitioningDiags := SoftPartitioningFromAPIModel(ctx, apiTable.AdvancedSettings.SoftPartitioning)
+		softPartitioning, softPartitioningDiags := SoftPartitioningFromAPIModel(ctx, settings.SoftPartitioning)
 		diags.Append(softPartitioningDiags...)
 
 		// Extract CTID settings - initialize them to the zero-values (instead of null/unknown) because if
@@ -289,30 +295,30 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 		ctidBackfill := types.BoolValue(false)
 		ctidChunkSize := types.Int64Value(0)
 		ctidMaxParallelism := types.Int64Value(0)
-		if apiTable.AdvancedSettings.CTIDSettings != nil {
-			ctidBackfill = types.BoolValue(apiTable.AdvancedSettings.CTIDSettings.Enabled)
-			ctidChunkSize = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.ChunkSize))
-			ctidMaxParallelism = types.Int64Value(int64(apiTable.AdvancedSettings.CTIDSettings.MaxParallelism))
+		if settings.CtidSettings != nil {
+			ctidBackfill = types.BoolValue(lib.RemovePtr(settings.CtidSettings.Enabled))
+			ctidChunkSize = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.ChunkSize)))
+			ctidMaxParallelism = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.MaxParallelism)))
 		}
 
 		rangeBackfill := types.BoolValue(false)
 		rangeChunkSize := types.Int64Value(0)
 		rangeMaxParallelism := types.Int64Value(0)
 		rangeBatchSize := types.Int64Value(0)
-		if apiTable.AdvancedSettings.RangeSettings != nil {
-			rangeBackfill = types.BoolValue(apiTable.AdvancedSettings.RangeSettings.Enabled)
-			rangeChunkSize = types.Int64Value(int64(apiTable.AdvancedSettings.RangeSettings.ChunkSize))
-			rangeMaxParallelism = types.Int64Value(int64(apiTable.AdvancedSettings.RangeSettings.MaxParallelism))
-			rangeBatchSize = types.Int64Value(int64(apiTable.AdvancedSettings.RangeSettings.BatchSize))
+		if settings.RangeSettings != nil {
+			rangeBackfill = types.BoolValue(lib.RemovePtr(settings.RangeSettings.Enabled))
+			rangeChunkSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.ChunksSize)))
+			rangeMaxParallelism = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.MaxParallelism)))
+			rangeBatchSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.BatchSize)))
 		}
 
 		tables[tableKey] = Table{
-			UUID:                types.StringValue(apiTable.UUID.String()),
-			Name:                types.StringValue(apiTable.Name),
-			Schema:              types.StringValue(apiTable.Schema),
-			EnableHistoryMode:   types.BoolValue(apiTable.EnableHistoryMode),
-			DisableReplication:  types.BoolValue(apiTable.DisableReplication),
-			Alias:               types.StringPointerValue(apiTable.AdvancedSettings.Alias),
+			UUID:                types.StringValue(lib.RemovePtr(apiTable.Uuid).String()),
+			Name:                types.StringValue(name),
+			Schema:              types.StringValue(schema),
+			EnableHistoryMode:   types.BoolValue(lib.RemovePtr(apiTable.EnableHistoryMode)),
+			DisableReplication:  types.BoolValue(lib.RemovePtr(apiTable.DisableReplication)),
+			Alias:               types.StringPointerValue(settings.Alias),
 			ExcludeColumns:      colsToExclude,
 			IncludeColumns:      colsToInclude,
 			PrimaryKeysOverride: primaryKeysOverride,
@@ -321,13 +327,13 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			ColumnsToEncrypt:    colsToEncrypt,
 			// The API stores these "absent means off" toggles as nil when false; coalesce nil to
 			// false so an explicit `false` round-trips without a post-apply consistency error.
-			EncryptJSONBColumns:  boolPointerValueOrFalse(apiTable.AdvancedSettings.EncryptJSONBColumns),
-			SkipDeletes:          boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipDeletes),
-			UnifyAcrossSchemas:   boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossSchemas),
-			UnifyAcrossDatabases: boolPointerValueOrFalse(apiTable.AdvancedSettings.UnifyAcrossDatabases),
+			EncryptJSONBColumns:  boolPointerValueOrFalse(settings.EncryptJSONBColumns),
+			SkipDeletes:          boolPointerValueOrFalse(settings.SkipDelete),
+			UnifyAcrossSchemas:   boolPointerValueOrFalse(settings.UnifyAcrossSchemas),
+			UnifyAcrossDatabases: boolPointerValueOrFalse(settings.UnifyAcrossDatabases),
 			MergePredicates:      mergePredicates,
 			SoftPartitioning:     softPartitioning,
-			BackfillHistoryTable: boolPointerValueOrFalse(apiTable.AdvancedSettings.ShouldBackfillHistoryTable),
+			BackfillHistoryTable: boolPointerValueOrFalse(settings.ShouldBackfillHistoryTable),
 			CTIDBackfill:         ctidBackfill,
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
@@ -335,8 +341,8 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 			RangeChunkSize:       rangeChunkSize,
 			RangeMaxParallelism:  rangeMaxParallelism,
 			RangeBatchSize:       rangeBatchSize,
-			SkipBackfill:         boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipBackfill),
-			SkipNoOpUpdates:      boolPointerValueOrFalse(apiTable.AdvancedSettings.SkipNoOpUpdates),
+			SkipBackfill:         boolPointerValueOrFalse(settings.SkipBackfill),
+			SkipNoOpUpdates:      boolPointerValueOrFalse(settings.SkipNoOpUpdates),
 		}
 	}
 
@@ -345,4 +351,22 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []artieclient.Table)
 	}
 
 	return tables, diags
+}
+
+// ValidationTables converts table payloads into the table type the validate-unsaved endpoints accept.
+// The two types share the same JSON, so the conversion is lossless.
+func ValidationTables(tables *[]openapi.PayloadsTablePayload) ([]openapi.PayloadsTable, error) {
+	out := []openapi.PayloadsTable{}
+	if tables == nil {
+		return out, nil
+	}
+
+	body, err := json.Marshal(*tables)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode tables for validation: %w", err)
+	}
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, fmt.Errorf("failed to encode tables for validation: %w", err)
+	}
+	return out, nil
 }

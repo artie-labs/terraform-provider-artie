@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 )
 
 func ptr[T any](v T) *T { return &v }
@@ -24,17 +24,15 @@ func TestPipelineAutoEnableHistoryForNewTables(t *testing.T) {
 		AutoEnableHistoryForNewTables: types.BoolValue(true),
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.True(t, *apiModel.AdvancedSettings.AutoEnableHistoryForNewTables)
 
-	base := artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:             "test",
-			Tables:           []artieclient.Table{},
-			AdvancedSettings: &artieclient.AdvancedSettings{},
-		},
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
 	}
 
 	model, diags := PipelineFromAPIModel(t.Context(), base)
@@ -65,18 +63,16 @@ func TestPipelineAutoReplicateIgnoreRegex(t *testing.T) {
 		AutoReplicateIgnoreRegex: types.StringValue("^public\\.tmp_.*"),
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^public\\.tmp_.*", *apiModel.AdvancedSettings.AutoReplicateIgnoreRegex)
 
 	apiModel.AdvancedSettings.AutoReplicateIgnoreRegex = ptr("^public\\.archive_.*")
-	model, diags := PipelineFromAPIModel(t.Context(), artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:             "test",
-			Tables:           []artieclient.Table{},
-			AdvancedSettings: apiModel.AdvancedSettings,
-		},
+	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{AutoReplicateIgnoreRegex: apiModel.AdvancedSettings.AutoReplicateIgnoreRegex, AutoEnableHistoryIgnoreRegex: apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex},
 	})
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^public\\.archive_.*", model.AutoReplicateIgnoreRegex.ValueString())
@@ -93,18 +89,16 @@ func TestPipelineAutoEnableHistoryIgnoreRegex(t *testing.T) {
 		AutoEnableHistoryIgnoreRegex: types.StringValue("^audit\\..*"),
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^audit\\..*", *apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex)
 
 	apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex = ptr("^archive\\..*")
-	model, diags := PipelineFromAPIModel(t.Context(), artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:             "test",
-			Tables:           []artieclient.Table{},
-			AdvancedSettings: apiModel.AdvancedSettings,
-		},
+	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{AutoReplicateIgnoreRegex: apiModel.AdvancedSettings.AutoReplicateIgnoreRegex, AutoEnableHistoryIgnoreRegex: apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex},
 	})
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^archive\\..*", model.AutoEnableHistoryIgnoreRegex.ValueString())
@@ -115,13 +109,11 @@ func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	// nil, so both an omitted value and an explicit false must read back as a stable
 	// false (never null), otherwise Terraform's post-apply consistency check errors:
 	// ".disable_alerts: was cty.False, but now null".
-	base := artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:             "test",
-			Tables:           []artieclient.Table{},
-			AdvancedSettings: &artieclient.AdvancedSettings{},
-		},
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
 	}
 
 	{
@@ -149,13 +141,11 @@ func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 }
 
 func TestPipelineFromAPIModel_DatabricksAutoLiquidClustering(t *testing.T) {
-	base := artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:             "test",
-			Tables:           []artieclient.Table{},
-			AdvancedSettings: &artieclient.AdvancedSettings{},
-		},
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
 	}
 
 	{
@@ -174,7 +164,7 @@ func TestPipelineFromAPIModel_DatabricksAutoLiquidClustering(t *testing.T) {
 	}
 }
 
-func TestPipelineToAPIBaseModel_TurboSettings(t *testing.T) {
+func TestPipelineToAPIModel_TurboSettings(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
 
@@ -187,15 +177,15 @@ func TestPipelineToAPIBaseModel_TurboSettings(t *testing.T) {
 		TurboLatencyThresholdMinutes: types.Int64Value(30),
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.NotNil(t, apiModel.AdvancedSettings)
 	assert.Equal(t, "ARTIE_WEB_WH_LARGE", *apiModel.AdvancedSettings.TurboWarehouse)
-	assert.Equal(t, int64(500000), *apiModel.AdvancedSettings.TurboRowThreshold)
-	assert.Equal(t, int64(30), *apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
+	assert.Equal(t, 500000, *apiModel.AdvancedSettings.TurboRowThreshold)
+	assert.Equal(t, 30, *apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
 }
 
-func TestPipelineToAPIBaseModel_MaxConcurrentSnapshots(t *testing.T) {
+func TestPipelineToAPIModel_MaxConcurrentSnapshots(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
 
@@ -206,13 +196,13 @@ func TestPipelineToAPIBaseModel_MaxConcurrentSnapshots(t *testing.T) {
 		MaxConcurrentSnapshots: types.Int64Value(6),
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.NotNil(t, apiModel.AdvancedSettings)
-	assert.Equal(t, int64(6), *apiModel.AdvancedSettings.MaxConcurrentSnapshots)
+	assert.Equal(t, 6, *apiModel.AdvancedSettings.MaxConcurrentSnapshots)
 }
 
-func TestPipelineToAPIBaseModel_OmittedMaxConcurrentSnapshots(t *testing.T) {
+func TestPipelineToAPIModel_OmittedMaxConcurrentSnapshots(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
 
@@ -222,21 +212,19 @@ func TestPipelineToAPIBaseModel_OmittedMaxConcurrentSnapshots(t *testing.T) {
 		DestinationConfig: &PipelineDestinationConfig{},
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.NotNil(t, apiModel.AdvancedSettings)
 	assert.Nil(t, apiModel.AdvancedSettings.MaxConcurrentSnapshots)
 }
 
 func TestPipelineFromAPIModel_MaxConcurrentSnapshots(t *testing.T) {
-	apiModel := artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:   "test",
-			Tables: []artieclient.Table{},
-			AdvancedSettings: &artieclient.AdvancedSettings{
-				MaxConcurrentSnapshots: ptr[int64](6),
-			},
+	apiModel := openapi.PayloadsFullPipeline{
+		Uuid:   uuid.New(),
+		Name:   "test",
+		Tables: []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{
+			MaxConcurrentSnapshots: ptr(6),
 		},
 	}
 
@@ -245,7 +233,7 @@ func TestPipelineFromAPIModel_MaxConcurrentSnapshots(t *testing.T) {
 	assert.Equal(t, int64(6), pipeline.MaxConcurrentSnapshots.ValueInt64())
 }
 
-func TestPipelineToAPIBaseModel_OmittedTurboSettings(t *testing.T) {
+func TestPipelineToAPIModel_OmittedTurboSettings(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
 
@@ -255,7 +243,7 @@ func TestPipelineToAPIBaseModel_OmittedTurboSettings(t *testing.T) {
 		DestinationConfig: &PipelineDestinationConfig{},
 	}
 
-	apiModel, diags := pipeline.ToAPIBaseModel(t.Context())
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.NotNil(t, apiModel.AdvancedSettings)
 	assert.Nil(t, apiModel.AdvancedSettings.TurboWarehouse)
@@ -264,16 +252,14 @@ func TestPipelineToAPIBaseModel_OmittedTurboSettings(t *testing.T) {
 }
 
 func TestPipelineFromAPIModel_TurboSettings(t *testing.T) {
-	apiModel := artieclient.Pipeline{
-		UUID: uuid.New(),
-		BasePipeline: artieclient.BasePipeline{
-			Name:   "test",
-			Tables: []artieclient.Table{},
-			AdvancedSettings: &artieclient.AdvancedSettings{
-				TurboWarehouse:               ptr("ARTIE_WEB_WH_LARGE"),
-				TurboRowThreshold:            ptr[int64](500000),
-				TurboLatencyThresholdMinutes: ptr[int64](30),
-			},
+	apiModel := openapi.PayloadsFullPipeline{
+		Uuid:   uuid.New(),
+		Name:   "test",
+		Tables: []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{
+			TurboWarehouse:               ptr("ARTIE_WEB_WH_LARGE"),
+			TurboRowThreshold:            ptr(500000),
+			TurboLatencyThresholdMinutes: ptr(30),
 		},
 	}
 
@@ -324,9 +310,12 @@ func TestFlushConfigFromAPIModel(t *testing.T) {
 		assert.Equal(t, flushConfig.BufferRows.ValueInt64(), int64(5000))
 		assert.Equal(t, flushConfig.FlushSizeKB.ValueInt64(), int64(1000))
 
-		apiFlushConfig := flushConfig.ToAPIModel()
-		assert.Equal(t, apiFlushConfig.FlushIntervalSeconds, int64(100))
-		assert.Equal(t, apiFlushConfig.BufferRows, int64(5000))
-		assert.Equal(t, apiFlushConfig.FlushSizeKB, int64(1000))
+		tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+		assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+		apiModel, diags := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}, FlushConfig: flushObject}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, 100, *apiModel.AdvancedSettings.FlushIntervalSeconds)
+		assert.Equal(t, 5000, *apiModel.AdvancedSettings.BufferRows)
+		assert.Equal(t, 1000, *apiModel.AdvancedSettings.FlushSizeKb)
 	}
 }

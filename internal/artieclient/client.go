@@ -1,16 +1,10 @@
 package artieclient
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"terraform-provider-artie/internal/openapi"
 )
@@ -26,94 +20,6 @@ func (he HttpError) Error() string {
 		message = "server returned a non-200 status code"
 	}
 	return fmt.Sprintf("%s (HTTP %d)", message, he.StatusCode)
-}
-
-type Client struct {
-	endpoint string
-	apiKey   string
-	version  string
-}
-
-func New(endpoint string, apiKey string, version string) (Client, error) {
-	if !strings.HasPrefix(apiKey, "arsk_") {
-		return Client{}, fmt.Errorf("artie-client: api key is malformed (should start with arsk_)")
-	}
-
-	return Client{endpoint: endpoint, apiKey: apiKey, version: version}, nil
-}
-
-func buildError(body []byte, resp *http.Response) error {
-	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("artie-client: not found, request: %q, method: %q, response: %q", resp.Request.URL.String(), resp.Request.Method, string(body))
-	} else if resp.StatusCode >= 400 && resp.StatusCode < 500 { // Client errors
-		type errorBody struct {
-			ErrorMsg string `json:"error"`
-		}
-
-		var errorResponse errorBody
-		if err := json.Unmarshal(body, &errorResponse); err == nil {
-			return HttpError{StatusCode: resp.StatusCode, message: errorResponse.ErrorMsg}
-		}
-
-	}
-	return HttpError{StatusCode: resp.StatusCode}
-}
-
-func (c Client) makeRequest(ctx context.Context, method string, path string, body any, out any) error {
-	_url, err := url.JoinPath(c.endpoint, path)
-	if err != nil {
-		return nil
-	}
-
-	tflog.Info(ctx, fmt.Sprintf("Making API request: %s %s", method, _url))
-
-	var bodyReader io.Reader
-	if body != nil {
-		bodyBuff := new(bytes.Buffer)
-		if err := json.NewEncoder(bodyBuff).Encode(body); err != nil {
-			return fmt.Errorf("artie-client: failed to encode request body: %w", err)
-		}
-		bodyReader = bodyBuff
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, _url, bodyReader)
-	if err != nil {
-		return fmt.Errorf("artie-client: failed to create request: %w", err)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
-	req.Header.Set("User-Agent", "terraform-provider-artie/"+c.version)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("request failed: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("artie-client: failed to read response body: %w", err)
-	}
-
-	if resp.StatusCode >= 300 {
-		return buildError(respBody, resp)
-	}
-
-	if out != nil && resp.StatusCode != http.StatusNoContent {
-		if err := json.Unmarshal(respBody, &out); err != nil {
-			return fmt.Errorf("artie-client: failed to decode response body: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func makeRequest[Out any](ctx context.Context, client Client, method string, path string, body any) (Out, error) {
-	respBody := new(Out)
-	if err := client.makeRequest(ctx, method, path, body, respBody); err != nil {
-		return *new(Out), err
-	}
-	return *respBody, nil
 }
 
 func BuildResponseError(statusCode int, body []byte) error {
@@ -165,6 +71,20 @@ func CheckResponse(resp openAPIResponse, err error) error {
 	return nil
 }
 
-func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineClient {
-	return PipelineClient{client: c, openAPIClient: openAPIClient}
+// ValidationError unwraps a generated validate-unsaved call, returning the API's validation message as an error.
+func ValidationError[Resp interface {
+	openAPIResponse
+	GetJSON200() *openapi.RouterValidateErrorResponse
+}](resp Resp, err error) error {
+	if err := CheckResponse(resp, err); err != nil {
+		return err
+	}
+	body := resp.GetJSON200()
+	if body == nil && resp.StatusCode() == http.StatusOK {
+		return fmt.Errorf("artie-client: expected a JSON response body (HTTP 200), got: %q", resp.GetBody())
+	}
+	if body != nil && body.Error != nil && *body.Error != "" {
+		return errors.New(*body.Error)
+	}
+	return nil
 }

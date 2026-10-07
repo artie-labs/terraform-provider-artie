@@ -7,21 +7,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 )
 
 func TestTablesFromAPIModel_NilBoolSettingsReadBackAsFalse(t *testing.T) {
 	// When the API returns nil for "absent means off" toggles (which it does when they are
 	// false), they must read back as an explicit `false`, not null. Otherwise an explicit
 	// `false` in the Terraform config triggers a post-apply consistency error (false -> null).
-	apiTables := []artieclient.Table{
+	apiTables := []openapi.PayloadsTable{
 		{
-			UUID:   uuid.New(),
-			Name:   "billing_counter_event",
-			Schema: "task_mgmt",
-			AdvancedSettings: artieclient.AdvancedTableSettings{
+			Uuid:   ptr(uuid.New()),
+			Name:   ptr("billing_counter_event"),
+			Schema: ptr("task_mgmt"),
+			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				EncryptJSONBColumns:        nil,
-				SkipDeletes:                nil,
+				SkipDelete:                 nil,
 				UnifyAcrossSchemas:         nil,
 				UnifyAcrossDatabases:       nil,
 				ShouldBackfillHistoryTable: nil,
@@ -61,13 +61,13 @@ func TestTablesFromAPIModel_NilBoolSettingsReadBackAsFalse(t *testing.T) {
 func TestTablesFromAPIModel_BoolSettingsRoundTripExplicitValues(t *testing.T) {
 	trueVal := true
 	falseVal := false
-	apiTables := []artieclient.Table{
+	apiTables := []openapi.PayloadsTable{
 		{
-			UUID: uuid.New(),
-			Name: "orders",
-			AdvancedSettings: artieclient.AdvancedTableSettings{
+			Uuid: ptr(uuid.New()),
+			Name: ptr("orders"),
+			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				EncryptJSONBColumns: &trueVal,
-				SkipDeletes:         &falseVal,
+				SkipDelete:          &falseVal,
 			},
 		},
 	}
@@ -94,10 +94,10 @@ func TestTableToAPIModel_RangeSettings(t *testing.T) {
 	apiTable, diags := table.ToAPIModel(t.Context())
 	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 	assert.NotNil(t, apiTable.AdvancedSettings.RangeSettings)
-	assert.True(t, apiTable.AdvancedSettings.RangeSettings.Enabled)
-	assert.Equal(t, 5000000, apiTable.AdvancedSettings.RangeSettings.ChunkSize)
-	assert.Equal(t, 5, apiTable.AdvancedSettings.RangeSettings.MaxParallelism)
-	assert.Equal(t, 0, apiTable.AdvancedSettings.RangeSettings.BatchSize)
+	assert.True(t, *apiTable.AdvancedSettings.RangeSettings.Enabled)
+	assert.Equal(t, 5000000, *apiTable.AdvancedSettings.RangeSettings.ChunksSize)
+	assert.Equal(t, 5, *apiTable.AdvancedSettings.RangeSettings.MaxParallelism)
+	assert.Equal(t, 0, *apiTable.AdvancedSettings.RangeSettings.BatchSize)
 }
 
 func TestTableToAPIModel_NullRangeBackfillOmitsRangeSettings(t *testing.T) {
@@ -112,12 +112,12 @@ func TestTableToAPIModel_NullRangeBackfillOmitsRangeSettings(t *testing.T) {
 }
 
 func TestTablesFromAPIModel_NilRangeSettingsReadBackAsDisabled(t *testing.T) {
-	apiTables := []artieclient.Table{
+	apiTables := []openapi.PayloadsTable{
 		{
-			UUID:   uuid.New(),
-			Name:   "offers",
-			Schema: "public",
-			AdvancedSettings: artieclient.AdvancedTableSettings{
+			Uuid:   ptr(uuid.New()),
+			Name:   ptr("offers"),
+			Schema: ptr("public"),
+			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				RangeSettings: nil,
 			},
 		},
@@ -135,17 +135,17 @@ func TestTablesFromAPIModel_NilRangeSettingsReadBackAsDisabled(t *testing.T) {
 }
 
 func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
-	apiTables := []artieclient.Table{
+	apiTables := []openapi.PayloadsTable{
 		{
-			UUID:   uuid.New(),
-			Name:   "offers",
-			Schema: "public",
-			AdvancedSettings: artieclient.AdvancedTableSettings{
-				RangeSettings: &artieclient.RangeSettings{
-					Enabled:        true,
-					ChunkSize:      5000000,
-					MaxParallelism: 5,
-					BatchSize:      0,
+			Uuid:   ptr(uuid.New()),
+			Name:   ptr("offers"),
+			Schema: ptr("public"),
+			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
+				RangeSettings: &openapi.PayloadsRangeSettings{
+					Enabled:        ptr(true),
+					ChunksSize:     ptr(5000000),
+					MaxParallelism: ptr(5),
+					BatchSize:      ptr(0),
 				},
 			},
 		},
@@ -175,7 +175,10 @@ func TestTablePrimaryKeysOverrideRoundTrip(t *testing.T) {
 	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 	assert.Equal(t, []string{"account_id", "region"}, *apiTable.AdvancedSettings.PrimaryKeysOverride)
 
-	tables, diags := TablesFromAPIModel(t.Context(), []artieclient.Table{apiTable})
+	// Read back through ValidationTables, which reshapes the request payload into the response table type.
+	apiTables, err := ValidationTables(&[]openapi.PayloadsTablePayload{apiTable})
+	assert.NoError(t, err)
+	tables, diags := TablesFromAPIModel(t.Context(), apiTables)
 	assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 	assert.Equal(t, primaryKeysOverride, tables["public.accounts"].PrimaryKeysOverride)
 }
