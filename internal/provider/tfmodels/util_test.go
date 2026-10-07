@@ -48,3 +48,16 @@ func TestOptionalStringListToListValue(t *testing.T) {
 		assert.Equal(t, "c", val3.ValueString(), "expected list value to have 'c' as third element")
 	}
 }
+
+func TestNonEmptyStringPointer(t *testing.T) {
+	{
+		// null, unknown, and empty strings are omitted
+		assert.Nil(t, nonEmptyStringPointer(types.StringNull()))
+		assert.Nil(t, nonEmptyStringPointer(types.StringUnknown()))
+		assert.Nil(t, nonEmptyStringPointer(types.StringValue("")))
+	}
+	{
+		// non-empty string is sent
+		assert.Equal(t, "aws-us-east-1", *nonEmptyStringPointer(types.StringValue("aws-us-east-1")))
+	}
+}

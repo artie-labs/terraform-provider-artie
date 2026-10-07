@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -26,7 +27,7 @@ func NewPrivateLinkResource() resource.Resource {
 }
 
 type PrivateLinkResource struct {
-	client artieclient.Client
+	client *openapi.ClientWithResponses
 }
 
 func (r *PrivateLinkResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -66,7 +67,7 @@ func (r *PrivateLinkResource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	client, err := providerData.NewClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
@@ -87,7 +88,7 @@ func (r *PrivateLinkResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, 
 	return planData, diagnostics.HasError()
 }
 
-func (r *PrivateLinkResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, pl artieclient.PrivateLinkConnection) {
+func (r *PrivateLinkResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, pl openapi.PayloadsPrivateLinkConnection) {
 	tfModel, diags := tfmodels.PrivateLinkFromAPIModel(ctx, pl)
 	diagnostics.Append(diags...)
 	if diags.HasError() {
@@ -102,19 +103,19 @@ func (r *PrivateLinkResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	baseModel, diags := planData.ToAPIBaseModel(ctx)
+	body, diags := planData.ToAPICreateRequest(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	conn, err := r.client.PrivateLinks().Create(ctx, baseModel)
+	conn, err := artieclient.JSON200(r.client.PrivateLinkConnectionCreateWithResponse(ctx, body))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create PrivateLink connection", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, conn)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *conn)
 }
 
 func (r *PrivateLinkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -123,13 +124,13 @@ func (r *PrivateLinkResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	conn, err := r.client.PrivateLinks().Get(ctx, uuid)
+	conn, err := artieclient.JSON200(r.client.PrivateLinkConnectionDetailWithResponse(ctx, uuid))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read PrivateLink connection", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, conn)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *conn)
 }
 
 func (r *PrivateLinkResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -138,19 +139,19 @@ func (r *PrivateLinkResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	apiModel, diags := planData.ToAPIModel(ctx)
+	body, diags := planData.ToAPIUpdateRequest(ctx)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	conn, err := r.client.PrivateLinks().Update(ctx, apiModel)
+	conn, err := artieclient.JSON200(r.client.PrivateLinkConnectionUpdateWithResponse(ctx, planData.UUID.ValueString(), body))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update PrivateLink connection", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, conn)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *conn)
 }
 
 func (r *PrivateLinkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -159,7 +160,7 @@ func (r *PrivateLinkResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	if err := r.client.PrivateLinks().Delete(ctx, uuid); err != nil {
+	if err := artieclient.CheckResponse(r.client.PrivateLinkConnectionDeleteWithResponse(ctx, uuid)); err != nil {
 		resp.Diagnostics.AddError("Unable to delete PrivateLink connection", err.Error())
 		return
 	}
