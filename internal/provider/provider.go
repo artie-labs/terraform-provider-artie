@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 const (
@@ -55,6 +56,7 @@ func (a ArtieProviderData) NewOpenAPIClient() (*openapi.ClientWithResponses, err
 		func(ctx context.Context, req *http.Request) error {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", a.APIKey))
 			req.Header.Set("User-Agent", "terraform-provider-artie/"+a.version)
+			tflog.Info(ctx, fmt.Sprintf("Making API request: %s %s", req.Method, req.URL))
 			return nil
 		},
 	))

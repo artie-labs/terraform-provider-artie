@@ -132,12 +132,41 @@ func BuildResponseError(statusCode int, body []byte) error {
 	return HttpError{StatusCode: statusCode}
 }
 
-func (c Client) Connectors() ConnectorClient {
-	return ConnectorClient{client: c}
+type openAPIResponse interface {
+	StatusCode() int
+	GetBody() []byte
 }
 
-func (c Client) SSHTunnels() SSHTunnelClient {
-	return SSHTunnelClient{client: c}
+// JSON200 unwraps a generated OpenAPI client call, returning its 200 JSON body or an error built from the response.
+func JSON200[T any, Resp interface {
+	openAPIResponse
+	GetJSON200() *T
+}](resp Resp, err error) (*T, error) {
+	if err != nil {
+		return nil, err
+	}
+	if body := resp.GetJSON200(); body != nil {
+		return body, nil
+	}
+	if resp.StatusCode() == http.StatusOK {
+		return nil, fmt.Errorf("artie-client: expected a JSON response body (HTTP 200), got: %q", resp.GetBody())
+	}
+	return nil, BuildResponseError(resp.StatusCode(), resp.GetBody())
+}
+
+// CheckResponse unwraps a generated OpenAPI client call that has no JSON body, returning an error unless it succeeded.
+func CheckResponse(resp openAPIResponse, err error) error {
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() < 200 || resp.StatusCode() >= 300 {
+		return BuildResponseError(resp.StatusCode(), resp.GetBody())
+	}
+	return nil
+}
+
+func (c Client) Connectors() ConnectorClient {
+	return ConnectorClient{client: c}
 }
 
 func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineClient {
