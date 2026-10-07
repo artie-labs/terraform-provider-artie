@@ -19,78 +19,147 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for EnumsBackfillStage.
+const (
+	EnumsBackfillStageCancelled    EnumsBackfillStage = "cancelled"
+	EnumsBackfillStageCopying      EnumsBackfillStage = "copying"
+	EnumsBackfillStageDone         EnumsBackfillStage = "done"
+	EnumsBackfillStageFailed       EnumsBackfillStage = "failed"
+	EnumsBackfillStageMerging      EnumsBackfillStage = "merging"
+	EnumsBackfillStageQueued       EnumsBackfillStage = "queued"
+	EnumsBackfillStageSnapshotting EnumsBackfillStage = "snapshotting"
+)
+
+// Valid indicates whether the value is a known member of the EnumsBackfillStage enum.
+func (e EnumsBackfillStage) Valid() bool {
+	switch e {
+	case EnumsBackfillStageCancelled:
+		return true
+	case EnumsBackfillStageCopying:
+		return true
+	case EnumsBackfillStageDone:
+		return true
+	case EnumsBackfillStageFailed:
+		return true
+	case EnumsBackfillStageMerging:
+		return true
+	case EnumsBackfillStageQueued:
+		return true
+	case EnumsBackfillStageSnapshotting:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EnumsConnectorSlug.
 const (
-	Api         EnumsConnectorSlug = "api"
-	Bigquery    EnumsConnectorSlug = "bigquery"
-	Clickhouse  EnumsConnectorSlug = "clickhouse"
-	Cockroach   EnumsConnectorSlug = "cockroach"
-	Databricks  EnumsConnectorSlug = "databricks"
-	Delta       EnumsConnectorSlug = "delta"
-	Documentdb  EnumsConnectorSlug = "documentdb"
-	Dynamodb    EnumsConnectorSlug = "dynamodb"
-	Gcs         EnumsConnectorSlug = "gcs"
-	Iceberg     EnumsConnectorSlug = "iceberg"
-	Keyspaces   EnumsConnectorSlug = "keyspaces"
-	Mongodb     EnumsConnectorSlug = "mongodb"
-	Motherduck  EnumsConnectorSlug = "motherduck"
-	Mssql       EnumsConnectorSlug = "mssql"
-	Mysql       EnumsConnectorSlug = "mysql"
-	Oracle      EnumsConnectorSlug = "oracle"
-	Planetscale EnumsConnectorSlug = "planetscale"
-	Postgresql  EnumsConnectorSlug = "postgresql"
-	Redis       EnumsConnectorSlug = "redis"
-	Redshift    EnumsConnectorSlug = "redshift"
-	S3          EnumsConnectorSlug = "s3"
-	Snowflake   EnumsConnectorSlug = "snowflake"
+	EnumsConnectorSlugApi         EnumsConnectorSlug = "api"
+	EnumsConnectorSlugBigquery    EnumsConnectorSlug = "bigquery"
+	EnumsConnectorSlugClickhouse  EnumsConnectorSlug = "clickhouse"
+	EnumsConnectorSlugCockroach   EnumsConnectorSlug = "cockroach"
+	EnumsConnectorSlugDatabricks  EnumsConnectorSlug = "databricks"
+	EnumsConnectorSlugDelta       EnumsConnectorSlug = "delta"
+	EnumsConnectorSlugDocumentdb  EnumsConnectorSlug = "documentdb"
+	EnumsConnectorSlugDynamodb    EnumsConnectorSlug = "dynamodb"
+	EnumsConnectorSlugGcs         EnumsConnectorSlug = "gcs"
+	EnumsConnectorSlugIceberg     EnumsConnectorSlug = "iceberg"
+	EnumsConnectorSlugKeyspaces   EnumsConnectorSlug = "keyspaces"
+	EnumsConnectorSlugMongodb     EnumsConnectorSlug = "mongodb"
+	EnumsConnectorSlugMotherduck  EnumsConnectorSlug = "motherduck"
+	EnumsConnectorSlugMssql       EnumsConnectorSlug = "mssql"
+	EnumsConnectorSlugMysql       EnumsConnectorSlug = "mysql"
+	EnumsConnectorSlugOracle      EnumsConnectorSlug = "oracle"
+	EnumsConnectorSlugPlanetscale EnumsConnectorSlug = "planetscale"
+	EnumsConnectorSlugPostgresql  EnumsConnectorSlug = "postgresql"
+	EnumsConnectorSlugRedis       EnumsConnectorSlug = "redis"
+	EnumsConnectorSlugRedshift    EnumsConnectorSlug = "redshift"
+	EnumsConnectorSlugS3          EnumsConnectorSlug = "s3"
+	EnumsConnectorSlugSnowflake   EnumsConnectorSlug = "snowflake"
 )
 
 // Valid indicates whether the value is a known member of the EnumsConnectorSlug enum.
 func (e EnumsConnectorSlug) Valid() bool {
 	switch e {
-	case Api:
+	case EnumsConnectorSlugApi:
 		return true
-	case Bigquery:
+	case EnumsConnectorSlugBigquery:
 		return true
-	case Clickhouse:
+	case EnumsConnectorSlugClickhouse:
 		return true
-	case Cockroach:
+	case EnumsConnectorSlugCockroach:
 		return true
-	case Databricks:
+	case EnumsConnectorSlugDatabricks:
 		return true
-	case Delta:
+	case EnumsConnectorSlugDelta:
 		return true
-	case Documentdb:
+	case EnumsConnectorSlugDocumentdb:
 		return true
-	case Dynamodb:
+	case EnumsConnectorSlugDynamodb:
 		return true
-	case Gcs:
+	case EnumsConnectorSlugGcs:
 		return true
-	case Iceberg:
+	case EnumsConnectorSlugIceberg:
 		return true
-	case Keyspaces:
+	case EnumsConnectorSlugKeyspaces:
 		return true
-	case Mongodb:
+	case EnumsConnectorSlugMongodb:
 		return true
-	case Motherduck:
+	case EnumsConnectorSlugMotherduck:
 		return true
-	case Mssql:
+	case EnumsConnectorSlugMssql:
 		return true
-	case Mysql:
+	case EnumsConnectorSlugMysql:
 		return true
-	case Oracle:
+	case EnumsConnectorSlugOracle:
 		return true
-	case Planetscale:
+	case EnumsConnectorSlugPlanetscale:
 		return true
-	case Postgresql:
+	case EnumsConnectorSlugPostgresql:
 		return true
-	case Redis:
+	case EnumsConnectorSlugRedis:
 		return true
-	case Redshift:
+	case EnumsConnectorSlugRedshift:
 		return true
-	case S3:
+	case EnumsConnectorSlugS3:
 		return true
-	case Snowflake:
+	case EnumsConnectorSlugSnowflake:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EnumsKafkaStatus.
+const (
+	EnumsKafkaStatusActive EnumsKafkaStatus = "active"
+	EnumsKafkaStatusDraft  EnumsKafkaStatus = "draft"
+)
+
+// Valid indicates whether the value is a known member of the EnumsKafkaStatus enum.
+func (e EnumsKafkaStatus) Valid() bool {
+	switch e {
+	case EnumsKafkaStatusActive:
+		return true
+	case EnumsKafkaStatusDraft:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EnumsMSSQLArchiveLocationType.
+const (
+	EnumsMSSQLArchiveLocationTypeAzureBlob EnumsMSSQLArchiveLocationType = "azure_blob"
+	EnumsMSSQLArchiveLocationTypeSmbShare  EnumsMSSQLArchiveLocationType = "smb_share"
+)
+
+// Valid indicates whether the value is a known member of the EnumsMSSQLArchiveLocationType enum.
+func (e EnumsMSSQLArchiveLocationType) Valid() bool {
+	switch e {
+	case EnumsMSSQLArchiveLocationTypeAzureBlob:
+		return true
+	case EnumsMSSQLArchiveLocationTypeSmbShare:
 		return true
 	default:
 		return false
@@ -142,6 +211,117 @@ func (e EnumsSourceReaderStatus) Valid() bool {
 	}
 }
 
+// Defines values for PayloadsBackfillDefaultsPayloadPagination.
+const (
+	PayloadsBackfillDefaultsPayloadPaginationClient PayloadsBackfillDefaultsPayloadPagination = "client"
+	PayloadsBackfillDefaultsPayloadPaginationServer PayloadsBackfillDefaultsPayloadPagination = "server"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsBackfillDefaultsPayloadPagination enum.
+func (e PayloadsBackfillDefaultsPayloadPagination) Valid() bool {
+	switch e {
+	case PayloadsBackfillDefaultsPayloadPaginationClient:
+		return true
+	case PayloadsBackfillDefaultsPayloadPaginationServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsBackfillDefaultsPayloadPreset.
+const (
+	PayloadsBackfillDefaultsPayloadPresetNormal      PayloadsBackfillDefaultsPayloadPreset = "normal"
+	PayloadsBackfillDefaultsPayloadPresetPerformance PayloadsBackfillDefaultsPayloadPreset = "performance"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsBackfillDefaultsPayloadPreset enum.
+func (e PayloadsBackfillDefaultsPayloadPreset) Valid() bool {
+	switch e {
+	case PayloadsBackfillDefaultsPayloadPresetNormal:
+		return true
+	case PayloadsBackfillDefaultsPayloadPresetPerformance:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsBackfillDefaultsPayloadReadMode.
+const (
+	PayloadsBackfillDefaultsPayloadReadModeCtid       PayloadsBackfillDefaultsPayloadReadMode = "ctid"
+	PayloadsBackfillDefaultsPayloadReadModePrimaryKey PayloadsBackfillDefaultsPayloadReadMode = "primaryKey"
+	PayloadsBackfillDefaultsPayloadReadModeRange      PayloadsBackfillDefaultsPayloadReadMode = "range"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsBackfillDefaultsPayloadReadMode enum.
+func (e PayloadsBackfillDefaultsPayloadReadMode) Valid() bool {
+	switch e {
+	case PayloadsBackfillDefaultsPayloadReadModeCtid:
+		return true
+	case PayloadsBackfillDefaultsPayloadReadModePrimaryKey:
+		return true
+	case PayloadsBackfillDefaultsPayloadReadModeRange:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsS3MetadataColumnsColumns.
+const (
+	PayloadsS3MetadataColumnsColumnsArtieSourceETag         PayloadsS3MetadataColumnsColumns = "artieSourceETag"
+	PayloadsS3MetadataColumnsColumnsArtieSourceFileName     PayloadsS3MetadataColumnsColumns = "artieSourceFileName"
+	PayloadsS3MetadataColumnsColumnsArtieSourceIngestedAt   PayloadsS3MetadataColumnsColumns = "artieSourceIngestedAt"
+	PayloadsS3MetadataColumnsColumnsArtieSourceLastModified PayloadsS3MetadataColumnsColumns = "artieSourceLastModified"
+	PayloadsS3MetadataColumnsColumnsArtieSourcePath         PayloadsS3MetadataColumnsColumns = "artieSourcePath"
+	PayloadsS3MetadataColumnsColumnsArtieSourceRecordNumber PayloadsS3MetadataColumnsColumns = "artieSourceRecordNumber"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsS3MetadataColumnsColumns enum.
+func (e PayloadsS3MetadataColumnsColumns) Valid() bool {
+	switch e {
+	case PayloadsS3MetadataColumnsColumnsArtieSourceETag:
+		return true
+	case PayloadsS3MetadataColumnsColumnsArtieSourceFileName:
+		return true
+	case PayloadsS3MetadataColumnsColumnsArtieSourceIngestedAt:
+		return true
+	case PayloadsS3MetadataColumnsColumnsArtieSourceLastModified:
+		return true
+	case PayloadsS3MetadataColumnsColumnsArtieSourcePath:
+		return true
+	case PayloadsS3MetadataColumnsColumnsArtieSourceRecordNumber:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsS3ParserType.
+const (
+	PayloadsS3ParserTypeAch     PayloadsS3ParserType = "ach"
+	PayloadsS3ParserTypeCsv     PayloadsS3ParserType = "csv"
+	PayloadsS3ParserTypeJson    PayloadsS3ParserType = "json"
+	PayloadsS3ParserTypeParquet PayloadsS3ParserType = "parquet"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsS3ParserType enum.
+func (e PayloadsS3ParserType) Valid() bool {
+	switch e {
+	case PayloadsS3ParserTypeAch:
+		return true
+	case PayloadsS3ParserTypeCsv:
+		return true
+	case PayloadsS3ParserTypeJson:
+		return true
+	case PayloadsS3ParserTypeParquet:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PayloadsSourceReaderSettingsPayloadMessageCompression.
 const (
 	PayloadsSourceReaderSettingsPayloadMessageCompressionEmpty       PayloadsSourceReaderSettingsPayloadMessageCompression = ""
@@ -165,13 +345,13 @@ func (e PayloadsSourceReaderSettingsPayloadMessageCompression) Valid() bool {
 
 // Defines values for PayloadsWebhookBackfillCompletedEvent.
 const (
-	BackfillCompleted PayloadsWebhookBackfillCompletedEvent = "backfill.completed"
+	PayloadsWebhookBackfillCompletedEventBackfillCompleted PayloadsWebhookBackfillCompletedEvent = "backfill.completed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookBackfillCompletedEvent enum.
 func (e PayloadsWebhookBackfillCompletedEvent) Valid() bool {
 	switch e {
-	case BackfillCompleted:
+	case PayloadsWebhookBackfillCompletedEventBackfillCompleted:
 		return true
 	default:
 		return false
@@ -180,13 +360,13 @@ func (e PayloadsWebhookBackfillCompletedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookBackfillFailedEvent.
 const (
-	BackfillFailed PayloadsWebhookBackfillFailedEvent = "backfill.failed"
+	PayloadsWebhookBackfillFailedEventBackfillFailed PayloadsWebhookBackfillFailedEvent = "backfill.failed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookBackfillFailedEvent enum.
 func (e PayloadsWebhookBackfillFailedEvent) Valid() bool {
 	switch e {
-	case BackfillFailed:
+	case PayloadsWebhookBackfillFailedEventBackfillFailed:
 		return true
 	default:
 		return false
@@ -195,13 +375,13 @@ func (e PayloadsWebhookBackfillFailedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookBackfillStartedEvent.
 const (
-	BackfillStarted PayloadsWebhookBackfillStartedEvent = "backfill.started"
+	PayloadsWebhookBackfillStartedEventBackfillStarted PayloadsWebhookBackfillStartedEvent = "backfill.started"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookBackfillStartedEvent enum.
 func (e PayloadsWebhookBackfillStartedEvent) Valid() bool {
 	switch e {
-	case BackfillStarted:
+	case PayloadsWebhookBackfillStartedEventBackfillStarted:
 		return true
 	default:
 		return false
@@ -210,13 +390,13 @@ func (e PayloadsWebhookBackfillStartedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookConnectionFailedEvent.
 const (
-	ConnectionFailed PayloadsWebhookConnectionFailedEvent = "connection.failed"
+	PayloadsWebhookConnectionFailedEventConnectionFailed PayloadsWebhookConnectionFailedEvent = "connection.failed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookConnectionFailedEvent enum.
 func (e PayloadsWebhookConnectionFailedEvent) Valid() bool {
 	switch e {
-	case ConnectionFailed:
+	case PayloadsWebhookConnectionFailedEventConnectionFailed:
 		return true
 	default:
 		return false
@@ -225,13 +405,13 @@ func (e PayloadsWebhookConnectionFailedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDatabaseDiscoveredEvent.
 const (
-	DatabaseDiscovered PayloadsWebhookDatabaseDiscoveredEvent = "database.discovered"
+	PayloadsWebhookDatabaseDiscoveredEventDatabaseDiscovered PayloadsWebhookDatabaseDiscoveredEvent = "database.discovered"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDatabaseDiscoveredEvent enum.
 func (e PayloadsWebhookDatabaseDiscoveredEvent) Valid() bool {
 	switch e {
-	case DatabaseDiscovered:
+	case PayloadsWebhookDatabaseDiscoveredEventDatabaseDiscovered:
 		return true
 	default:
 		return false
@@ -240,13 +420,13 @@ func (e PayloadsWebhookDatabaseDiscoveredEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDatabaseDiscoveryFailedEvent.
 const (
-	DatabaseDiscoveryFailed PayloadsWebhookDatabaseDiscoveryFailedEvent = "database.discovery_failed"
+	PayloadsWebhookDatabaseDiscoveryFailedEventDatabaseDiscoveryFailed PayloadsWebhookDatabaseDiscoveryFailedEvent = "database.discovery_failed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDatabaseDiscoveryFailedEvent enum.
 func (e PayloadsWebhookDatabaseDiscoveryFailedEvent) Valid() bool {
 	switch e {
-	case DatabaseDiscoveryFailed:
+	case PayloadsWebhookDatabaseDiscoveryFailedEventDatabaseDiscoveryFailed:
 		return true
 	default:
 		return false
@@ -255,13 +435,13 @@ func (e PayloadsWebhookDatabaseDiscoveryFailedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDatabaseRemovedEvent.
 const (
-	DatabaseRemoved PayloadsWebhookDatabaseRemovedEvent = "database.removed"
+	PayloadsWebhookDatabaseRemovedEventDatabaseRemoved PayloadsWebhookDatabaseRemovedEvent = "database.removed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDatabaseRemovedEvent enum.
 func (e PayloadsWebhookDatabaseRemovedEvent) Valid() bool {
 	switch e {
-	case DatabaseRemoved:
+	case PayloadsWebhookDatabaseRemovedEventDatabaseRemoved:
 		return true
 	default:
 		return false
@@ -270,13 +450,13 @@ func (e PayloadsWebhookDatabaseRemovedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDdlAppliedEvent.
 const (
-	DdlApplied PayloadsWebhookDdlAppliedEvent = "ddl.applied"
+	PayloadsWebhookDdlAppliedEventDdlApplied PayloadsWebhookDdlAppliedEvent = "ddl.applied"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDdlAppliedEvent enum.
 func (e PayloadsWebhookDdlAppliedEvent) Valid() bool {
 	switch e {
-	case DdlApplied:
+	case PayloadsWebhookDdlAppliedEventDdlApplied:
 		return true
 	default:
 		return false
@@ -285,13 +465,13 @@ func (e PayloadsWebhookDdlAppliedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDdlSeenEvent.
 const (
-	DdlSeen PayloadsWebhookDdlSeenEvent = "ddl.seen"
+	PayloadsWebhookDdlSeenEventDdlSeen PayloadsWebhookDdlSeenEvent = "ddl.seen"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDdlSeenEvent enum.
 func (e PayloadsWebhookDdlSeenEvent) Valid() bool {
 	switch e {
-	case DdlSeen:
+	case PayloadsWebhookDdlSeenEventDdlSeen:
 		return true
 	default:
 		return false
@@ -300,13 +480,13 @@ func (e PayloadsWebhookDdlSeenEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDedupeCompletedEvent.
 const (
-	DedupeCompleted PayloadsWebhookDedupeCompletedEvent = "dedupe.completed"
+	PayloadsWebhookDedupeCompletedEventDedupeCompleted PayloadsWebhookDedupeCompletedEvent = "dedupe.completed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDedupeCompletedEvent enum.
 func (e PayloadsWebhookDedupeCompletedEvent) Valid() bool {
 	switch e {
-	case DedupeCompleted:
+	case PayloadsWebhookDedupeCompletedEventDedupeCompleted:
 		return true
 	default:
 		return false
@@ -315,13 +495,13 @@ func (e PayloadsWebhookDedupeCompletedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDedupeFailedEvent.
 const (
-	DedupeFailed PayloadsWebhookDedupeFailedEvent = "dedupe.failed"
+	PayloadsWebhookDedupeFailedEventDedupeFailed PayloadsWebhookDedupeFailedEvent = "dedupe.failed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDedupeFailedEvent enum.
 func (e PayloadsWebhookDedupeFailedEvent) Valid() bool {
 	switch e {
-	case DedupeFailed:
+	case PayloadsWebhookDedupeFailedEventDedupeFailed:
 		return true
 	default:
 		return false
@@ -330,13 +510,13 @@ func (e PayloadsWebhookDedupeFailedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDedupeStartedEvent.
 const (
-	DedupeStarted PayloadsWebhookDedupeStartedEvent = "dedupe.started"
+	PayloadsWebhookDedupeStartedEventDedupeStarted PayloadsWebhookDedupeStartedEvent = "dedupe.started"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDedupeStartedEvent enum.
 func (e PayloadsWebhookDedupeStartedEvent) Valid() bool {
 	switch e {
-	case DedupeStarted:
+	case PayloadsWebhookDedupeStartedEventDedupeStarted:
 		return true
 	default:
 		return false
@@ -345,13 +525,28 @@ func (e PayloadsWebhookDedupeStartedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookDekGeneratedEvent.
 const (
-	DekGenerated PayloadsWebhookDekGeneratedEvent = "dek.generated"
+	PayloadsWebhookDekGeneratedEventDekGenerated PayloadsWebhookDekGeneratedEvent = "dek.generated"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookDekGeneratedEvent enum.
 func (e PayloadsWebhookDekGeneratedEvent) Valid() bool {
 	switch e {
-	case DekGenerated:
+	case PayloadsWebhookDekGeneratedEventDekGenerated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsWebhookOomKilledEvent.
+const (
+	PayloadsWebhookOomKilledEventOomKilled PayloadsWebhookOomKilledEvent = "oom.killed"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsWebhookOomKilledEvent enum.
+func (e PayloadsWebhookOomKilledEvent) Valid() bool {
+	switch e {
+	case PayloadsWebhookOomKilledEventOomKilled:
 		return true
 	default:
 		return false
@@ -360,13 +555,13 @@ func (e PayloadsWebhookDekGeneratedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookReplicationErrorEvent.
 const (
-	ReplicationError PayloadsWebhookReplicationErrorEvent = "replication.error"
+	PayloadsWebhookReplicationErrorEventReplicationError PayloadsWebhookReplicationErrorEvent = "replication.error"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookReplicationErrorEvent enum.
 func (e PayloadsWebhookReplicationErrorEvent) Valid() bool {
 	switch e {
-	case ReplicationError:
+	case PayloadsWebhookReplicationErrorEventReplicationError:
 		return true
 	default:
 		return false
@@ -375,13 +570,13 @@ func (e PayloadsWebhookReplicationErrorEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookReplicationFailedEvent.
 const (
-	ReplicationFailed PayloadsWebhookReplicationFailedEvent = "replication.failed"
+	PayloadsWebhookReplicationFailedEventReplicationFailed PayloadsWebhookReplicationFailedEvent = "replication.failed"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookReplicationFailedEvent enum.
 func (e PayloadsWebhookReplicationFailedEvent) Valid() bool {
 	switch e {
-	case ReplicationFailed:
+	case PayloadsWebhookReplicationFailedEventReplicationFailed:
 		return true
 	default:
 		return false
@@ -390,13 +585,13 @@ func (e PayloadsWebhookReplicationFailedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookReplicationStartedEvent.
 const (
-	ReplicationStarted PayloadsWebhookReplicationStartedEvent = "replication.started"
+	PayloadsWebhookReplicationStartedEventReplicationStarted PayloadsWebhookReplicationStartedEvent = "replication.started"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookReplicationStartedEvent enum.
 func (e PayloadsWebhookReplicationStartedEvent) Valid() bool {
 	switch e {
-	case ReplicationStarted:
+	case PayloadsWebhookReplicationStartedEventReplicationStarted:
 		return true
 	default:
 		return false
@@ -405,13 +600,13 @@ func (e PayloadsWebhookReplicationStartedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookRowSkippedEvent.
 const (
-	RowSkipped PayloadsWebhookRowSkippedEvent = "row.skipped"
+	PayloadsWebhookRowSkippedEventRowSkipped PayloadsWebhookRowSkippedEvent = "row.skipped"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookRowSkippedEvent enum.
 func (e PayloadsWebhookRowSkippedEvent) Valid() bool {
 	switch e {
-	case RowSkipped:
+	case PayloadsWebhookRowSkippedEventRowSkipped:
 		return true
 	default:
 		return false
@@ -420,19 +615,37 @@ func (e PayloadsWebhookRowSkippedEvent) Valid() bool {
 
 // Defines values for PayloadsWebhookSeverity.
 const (
-	Error   PayloadsWebhookSeverity = "error"
-	Info    PayloadsWebhookSeverity = "info"
-	Warning PayloadsWebhookSeverity = "warning"
+	PayloadsWebhookSeverityError   PayloadsWebhookSeverity = "error"
+	PayloadsWebhookSeverityInfo    PayloadsWebhookSeverity = "info"
+	PayloadsWebhookSeverityWarning PayloadsWebhookSeverity = "warning"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsWebhookSeverity enum.
 func (e PayloadsWebhookSeverity) Valid() bool {
 	switch e {
-	case Error:
+	case PayloadsWebhookSeverityError:
 		return true
-	case Info:
+	case PayloadsWebhookSeverityInfo:
 		return true
-	case Warning:
+	case PayloadsWebhookSeverityWarning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RouterConnectorConnectionRole.
+const (
+	RouterConnectorConnectionRoleDestination RouterConnectorConnectionRole = "destination"
+	RouterConnectorConnectionRoleSource      RouterConnectorConnectionRole = "source"
+)
+
+// Valid indicates whether the value is a known member of the RouterConnectorConnectionRole enum.
+func (e RouterConnectorConnectionRole) Valid() bool {
+	switch e {
+	case RouterConnectorConnectionRoleDestination:
+		return true
+	case RouterConnectorConnectionRoleSource:
 		return true
 	default:
 		return false
@@ -460,8 +673,17 @@ func (e RouterPipelineBackfillRequestBeforeBackfill) Valid() bool {
 	}
 }
 
+// EnumsBackfillStage defines model for EnumsBackfillStage.
+type EnumsBackfillStage string
+
 // EnumsConnectorSlug defines model for EnumsConnectorSlug.
 type EnumsConnectorSlug string
+
+// EnumsKafkaStatus defines model for EnumsKafkaStatus.
+type EnumsKafkaStatus string
+
+// EnumsMSSQLArchiveLocationType defines model for EnumsMSSQLArchiveLocationType.
+type EnumsMSSQLArchiveLocationType string
 
 // EnumsPipelineStatus defines model for EnumsPipelineStatus.
 type EnumsPipelineStatus string
@@ -494,6 +716,31 @@ type ListResponseBodyEncryptionKey struct {
 	Items []PayloadsEncryptionKey `json:"items"`
 }
 
+// ListResponseBodyKafkaCluster defines model for ListResponseBodyKafkaCluster.
+type ListResponseBodyKafkaCluster struct {
+	Items []PayloadsKafkaCluster `json:"items"`
+}
+
+// ListResponseBodyKafkaConsumerGroup defines model for ListResponseBodyKafkaConsumerGroup.
+type ListResponseBodyKafkaConsumerGroup struct {
+	Items []PayloadsKafkaConsumerGroup `json:"items"`
+}
+
+// ListResponseBodyKafkaTopic defines model for ListResponseBodyKafkaTopic.
+type ListResponseBodyKafkaTopic struct {
+	Items []PayloadsKafkaTopic `json:"items"`
+}
+
+// ListResponseBodyKafkaTopicSize defines model for ListResponseBodyKafkaTopicSize.
+type ListResponseBodyKafkaTopicSize struct {
+	Items []PayloadsKafkaTopicSize `json:"items"`
+}
+
+// ListResponseBodyKafkaUser defines model for ListResponseBodyKafkaUser.
+type ListResponseBodyKafkaUser struct {
+	Items []PayloadsKafkaUser `json:"items"`
+}
+
 // ListResponseBodyLightConnector defines model for ListResponseBodyLightConnector.
 type ListResponseBodyLightConnector struct {
 	Items []PayloadsLightConnector `json:"items"`
@@ -504,9 +751,19 @@ type ListResponseBodyLightPipeline struct {
 	Items []PayloadsLightPipeline `json:"items"`
 }
 
+// ListResponseBodyPipelineErrorLog defines model for ListResponseBodyPipelineErrorLog.
+type ListResponseBodyPipelineErrorLog struct {
+	Items []PayloadsPipelineErrorLog `json:"items"`
+}
+
 // ListResponseBodyPostgresPublication defines model for ListResponseBodyPostgresPublication.
 type ListResponseBodyPostgresPublication struct {
 	Items []PayloadsPostgresPublication `json:"items"`
+}
+
+// ListResponseBodyPostgresReplicationSlot defines model for ListResponseBodyPostgresReplicationSlot.
+type ListResponseBodyPostgresReplicationSlot struct {
+	Items []PayloadsPostgresReplicationSlot `json:"items"`
 }
 
 // ListResponseBodySchemaResponse defines model for ListResponseBodySchemaResponse.
@@ -524,6 +781,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
 	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
+	DatabricksAutoLiquidClustering               *bool                           `json:"databricksAutoLiquidClustering,omitempty"`
 	DefaultSourceSchema                          *string                         `json:"defaultSourceSchema,omitempty"`
 	DisableAlerts                                *bool                           `json:"disableAlerts,omitempty"`
 	DropDeletedColumns                           *bool                           `json:"dropDeletedColumns,omitempty"`
@@ -538,7 +796,9 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	IncludeFullSourceTableNameColumn             *bool                           `json:"includeFullSourceTableNameColumn,omitempty"`
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
 	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
+	JsonAsVarchar                                *bool                           `json:"jsonAsVarchar,omitempty"`
 	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
+	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
 	SnowpipeStreamingMaxChannels                 *int                            `json:"snowpipeStreamingMaxChannels,omitempty"`
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
@@ -557,32 +817,35 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 
 // PayloadsAdvancedTableSettingsPayload defines model for PayloadsAdvancedTableSettingsPayload.
 type PayloadsAdvancedTableSettingsPayload struct {
-	Alias                      *string                    `json:"alias,omitempty"`
-	BufferRows                 *int                       `json:"bufferRows,omitempty"`
-	ColumnsToCompress          *[]string                  `json:"columnsToCompress,omitempty"`
-	ColumnsToEncrypt           *[]string                  `json:"columnsToEncrypt,omitempty"`
-	ColumnsToHash              *[]string                  `json:"columnsToHash,omitempty"`
-	ColumnsToTrim              *[]string                  `json:"columnsToTrim,omitempty"`
-	CtidSettings               *PayloadsCTIDSettings      `json:"ctidSettings,omitempty"`
-	EncryptJSONBColumns        *bool                      `json:"encryptJSONBColumns,omitempty"`
-	ExcludeColumns             *[]string                  `json:"excludeColumns,omitempty"`
-	FlushIntervalSeconds       *int                       `json:"flushIntervalSeconds,omitempty"`
-	FlushSizeKb                *int                       `json:"flushSizeKb,omitempty"`
-	IncludeColumns             *[]string                  `json:"includeColumns,omitempty"`
-	K8sRequestCPU              *int                       `json:"k8sRequestCPU,omitempty"`
-	K8sRequestMemoryMB         *int                       `json:"k8sRequestMemoryMB,omitempty"`
-	MergePredicates            *[]PayloadsMergePredicates `json:"mergePredicates,omitempty"`
-	MsmFlushCount              *int                       `json:"msmFlushCount,omitempty"`
-	PrimaryKeysOverride        *[]string                  `json:"primaryKeysOverride,omitempty"`
-	RangeSettings              *PayloadsRangeSettings     `json:"rangeSettings,omitempty"`
-	ShouldBackfillHistoryTable *bool                      `json:"shouldBackfillHistoryTable,omitempty"`
-	SkipBackfill               *bool                      `json:"skipBackfill,omitempty"`
-	SkipDelete                 *bool                      `json:"skipDelete,omitempty"`
-	SkipNoOpUpdates            *bool                      `json:"skipNoOpUpdates,omitempty"`
-	SoftPartitioning           *PayloadsSoftPartitioning  `json:"softPartitioning,omitempty"`
-	StreamARN                  *string                    `json:"streamARN,omitempty"`
-	UnifyAcrossDatabases       *bool                      `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas         *bool                      `json:"unifyAcrossSchemas,omitempty"`
+	Alias                      *string                         `json:"alias,omitempty"`
+	BufferRows                 *int                            `json:"bufferRows,omitempty"`
+	ColumnsToCompress          *[]string                       `json:"columnsToCompress,omitempty"`
+	ColumnsToEncrypt           *[]string                       `json:"columnsToEncrypt,omitempty"`
+	ColumnsToHash              *[]string                       `json:"columnsToHash,omitempty"`
+	ColumnsToTrim              *[]string                       `json:"columnsToTrim,omitempty"`
+	CtidSettings               *PayloadsCTIDSettings           `json:"ctidSettings,omitempty"`
+	EncryptJSONBColumns        *bool                           `json:"encryptJSONBColumns,omitempty"`
+	ExcludeColumns             *[]string                       `json:"excludeColumns,omitempty"`
+	FlattenDocuments           *bool                           `json:"flattenDocuments,omitempty"`
+	FlattenDocumentsMaxDepth   *int                            `json:"flattenDocumentsMaxDepth,omitempty"`
+	FlushIntervalSeconds       *int                            `json:"flushIntervalSeconds,omitempty"`
+	FlushSizeKb                *int                            `json:"flushSizeKb,omitempty"`
+	IncludeColumns             *[]string                       `json:"includeColumns,omitempty"`
+	K8sRequestCPU              *int                            `json:"k8sRequestCPU,omitempty"`
+	K8sRequestMemoryMB         *int                            `json:"k8sRequestMemoryMB,omitempty"`
+	MergePredicates            *[]PayloadsMergePredicates      `json:"mergePredicates,omitempty"`
+	MsmFlushCount              *int                            `json:"msmFlushCount,omitempty"`
+	PartitionRangeSettings     *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
+	PrimaryKeysOverride        *[]string                       `json:"primaryKeysOverride,omitempty"`
+	RangeSettings              *PayloadsRangeSettings          `json:"rangeSettings,omitempty"`
+	ShouldBackfillHistoryTable *bool                           `json:"shouldBackfillHistoryTable,omitempty"`
+	SkipBackfill               *bool                           `json:"skipBackfill,omitempty"`
+	SkipDelete                 *bool                           `json:"skipDelete,omitempty"`
+	SkipNoOpUpdates            *bool                           `json:"skipNoOpUpdates,omitempty"`
+	SoftPartitioning           *PayloadsSoftPartitioning       `json:"softPartitioning,omitempty"`
+	StreamARN                  *string                         `json:"streamARN,omitempty"`
+	UnifyAcrossDatabases       *bool                           `json:"unifyAcrossDatabases,omitempty"`
+	UnifyAcrossSchemas         *bool                           `json:"unifyAcrossSchemas,omitempty"`
 }
 
 // PayloadsAzureBlobStorageConfig defines model for PayloadsAzureBlobStorageConfig.
@@ -590,6 +853,30 @@ type PayloadsAzureBlobStorageConfig struct {
 	AccountURL    *string `json:"accountURL,omitempty"`
 	ContainerName *string `json:"containerName,omitempty"`
 	SasToken      *string `json:"sasToken,omitempty"`
+}
+
+// PayloadsBackfillDefaultsPayload defines model for PayloadsBackfillDefaultsPayload.
+type PayloadsBackfillDefaultsPayload struct {
+	ChunkSize   *int                                       `json:"chunkSize,omitempty"`
+	Pagination  *PayloadsBackfillDefaultsPayloadPagination `json:"pagination,omitempty"`
+	Parallelism *int                                       `json:"parallelism,omitempty"`
+	Preset      *PayloadsBackfillDefaultsPayloadPreset     `json:"preset,omitempty"`
+	ReadMode    *PayloadsBackfillDefaultsPayloadReadMode   `json:"readMode,omitempty"`
+}
+
+// PayloadsBackfillDefaultsPayloadPagination defines model for PayloadsBackfillDefaultsPayload.Pagination.
+type PayloadsBackfillDefaultsPayloadPagination string
+
+// PayloadsBackfillDefaultsPayloadPreset defines model for PayloadsBackfillDefaultsPayload.Preset.
+type PayloadsBackfillDefaultsPayloadPreset string
+
+// PayloadsBackfillDefaultsPayloadReadMode defines model for PayloadsBackfillDefaultsPayload.ReadMode.
+type PayloadsBackfillDefaultsPayloadReadMode string
+
+// PayloadsBackfillStageEvent defines model for PayloadsBackfillStageEvent.
+type PayloadsBackfillStageEvent struct {
+	Stage     EnumsBackfillStage `json:"stage"`
+	Timestamp time.Time          `json:"timestamp"`
 }
 
 // PayloadsBigQuerySettings defines model for PayloadsBigQuerySettings.
@@ -601,16 +888,17 @@ type PayloadsBigQuerySettings struct {
 
 // PayloadsCTIDSettings defines model for PayloadsCTIDSettings.
 type PayloadsCTIDSettings struct {
-	ChunkSize      *int  `json:"chunkSize,omitempty"`
-	Enabled        *bool `json:"enabled,omitempty"`
-	MaxParallelism *int  `json:"maxParallelism,omitempty"`
+	ChunkSize      *int                               `json:"chunkSize,omitempty"`
+	Enabled        *bool                              `json:"enabled,omitempty"`
+	MaxParallelism *int                               `json:"maxParallelism,omitempty"`
+	PhysicalRanges *PayloadsPhysicalCTIDRangeSettings `json:"physicalRanges,omitempty"`
 }
 
 // PayloadsCatalogTableProperty defines model for PayloadsCatalogTableProperty.
 type PayloadsCatalogTableProperty struct {
-	IsDate *bool              `json:"isDate,omitempty"`
-	Key    *string            `json:"key,omitempty"`
-	Value  *PayloadsJSONValue `json:"value,omitempty"`
+	IsDate bool               `json:"isDate"`
+	Key    string             `json:"key"`
+	Value  *PayloadsJSONValue `json:"value"`
 }
 
 // PayloadsColumnHashingSalt defines model for PayloadsColumnHashingSalt.
@@ -647,22 +935,22 @@ type PayloadsCompactionQuietWindow struct {
 
 // PayloadsConnectorColumn defines model for PayloadsConnectorColumn.
 type PayloadsConnectorColumn struct {
-	Metadata *PayloadsConnectorColumnMetadata `json:"metadata,omitempty"`
-	Name     *string                          `json:"name,omitempty"`
+	Metadata PayloadsConnectorColumnMetadata `json:"metadata"`
+	Name     string                          `json:"name"`
 }
 
 // PayloadsConnectorColumnMetadata defines model for PayloadsConnectorColumnMetadata.
 type PayloadsConnectorColumnMetadata struct {
 	Comment      *string `json:"comment,omitempty"`
-	DataType     *string `json:"dataType,omitempty"`
+	DataType     string  `json:"dataType"`
 	DefaultValue *string `json:"defaultValue,omitempty"`
 	IsPrimaryKey *bool   `json:"isPrimaryKey,omitempty"`
-	NotNull      *bool   `json:"notNull,omitempty"`
+	NotNull      bool    `json:"notNull"`
 }
 
 // PayloadsConnectorFetchDatabasesResponse defines model for PayloadsConnectorFetchDatabasesResponse.
 type PayloadsConnectorFetchDatabasesResponse struct {
-	Items    *[]PayloadsDatabaseListItem     `json:"items,omitempty"`
+	Items    []PayloadsDatabaseListItem      `json:"items"`
 	Metadata *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
 }
 
@@ -683,25 +971,25 @@ type PayloadsConnectorPayload struct {
 // PayloadsConnectorTableDetailResponse defines model for PayloadsConnectorTableDetailResponse.
 type PayloadsConnectorTableDetailResponse struct {
 	Columns    *[]PayloadsConnectorColumn      `json:"columns,omitempty"`
-	CreatedAt  *time.Time                      `json:"createdAt,omitempty"`
-	IsView     *bool                           `json:"isView,omitempty"`
+	CreatedAt  *time.Time                      `json:"createdAt"`
+	IsView     bool                            `json:"isView"`
 	Metadata   *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
-	ModifiedAt *time.Time                      `json:"modifiedAt,omitempty"`
-	Name       *string                         `json:"name,omitempty"`
-	Schema     *string                         `json:"schema,omitempty"`
-	Unreadable *bool                           `json:"unreadable,omitempty"`
+	ModifiedAt *time.Time                      `json:"modifiedAt"`
+	Name       string                          `json:"name"`
+	Schema     string                          `json:"schema"`
+	Unreadable bool                            `json:"unreadable"`
 }
 
 // PayloadsDataCatalogDatabase defines model for PayloadsDataCatalogDatabase.
 type PayloadsDataCatalogDatabase struct {
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // PayloadsDataCatalogMatch defines model for PayloadsDataCatalogMatch.
 type PayloadsDataCatalogMatch struct {
-	ConnectorUUID *openapi_types.UUID               `json:"connectorUUID,omitempty"`
-	Object        *PayloadsDataCatalogMatchedObject `json:"object,omitempty"`
-	Score         *float64                          `json:"score,omitempty"`
+	ConnectorUUID openapi_types.UUID               `json:"connectorUUID"`
+	Object        PayloadsDataCatalogMatchedObject `json:"object"`
+	Score         float64                          `json:"score"`
 }
 
 // PayloadsDataCatalogMatchedObject defines model for PayloadsDataCatalogMatchedObject.
@@ -713,8 +1001,8 @@ type PayloadsDataCatalogMatchedObject struct {
 
 // PayloadsDataCatalogSchema defines model for PayloadsDataCatalogSchema.
 type PayloadsDataCatalogSchema struct {
-	DatabaseName *string `json:"databaseName,omitempty"`
-	Name         *string `json:"name,omitempty"`
+	DatabaseName string `json:"databaseName"`
+	Name         string `json:"name"`
 }
 
 // PayloadsDataCatalogSearchRequest defines model for PayloadsDataCatalogSearchRequest.
@@ -724,14 +1012,14 @@ type PayloadsDataCatalogSearchRequest struct {
 
 // PayloadsDataCatalogTable defines model for PayloadsDataCatalogTable.
 type PayloadsDataCatalogTable struct {
-	DatabaseName *string `json:"databaseName,omitempty"`
-	Name         *string `json:"name,omitempty"`
-	SchemaName   *string `json:"schemaName,omitempty"`
+	DatabaseName string `json:"databaseName"`
+	Name         string `json:"name"`
+	SchemaName   string `json:"schemaName"`
 }
 
 // PayloadsDatabaseListItem defines model for PayloadsDatabaseListItem.
 type PayloadsDatabaseListItem struct {
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // PayloadsDynamoDBSnapshotConfig defines model for PayloadsDynamoDBSnapshotConfig.
@@ -787,6 +1075,7 @@ type PayloadsFullConnector struct {
 // PayloadsFullPipeline defines model for PayloadsFullPipeline.
 type PayloadsFullPipeline struct {
 	AdvancedSettings         PayloadsPipelineAdvancedSettings `json:"advancedSettings"`
+	BackfillStages           *[]PayloadsBackfillStageEvent    `json:"backfillStages,omitempty"`
 	ColumnHashingSaltUUID    *openapi_types.UUID              `json:"columnHashingSaltUUID,omitempty"`
 	CompanyUUID              openapi_types.UUID               `json:"companyUUID"`
 	CreatedAt                time.Time                        `json:"createdAt"`
@@ -796,6 +1085,7 @@ type PayloadsFullPipeline struct {
 	EnvironmentUUID          openapi_types.UUID               `json:"environmentUUID"`
 	HasBackfillingTables     *bool                            `json:"hasBackfillingTables,omitempty"`
 	HasUndeployedChanges     bool                             `json:"hasUndeployedChanges"`
+	HistoryBackfillStages    *[]PayloadsBackfillStageEvent    `json:"historyBackfillStages,omitempty"`
 	IsDeploying              bool                             `json:"isDeploying"`
 	LastDeployedAt           *time.Time                       `json:"lastDeployedAt,omitempty"`
 	LastUpdatedAt            time.Time                        `json:"lastUpdatedAt"`
@@ -849,6 +1139,160 @@ type PayloadsJsonValueObject map[string]interface{}
 // PayloadsJsonValueString defines model for PayloadsJsonValueString.
 type PayloadsJsonValueString = string
 
+// PayloadsKafkaCluster defines model for PayloadsKafkaCluster.
+type PayloadsKafkaCluster struct {
+	Cloud                string             `json:"cloud"`
+	CreatedAt            time.Time          `json:"createdAt"`
+	DisableTLS           bool               `json:"disableTLS"`
+	ExternalBootstrapURL string             `json:"externalBootstrapURL"`
+	Name                 string             `json:"name"`
+	Region               string             `json:"region"`
+	Status               EnumsKafkaStatus   `json:"status"`
+	UsesScram            bool               `json:"usesScram"`
+	Uuid                 openapi_types.UUID `json:"uuid"`
+}
+
+// PayloadsKafkaClusterSummary defines model for PayloadsKafkaClusterSummary.
+type PayloadsKafkaClusterSummary struct {
+	ConsumerGroupCount int `json:"consumerGroupCount"`
+	TopicCount         int `json:"topicCount"`
+}
+
+// PayloadsKafkaConsumerGroup defines model for PayloadsKafkaConsumerGroup.
+type PayloadsKafkaConsumerGroup struct {
+	GroupID string `json:"groupID"`
+}
+
+// PayloadsKafkaConsumerGroupDetail defines model for PayloadsKafkaConsumerGroupDetail.
+type PayloadsKafkaConsumerGroupDetail struct {
+	ConsumerCount int                                `json:"consumerCount"`
+	GroupID       string                             `json:"groupID"`
+	State         string                             `json:"state"`
+	Topics        *[]PayloadsKafkaConsumerGroupTopic `json:"topics"`
+}
+
+// PayloadsKafkaConsumerGroupTopic defines model for PayloadsKafkaConsumerGroupTopic.
+type PayloadsKafkaConsumerGroupTopic struct {
+	Partitions *[]PayloadsKafkaConsumerGroupTopicPartition `json:"partitions"`
+	Topic      string                                      `json:"topic"`
+}
+
+// PayloadsKafkaConsumerGroupTopicPartition defines model for PayloadsKafkaConsumerGroupTopicPartition.
+type PayloadsKafkaConsumerGroupTopicPartition struct {
+	CurrentOffset int64 `json:"currentOffset"`
+	Lag           int64 `json:"lag"`
+	LogEndOffset  int64 `json:"logEndOffset"`
+	Partition     int   `json:"partition"`
+}
+
+// PayloadsKafkaMessage defines model for PayloadsKafkaMessage.
+type PayloadsKafkaMessage struct {
+	Headers   *map[string]string `json:"headers,omitempty"`
+	Key       *string            `json:"key,omitempty"`
+	Offset    int64              `json:"offset"`
+	Partition int                `json:"partition"`
+	Timestamp time.Time          `json:"timestamp"`
+	Topic     string             `json:"topic"`
+	Value     *string            `json:"value,omitempty"`
+}
+
+// PayloadsKafkaMetricsGraph defines model for PayloadsKafkaMetricsGraph.
+type PayloadsKafkaMetricsGraph struct {
+	BrokerCount    *[]PayloadsKafkaMetricsGraphSeries `json:"brokerCount"`
+	CpuSystem      *[]PayloadsKafkaMetricsGraphSeries `json:"cpuSystem"`
+	CpuUser        *[]PayloadsKafkaMetricsGraphSeries `json:"cpuUser"`
+	MemoryUsage    *[]PayloadsKafkaMetricsGraphSeries `json:"memoryUsage"`
+	PartitionCount *[]PayloadsKafkaMetricsGraphSeries `json:"partitionCount"`
+	Reason         *string                            `json:"reason,omitempty"`
+	Supported      bool                               `json:"supported"`
+	TopicCount     *[]PayloadsKafkaMetricsGraphSeries `json:"topicCount"`
+	Unit           string                             `json:"unit"`
+}
+
+// PayloadsKafkaMetricsGraphPoint defines model for PayloadsKafkaMetricsGraphPoint.
+type PayloadsKafkaMetricsGraphPoint struct {
+	Timestamp time.Time `json:"timestamp"`
+	Value     float64   `json:"value"`
+}
+
+// PayloadsKafkaMetricsGraphSeries defines model for PayloadsKafkaMetricsGraphSeries.
+type PayloadsKafkaMetricsGraphSeries struct {
+	Label  string                            `json:"label"`
+	Points *[]PayloadsKafkaMetricsGraphPoint `json:"points"`
+}
+
+// PayloadsKafkaStorageGraph defines model for PayloadsKafkaStorageGraph.
+type PayloadsKafkaStorageGraph struct {
+	Reason    *string                            `json:"reason,omitempty"`
+	Series    *[]PayloadsKafkaStorageGraphSeries `json:"series"`
+	Supported bool                               `json:"supported"`
+	Threshold int                                `json:"threshold"`
+	Unit      string                             `json:"unit"`
+}
+
+// PayloadsKafkaStorageGraphPoint defines model for PayloadsKafkaStorageGraphPoint.
+type PayloadsKafkaStorageGraphPoint struct {
+	Timestamp time.Time `json:"timestamp"`
+	Value     float64   `json:"value"`
+}
+
+// PayloadsKafkaStorageGraphSeries defines model for PayloadsKafkaStorageGraphSeries.
+type PayloadsKafkaStorageGraphSeries struct {
+	Label  string                            `json:"label"`
+	Points *[]PayloadsKafkaStorageGraphPoint `json:"points"`
+}
+
+// PayloadsKafkaTopic defines model for PayloadsKafkaTopic.
+type PayloadsKafkaTopic struct {
+	// ArtieManaged Whether Artie manages this topic: a CDC topic under the company prefix outside the customer namespace, or a Kafka-internal __ topic.
+	ArtieManaged   bool    `json:"artieManaged"`
+	PartitionCount int     `json:"partitionCount"`
+	RetentionMS    string  `json:"retentionMS"`
+	SourceName     *string `json:"sourceName,omitempty"`
+	TableName      *string `json:"tableName,omitempty"`
+	Topic          string  `json:"topic"`
+}
+
+// PayloadsKafkaTopicCreateResponse defines model for PayloadsKafkaTopicCreateResponse.
+type PayloadsKafkaTopicCreateResponse struct {
+	Topic string `json:"topic"`
+}
+
+// PayloadsKafkaTopicDetail defines model for PayloadsKafkaTopicDetail.
+type PayloadsKafkaTopicDetail struct {
+	PartitionSizes *[]PayloadsKafkaTopicPartitionSize `json:"partitionSizes"`
+	Pipelines      *[]PayloadsKafkaTopicPipeline      `json:"pipelines"`
+	Topic          PayloadsKafkaTopic                 `json:"topic"`
+}
+
+// PayloadsKafkaTopicPartitionSize defines model for PayloadsKafkaTopicPartitionSize.
+type PayloadsKafkaTopicPartitionSize struct {
+	Partition int32 `json:"partition"`
+	SizeBytes int64 `json:"sizeBytes"`
+}
+
+// PayloadsKafkaTopicPipeline defines model for PayloadsKafkaTopicPipeline.
+type PayloadsKafkaTopicPipeline struct {
+	Name string `json:"name"`
+	Uuid string `json:"uuid"`
+}
+
+// PayloadsKafkaTopicSize defines model for PayloadsKafkaTopicSize.
+type PayloadsKafkaTopicSize struct {
+	Partitions *[]PayloadsKafkaTopicPartitionSize `json:"partitions"`
+	Topic      string                             `json:"topic"`
+}
+
+// PayloadsKafkaUser defines model for PayloadsKafkaUser.
+type PayloadsKafkaUser struct {
+	AccessProfile       string             `json:"accessProfile"`
+	ConsumerGroupPrefix string             `json:"consumerGroupPrefix"`
+	CreatedAt           time.Time          `json:"createdAt"`
+	Status              string             `json:"status"`
+	Username            string             `json:"username"`
+	Uuid                openapi_types.UUID `json:"uuid"`
+}
+
 // PayloadsLightConnector defines model for PayloadsLightConnector.
 type PayloadsLightConnector struct {
 	CompanyUUID             openapi_types.UUID  `json:"companyUUID"`
@@ -868,24 +1312,26 @@ type PayloadsLightConnector struct {
 
 // PayloadsLightPipeline defines model for PayloadsLightPipeline.
 type PayloadsLightPipeline struct {
-	ColumnHashingSaltUUID    *openapi_types.UUID  `json:"columnHashingSaltUUID,omitempty"`
-	CompanyUUID              openapi_types.UUID   `json:"companyUUID"`
-	CreatedAt                time.Time            `json:"createdAt"`
-	DataPlaneName            string               `json:"dataPlaneName"`
-	DestinationUUID          *openapi_types.UUID  `json:"destinationUUID,omitempty"`
-	EncryptionKeyUUID        *openapi_types.UUID  `json:"encryptionKeyUUID,omitempty"`
-	EnvironmentUUID          openapi_types.UUID   `json:"environmentUUID"`
-	HasBackfillingTables     *bool                `json:"hasBackfillingTables,omitempty"`
-	HasUndeployedChanges     bool                 `json:"hasUndeployedChanges"`
-	IsDeploying              bool                 `json:"isDeploying"`
-	LastDeployedAt           *time.Time           `json:"lastDeployedAt,omitempty"`
-	LastUpdatedAt            time.Time            `json:"lastUpdatedAt"`
-	Name                     string               `json:"name"`
-	SnowflakeEcoScheduleUUID *openapi_types.UUID  `json:"snowflakeEcoScheduleUUID,omitempty"`
-	SourceReaderUUID         *openapi_types.UUID  `json:"sourceReaderUUID,omitempty"`
-	SourceType               EnumsConnectorSlug   `json:"sourceType"`
-	Status                   *EnumsPipelineStatus `json:"status,omitempty"`
-	Uuid                     openapi_types.UUID   `json:"uuid"`
+	BackfillStages           *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
+	ColumnHashingSaltUUID    *openapi_types.UUID           `json:"columnHashingSaltUUID,omitempty"`
+	CompanyUUID              openapi_types.UUID            `json:"companyUUID"`
+	CreatedAt                time.Time                     `json:"createdAt"`
+	DataPlaneName            string                        `json:"dataPlaneName"`
+	DestinationUUID          *openapi_types.UUID           `json:"destinationUUID,omitempty"`
+	EncryptionKeyUUID        *openapi_types.UUID           `json:"encryptionKeyUUID,omitempty"`
+	EnvironmentUUID          openapi_types.UUID            `json:"environmentUUID"`
+	HasBackfillingTables     *bool                         `json:"hasBackfillingTables,omitempty"`
+	HasUndeployedChanges     bool                          `json:"hasUndeployedChanges"`
+	HistoryBackfillStages    *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
+	IsDeploying              bool                          `json:"isDeploying"`
+	LastDeployedAt           *time.Time                    `json:"lastDeployedAt,omitempty"`
+	LastUpdatedAt            time.Time                     `json:"lastUpdatedAt"`
+	Name                     string                        `json:"name"`
+	SnowflakeEcoScheduleUUID *openapi_types.UUID           `json:"snowflakeEcoScheduleUUID,omitempty"`
+	SourceReaderUUID         *openapi_types.UUID           `json:"sourceReaderUUID,omitempty"`
+	SourceType               EnumsConnectorSlug            `json:"sourceType"`
+	Status                   *EnumsPipelineStatus          `json:"status,omitempty"`
+	Uuid                     openapi_types.UUID            `json:"uuid"`
 }
 
 // PayloadsMergePredicates defines model for PayloadsMergePredicates.
@@ -893,6 +1339,18 @@ type PayloadsMergePredicates struct {
 	PartitionBy    *string `json:"partitionBy,omitempty"`
 	PartitionField *string `json:"partitionField,omitempty"`
 	PartitionType  *string `json:"partitionType,omitempty"`
+}
+
+// PayloadsPartitionRangeSettings defines model for PayloadsPartitionRangeSettings.
+type PayloadsPartitionRangeSettings struct {
+	Enabled *bool                  `json:"enabled,omitempty"`
+	Range   *PayloadsRangeSettings `json:"range,omitempty"`
+}
+
+// PayloadsPhysicalCTIDRangeSettings defines model for PayloadsPhysicalCTIDRangeSettings.
+type PayloadsPhysicalCTIDRangeSettings struct {
+	Enabled       *bool `json:"enabled,omitempty"`
+	PagesPerRange *int  `json:"pagesPerRange,omitempty"`
 }
 
 // PayloadsPipelineAdvancedSettings defines model for PayloadsPipelineAdvancedSettings.
@@ -905,6 +1363,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
 	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
+	DatabricksAutoLiquidClustering               *bool                           `json:"databricksAutoLiquidClustering,omitempty"`
 	DefaultSourceSchema                          *string                         `json:"defaultSourceSchema,omitempty"`
 	DisableAlerts                                *bool                           `json:"disableAlerts,omitempty"`
 	DropDeletedColumns                           *bool                           `json:"dropDeletedColumns,omitempty"`
@@ -919,8 +1378,10 @@ type PayloadsPipelineAdvancedSettings struct {
 	IncludeFullSourceTableNameColumn             *bool                           `json:"includeFullSourceTableNameColumn,omitempty"`
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
 	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
+	JsonAsVarchar                                *bool                           `json:"jsonAsVarchar,omitempty"`
 	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
 	NullOutInvalidValues                         *bool                           `json:"nullOutInvalidValues,omitempty"`
+	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
 	ReuseStagingTable                            *bool                           `json:"reuseStagingTable,omitempty"`
 	SessionDriverMemory                          *string                         `json:"sessionDriverMemory,omitempty"`
 	SessionExecutorMemory                        *string                         `json:"sessionExecutorMemory,omitempty"`
@@ -942,6 +1403,26 @@ type PayloadsPipelineAdvancedSettings struct {
 	WriteRawBinaryValues                         *bool                           `json:"writeRawBinaryValues,omitempty"`
 }
 
+// PayloadsPipelineErrorLog defines model for PayloadsPipelineErrorLog.
+type PayloadsPipelineErrorLog struct {
+	CreatedAt        *time.Time          `json:"createdAt,omitempty"`
+	Database         *string             `json:"database,omitempty"`
+	Destination      *string             `json:"destination,omitempty"`
+	ErrorDetail      *string             `json:"errorDetail,omitempty"`
+	EventType        *string             `json:"eventType,omitempty"`
+	Message          *string             `json:"message,omitempty"`
+	Mode             *string             `json:"mode,omitempty"`
+	PipelineUUID     *openapi_types.UUID `json:"pipelineUUID,omitempty"`
+	Schema           *string             `json:"schema,omitempty"`
+	Service          *string             `json:"service,omitempty"`
+	Source           *string             `json:"source,omitempty"`
+	SourceReaderUUID *openapi_types.UUID `json:"sourceReaderUUID,omitempty"`
+	Table            *string             `json:"table,omitempty"`
+	Timestamp        *time.Time          `json:"timestamp,omitempty"`
+	Uuid             openapi_types.UUID  `json:"uuid"`
+	Version          *string             `json:"version,omitempty"`
+}
+
 // PayloadsPipelinePayload defines model for PayloadsPipelinePayload.
 type PayloadsPipelinePayload struct {
 	AdvancedSettings         *PayloadsAdvancedPipelineSettingsPayload `json:"advancedSettings,omitempty"`
@@ -958,9 +1439,30 @@ type PayloadsPipelinePayload struct {
 
 // PayloadsPostgresPublication defines model for PayloadsPostgresPublication.
 type PayloadsPostgresPublication struct {
-	AllTables               *bool  `json:"allTables,omitempty"`
+	AllTables               bool   `json:"allTables"`
 	Name                    string `json:"name"`
-	PublishViaPartitionRoot *bool  `json:"publishViaPartitionRoot,omitempty"`
+	PublishViaPartitionRoot bool   `json:"publishViaPartitionRoot"`
+}
+
+// PayloadsPostgresReplicationSlot defines model for PayloadsPostgresReplicationSlot.
+type PayloadsPostgresReplicationSlot struct {
+	Active             bool    `json:"active"`
+	Database           *string `json:"database"`
+	HotStandbyFeedback string  `json:"hotStandbyFeedback"`
+	IsReplica          bool    `json:"isReplica"`
+	Name               string  `json:"name"`
+	NotFound           bool    `json:"notFound"`
+	RetainedWALBytes   int     `json:"retainedWALBytes"`
+	WalStatus          string  `json:"walStatus"`
+}
+
+// PayloadsPostgresSetting defines model for PayloadsPostgresSetting.
+type PayloadsPostgresSetting struct {
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	Unit        string `json:"unit"`
+	Value       string `json:"value"`
 }
 
 // PayloadsPrivateLinkConnection defines model for PayloadsPrivateLinkConnection.
@@ -991,6 +1493,49 @@ type PayloadsRangeSettings struct {
 	MaxParallelism *int  `json:"maxParallelism,omitempty"`
 }
 
+// PayloadsS3CSVParser defines model for PayloadsS3CSVParser.
+type PayloadsS3CSVParser struct {
+	CommentPrefix  *string   `json:"commentPrefix,omitempty"`
+	Delimiter      *string   `json:"delimiter,omitempty"`
+	Headers        *[]string `json:"headers,omitempty"`
+	NullValues     *[]string `json:"nullValues,omitempty"`
+	TrimWhitespace *bool     `json:"trimWhitespace,omitempty"`
+}
+
+// PayloadsS3Match defines model for PayloadsS3Match.
+type PayloadsS3Match struct {
+	FileNameRegex *string `json:"fileNameRegex,omitempty"`
+}
+
+// PayloadsS3MetadataColumns defines model for PayloadsS3MetadataColumns.
+type PayloadsS3MetadataColumns struct {
+	Columns *[]PayloadsS3MetadataColumnsColumns `json:"columns,omitempty"`
+}
+
+// PayloadsS3MetadataColumnsColumns defines model for PayloadsS3MetadataColumns.Columns.
+type PayloadsS3MetadataColumnsColumns string
+
+// PayloadsS3Parser defines model for PayloadsS3Parser.
+type PayloadsS3Parser struct {
+	ColumnOrder *[]string            `json:"columnOrder,omitempty"`
+	Csv         *PayloadsS3CSVParser `json:"csv,omitempty"`
+	Type        PayloadsS3ParserType `json:"type"`
+}
+
+// PayloadsS3ParserType defines model for PayloadsS3Parser.Type.
+type PayloadsS3ParserType string
+
+// PayloadsS3PathMapping defines model for PayloadsS3PathMapping.
+type PayloadsS3PathMapping struct {
+	Id          string                    `json:"id"`
+	Match       PayloadsS3Match           `json:"match"`
+	Metadata    PayloadsS3MetadataColumns `json:"metadata"`
+	Parser      PayloadsS3Parser          `json:"parser"`
+	Prefix      string                    `json:"prefix"`
+	PrimaryKey  *[]string                 `json:"primaryKey,omitempty"`
+	ReferenceID string                    `json:"referenceID"`
+}
+
 // PayloadsSSHTunnel defines model for PayloadsSSHTunnel.
 type PayloadsSSHTunnel struct {
 	CompanyUUID     openapi_types.UUID `json:"companyUUID"`
@@ -1008,8 +1553,8 @@ type PayloadsSSHTunnel struct {
 
 // PayloadsSchemaResponse defines model for PayloadsSchemaResponse.
 type PayloadsSchemaResponse struct {
-	Name             *string `json:"name,omitempty"`
-	Unreadable       *bool   `json:"unreadable,omitempty"`
+	Name             string  `json:"name"`
+	Unreadable       bool    `json:"unreadable"`
 	UnreadableReason *string `json:"unreadableReason,omitempty"`
 }
 
@@ -1058,10 +1603,14 @@ type PayloadsSourceReader struct {
 
 // PayloadsSourceReaderSettingsPayload defines model for PayloadsSourceReaderSettingsPayload.
 type PayloadsSourceReaderSettingsPayload struct {
+	ArchiveLocationType                *EnumsMSSQLArchiveLocationType                         `json:"archiveLocationType,omitempty"`
 	ArchiveLogPassword                 *string                                                `json:"archiveLogPassword,omitempty"`
 	ArchiveLogPath                     *string                                                `json:"archiveLogPath,omitempty"`
+	ArchiveLogPrivateLinkUUID          *openapi_types.UUID                                    `json:"archiveLogPrivateLinkUUID,omitempty"`
+	ArchiveLogUsername                 *string                                                `json:"archiveLogUsername,omitempty"`
 	AzureBlobStorageConfig             *PayloadsAzureBlobStorageConfig                        `json:"azureBlobStorageConfig,omitempty"`
 	BackfillBatchSize                  *int                                                   `json:"backfillBatchSize,omitempty"`
+	BackfillDefaults                   *PayloadsBackfillDefaultsPayload                       `json:"backfillDefaults,omitempty"`
 	CollectionScopedMode               *bool                                                  `json:"collectionScopedMode,omitempty"`
 	CompositeTypesAsText               *bool                                                  `json:"compositeTypesAsText,omitempty"`
 	DatabasesToSync                    *[]string                                              `json:"databasesToSync,omitempty"`
@@ -1083,7 +1632,9 @@ type PayloadsSourceReaderSettingsPayload struct {
 	PublicationNameOverride            *string                                                `json:"publicationNameOverride,omitempty"`
 	PublishViaPartitionRoot            *bool                                                  `json:"publishViaPartitionRoot,omitempty"`
 	ReplicationSlotOverride            *string                                                `json:"replicationSlotOverride,omitempty"`
+	S3PathMappings                     *[]PayloadsS3PathMapping                               `json:"s3PathMappings,omitempty"`
 	UnifyAcrossDatabases               *bool                                                  `json:"unifyAcrossDatabases,omitempty"`
+	UnifyAcrossDatabasesRegex          *string                                                `json:"unifyAcrossDatabasesRegex,omitempty"`
 	UnifyAcrossSchemas                 *bool                                                  `json:"unifyAcrossSchemas,omitempty"`
 	UnifyAcrossSchemasMaxParallelism   *int                                                   `json:"unifyAcrossSchemasMaxParallelism,omitempty"`
 	UnifyAcrossSchemasRegex            *string                                                `json:"unifyAcrossSchemasRegex,omitempty"`
@@ -1135,56 +1686,63 @@ type PayloadsStaticColumn struct {
 
 // PayloadsTable defines model for PayloadsTable.
 type PayloadsTable struct {
-	AdvancedSettings          *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
-	BackfillStage             *string                        `json:"backfillStage,omitempty"`
-	CreatedAt                 *time.Time                     `json:"createdAt,omitempty"`
-	DestinationTableName      *string                        `json:"destinationTableName,omitempty"`
-	DisableReplication        *bool                          `json:"disableReplication,omitempty"`
-	EnableHistoryMode         *bool                          `json:"enableHistoryMode,omitempty"`
-	HistoryTableBackfillStage *string                        `json:"historyTableBackfillStage,omitempty"`
-	HistoryTableStatus        *string                        `json:"historyTableStatus,omitempty"`
-	IndividualDeployment      *bool                          `json:"individualDeployment,omitempty"`
-	Name                      *string                        `json:"name,omitempty"`
-	Schema                    *string                        `json:"schema,omitempty"`
-	Status                    *string                        `json:"status,omitempty"`
-	UpdatedAt                 *time.Time                     `json:"updatedAt,omitempty"`
-	Uuid                      *openapi_types.UUID            `json:"uuid,omitempty"`
+	AdvancedSettings *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	BackfillStage         *EnumsBackfillStage           `json:"backfillStage,omitempty"`
+	BackfillStages        *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
+	CreatedAt             *time.Time                    `json:"createdAt,omitempty"`
+	DestinationTableName  *string                       `json:"destinationTableName,omitempty"`
+	DisableReplication    *bool                         `json:"disableReplication,omitempty"`
+	EnableHistoryMode     *bool                         `json:"enableHistoryMode,omitempty"`
+	HistoryBackfillStages *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	HistoryTableBackfillStage *EnumsBackfillStage `json:"historyTableBackfillStage,omitempty"`
+	HistoryTableStatus        *string             `json:"historyTableStatus,omitempty"`
+	IndividualDeployment      *bool               `json:"individualDeployment,omitempty"`
+	Name                      *string             `json:"name,omitempty"`
+	Schema                    *string             `json:"schema,omitempty"`
+	Status                    *string             `json:"status,omitempty"`
+	UpdatedAt                 *time.Time          `json:"updatedAt,omitempty"`
+	Uuid                      *openapi_types.UUID `json:"uuid,omitempty"`
 }
 
 // PayloadsTableAdvancedSettings defines model for PayloadsTableAdvancedSettings.
 type PayloadsTableAdvancedSettings struct {
-	Alias                           *string                    `json:"alias,omitempty"`
-	BackfillFromDatabases           *[]string                  `json:"backfillFromDatabases,omitempty"`
-	BackfillFromSchemas             *[]string                  `json:"backfillFromSchemas,omitempty"`
-	BigQueryPartitionSettings       *PayloadsBigQuerySettings  `json:"bigQueryPartitionSettings,omitempty"`
-	BufferRows                      *int                       `json:"bufferRows,omitempty"`
-	ColumnsToCompress               *[]string                  `json:"columnsToCompress,omitempty"`
-	ColumnsToEncrypt                *[]string                  `json:"columnsToEncrypt,omitempty"`
-	ColumnsToHash                   *[]string                  `json:"columnsToHash,omitempty"`
-	ColumnsToTrim                   *[]string                  `json:"columnsToTrim,omitempty"`
-	CtidSettings                    *PayloadsCTIDSettings      `json:"ctidSettings,omitempty"`
-	EncryptJSONBColumns             *bool                      `json:"encryptJSONBColumns,omitempty"`
-	EndingPrimaryKey                *string                    `json:"endingPrimaryKey,omitempty"`
-	ExcludeColumns                  *[]string                  `json:"excludeColumns,omitempty"`
-	FlushIntervalSeconds            *int                       `json:"flushIntervalSeconds,omitempty"`
-	FlushSizeKb                     *int                       `json:"flushSizeKb,omitempty"`
-	HistoryTableBackfillFromSchemas *[]string                  `json:"historyTableBackfillFromSchemas,omitempty"`
-	IncludeColumns                  *[]string                  `json:"includeColumns,omitempty"`
-	K8sRequestCPU                   *int                       `json:"k8sRequestCPU,omitempty"`
-	K8sRequestMemoryMB              *int                       `json:"k8sRequestMemoryMB,omitempty"`
-	MergePredicates                 *[]PayloadsMergePredicates `json:"mergePredicates,omitempty"`
-	MsmFlushCount                   *int                       `json:"msmFlushCount,omitempty"`
-	PrimaryKeysOverride             *[]string                  `json:"primaryKeysOverride,omitempty"`
-	RangeSettings                   *PayloadsRangeSettings     `json:"rangeSettings,omitempty"`
-	ShouldBackfillHistoryTable      *bool                      `json:"shouldBackfillHistoryTable,omitempty"`
-	SkipBackfill                    *bool                      `json:"skipBackfill,omitempty"`
-	SkipDelete                      *bool                      `json:"skipDelete,omitempty"`
-	SkipNoOpUpdates                 *bool                      `json:"skipNoOpUpdates,omitempty"`
-	SoftPartitioning                *PayloadsSoftPartitioning  `json:"softPartitioning,omitempty"`
-	StartingPrimaryKey              *string                    `json:"startingPrimaryKey,omitempty"`
-	StreamARN                       *string                    `json:"streamARN,omitempty"`
-	UnifyAcrossDatabases            *bool                      `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas              *bool                      `json:"unifyAcrossSchemas,omitempty"`
+	Alias                           *string                         `json:"alias,omitempty"`
+	BackfillFromDatabases           *[]string                       `json:"backfillFromDatabases,omitempty"`
+	BackfillFromSchemas             *[]string                       `json:"backfillFromSchemas,omitempty"`
+	BigQueryPartitionSettings       *PayloadsBigQuerySettings       `json:"bigQueryPartitionSettings,omitempty"`
+	BufferRows                      *int                            `json:"bufferRows,omitempty"`
+	ColumnsToCompress               *[]string                       `json:"columnsToCompress,omitempty"`
+	ColumnsToEncrypt                *[]string                       `json:"columnsToEncrypt,omitempty"`
+	ColumnsToHash                   *[]string                       `json:"columnsToHash,omitempty"`
+	ColumnsToTrim                   *[]string                       `json:"columnsToTrim,omitempty"`
+	CtidSettings                    *PayloadsCTIDSettings           `json:"ctidSettings,omitempty"`
+	EncryptJSONBColumns             *bool                           `json:"encryptJSONBColumns,omitempty"`
+	EndingPrimaryKey                *string                         `json:"endingPrimaryKey,omitempty"`
+	ExcludeColumns                  *[]string                       `json:"excludeColumns,omitempty"`
+	FlattenDocuments                *bool                           `json:"flattenDocuments,omitempty"`
+	FlattenDocumentsMaxDepth        *int                            `json:"flattenDocumentsMaxDepth,omitempty"`
+	FlushIntervalSeconds            *int                            `json:"flushIntervalSeconds,omitempty"`
+	FlushSizeKb                     *int                            `json:"flushSizeKb,omitempty"`
+	HistoryTableBackfillFromSchemas *[]string                       `json:"historyTableBackfillFromSchemas,omitempty"`
+	IncludeColumns                  *[]string                       `json:"includeColumns,omitempty"`
+	K8sRequestCPU                   *int                            `json:"k8sRequestCPU,omitempty"`
+	K8sRequestMemoryMB              *int                            `json:"k8sRequestMemoryMB,omitempty"`
+	MergePredicates                 *[]PayloadsMergePredicates      `json:"mergePredicates,omitempty"`
+	MsmFlushCount                   *int                            `json:"msmFlushCount,omitempty"`
+	PartitionRangeSettings          *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
+	PrimaryKeysOverride             *[]string                       `json:"primaryKeysOverride,omitempty"`
+	RangeSettings                   *PayloadsRangeSettings          `json:"rangeSettings,omitempty"`
+	ShouldBackfillHistoryTable      *bool                           `json:"shouldBackfillHistoryTable,omitempty"`
+	SkipBackfill                    *bool                           `json:"skipBackfill,omitempty"`
+	SkipDelete                      *bool                           `json:"skipDelete,omitempty"`
+	SkipNoOpUpdates                 *bool                           `json:"skipNoOpUpdates,omitempty"`
+	SoftPartitioning                *PayloadsSoftPartitioning       `json:"softPartitioning,omitempty"`
+	StartingPrimaryKey              *string                         `json:"startingPrimaryKey,omitempty"`
+	StreamARN                       *string                         `json:"streamARN,omitempty"`
+	UnifyAcrossDatabases            *bool                           `json:"unifyAcrossDatabases,omitempty"`
+	UnifyAcrossSchemas              *bool                           `json:"unifyAcrossSchemas,omitempty"`
 }
 
 // PayloadsTablePayload defines model for PayloadsTablePayload.
@@ -1763,6 +2321,39 @@ type PayloadsWebhookEnvelope struct {
 // PayloadsWebhookEventProperties Event-specific fields included in the `properties` object of a webhook delivery. The set of keys depends on the event type. Every field is optional; omitted keys should be treated as absent. Artie may add new fields at any time—clients must tolerate unknown keys and should not assume a fixed schema beyond this contract.
 type PayloadsWebhookEventProperties map[string]interface{}
 
+// PayloadsWebhookOomKilled Out of memory (OOM) killed
+type PayloadsWebhookOomKilled struct {
+	DeliveryMetadata PayloadsWebhookDeliveryMetadata `json:"delivery_metadata"`
+
+	// Destination Destination connector type (e.g. bigquery).
+	Destination string `json:"destination"`
+
+	// EnvironmentName Human-readable name of the environment. Omitted when the event has no environment.
+	EnvironmentName *string `json:"environment_name,omitempty"`
+
+	// EnvironmentUuid UUID of the environment the event belongs to. Omitted when the event has no environment.
+	EnvironmentUuid *openapi_types.UUID           `json:"environment_uuid,omitempty"`
+	Event           PayloadsWebhookOomKilledEvent `json:"event"`
+
+	// Message Human-readable summary of the event.
+	Message    string                        `json:"message"`
+	Pipelines  []PayloadsWebhookPipelineInfo `json:"pipelines"`
+	Properties map[string]interface{}        `json:"properties"`
+
+	// Severity Severity of the event.
+	Severity PayloadsWebhookSeverity `json:"severity"`
+
+	// Source Source connector type (e.g. postgresql).
+	Source           string             `json:"source"`
+	SourceReaderUuid openapi_types.UUID `json:"source_reader_uuid"`
+
+	// Timestamp Time the event occurred (RFC 3339).
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// PayloadsWebhookOomKilledEvent defines model for PayloadsWebhookOomKilled.Event.
+type PayloadsWebhookOomKilledEvent string
+
 // PayloadsWebhookOutgoingPayload Webhook delivery body (Event Payload format). The concrete shape is selected by the `event` field; see the matching variant for the exact `properties` keys.
 type PayloadsWebhookOutgoingPayload struct {
 	union json.RawMessage
@@ -1929,6 +2520,9 @@ type PayloadsWebhookRowSkippedEvent string
 // PayloadsWebhookSeverity defines model for PayloadsWebhookSeverity.
 type PayloadsWebhookSeverity string
 
+// RouterConnectorConnectionRole defines model for RouterConnectorConnectionRole.
+type RouterConnectorConnectionRole string
+
 // RouterConnectorCreateDatabaseRequest defines model for RouterConnectorCreateDatabaseRequest.
 type RouterConnectorCreateDatabaseRequest struct {
 	Connector PayloadsConnectorPayload `json:"connector"`
@@ -1987,17 +2581,22 @@ type RouterConnectorGenerateShadowScriptResponse struct {
 
 // RouterConnectorPingRequest defines model for RouterConnectorPingRequest.
 type RouterConnectorPingRequest struct {
-	ConnectionRole          *string                 `json:"connectionRole,omitempty"`
-	DataPlaneName           *string                 `json:"dataPlaneName,omitempty"`
-	DefaultDatabase         *string                 `json:"defaultDatabase,omitempty"`
-	EnvironmentUUID         *openapi_types.UUID     `json:"environmentUUID,omitempty"`
-	Label                   *string                 `json:"label,omitempty"`
-	PrivateLinkUUID         *openapi_types.UUID     `json:"privateLinkUUID,omitempty"`
-	SharedConfig            *map[string]interface{} `json:"sharedConfig,omitempty"`
-	SnapshotPrivateLinkUUID *openapi_types.UUID     `json:"snapshotPrivateLinkUUID,omitempty"`
-	SshTunnelUUID           *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
-	Type                    *string                 `json:"type,omitempty"`
-	Uuid                    *string                 `json:"uuid,omitempty"`
+	ConnectionRole          *RouterConnectorConnectionRole `json:"connectionRole,omitempty"`
+	DataPlaneName           *string                        `json:"dataPlaneName,omitempty"`
+	DefaultDatabase         *string                        `json:"defaultDatabase,omitempty"`
+	EnvironmentUUID         *openapi_types.UUID            `json:"environmentUUID,omitempty"`
+	Label                   *string                        `json:"label,omitempty"`
+	PrivateLinkUUID         *openapi_types.UUID            `json:"privateLinkUUID,omitempty"`
+	SharedConfig            *map[string]interface{}        `json:"sharedConfig,omitempty"`
+	SnapshotPrivateLinkUUID *openapi_types.UUID            `json:"snapshotPrivateLinkUUID,omitempty"`
+	SshTunnelUUID           *openapi_types.UUID            `json:"sshTunnelUUID,omitempty"`
+	Type                    *string                        `json:"type,omitempty"`
+	Uuid                    *string                        `json:"uuid,omitempty"`
+}
+
+// RouterConnectorPingResponse defines model for RouterConnectorPingResponse.
+type RouterConnectorPingResponse struct {
+	Error string `json:"error"`
 }
 
 // RouterConnectorShadowScriptTable defines model for RouterConnectorShadowScriptTable.
@@ -2020,15 +2619,15 @@ type RouterConnectorStartDynamoDBExportResponse struct {
 
 // RouterConnectorTable defines model for RouterConnectorTable.
 type RouterConnectorTable struct {
-	ApproxDateAdded *time.Time                      `json:"approxDateAdded,omitempty"`
+	ApproxDateAdded *time.Time                      `json:"approxDateAdded"`
 	Columns         *[]PayloadsConnectorColumn      `json:"columns,omitempty"`
-	CreatedAt       *time.Time                      `json:"createdAt,omitempty"`
-	IsView          *bool                           `json:"isView,omitempty"`
+	CreatedAt       *time.Time                      `json:"createdAt"`
+	IsView          bool                            `json:"isView"`
 	Metadata        *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
-	ModifiedAt      *time.Time                      `json:"modifiedAt,omitempty"`
-	Name            *string                         `json:"name,omitempty"`
-	Schema          *string                         `json:"schema,omitempty"`
-	Unreadable      *bool                           `json:"unreadable,omitempty"`
+	ModifiedAt      *time.Time                      `json:"modifiedAt"`
+	Name            string                          `json:"name"`
+	Schema          string                          `json:"schema"`
+	Unreadable      bool                            `json:"unreadable"`
 }
 
 // RouterCreateColumnHashingSaltRequest defines model for RouterCreateColumnHashingSaltRequest.
@@ -2067,6 +2666,45 @@ type RouterCreateIngestionAPIKeyRequest struct {
 type RouterCreateIngestionAPIKeyResponse struct {
 	IngestionAPIKey PayloadsIngestionAPIKey `json:"ingestionAPIKey"`
 	Secret          string                  `json:"secret"`
+}
+
+// RouterCreateKafkaTopicRequest defines model for RouterCreateKafkaTopicRequest.
+type RouterCreateKafkaTopicRequest struct {
+	ConfigEntries     *map[string]string `json:"configEntries,omitempty"`
+	PartitionCount    int                `json:"partitionCount"`
+	ReplicationFactor int                `json:"replicationFactor"`
+	Topic             string             `json:"topic"`
+}
+
+// RouterCreateKafkaUserRequest defines model for RouterCreateKafkaUserRequest.
+type RouterCreateKafkaUserRequest struct {
+	AccessProfile string `json:"accessProfile"`
+	Username      string `json:"username"`
+}
+
+// RouterIncreaseKafkaTopicPartitionsRequest defines model for RouterIncreaseKafkaTopicPartitionsRequest.
+type RouterIncreaseKafkaTopicPartitionsRequest struct {
+	CurrentPartitionCount int `json:"currentPartitionCount"`
+	NewPartitionCount     int `json:"newPartitionCount"`
+}
+
+// RouterKafkaUserCreateResponse defines model for RouterKafkaUserCreateResponse.
+type RouterKafkaUserCreateResponse struct {
+	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
+	Password  string            `json:"password"`
+	Warning   *string           `json:"warning,omitempty"`
+}
+
+// RouterKafkaUserCredentialsResponse defines model for RouterKafkaUserCredentialsResponse.
+type RouterKafkaUserCredentialsResponse struct {
+	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
+	Password  string            `json:"password"`
+}
+
+// RouterKafkaUserDeleteResponse defines model for RouterKafkaUserDeleteResponse.
+type RouterKafkaUserDeleteResponse struct {
+	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
+	Warning   *string           `json:"warning,omitempty"`
 }
 
 // RouterPipelineBackfillRequest defines model for RouterPipelineBackfillRequest.
@@ -2225,6 +2863,14 @@ type RouterSSHTunnelCreateRequest struct {
 	Username        string              `json:"username"`
 }
 
+// RouterSSHTunnelUpdateRequest defines model for RouterSSHTunnelUpdateRequest.
+type RouterSSHTunnelUpdateRequest struct {
+	Host     string `json:"host"`
+	Name     string `json:"name"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+}
+
 // RouterSourceReaderCreateRequest defines model for RouterSourceReaderCreateRequest.
 type RouterSourceReaderCreateRequest struct {
 	ConnectorUUID openapi_types.UUID                   `json:"connectorUUID"`
@@ -2270,6 +2916,12 @@ type RouterUpdateIngestionAPIKeyRequest struct {
 	Name      *string    `json:"name,omitempty"`
 }
 
+// RouterUpdateKafkaTopicRetentionRequest defines model for RouterUpdateKafkaTopicRetentionRequest.
+type RouterUpdateKafkaTopicRetentionRequest struct {
+	// RetentionMS New retention.ms: at least 86400000 (one day), or -1 to keep messages forever.
+	RetentionMS int `json:"retentionMS"`
+}
+
 // RouterValidateErrorResponse defines model for RouterValidateErrorResponse.
 type RouterValidateErrorResponse struct {
 	Error *string `json:"error,omitempty"`
@@ -2280,12 +2932,27 @@ type ConnectorListParams struct {
 	IncludeSourceConnectors *bool `form:"includeSourceConnectors,omitempty" json:"includeSourceConnectors,omitempty"`
 }
 
+// ConnectorFetchDatabasesParams defines parameters for ConnectorFetchDatabases.
+type ConnectorFetchDatabasesParams struct {
+	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
+}
+
 // ConnectorFetchTableDetailParams defines parameters for ConnectorFetchTableDetail.
 type ConnectorFetchTableDetailParams struct {
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 	SchemaName   *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
 	TableName    string  `form:"tableName" json:"tableName"`
 	IsView       *bool   `form:"isView,omitempty" json:"isView,omitempty"`
+}
+
+// ConnectorFetchPostgresReplicationSlotsParams defines parameters for ConnectorFetchPostgresReplicationSlots.
+type ConnectorFetchPostgresReplicationSlotsParams struct {
+	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
+}
+
+// ConnectorFetchPostgresSettingsParams defines parameters for ConnectorFetchPostgresSettings.
+type ConnectorFetchPostgresSettingsParams struct {
+	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 }
 
 // ConnectorFetchSchemasParams defines parameters for ConnectorFetchSchemas.
@@ -2297,6 +2964,48 @@ type ConnectorFetchSchemasParams struct {
 type ConnectorFetchTablesParams struct {
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 	SchemaName   *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
+}
+
+// KafkaConsumerGroupListParams defines parameters for KafkaConsumerGroupList.
+type KafkaConsumerGroupListParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
+
+// KafkaConsumerGroupDetailParams defines parameters for KafkaConsumerGroupDetail.
+type KafkaConsumerGroupDetailParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
+
+// KafkaClusterMetricsGraphParams defines parameters for KafkaClusterMetricsGraph.
+type KafkaClusterMetricsGraphParams struct {
+	From string `form:"from" json:"from"`
+	To   string `form:"to" json:"to"`
+}
+
+// KafkaClusterStorageGraphParams defines parameters for KafkaClusterStorageGraph.
+type KafkaClusterStorageGraphParams struct {
+	From string `form:"from" json:"from"`
+	To   string `form:"to" json:"to"`
+}
+
+// KafkaClusterSummaryParams defines parameters for KafkaClusterSummary.
+type KafkaClusterSummaryParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
+
+// KafkaTopicSizesParams defines parameters for KafkaTopicSizes.
+type KafkaTopicSizesParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
+
+// KafkaTopicListParams defines parameters for KafkaTopicList.
+type KafkaTopicListParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
+
+// KafkaTopicDetailParams defines parameters for KafkaTopicDetail.
+type KafkaTopicDetailParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // PipelineDetailParams defines parameters for PipelineDetail.
@@ -2313,6 +3022,9 @@ type PipelineTriggerAutomaticSchemaChangesParams struct {
 type PipelineUsageParams struct {
 	From time.Time `form:"from" json:"from"`
 	To   time.Time `form:"to" json:"to"`
+
+	// ExcludeBackfills When true, rows processed by backfills are excluded from row counts so only CDC rows are counted. Latency is not affected. Defaults to false.
+	ExcludeBackfills *bool `form:"excludeBackfills,omitempty" json:"excludeBackfills,omitempty"`
 }
 
 // ColumnHashingSaltCreateJSONRequestBody defines body for ColumnHashingSaltCreate for application/json ContentType.
@@ -2378,6 +3090,18 @@ type IngestionApiKeyCreateJSONRequestBody = RouterCreateIngestionAPIKeyRequest
 // IngestionApiKeyUpdateJSONRequestBody defines body for IngestionApiKeyUpdate for application/json ContentType.
 type IngestionApiKeyUpdateJSONRequestBody = RouterUpdateIngestionAPIKeyRequest
 
+// KafkaTopicCreateJSONRequestBody defines body for KafkaTopicCreate for application/json ContentType.
+type KafkaTopicCreateJSONRequestBody = RouterCreateKafkaTopicRequest
+
+// KafkaTopicPartitionsIncreaseJSONRequestBody defines body for KafkaTopicPartitionsIncrease for application/json ContentType.
+type KafkaTopicPartitionsIncreaseJSONRequestBody = RouterIncreaseKafkaTopicPartitionsRequest
+
+// KafkaTopicRetentionUpdateJSONRequestBody defines body for KafkaTopicRetentionUpdate for application/json ContentType.
+type KafkaTopicRetentionUpdateJSONRequestBody = RouterUpdateKafkaTopicRetentionRequest
+
+// KafkaUserCreateJSONRequestBody defines body for KafkaUserCreate for application/json ContentType.
+type KafkaUserCreateJSONRequestBody = RouterCreateKafkaUserRequest
+
 // PipelineCreateJSONRequestBody defines body for PipelineCreate for application/json ContentType.
 type PipelineCreateJSONRequestBody = RouterPipelineCreateRequest
 
@@ -2430,7 +3154,7 @@ type SourceReaderUpdateStatusJSONRequestBody = RouterSourceReaderUpdateStatusReq
 type SshTunnelCreateJSONRequestBody = RouterSSHTunnelCreateRequest
 
 // SshTunnelUpdateJSONRequestBody defines body for SshTunnelUpdate for application/json ContentType.
-type SshTunnelUpdateJSONRequestBody = PayloadsSSHTunnel
+type SshTunnelUpdateJSONRequestBody = RouterSSHTunnelUpdateRequest
 
 // BackfillCompletedJSONRequestBody defines body for BackfillCompleted for application/json ContentType.
 type BackfillCompletedJSONRequestBody = PayloadsWebhookBackfillCompleted
@@ -2472,6 +3196,9 @@ type DedupeStartedJSONRequestBody = PayloadsWebhookDedupeStarted
 
 // DekGeneratedJSONRequestBody defines body for DekGenerated for application/json ContentType.
 type DekGeneratedJSONRequestBody = PayloadsWebhookDekGenerated
+
+// OomKilledJSONRequestBody defines body for OomKilled for application/json ContentType.
+type OomKilledJSONRequestBody = PayloadsWebhookOomKilled
 
 // ReplicationErrorJSONRequestBody defines body for ReplicationError for application/json ContentType.
 type ReplicationErrorJSONRequestBody = PayloadsWebhookReplicationError
@@ -3183,6 +3910,40 @@ func (t *PayloadsWebhookOutgoingPayload) MergePayloadsWebhookDekGenerated(v Payl
 	return err
 }
 
+// AsPayloadsWebhookOomKilled returns the union data inside the PayloadsWebhookOutgoingPayload as a PayloadsWebhookOomKilled
+func (t PayloadsWebhookOutgoingPayload) AsPayloadsWebhookOomKilled() (PayloadsWebhookOomKilled, error) {
+	var body PayloadsWebhookOomKilled
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPayloadsWebhookOomKilled overwrites any union data inside the PayloadsWebhookOutgoingPayload as the provided PayloadsWebhookOomKilled
+func (t *PayloadsWebhookOutgoingPayload) FromPayloadsWebhookOomKilled(v PayloadsWebhookOomKilled) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"oom.killed"}`))
+	t.union = b
+	return err
+}
+
+// MergePayloadsWebhookOomKilled performs a merge with any union data inside the PayloadsWebhookOutgoingPayload, using the provided PayloadsWebhookOomKilled
+func (t *PayloadsWebhookOutgoingPayload) MergePayloadsWebhookOomKilled(v PayloadsWebhookOomKilled) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"oom.killed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsPayloadsWebhookReplicationError returns the union data inside the PayloadsWebhookOutgoingPayload as a PayloadsWebhookReplicationError
 func (t PayloadsWebhookOutgoingPayload) AsPayloadsWebhookReplicationError() (PayloadsWebhookReplicationError, error) {
 	var body PayloadsWebhookReplicationError
@@ -3359,6 +4120,8 @@ func (t PayloadsWebhookOutgoingPayload) ValueByDiscriminator() (interface{}, err
 		return t.AsPayloadsWebhookDedupeStarted()
 	case "dek.generated":
 		return t.AsPayloadsWebhookDekGenerated()
+	case "oom.killed":
+		return t.AsPayloadsWebhookOomKilled()
 	case "replication.error":
 		return t.AsPayloadsWebhookReplicationError()
 	case "replication.failed":
@@ -3637,7 +4400,7 @@ type ClientInterface interface {
 
 	// UnsavedConnectorPingWithBody Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3646,7 +4409,7 @@ type ClientInterface interface {
 
 	// UnsavedConnectorPing Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3744,7 +4507,7 @@ type ClientInterface interface {
 	// Lists available databases on the target using a saved connector's configuration. Response metadata may include Iceberg S3 table bucket maintenance defaults.
 	//
 	// Corresponds with GET /connectors/{uuid}/databases (the `ConnectorFetchDatabases` operationId).
-	ConnectorFetchDatabases(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ConnectorFetchDatabases(ctx context.Context, uuid string, params *ConnectorFetchDatabasesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ConnectorFetchTableDetail Fetch table detail for a saved connector
 	//
@@ -3788,6 +4551,20 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /connectors/{uuid}/postgres-drop-replication-slot (the `ConnectorDropPostgresReplicationSlot` operationId).
 	ConnectorDropPostgresReplicationSlot(ctx context.Context, uuid string, body ConnectorDropPostgresReplicationSlotJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConnectorFetchPostgresReplicationSlots List PostgreSQL replication slots
+	//
+	// Lists replication slots on the PostgreSQL source for the specified connector.
+	//
+	// Corresponds with GET /connectors/{uuid}/postgres-replication-slots (the `ConnectorFetchPostgresReplicationSlots` operationId).
+	ConnectorFetchPostgresReplicationSlots(ctx context.Context, uuid string, params *ConnectorFetchPostgresReplicationSlotsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConnectorFetchPostgresSettings Fetch PostgreSQL settings
+	//
+	// Returns PostgreSQL server configuration settings relevant to replication for the specified connector.
+	//
+	// Corresponds with GET /connectors/{uuid}/postgres-settings (the `ConnectorFetchPostgresSettings` operationId).
+	ConnectorFetchPostgresSettings(ctx context.Context, uuid string, params *ConnectorFetchPostgresSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ConnectorFetchSchemas Fetch schemas for a saved connector
 	//
@@ -3938,6 +4715,183 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /ingestion-api-keys/{uuid} (the `IngestionApiKeyUpdate` operationId).
 	IngestionApiKeyUpdate(ctx context.Context, uuid string, body IngestionApiKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterList List Kafka clusters
+	//
+	// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+	//
+	// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
+	KafkaClusterList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterDetail Get a Kafka cluster
+	//
+	// Retrieves a single Kafka cluster owned by the authenticated company, by UUID.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
+	KafkaClusterDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaConsumerGroupList List consumer groups
+	//
+	// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups (the `KafkaConsumerGroupList` operationId).
+	KafkaConsumerGroupList(ctx context.Context, uuid string, params *KafkaConsumerGroupListParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaConsumerGroupDetail Get Kafka consumer group detail
+	//
+	// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
+	KafkaConsumerGroupDetail(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterMetricsGraph Get Kafka metrics graphs
+	//
+	// Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
+	KafkaClusterMetricsGraph(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterStorageGraph Get Kafka storage graph
+	//
+	// Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/storage-graph (the `KafkaClusterStorageGraph` operationId).
+	KafkaClusterStorageGraph(ctx context.Context, uuid string, params *KafkaClusterStorageGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterSummary Get Kafka cluster summary
+	//
+	// Retrieves cached topic and consumer group counts for the cluster unless forceRefresh is true.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
+	KafkaClusterSummary(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicSizes Get Kafka topic partition sizes
+	//
+	// Retrieves cached, customer-safe partition sizes for every topic unless forceRefresh is true.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topic-sizes (the `KafkaTopicSizes` operationId).
+	KafkaTopicSizes(ctx context.Context, uuid string, params *KafkaTopicSizesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicList List Kafka topics
+	//
+	// Retrieves the light topic list for the cluster (no per-topic detail fetch). Results are cached for two minutes unless forceRefresh is true. Includes the owning source reader name and table name when the topic belongs to an Artie pipeline.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics (the `KafkaTopicList` operationId).
+	KafkaTopicList(ctx context.Context, uuid string, params *KafkaTopicListParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicCreateWithBody Create a Kafka topic
+	//
+	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+	KafkaTopicCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicCreate Create a Kafka topic
+	//
+	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+	KafkaTopicCreate(ctx context.Context, uuid string, body KafkaTopicCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicDelete Delete a Kafka topic
+	//
+	// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDelete` operationId).
+	KafkaTopicDelete(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicDetail Get Kafka topic detail
+	//
+	// Retrieves topic metadata and partition sizes. Includes the owning source reader name, table name, and pipeline names and UUIDs when the topic belongs to an Artie pipeline.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDetail` operationId).
+	KafkaTopicDetail(ctx context.Context, uuid string, topic string, params *KafkaTopicDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicLatestMessage Get latest Kafka topic message
+	//
+	// Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
+	KafkaTopicLatestMessage(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicPartitionsIncreaseWithBody Increase Kafka topic partitions
+	//
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+	KafkaTopicPartitionsIncreaseWithBody(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicPartitionsIncrease Increase Kafka topic partitions
+	//
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+	KafkaTopicPartitionsIncrease(ctx context.Context, uuid string, topic string, body KafkaTopicPartitionsIncreaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
+	//
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+	KafkaTopicRetentionUpdateWithBody(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicRetentionUpdate Change Kafka topic retention
+	//
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+	KafkaTopicRetentionUpdate(ctx context.Context, uuid string, topic string, body KafkaTopicRetentionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaUserList List Kafka users
+	//
+	// Retrieves the Kafka users for the cluster. Passwords are never included.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/users (the `KafkaUserList` operationId).
+	KafkaUserList(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaUserCreateWithBody Create a Kafka user
+	//
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+	KafkaUserCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaUserCreate Create a Kafka user
+	//
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+	KafkaUserCreate(ctx context.Context, uuid string, body KafkaUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaUserDelete Delete a Kafka user
+	//
+	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
+	KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaUserCredentials Get Kafka user credentials
+	//
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
+	KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PipelineList List pipelines
 	//
@@ -4100,6 +5054,13 @@ type ClientInterface interface {
 	// Corresponds with POST /pipelines/{uuid}/detect-schema-changes (the `PipelineDetectSchemaChanges` operationId).
 	PipelineDetectSchemaChanges(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PipelineErrorLogs List pipeline error logs
+	//
+	// Returns recent error logs for the specified pipeline (message, errorDetail, table/schema, timestamps). MCP clients pass the pipeline uuid only.
+	//
+	// Corresponds with GET /pipelines/{uuid}/error-logs (the `PipelineErrorLogs` operationId).
+	PipelineErrorLogs(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PipelineStartWithBody Start pipeline
 	//
 	// Starts or resumes a pipeline. Fails if the pipeline has no destination, no tables, or (Postgres/Cockroach/Oracle) a source reader with an empty database. Optional body: keepPaused, disableBackFill.
@@ -4156,7 +5117,7 @@ type ClientInterface interface {
 
 	// PipelineUsage Get pipeline usage
 	//
-	// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format.
+	// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format. Pass 'excludeBackfills=true' to exclude backfill rows from row counts.
 	//
 	// Corresponds with GET /pipelines/{uuid}/usage (the `PipelineUsage` operationId).
 	PipelineUsage(ctx context.Context, uuid string, params *PipelineUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4753,7 +5714,7 @@ func (c *Client) UnsavedConnectorCreateSnowflakeWarehouse(ctx context.Context, b
 
 // UnsavedConnectorPingWithBody Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4772,7 +5733,7 @@ func (c *Client) UnsavedConnectorPingWithBody(ctx context.Context, contentType s
 
 // UnsavedConnectorPing Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4980,8 +5941,8 @@ func (c *Client) ConnectorUpdate(ctx context.Context, uuid string, body Connecto
 // Lists available databases on the target using a saved connector's configuration. Response metadata may include Iceberg S3 table bucket maintenance defaults.
 //
 // Corresponds with GET /connectors/{uuid}/databases (the `ConnectorFetchDatabases` operationId).
-func (c *Client) ConnectorFetchDatabases(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewConnectorFetchDatabasesRequest(c.Server, uuid)
+func (c *Client) ConnectorFetchDatabases(ctx context.Context, uuid string, params *ConnectorFetchDatabasesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConnectorFetchDatabasesRequest(c.Server, uuid, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5075,6 +6036,40 @@ func (c *Client) ConnectorDropPostgresReplicationSlotWithBody(ctx context.Contex
 // Corresponds with POST /connectors/{uuid}/postgres-drop-replication-slot (the `ConnectorDropPostgresReplicationSlot` operationId).
 func (c *Client) ConnectorDropPostgresReplicationSlot(ctx context.Context, uuid string, body ConnectorDropPostgresReplicationSlotJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewConnectorDropPostgresReplicationSlotRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ConnectorFetchPostgresReplicationSlots List PostgreSQL replication slots
+//
+// Lists replication slots on the PostgreSQL source for the specified connector.
+//
+// Corresponds with GET /connectors/{uuid}/postgres-replication-slots (the `ConnectorFetchPostgresReplicationSlots` operationId).
+func (c *Client) ConnectorFetchPostgresReplicationSlots(ctx context.Context, uuid string, params *ConnectorFetchPostgresReplicationSlotsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConnectorFetchPostgresReplicationSlotsRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ConnectorFetchPostgresSettings Fetch PostgreSQL settings
+//
+// Returns PostgreSQL server configuration settings relevant to replication for the specified connector.
+//
+// Corresponds with GET /connectors/{uuid}/postgres-settings (the `ConnectorFetchPostgresSettings` operationId).
+func (c *Client) ConnectorFetchPostgresSettings(ctx context.Context, uuid string, params *ConnectorFetchPostgresSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConnectorFetchPostgresSettingsRequest(c.Server, uuid, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5405,6 +6400,413 @@ func (c *Client) IngestionApiKeyUpdateWithBody(ctx context.Context, uuid string,
 // Corresponds with POST /ingestion-api-keys/{uuid} (the `IngestionApiKeyUpdate` operationId).
 func (c *Client) IngestionApiKeyUpdate(ctx context.Context, uuid string, body IngestionApiKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewIngestionApiKeyUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterList List Kafka clusters
+//
+// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+//
+// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
+func (c *Client) KafkaClusterList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterListRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterDetail Get a Kafka cluster
+//
+// Retrieves a single Kafka cluster owned by the authenticated company, by UUID.
+//
+// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
+func (c *Client) KafkaClusterDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterDetailRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaConsumerGroupList List consumer groups
+//
+// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups (the `KafkaConsumerGroupList` operationId).
+func (c *Client) KafkaConsumerGroupList(ctx context.Context, uuid string, params *KafkaConsumerGroupListParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaConsumerGroupListRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaConsumerGroupDetail Get Kafka consumer group detail
+//
+// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
+func (c *Client) KafkaConsumerGroupDetail(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaConsumerGroupDetailRequest(c.Server, uuid, groupID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterMetricsGraph Get Kafka metrics graphs
+//
+// Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
+func (c *Client) KafkaClusterMetricsGraph(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterMetricsGraphRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterStorageGraph Get Kafka storage graph
+//
+// Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/storage-graph (the `KafkaClusterStorageGraph` operationId).
+func (c *Client) KafkaClusterStorageGraph(ctx context.Context, uuid string, params *KafkaClusterStorageGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterStorageGraphRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterSummary Get Kafka cluster summary
+//
+// Retrieves cached topic and consumer group counts for the cluster unless forceRefresh is true.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
+func (c *Client) KafkaClusterSummary(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterSummaryRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicSizes Get Kafka topic partition sizes
+//
+// Retrieves cached, customer-safe partition sizes for every topic unless forceRefresh is true.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topic-sizes (the `KafkaTopicSizes` operationId).
+func (c *Client) KafkaTopicSizes(ctx context.Context, uuid string, params *KafkaTopicSizesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicSizesRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicList List Kafka topics
+//
+// Retrieves the light topic list for the cluster (no per-topic detail fetch). Results are cached for two minutes unless forceRefresh is true. Includes the owning source reader name and table name when the topic belongs to an Artie pipeline.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics (the `KafkaTopicList` operationId).
+func (c *Client) KafkaTopicList(ctx context.Context, uuid string, params *KafkaTopicListParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicListRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicCreateWithBody Create a Kafka topic
+//
+// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+func (c *Client) KafkaTopicCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicCreateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicCreate Create a Kafka topic
+//
+// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+func (c *Client) KafkaTopicCreate(ctx context.Context, uuid string, body KafkaTopicCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicCreateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicDelete Delete a Kafka topic
+//
+// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDelete` operationId).
+func (c *Client) KafkaTopicDelete(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicDeleteRequest(c.Server, uuid, topic)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicDetail Get Kafka topic detail
+//
+// Retrieves topic metadata and partition sizes. Includes the owning source reader name, table name, and pipeline names and UUIDs when the topic belongs to an Artie pipeline.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDetail` operationId).
+func (c *Client) KafkaTopicDetail(ctx context.Context, uuid string, topic string, params *KafkaTopicDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicDetailRequest(c.Server, uuid, topic, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicLatestMessage Get latest Kafka topic message
+//
+// Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
+func (c *Client) KafkaTopicLatestMessage(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicLatestMessageRequest(c.Server, uuid, topic)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicPartitionsIncreaseWithBody Increase Kafka topic partitions
+//
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+func (c *Client) KafkaTopicPartitionsIncreaseWithBody(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicPartitionsIncreaseRequestWithBody(c.Server, uuid, topic, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicPartitionsIncrease Increase Kafka topic partitions
+//
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+func (c *Client) KafkaTopicPartitionsIncrease(ctx context.Context, uuid string, topic string, body KafkaTopicPartitionsIncreaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicPartitionsIncreaseRequest(c.Server, uuid, topic, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
+//
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+func (c *Client) KafkaTopicRetentionUpdateWithBody(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicRetentionUpdateRequestWithBody(c.Server, uuid, topic, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicRetentionUpdate Change Kafka topic retention
+//
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+func (c *Client) KafkaTopicRetentionUpdate(ctx context.Context, uuid string, topic string, body KafkaTopicRetentionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicRetentionUpdateRequest(c.Server, uuid, topic, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaUserList List Kafka users
+//
+// Retrieves the Kafka users for the cluster. Passwords are never included.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/users (the `KafkaUserList` operationId).
+func (c *Client) KafkaUserList(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaUserListRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaUserCreateWithBody Create a Kafka user
+//
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+func (c *Client) KafkaUserCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaUserCreateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaUserCreate Create a Kafka user
+//
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+func (c *Client) KafkaUserCreate(ctx context.Context, uuid string, body KafkaUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaUserCreateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaUserDelete Delete a Kafka user
+//
+// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
+func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaUserDeleteRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaUserCredentials Get Kafka user credentials
+//
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
+func (c *Client) KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaUserCredentialsRequest(c.Server, uuid, userUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -5766,6 +7168,23 @@ func (c *Client) PipelineDetectSchemaChanges(ctx context.Context, uuid string, r
 	return c.Client.Do(req)
 }
 
+// PipelineErrorLogs List pipeline error logs
+//
+// Returns recent error logs for the specified pipeline (message, errorDetail, table/schema, timestamps). MCP clients pass the pipeline uuid only.
+//
+// Corresponds with GET /pipelines/{uuid}/error-logs (the `PipelineErrorLogs` operationId).
+func (c *Client) PipelineErrorLogs(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPipelineErrorLogsRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // PipelineStartWithBody Start pipeline
 //
 // Starts or resumes a pipeline. Fails if the pipeline has no destination, no tables, or (Postgres/Cockroach/Oracle) a source reader with an empty database. Optional body: keepPaused, disableBackFill.
@@ -5882,7 +7301,7 @@ func (c *Client) PipelineUpdateWithSourceReader(ctx context.Context, uuid string
 
 // PipelineUsage Get pipeline usage
 //
-// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format.
+// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format. Pass 'excludeBackfills=true' to exclude backfill rows from row counts.
 //
 // Corresponds with GET /pipelines/{uuid}/usage (the `PipelineUsage` operationId).
 func (c *Client) PipelineUsage(ctx context.Context, uuid string, params *PipelineUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7123,7 +8542,7 @@ func NewConnectorUpdateRequestWithBody(server string, uuid string, contentType s
 }
 
 // NewConnectorFetchDatabasesRequest constructs an http.Request for the ConnectorFetchDatabases method
-func NewConnectorFetchDatabasesRequest(server string, uuid string) (*http.Request, error) {
+func NewConnectorFetchDatabasesRequest(server string, uuid string, params *ConnectorFetchDatabasesParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -7146,6 +8565,33 @@ func NewConnectorFetchDatabasesRequest(server string, uuid string) (*http.Reques
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.DatabaseName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "databaseName", *params.DatabaseName, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -7339,6 +8785,128 @@ func NewConnectorDropPostgresReplicationSlotRequestWithBody(server string, uuid 
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewConnectorFetchPostgresReplicationSlotsRequest constructs an http.Request for the ConnectorFetchPostgresReplicationSlots method
+func NewConnectorFetchPostgresReplicationSlotsRequest(server string, uuid string, params *ConnectorFetchPostgresReplicationSlotsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/%s/postgres-replication-slots", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.DatabaseName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "databaseName", *params.DatabaseName, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConnectorFetchPostgresSettingsRequest constructs an http.Request for the ConnectorFetchPostgresSettings method
+func NewConnectorFetchPostgresSettingsRequest(server string, uuid string, params *ConnectorFetchPostgresSettingsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/connectors/%s/postgres-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.DatabaseName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "databaseName", *params.DatabaseName, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -7867,6 +9435,977 @@ func NewIngestionApiKeyUpdateRequestWithBody(server string, uuid string, content
 	return req, nil
 }
 
+// NewKafkaClusterListRequest constructs an http.Request for the KafkaClusterList method
+func NewKafkaClusterListRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterDetailRequest constructs an http.Request for the KafkaClusterDetail method
+func NewKafkaClusterDetailRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaConsumerGroupListRequest constructs an http.Request for the KafkaConsumerGroupList method
+func NewKafkaConsumerGroupListRequest(server string, uuid string, params *KafkaConsumerGroupListParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/consumer-groups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaConsumerGroupDetailRequest constructs an http.Request for the KafkaConsumerGroupDetail method
+func NewKafkaConsumerGroupDetailRequest(server string, uuid string, groupID string, params *KafkaConsumerGroupDetailParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "groupID", groupID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/consumer-groups/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterMetricsGraphRequest constructs an http.Request for the KafkaClusterMetricsGraph method
+func NewKafkaClusterMetricsGraphRequest(server string, uuid string, params *KafkaClusterMetricsGraphParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/metrics-graph", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterStorageGraphRequest constructs an http.Request for the KafkaClusterStorageGraph method
+func NewKafkaClusterStorageGraphRequest(server string, uuid string, params *KafkaClusterStorageGraphParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/storage-graph", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterSummaryRequest constructs an http.Request for the KafkaClusterSummary method
+func NewKafkaClusterSummaryRequest(server string, uuid string, params *KafkaClusterSummaryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/summary", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicSizesRequest constructs an http.Request for the KafkaTopicSizes method
+func NewKafkaTopicSizesRequest(server string, uuid string, params *KafkaTopicSizesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topic-sizes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicListRequest constructs an http.Request for the KafkaTopicList method
+func NewKafkaTopicListRequest(server string, uuid string, params *KafkaTopicListParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicCreateRequest calls the generic KafkaTopicCreate builder with application/json body
+func NewKafkaTopicCreateRequest(server string, uuid string, body KafkaTopicCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaTopicCreateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaTopicCreateRequestWithBody constructs an http.Request for the KafkaTopicCreate method, with any body, and a specified content type
+func NewKafkaTopicCreateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaTopicDeleteRequest constructs an http.Request for the KafkaTopicDelete method
+func NewKafkaTopicDeleteRequest(server string, uuid string, topic string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicDetailRequest constructs an http.Request for the KafkaTopicDetail method
+func NewKafkaTopicDetailRequest(server string, uuid string, topic string, params *KafkaTopicDetailParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicLatestMessageRequest constructs an http.Request for the KafkaTopicLatestMessage method
+func NewKafkaTopicLatestMessageRequest(server string, uuid string, topic string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s/latest-message", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicPartitionsIncreaseRequest calls the generic KafkaTopicPartitionsIncrease builder with application/json body
+func NewKafkaTopicPartitionsIncreaseRequest(server string, uuid string, topic string, body KafkaTopicPartitionsIncreaseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaTopicPartitionsIncreaseRequestWithBody(server, uuid, topic, "application/json", bodyReader)
+}
+
+// NewKafkaTopicPartitionsIncreaseRequestWithBody constructs an http.Request for the KafkaTopicPartitionsIncrease method, with any body, and a specified content type
+func NewKafkaTopicPartitionsIncreaseRequestWithBody(server string, uuid string, topic string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s/partitions", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaTopicRetentionUpdateRequest calls the generic KafkaTopicRetentionUpdate builder with application/json body
+func NewKafkaTopicRetentionUpdateRequest(server string, uuid string, topic string, body KafkaTopicRetentionUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaTopicRetentionUpdateRequestWithBody(server, uuid, topic, "application/json", bodyReader)
+}
+
+// NewKafkaTopicRetentionUpdateRequestWithBody constructs an http.Request for the KafkaTopicRetentionUpdate method, with any body, and a specified content type
+func NewKafkaTopicRetentionUpdateRequestWithBody(server string, uuid string, topic string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s/retention", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaUserListRequest constructs an http.Request for the KafkaUserList method
+func NewKafkaUserListRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/users", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaUserCreateRequest calls the generic KafkaUserCreate builder with application/json body
+func NewKafkaUserCreateRequest(server string, uuid string, body KafkaUserCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaUserCreateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaUserCreateRequestWithBody constructs an http.Request for the KafkaUserCreate method, with any body, and a specified content type
+func NewKafkaUserCreateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/users", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaUserDeleteRequest constructs an http.Request for the KafkaUserDelete method
+func NewKafkaUserDeleteRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaUserCredentialsRequest constructs an http.Request for the KafkaUserCredentials method
+func NewKafkaUserCredentialsRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/users/%s/credentials", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewPipelineListRequest constructs an http.Request for the PipelineList method
 func NewPipelineListRequest(server string) (*http.Request, error) {
 	var err error
@@ -8385,6 +10924,40 @@ func NewPipelineDetectSchemaChangesRequest(server string, uuid string) (*http.Re
 	return req, nil
 }
 
+// NewPipelineErrorLogsRequest constructs an http.Request for the PipelineErrorLogs method
+func NewPipelineErrorLogsRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/pipelines/%s/error-logs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewPipelineStartRequest calls the generic PipelineStart builder with application/json body
 func NewPipelineStartRequest(server string, uuid string, body PipelineStartJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -8575,6 +11148,18 @@ func NewPipelineUsageRequest(server string, uuid string, params *PipelineUsagePa
 			for _, qp := range strings.Split(queryFrag, "&") {
 				rawQueryFragments = append(rawQueryFragments, qp)
 			}
+		}
+
+		if params.ExcludeBackfills != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "excludeBackfills", *params.ExcludeBackfills, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
 		}
 
 		if encoded := queryValues.Encode(); encoded != "" {
@@ -9439,7 +12024,7 @@ type ClientWithResponsesInterface interface {
 
 	// UnsavedConnectorPingWithBodyWithResponse Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9448,7 +12033,7 @@ type ClientWithResponsesInterface interface {
 
 	// UnsavedConnectorPingWithResponse Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9552,7 +12137,7 @@ type ClientWithResponsesInterface interface {
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /connectors/{uuid}/databases (the `ConnectorFetchDatabases` operationId).
-	ConnectorFetchDatabasesWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*ConnectorFetchDatabasesResponse, error)
+	ConnectorFetchDatabasesWithResponse(ctx context.Context, uuid string, params *ConnectorFetchDatabasesParams, reqEditors ...RequestEditorFn) (*ConnectorFetchDatabasesResponse, error)
 
 	// ConnectorFetchTableDetailWithResponse Fetch table detail for a saved connector
 	//
@@ -9598,6 +12183,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /connectors/{uuid}/postgres-drop-replication-slot (the `ConnectorDropPostgresReplicationSlot` operationId).
 	ConnectorDropPostgresReplicationSlotWithResponse(ctx context.Context, uuid string, body ConnectorDropPostgresReplicationSlotJSONRequestBody, reqEditors ...RequestEditorFn) (*ConnectorDropPostgresReplicationSlotResponse, error)
+
+	// ConnectorFetchPostgresReplicationSlotsWithResponse List PostgreSQL replication slots
+	//
+	// Lists replication slots on the PostgreSQL source for the specified connector.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /connectors/{uuid}/postgres-replication-slots (the `ConnectorFetchPostgresReplicationSlots` operationId).
+	ConnectorFetchPostgresReplicationSlotsWithResponse(ctx context.Context, uuid string, params *ConnectorFetchPostgresReplicationSlotsParams, reqEditors ...RequestEditorFn) (*ConnectorFetchPostgresReplicationSlotsResponse, error)
+
+	// ConnectorFetchPostgresSettingsWithResponse Fetch PostgreSQL settings
+	//
+	// Returns PostgreSQL server configuration settings relevant to replication for the specified connector.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /connectors/{uuid}/postgres-settings (the `ConnectorFetchPostgresSettings` operationId).
+	ConnectorFetchPostgresSettingsWithResponse(ctx context.Context, uuid string, params *ConnectorFetchPostgresSettingsParams, reqEditors ...RequestEditorFn) (*ConnectorFetchPostgresSettingsResponse, error)
 
 	// ConnectorFetchSchemasWithResponse Fetch schemas for a saved connector
 	//
@@ -9760,6 +12363,213 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /ingestion-api-keys/{uuid} (the `IngestionApiKeyUpdate` operationId).
 	IngestionApiKeyUpdateWithResponse(ctx context.Context, uuid string, body IngestionApiKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*IngestionApiKeyUpdateResponse, error)
+
+	// KafkaClusterListWithResponse List Kafka clusters
+	//
+	// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
+	KafkaClusterListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error)
+
+	// KafkaClusterDetailWithResponse Get a Kafka cluster
+	//
+	// Retrieves a single Kafka cluster owned by the authenticated company, by UUID.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
+	KafkaClusterDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterDetailResponse, error)
+
+	// KafkaConsumerGroupListWithResponse List consumer groups
+	//
+	// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups (the `KafkaConsumerGroupList` operationId).
+	KafkaConsumerGroupListWithResponse(ctx context.Context, uuid string, params *KafkaConsumerGroupListParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupListResponse, error)
+
+	// KafkaConsumerGroupDetailWithResponse Get Kafka consumer group detail
+	//
+	// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
+	KafkaConsumerGroupDetailWithResponse(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupDetailResponse, error)
+
+	// KafkaClusterMetricsGraphWithResponse Get Kafka metrics graphs
+	//
+	// Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
+	KafkaClusterMetricsGraphWithResponse(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*KafkaClusterMetricsGraphResponse, error)
+
+	// KafkaClusterStorageGraphWithResponse Get Kafka storage graph
+	//
+	// Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/storage-graph (the `KafkaClusterStorageGraph` operationId).
+	KafkaClusterStorageGraphWithResponse(ctx context.Context, uuid string, params *KafkaClusterStorageGraphParams, reqEditors ...RequestEditorFn) (*KafkaClusterStorageGraphResponse, error)
+
+	// KafkaClusterSummaryWithResponse Get Kafka cluster summary
+	//
+	// Retrieves cached topic and consumer group counts for the cluster unless forceRefresh is true.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
+	KafkaClusterSummaryWithResponse(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*KafkaClusterSummaryResponse, error)
+
+	// KafkaTopicSizesWithResponse Get Kafka topic partition sizes
+	//
+	// Retrieves cached, customer-safe partition sizes for every topic unless forceRefresh is true.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topic-sizes (the `KafkaTopicSizes` operationId).
+	KafkaTopicSizesWithResponse(ctx context.Context, uuid string, params *KafkaTopicSizesParams, reqEditors ...RequestEditorFn) (*KafkaTopicSizesResponse, error)
+
+	// KafkaTopicListWithResponse List Kafka topics
+	//
+	// Retrieves the light topic list for the cluster (no per-topic detail fetch). Results are cached for two minutes unless forceRefresh is true. Includes the owning source reader name and table name when the topic belongs to an Artie pipeline.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics (the `KafkaTopicList` operationId).
+	KafkaTopicListWithResponse(ctx context.Context, uuid string, params *KafkaTopicListParams, reqEditors ...RequestEditorFn) (*KafkaTopicListResponse, error)
+
+	// KafkaTopicCreateWithBodyWithResponse Create a Kafka topic
+	//
+	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+	KafkaTopicCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicCreateResponse, error)
+
+	// KafkaTopicCreateWithResponse Create a Kafka topic
+	//
+	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+	KafkaTopicCreateWithResponse(ctx context.Context, uuid string, body KafkaTopicCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicCreateResponse, error)
+
+	// KafkaTopicDeleteWithResponse Delete a Kafka topic
+	//
+	// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDelete` operationId).
+	KafkaTopicDeleteWithResponse(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*KafkaTopicDeleteResponse, error)
+
+	// KafkaTopicDetailWithResponse Get Kafka topic detail
+	//
+	// Retrieves topic metadata and partition sizes. Includes the owning source reader name, table name, and pipeline names and UUIDs when the topic belongs to an Artie pipeline.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDetail` operationId).
+	KafkaTopicDetailWithResponse(ctx context.Context, uuid string, topic string, params *KafkaTopicDetailParams, reqEditors ...RequestEditorFn) (*KafkaTopicDetailResponse, error)
+
+	// KafkaTopicLatestMessageWithResponse Get latest Kafka topic message
+	//
+	// Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
+	KafkaTopicLatestMessageWithResponse(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*KafkaTopicLatestMessageResponse, error)
+
+	// KafkaTopicPartitionsIncreaseWithBodyWithResponse Increase Kafka topic partitions
+	//
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+	KafkaTopicPartitionsIncreaseWithBodyWithResponse(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicPartitionsIncreaseResponse, error)
+
+	// KafkaTopicPartitionsIncreaseWithResponse Increase Kafka topic partitions
+	//
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+	KafkaTopicPartitionsIncreaseWithResponse(ctx context.Context, uuid string, topic string, body KafkaTopicPartitionsIncreaseJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicPartitionsIncreaseResponse, error)
+
+	// KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
+	//
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+	KafkaTopicRetentionUpdateWithBodyWithResponse(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicRetentionUpdateResponse, error)
+
+	// KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
+	//
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+	KafkaTopicRetentionUpdateWithResponse(ctx context.Context, uuid string, topic string, body KafkaTopicRetentionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicRetentionUpdateResponse, error)
+
+	// KafkaUserListWithResponse List Kafka users
+	//
+	// Retrieves the Kafka users for the cluster. Passwords are never included.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/users (the `KafkaUserList` operationId).
+	KafkaUserListWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaUserListResponse, error)
+
+	// KafkaUserCreateWithBodyWithResponse Create a Kafka user
+	//
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+	KafkaUserCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaUserCreateResponse, error)
+
+	// KafkaUserCreateWithResponse Create a Kafka user
+	//
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+	KafkaUserCreateWithResponse(ctx context.Context, uuid string, body KafkaUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaUserCreateResponse, error)
+
+	// KafkaUserDeleteWithResponse Delete a Kafka user
+	//
+	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
+	KafkaUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserDeleteResponse, error)
+
+	// KafkaUserCredentialsWithResponse Get Kafka user credentials
+	//
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
+	KafkaUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserCredentialsResponse, error)
 
 	// PipelineListWithResponse List pipelines
 	//
@@ -9932,6 +12742,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /pipelines/{uuid}/detect-schema-changes (the `PipelineDetectSchemaChanges` operationId).
 	PipelineDetectSchemaChangesWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PipelineDetectSchemaChangesResponse, error)
 
+	// PipelineErrorLogsWithResponse List pipeline error logs
+	//
+	// Returns recent error logs for the specified pipeline (message, errorDetail, table/schema, timestamps). MCP clients pass the pipeline uuid only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /pipelines/{uuid}/error-logs (the `PipelineErrorLogs` operationId).
+	PipelineErrorLogsWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PipelineErrorLogsResponse, error)
+
 	// PipelineStartWithBodyWithResponse Start pipeline
 	//
 	// Starts or resumes a pipeline. Fails if the pipeline has no destination, no tables, or (Postgres/Cockroach/Oracle) a source reader with an empty database. Optional body: keepPaused, disableBackFill.
@@ -9988,7 +12807,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineUsageWithResponse Get pipeline usage
 	//
-	// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format.
+	// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format. Pass 'excludeBackfills=true' to exclude backfill rows from row counts.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -10713,6 +13532,13 @@ func (r UnsavedConnectorCreateSnowflakeWarehouseResponse) ContentType() string {
 type UnsavedConnectorPingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterConnectorPingResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UnsavedConnectorPingResponse) GetJSON200() *RouterConnectorPingResponse {
+	return r.JSON200
 }
 
 // GetBody returns the raw response body bytes
@@ -10788,6 +13614,13 @@ func (r UnsavedConnectorFetchPostgresPublicationsResponse) ContentType() string 
 type UnsavedConnectorFetchSchemasResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodySchemaResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UnsavedConnectorFetchSchemasResponse) GetJSON200() *ListResponseBodySchemaResponse {
+	return r.JSON200
 }
 
 // GetBody returns the raw response body bytes
@@ -11127,6 +13960,88 @@ func (r ConnectorDropPostgresReplicationSlotResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ConnectorDropPostgresReplicationSlotResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ConnectorFetchPostgresReplicationSlotsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyPostgresReplicationSlot
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ConnectorFetchPostgresReplicationSlotsResponse) GetJSON200() *ListResponseBodyPostgresReplicationSlot {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ConnectorFetchPostgresReplicationSlotsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ConnectorFetchPostgresReplicationSlotsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConnectorFetchPostgresReplicationSlotsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ConnectorFetchPostgresReplicationSlotsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ConnectorFetchPostgresSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *[]PayloadsPostgresSetting
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ConnectorFetchPostgresSettingsResponse) GetJSON200() *[]PayloadsPostgresSetting {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ConnectorFetchPostgresSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ConnectorFetchPostgresSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConnectorFetchPostgresSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ConnectorFetchPostgresSettingsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -11611,6 +14526,764 @@ func (r IngestionApiKeyUpdateResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterListResponse) GetJSON200() *ListResponseBodyKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterListResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterListResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterDetailResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaConsumerGroupListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyKafkaConsumerGroup
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaConsumerGroupListResponse) GetJSON200() *ListResponseBodyKafkaConsumerGroup {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaConsumerGroupListResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaConsumerGroupListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaConsumerGroupListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaConsumerGroupListResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaConsumerGroupDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaConsumerGroupDetail
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaConsumerGroupDetailResponse) GetJSON200() *PayloadsKafkaConsumerGroupDetail {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaConsumerGroupDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaConsumerGroupDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaConsumerGroupDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaConsumerGroupDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterMetricsGraphResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaMetricsGraph
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterMetricsGraphResponse) GetJSON200() *PayloadsKafkaMetricsGraph {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterMetricsGraphResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterMetricsGraphResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterMetricsGraphResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterMetricsGraphResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterStorageGraphResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaStorageGraph
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterStorageGraphResponse) GetJSON200() *PayloadsKafkaStorageGraph {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterStorageGraphResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterStorageGraphResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterStorageGraphResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterStorageGraphResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterSummaryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaClusterSummary
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterSummaryResponse) GetJSON200() *PayloadsKafkaClusterSummary {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterSummaryResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterSummaryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterSummaryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterSummaryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicSizesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyKafkaTopicSize
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicSizesResponse) GetJSON200() *ListResponseBodyKafkaTopicSize {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicSizesResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicSizesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicSizesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicSizesResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyKafkaTopic
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicListResponse) GetJSON200() *ListResponseBodyKafkaTopic {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicListResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicListResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaTopicCreateResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicCreateResponse) GetJSON200() *PayloadsKafkaTopicCreateResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaTopicDetail
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicDetailResponse) GetJSON200() *PayloadsKafkaTopicDetail {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicLatestMessageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaMessage
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicLatestMessageResponse) GetJSON200() *PayloadsKafkaMessage {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicLatestMessageResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicLatestMessageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicLatestMessageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicLatestMessageResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicPartitionsIncreaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicPartitionsIncreaseResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicPartitionsIncreaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicPartitionsIncreaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicPartitionsIncreaseResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicRetentionUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicRetentionUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicRetentionUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicRetentionUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicRetentionUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaUserListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyKafkaUser
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaUserListResponse) GetJSON200() *ListResponseBodyKafkaUser {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaUserListResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaUserListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaUserListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaUserListResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaUserCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaUserCreateResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaUserCreateResponse) GetJSON200() *RouterKafkaUserCreateResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaUserCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaUserCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaUserCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaUserCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaUserDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaUserDeleteResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaUserDeleteResponse) GetJSON200() *RouterKafkaUserDeleteResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaUserDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaUserDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaUserDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaUserDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaUserCredentialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaUserCredentialsResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaUserCredentialsResponse) GetJSON200() *RouterKafkaUserCredentialsResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaUserCredentialsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaUserCredentialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaUserCredentialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaUserCredentialsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type PipelineListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -12062,6 +15735,47 @@ func (r PipelineDetectSchemaChangesResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r PipelineDetectSchemaChangesResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type PipelineErrorLogsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyPipelineErrorLog
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r PipelineErrorLogsResponse) GetJSON200() *ListResponseBodyPipelineErrorLog {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r PipelineErrorLogsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PipelineErrorLogsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PipelineErrorLogsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PipelineErrorLogsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -13170,7 +16884,7 @@ func (c *ClientWithResponses) UnsavedConnectorCreateSnowflakeWarehouseWithRespon
 
 // UnsavedConnectorPingWithBodyWithResponse Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -13185,7 +16899,7 @@ func (c *ClientWithResponses) UnsavedConnectorPingWithBodyWithResponse(ctx conte
 
 // UnsavedConnectorPingWithResponse Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -13355,8 +17069,8 @@ func (c *ClientWithResponses) ConnectorUpdateWithResponse(ctx context.Context, u
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /connectors/{uuid}/databases (the `ConnectorFetchDatabases` operationId).
-func (c *ClientWithResponses) ConnectorFetchDatabasesWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*ConnectorFetchDatabasesResponse, error) {
-	rsp, err := c.ConnectorFetchDatabases(ctx, uuid, reqEditors...)
+func (c *ClientWithResponses) ConnectorFetchDatabasesWithResponse(ctx context.Context, uuid string, params *ConnectorFetchDatabasesParams, reqEditors ...RequestEditorFn) (*ConnectorFetchDatabasesResponse, error) {
+	rsp, err := c.ConnectorFetchDatabases(ctx, uuid, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -13436,6 +17150,36 @@ func (c *ClientWithResponses) ConnectorDropPostgresReplicationSlotWithResponse(c
 		return nil, err
 	}
 	return ParseConnectorDropPostgresReplicationSlotResponse(rsp)
+}
+
+// ConnectorFetchPostgresReplicationSlotsWithResponse List PostgreSQL replication slots
+//
+// Lists replication slots on the PostgreSQL source for the specified connector.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /connectors/{uuid}/postgres-replication-slots (the `ConnectorFetchPostgresReplicationSlots` operationId).
+func (c *ClientWithResponses) ConnectorFetchPostgresReplicationSlotsWithResponse(ctx context.Context, uuid string, params *ConnectorFetchPostgresReplicationSlotsParams, reqEditors ...RequestEditorFn) (*ConnectorFetchPostgresReplicationSlotsResponse, error) {
+	rsp, err := c.ConnectorFetchPostgresReplicationSlots(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConnectorFetchPostgresReplicationSlotsResponse(rsp)
+}
+
+// ConnectorFetchPostgresSettingsWithResponse Fetch PostgreSQL settings
+//
+// Returns PostgreSQL server configuration settings relevant to replication for the specified connector.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /connectors/{uuid}/postgres-settings (the `ConnectorFetchPostgresSettings` operationId).
+func (c *ClientWithResponses) ConnectorFetchPostgresSettingsWithResponse(ctx context.Context, uuid string, params *ConnectorFetchPostgresSettingsParams, reqEditors ...RequestEditorFn) (*ConnectorFetchPostgresSettingsResponse, error) {
+	rsp, err := c.ConnectorFetchPostgresSettings(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConnectorFetchPostgresSettingsResponse(rsp)
 }
 
 // ConnectorFetchSchemasWithResponse Fetch schemas for a saved connector
@@ -13706,6 +17450,351 @@ func (c *ClientWithResponses) IngestionApiKeyUpdateWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseIngestionApiKeyUpdateResponse(rsp)
+}
+
+// KafkaClusterListWithResponse List Kafka clusters
+//
+// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
+func (c *ClientWithResponses) KafkaClusterListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error) {
+	rsp, err := c.KafkaClusterList(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterListResponse(rsp)
+}
+
+// KafkaClusterDetailWithResponse Get a Kafka cluster
+//
+// Retrieves a single Kafka cluster owned by the authenticated company, by UUID.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
+func (c *ClientWithResponses) KafkaClusterDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterDetailResponse, error) {
+	rsp, err := c.KafkaClusterDetail(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterDetailResponse(rsp)
+}
+
+// KafkaConsumerGroupListWithResponse List consumer groups
+//
+// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups (the `KafkaConsumerGroupList` operationId).
+func (c *ClientWithResponses) KafkaConsumerGroupListWithResponse(ctx context.Context, uuid string, params *KafkaConsumerGroupListParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupListResponse, error) {
+	rsp, err := c.KafkaConsumerGroupList(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaConsumerGroupListResponse(rsp)
+}
+
+// KafkaConsumerGroupDetailWithResponse Get Kafka consumer group detail
+//
+// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
+func (c *ClientWithResponses) KafkaConsumerGroupDetailWithResponse(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupDetailResponse, error) {
+	rsp, err := c.KafkaConsumerGroupDetail(ctx, uuid, groupID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaConsumerGroupDetailResponse(rsp)
+}
+
+// KafkaClusterMetricsGraphWithResponse Get Kafka metrics graphs
+//
+// Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
+func (c *ClientWithResponses) KafkaClusterMetricsGraphWithResponse(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*KafkaClusterMetricsGraphResponse, error) {
+	rsp, err := c.KafkaClusterMetricsGraph(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterMetricsGraphResponse(rsp)
+}
+
+// KafkaClusterStorageGraphWithResponse Get Kafka storage graph
+//
+// Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/storage-graph (the `KafkaClusterStorageGraph` operationId).
+func (c *ClientWithResponses) KafkaClusterStorageGraphWithResponse(ctx context.Context, uuid string, params *KafkaClusterStorageGraphParams, reqEditors ...RequestEditorFn) (*KafkaClusterStorageGraphResponse, error) {
+	rsp, err := c.KafkaClusterStorageGraph(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterStorageGraphResponse(rsp)
+}
+
+// KafkaClusterSummaryWithResponse Get Kafka cluster summary
+//
+// Retrieves cached topic and consumer group counts for the cluster unless forceRefresh is true.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
+func (c *ClientWithResponses) KafkaClusterSummaryWithResponse(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*KafkaClusterSummaryResponse, error) {
+	rsp, err := c.KafkaClusterSummary(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterSummaryResponse(rsp)
+}
+
+// KafkaTopicSizesWithResponse Get Kafka topic partition sizes
+//
+// Retrieves cached, customer-safe partition sizes for every topic unless forceRefresh is true.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topic-sizes (the `KafkaTopicSizes` operationId).
+func (c *ClientWithResponses) KafkaTopicSizesWithResponse(ctx context.Context, uuid string, params *KafkaTopicSizesParams, reqEditors ...RequestEditorFn) (*KafkaTopicSizesResponse, error) {
+	rsp, err := c.KafkaTopicSizes(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicSizesResponse(rsp)
+}
+
+// KafkaTopicListWithResponse List Kafka topics
+//
+// Retrieves the light topic list for the cluster (no per-topic detail fetch). Results are cached for two minutes unless forceRefresh is true. Includes the owning source reader name and table name when the topic belongs to an Artie pipeline.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics (the `KafkaTopicList` operationId).
+func (c *ClientWithResponses) KafkaTopicListWithResponse(ctx context.Context, uuid string, params *KafkaTopicListParams, reqEditors ...RequestEditorFn) (*KafkaTopicListResponse, error) {
+	rsp, err := c.KafkaTopicList(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicListResponse(rsp)
+}
+
+// KafkaTopicCreateWithBodyWithResponse Create a Kafka topic
+//
+// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+func (c *ClientWithResponses) KafkaTopicCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicCreateResponse, error) {
+	rsp, err := c.KafkaTopicCreateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicCreateResponse(rsp)
+}
+
+// KafkaTopicCreateWithResponse Create a Kafka topic
+//
+// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics (the `KafkaTopicCreate` operationId).
+func (c *ClientWithResponses) KafkaTopicCreateWithResponse(ctx context.Context, uuid string, body KafkaTopicCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicCreateResponse, error) {
+	rsp, err := c.KafkaTopicCreate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicCreateResponse(rsp)
+}
+
+// KafkaTopicDeleteWithResponse Delete a Kafka topic
+//
+// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDelete` operationId).
+func (c *ClientWithResponses) KafkaTopicDeleteWithResponse(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*KafkaTopicDeleteResponse, error) {
+	rsp, err := c.KafkaTopicDelete(ctx, uuid, topic, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicDeleteResponse(rsp)
+}
+
+// KafkaTopicDetailWithResponse Get Kafka topic detail
+//
+// Retrieves topic metadata and partition sizes. Includes the owning source reader name, table name, and pipeline names and UUIDs when the topic belongs to an Artie pipeline.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDetail` operationId).
+func (c *ClientWithResponses) KafkaTopicDetailWithResponse(ctx context.Context, uuid string, topic string, params *KafkaTopicDetailParams, reqEditors ...RequestEditorFn) (*KafkaTopicDetailResponse, error) {
+	rsp, err := c.KafkaTopicDetail(ctx, uuid, topic, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicDetailResponse(rsp)
+}
+
+// KafkaTopicLatestMessageWithResponse Get latest Kafka topic message
+//
+// Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
+func (c *ClientWithResponses) KafkaTopicLatestMessageWithResponse(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*KafkaTopicLatestMessageResponse, error) {
+	rsp, err := c.KafkaTopicLatestMessage(ctx, uuid, topic, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicLatestMessageResponse(rsp)
+}
+
+// KafkaTopicPartitionsIncreaseWithBodyWithResponse Increase Kafka topic partitions
+//
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+func (c *ClientWithResponses) KafkaTopicPartitionsIncreaseWithBodyWithResponse(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicPartitionsIncreaseResponse, error) {
+	rsp, err := c.KafkaTopicPartitionsIncreaseWithBody(ctx, uuid, topic, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicPartitionsIncreaseResponse(rsp)
+}
+
+// KafkaTopicPartitionsIncreaseWithResponse Increase Kafka topic partitions
+//
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/partitions (the `KafkaTopicPartitionsIncrease` operationId).
+func (c *ClientWithResponses) KafkaTopicPartitionsIncreaseWithResponse(ctx context.Context, uuid string, topic string, body KafkaTopicPartitionsIncreaseJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicPartitionsIncreaseResponse, error) {
+	rsp, err := c.KafkaTopicPartitionsIncrease(ctx, uuid, topic, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicPartitionsIncreaseResponse(rsp)
+}
+
+// KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
+//
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+func (c *ClientWithResponses) KafkaTopicRetentionUpdateWithBodyWithResponse(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicRetentionUpdateResponse, error) {
+	rsp, err := c.KafkaTopicRetentionUpdateWithBody(ctx, uuid, topic, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicRetentionUpdateResponse(rsp)
+}
+
+// KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
+//
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic}/retention (the `KafkaTopicRetentionUpdate` operationId).
+func (c *ClientWithResponses) KafkaTopicRetentionUpdateWithResponse(ctx context.Context, uuid string, topic string, body KafkaTopicRetentionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicRetentionUpdateResponse, error) {
+	rsp, err := c.KafkaTopicRetentionUpdate(ctx, uuid, topic, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicRetentionUpdateResponse(rsp)
+}
+
+// KafkaUserListWithResponse List Kafka users
+//
+// Retrieves the Kafka users for the cluster. Passwords are never included.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/users (the `KafkaUserList` operationId).
+func (c *ClientWithResponses) KafkaUserListWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaUserListResponse, error) {
+	rsp, err := c.KafkaUserList(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaUserListResponse(rsp)
+}
+
+// KafkaUserCreateWithBodyWithResponse Create a Kafka user
+//
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+func (c *ClientWithResponses) KafkaUserCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaUserCreateResponse, error) {
+	rsp, err := c.KafkaUserCreateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaUserCreateResponse(rsp)
+}
+
+// KafkaUserCreateWithResponse Create a Kafka user
+//
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/users (the `KafkaUserCreate` operationId).
+func (c *ClientWithResponses) KafkaUserCreateWithResponse(ctx context.Context, uuid string, body KafkaUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaUserCreateResponse, error) {
+	rsp, err := c.KafkaUserCreate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaUserCreateResponse(rsp)
+}
+
+// KafkaUserDeleteWithResponse Delete a Kafka user
+//
+// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
+func (c *ClientWithResponses) KafkaUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserDeleteResponse, error) {
+	rsp, err := c.KafkaUserDelete(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaUserDeleteResponse(rsp)
+}
+
+// KafkaUserCredentialsWithResponse Get Kafka user credentials
+//
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
+func (c *ClientWithResponses) KafkaUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserCredentialsResponse, error) {
+	rsp, err := c.KafkaUserCredentials(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaUserCredentialsResponse(rsp)
 }
 
 // PipelineListWithResponse List pipelines
@@ -13993,6 +18082,21 @@ func (c *ClientWithResponses) PipelineDetectSchemaChangesWithResponse(ctx contex
 	return ParsePipelineDetectSchemaChangesResponse(rsp)
 }
 
+// PipelineErrorLogsWithResponse List pipeline error logs
+//
+// Returns recent error logs for the specified pipeline (message, errorDetail, table/schema, timestamps). MCP clients pass the pipeline uuid only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /pipelines/{uuid}/error-logs (the `PipelineErrorLogs` operationId).
+func (c *ClientWithResponses) PipelineErrorLogsWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*PipelineErrorLogsResponse, error) {
+	rsp, err := c.PipelineErrorLogs(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePipelineErrorLogsResponse(rsp)
+}
+
 // PipelineStartWithBodyWithResponse Start pipeline
 //
 // Starts or resumes a pipeline. Fails if the pipeline has no destination, no tables, or (Postgres/Cockroach/Oracle) a source reader with an empty database. Optional body: keepPaused, disableBackFill.
@@ -14085,7 +18189,7 @@ func (c *ClientWithResponses) PipelineUpdateWithSourceReaderWithResponse(ctx con
 
 // PipelineUsageWithResponse Get pipeline usage
 //
-// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format.
+// Returns table-level usage statistics for the specified pipeline within a given time range. Requires 'from' and 'to' query parameters in RFC3339 format. Pass 'excludeBackfills=true' to exclude backfill rows from row counts.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14804,6 +18908,22 @@ func ParseUnsavedConnectorPingResponse(rsp *http.Response) (*UnsavedConnectorPin
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterConnectorPingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	}
+
 	return response, nil
 }
 
@@ -14850,6 +18970,22 @@ func ParseUnsavedConnectorFetchSchemasResponse(rsp *http.Response) (*UnsavedConn
 	response := &UnsavedConnectorFetchSchemasResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodySchemaResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
 	}
 
 	return response, nil
@@ -15074,6 +19210,76 @@ func ParseConnectorDropPostgresReplicationSlotResponse(rsp *http.Response) (*Con
 	response := &ConnectorDropPostgresReplicationSlotResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseConnectorFetchPostgresReplicationSlotsResponse parses an HTTP response from a ConnectorFetchPostgresReplicationSlotsWithResponse call
+func ParseConnectorFetchPostgresReplicationSlotsResponse(rsp *http.Response) (*ConnectorFetchPostgresReplicationSlotsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConnectorFetchPostgresReplicationSlotsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyPostgresReplicationSlot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseConnectorFetchPostgresSettingsResponse parses an HTTP response from a ConnectorFetchPostgresSettingsWithResponse call
+func ParseConnectorFetchPostgresSettingsResponse(rsp *http.Response) (*ConnectorFetchPostgresSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConnectorFetchPostgresSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PayloadsPostgresSetting
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
 	}
 
 	return response, nil
@@ -15422,6 +19628,602 @@ func ParseIngestionApiKeyUpdateResponse(rsp *http.Response) (*IngestionApiKeyUpd
 	return response, nil
 }
 
+// ParseKafkaClusterListResponse parses an HTTP response from a KafkaClusterListWithResponse call
+func ParseKafkaClusterListResponse(rsp *http.Response) (*KafkaClusterListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterDetailResponse parses an HTTP response from a KafkaClusterDetailWithResponse call
+func ParseKafkaClusterDetailResponse(rsp *http.Response) (*KafkaClusterDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaConsumerGroupListResponse parses an HTTP response from a KafkaConsumerGroupListWithResponse call
+func ParseKafkaConsumerGroupListResponse(rsp *http.Response) (*KafkaConsumerGroupListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaConsumerGroupListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyKafkaConsumerGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaConsumerGroupDetailResponse parses an HTTP response from a KafkaConsumerGroupDetailWithResponse call
+func ParseKafkaConsumerGroupDetailResponse(rsp *http.Response) (*KafkaConsumerGroupDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaConsumerGroupDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaConsumerGroupDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterMetricsGraphResponse parses an HTTP response from a KafkaClusterMetricsGraphWithResponse call
+func ParseKafkaClusterMetricsGraphResponse(rsp *http.Response) (*KafkaClusterMetricsGraphResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterMetricsGraphResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaMetricsGraph
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterStorageGraphResponse parses an HTTP response from a KafkaClusterStorageGraphWithResponse call
+func ParseKafkaClusterStorageGraphResponse(rsp *http.Response) (*KafkaClusterStorageGraphResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterStorageGraphResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaStorageGraph
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterSummaryResponse parses an HTTP response from a KafkaClusterSummaryWithResponse call
+func ParseKafkaClusterSummaryResponse(rsp *http.Response) (*KafkaClusterSummaryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterSummaryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaClusterSummary
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicSizesResponse parses an HTTP response from a KafkaTopicSizesWithResponse call
+func ParseKafkaTopicSizesResponse(rsp *http.Response) (*KafkaTopicSizesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicSizesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyKafkaTopicSize
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicListResponse parses an HTTP response from a KafkaTopicListWithResponse call
+func ParseKafkaTopicListResponse(rsp *http.Response) (*KafkaTopicListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyKafkaTopic
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicCreateResponse parses an HTTP response from a KafkaTopicCreateWithResponse call
+func ParseKafkaTopicCreateResponse(rsp *http.Response) (*KafkaTopicCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaTopicCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 502:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicDeleteResponse parses an HTTP response from a KafkaTopicDeleteWithResponse call
+func ParseKafkaTopicDeleteResponse(rsp *http.Response) (*KafkaTopicDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicDetailResponse parses an HTTP response from a KafkaTopicDetailWithResponse call
+func ParseKafkaTopicDetailResponse(rsp *http.Response) (*KafkaTopicDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaTopicDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicLatestMessageResponse parses an HTTP response from a KafkaTopicLatestMessageWithResponse call
+func ParseKafkaTopicLatestMessageResponse(rsp *http.Response) (*KafkaTopicLatestMessageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicLatestMessageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicPartitionsIncreaseResponse parses an HTTP response from a KafkaTopicPartitionsIncreaseWithResponse call
+func ParseKafkaTopicPartitionsIncreaseResponse(rsp *http.Response) (*KafkaTopicPartitionsIncreaseResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicPartitionsIncreaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicRetentionUpdateResponse parses an HTTP response from a KafkaTopicRetentionUpdateWithResponse call
+func ParseKafkaTopicRetentionUpdateResponse(rsp *http.Response) (*KafkaTopicRetentionUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicRetentionUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseKafkaUserListResponse parses an HTTP response from a KafkaUserListWithResponse call
+func ParseKafkaUserListResponse(rsp *http.Response) (*KafkaUserListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaUserListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyKafkaUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaUserCreateResponse parses an HTTP response from a KafkaUserCreateWithResponse call
+func ParseKafkaUserCreateResponse(rsp *http.Response) (*KafkaUserCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaUserCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaUserCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaUserDeleteResponse parses an HTTP response from a KafkaUserDeleteWithResponse call
+func ParseKafkaUserDeleteResponse(rsp *http.Response) (*KafkaUserDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaUserDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaUserDeleteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaUserCredentialsResponse parses an HTTP response from a KafkaUserCredentialsWithResponse call
+func ParseKafkaUserCredentialsResponse(rsp *http.Response) (*KafkaUserCredentialsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaUserCredentialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaUserCredentialsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParsePipelineListResponse parses an HTTP response from a PipelineListWithResponse call
 func ParsePipelineListResponse(rsp *http.Response) (*PipelineListResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -15724,6 +20526,38 @@ func ParsePipelineDetectSchemaChangesResponse(rsp *http.Response) (*PipelineDete
 	response := &PipelineDetectSchemaChangesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePipelineErrorLogsResponse parses an HTTP response from a PipelineErrorLogsWithResponse call
+func ParsePipelineErrorLogsResponse(rsp *http.Response) (*PipelineErrorLogsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PipelineErrorLogsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyPipelineErrorLog
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
 	}
 
 	return response, nil
@@ -16423,6 +21257,11 @@ type WebhookInitiatorInterface interface {
 
 	DekGenerated(ctx context.Context, targetURL string, body DekGeneratedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// OomKilledWithBody fires the oom.killed webhook with any body
+	OomKilledWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	OomKilled(ctx context.Context, targetURL string, body OomKilledJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ReplicationErrorWithBody fires the replication.error webhook with any body
 	ReplicationErrorWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16746,6 +21585,30 @@ func (p *WebhookInitiator) DekGeneratedWithBody(ctx context.Context, targetURL s
 
 func (p *WebhookInitiator) DekGenerated(ctx context.Context, targetURL string, body DekGeneratedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDekGeneratedWebhookRequest(targetURL, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := p.applyWebhookEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+func (p *WebhookInitiator) OomKilledWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewOomKilledWebhookRequestWithBody(targetURL, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := p.applyWebhookEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+func (p *WebhookInitiator) OomKilled(ctx context.Context, targetURL string, body OomKilledJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewOomKilledWebhookRequest(targetURL, body)
 	if err != nil {
 		return nil, err
 	}
@@ -17237,6 +22100,37 @@ func NewDekGeneratedWebhookRequest(targetURL string, body DekGeneratedJSONReques
 
 // NewDekGeneratedWebhookRequestWithBody builds a POST request for the dek.generated webhook with any body
 func NewDekGeneratedWebhookRequestWithBody(targetURL string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+	_ = err
+
+	reqURL, err := url.Parse(targetURL)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, reqURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewOomKilledWebhookRequest builds a application/json POST request for the oom.killed webhook
+func NewOomKilledWebhookRequest(targetURL string, body OomKilledJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewOomKilledWebhookRequestWithBody(targetURL, "application/json", bodyReader)
+}
+
+// NewOomKilledWebhookRequestWithBody builds a POST request for the oom.killed webhook with any body
+func NewOomKilledWebhookRequestWithBody(targetURL string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 	_ = err
 
