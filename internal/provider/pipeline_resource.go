@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
@@ -38,8 +39,7 @@ func NewPipelineResource() resource.Resource {
 }
 
 type PipelineResource struct {
-	client        artieclient.Client
-	openAPIClient *openapi.ClientWithResponses
+	client *openapi.ClientWithResponses
 }
 
 func (r *PipelineResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -292,20 +292,13 @@ func (r *PipelineResource) Configure(ctx context.Context, req resource.Configure
 		return
 	}
 
-	client, err := providerData.NewClient()
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
-		return
-	}
-
-	openAPIClient, err := providerData.NewOpenAPIClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
 	}
 
 	r.client = client
-	r.openAPIClient = openAPIClient
 }
 
 func (r *PipelineResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -320,7 +313,7 @@ func (r *PipelineResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, dia
 	return planData, diagnostics.HasError()
 }
 
-func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.Pipeline, statusOverride types.String) {
+func (r *PipelineResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel openapi.PayloadsFullPipeline, statusOverride types.String) {
 	pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, apiModel)
 	diagnostics.Append(diags...)
 	if diagnostics.HasError() {
@@ -413,30 +406,25 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	pipeline, diags := planData.ToAPIBaseModel(ctx)
+	pipeline, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Pipelines(r.openAPIClient).ValidateSource(ctx, pipeline); err != nil {
+	if err := r.validate(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	if err := r.client.Pipelines(r.openAPIClient).ValidateDestination(ctx, pipeline); err != nil {
-		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
-		return
-	}
-
-	createdPipeline, err := r.client.Pipelines(r.openAPIClient).Create(ctx, pipeline)
+	createdPipeline, err := artieclient.JSON200(r.client.PipelineCreateWithResponse(ctx, openapi.RouterPipelineCreateRequest{Pipeline: pipeline}))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, createdPipeline, planData.StatusOverride)
-	if err := r.client.Pipelines(r.openAPIClient).StartPipeline(ctx, createdPipeline.UUID.String()); err != nil {
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *createdPipeline, planData.StatusOverride)
+	if err := r.start(ctx, createdPipeline.Uuid.String()); err != nil {
 		resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 	}
 }
@@ -448,13 +436,13 @@ func (r *PipelineResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	pipeline, err := r.client.Pipelines(r.openAPIClient).Get(ctx, stateData.UUID.ValueString())
+	pipeline, err := artieclient.JSON200(r.client.PipelineDetailWithResponse(ctx, stateData.UUID.ValueString(), nil))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, pipeline, stateData.StatusOverride)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *pipeline, stateData.StatusOverride)
 }
 
 func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -463,42 +451,33 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	apiBaseModel, diags := planData.ToAPIBaseModel(ctx)
+	pipeline, diags := planData.ToAPIModel(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := r.client.Pipelines(r.openAPIClient).ValidateSource(ctx, apiBaseModel); err != nil {
+	if err := r.validate(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 
-	if err := r.client.Pipelines(r.openAPIClient).ValidateDestination(ctx, apiBaseModel); err != nil {
-		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
-		return
-	}
-
-	apiModel, diags := planData.ToAPIModel(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	updatedPipeline, err := r.client.Pipelines(r.openAPIClient).Update(ctx, apiModel)
+	updatedPipeline, err := artieclient.JSON200(r.client.PipelineUpdateWithResponse(ctx, planData.UUID.ValueString(), openapi.RouterPipelineUpdateRequest{Pipeline: pipeline}))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedPipeline, planData.StatusOverride)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedPipeline, planData.StatusOverride)
 
 	if planData.StatusOverride.ValueString() == "paused" {
-		if err := r.client.Pipelines(r.openAPIClient).UpdateStatus(ctx, updatedPipeline.UUID.String(), "paused"); err != nil {
+		if err := artieclient.CheckResponse(r.client.PipelineUpdateStatusWithResponse(ctx, updatedPipeline.Uuid.String(), openapi.RouterPipelineUpdateStatusRequest{
+			Status: openapi.EnumsPipelineStatusPaused,
+		})); err != nil {
 			resp.Diagnostics.AddError("Unable to pause Pipeline", err.Error())
 		}
 	} else {
-		if err := r.client.Pipelines(r.openAPIClient).StartPipeline(ctx, updatedPipeline.UUID.String()); err != nil {
+		if err := r.start(ctx, updatedPipeline.Uuid.String()); err != nil {
 			resp.Diagnostics.AddError("Unable to start Pipeline", err.Error())
 		}
 	}
@@ -510,9 +489,42 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	if err := r.client.Pipelines(r.openAPIClient).Delete(ctx, pipelineUUID); err != nil {
+	if err := artieclient.CheckResponse(r.client.PipelineDeleteWithResponse(ctx, pipelineUUID)); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Pipeline", err.Error())
 	}
+}
+
+// validate runs the API's source and destination checks against an unsaved pipeline.
+func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.PayloadsPipelinePayload) error {
+	tables, err := tfmodels.ValidationTables(pipeline.Tables)
+	if err != nil {
+		return err
+	}
+
+	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedSourceWithResponse(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
+		SourceReaderUUID: pipeline.SourceReaderUUID,
+		ValidateTables:   true,
+		Tables:           tables,
+		DataPlaneName:    pipeline.DataPlaneName,
+	})); err != nil {
+		return fmt.Errorf("source validation failed: %w", err)
+	}
+
+	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedDestinationWithResponse(ctx, openapi.RouterPipelineValidateUnsavedDestinationRequest{
+		DestinationUUID:  pipeline.DestinationUUID,
+		SourceReaderUUID: pipeline.SourceReaderUUID,
+		SpecificCfg:      lib.RemovePtr(pipeline.SpecificDestCfg),
+		Tables:           &tables,
+		AdvancedSettings: pipeline.AdvancedSettings,
+	})); err != nil {
+		return fmt.Errorf("destination validation failed: %w", err)
+	}
+
+	return nil
+}
+
+func (r *PipelineResource) start(ctx context.Context, pipelineUUID string) error {
+	return artieclient.CheckResponse(r.client.PipelineStartWithResponse(ctx, pipelineUUID, openapi.RouterPipelineStartRequest{}))
 }
 
 func (r *PipelineResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

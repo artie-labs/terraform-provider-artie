@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/openapi"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -41,10 +40,6 @@ type ArtieProviderData struct {
 	Endpoint string
 	APIKey   string
 	version  string
-}
-
-func (a ArtieProviderData) NewClient() (artieclient.Client, error) {
-	return artieclient.New(a.Endpoint, a.APIKey, a.version)
 }
 
 func (a ArtieProviderData) NewOpenAPIClient() (*openapi.ClientWithResponses, error) {

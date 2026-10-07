@@ -52,3 +52,30 @@ func TestCheckResponse(t *testing.T) {
 		assert.EqualError(t, CheckResponse(resp, errors.New("dial failed")), "dial failed")
 	}
 }
+
+func TestValidationError(t *testing.T) {
+	{
+		// 204 means validation passed
+		assert.NoError(t, ValidationError(&openapi.PipelineValidateUnsavedSourceResponse{HTTPResponse: &http.Response{StatusCode: http.StatusNoContent}}, nil))
+	}
+	{
+		// 200 with an empty error means validation passed
+		assert.NoError(t, ValidationError(&openapi.PipelineValidateUnsavedSourceResponse{HTTPResponse: &http.Response{StatusCode: http.StatusOK}, JSON200: &openapi.RouterValidateErrorResponse{}}, nil))
+	}
+	{
+		// 200 with an error message means validation failed
+		message := "table public.orders has no primary key"
+		err := ValidationError(&openapi.PipelineValidateUnsavedSourceResponse{HTTPResponse: &http.Response{StatusCode: http.StatusOK}, JSON200: &openapi.RouterValidateErrorResponse{Error: &message}}, nil)
+		assert.EqualError(t, err, message)
+	}
+	{
+		// 200 without a JSON body is not treated as a pass
+		err := ValidationError(&openapi.PipelineValidateUnsavedSourceResponse{HTTPResponse: &http.Response{StatusCode: http.StatusOK}, Body: []byte("<html>")}, nil)
+		assert.EqualError(t, err, `artie-client: expected a JSON response body (HTTP 200), got: "<html>"`)
+	}
+	{
+		// Client error surfaces the API's error message
+		err := ValidationError(&openapi.PipelineValidateUnsavedSourceResponse{HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest}, Body: []byte(`{"error":"source reader not found"}`)}, nil)
+		assert.EqualError(t, err, "source reader not found (HTTP 400)")
+	}
+}

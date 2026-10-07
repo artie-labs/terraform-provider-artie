@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
-	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
 )
 
 type PipelineDestinationConfig struct {
@@ -23,31 +24,31 @@ type PipelineDestinationConfig struct {
 	CreateIcebergNamespaces types.Bool   `tfsdk:"create_iceberg_namespaces"`
 }
 
-func (d PipelineDestinationConfig) ToAPIModel() artieclient.DestinationConfig {
-	return artieclient.DestinationConfig{
-		Dataset:                 d.Dataset.ValueString(),
-		Database:                d.Database.ValueString(),
-		Schema:                  d.Schema.ValueString(),
-		UseSameSchemaAsSource:   d.UseSameSchemaAsSource.ValueBool(),
-		SchemaNamePrefix:        d.SchemaNamePrefix.ValueString(),
-		Bucket:                  d.Bucket.ValueString(),
-		TableNameSeparator:      d.TableNameSeparator.ValueString(),
-		Folder:                  d.Folder.ValueString(),
-		CreateIcebergNamespaces: d.CreateIcebergNamespaces.ValueBool(),
+func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
+	return openapi.PayloadsSpecificConfig{
+		Database:                    lib.ToPtr(d.Database.ValueString()),
+		Schema:                      lib.ToPtr(d.Schema.ValueString()),
+		UseSameSchemaAsSource:       lib.ToPtr(d.UseSameSchemaAsSource.ValueBool()),
+		SchemaNamePrefix:            lib.ToPtr(d.SchemaNamePrefix.ValueString()),
+		BucketName:                  lib.ToPtr(d.Bucket.ValueString()),
+		TableNameSeparator:          lib.ToPtr(d.TableNameSeparator.ValueString()),
+		FolderName:                  lib.ToPtr(d.Folder.ValueString()),
+		DynamicallyCreateNamespaces: lib.ToPtr(d.CreateIcebergNamespaces.ValueBool()),
 	}
 }
 
-func PipelineDestinationConfigFromAPIModel(apiModel artieclient.DestinationConfig) PipelineDestinationConfig {
+func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConfig) PipelineDestinationConfig {
 	return PipelineDestinationConfig{
-		Dataset:                 types.StringValue(apiModel.Dataset),
-		Database:                types.StringValue(apiModel.Database),
-		Schema:                  types.StringValue(apiModel.Schema),
-		UseSameSchemaAsSource:   types.BoolValue(apiModel.UseSameSchemaAsSource),
-		SchemaNamePrefix:        types.StringValue(apiModel.SchemaNamePrefix),
-		Bucket:                  types.StringValue(apiModel.Bucket),
-		TableNameSeparator:      types.StringValue(apiModel.TableNameSeparator),
-		Folder:                  types.StringValue(apiModel.Folder),
-		CreateIcebergNamespaces: types.BoolValue(apiModel.CreateIcebergNamespaces),
+		// The API has no dataset field (BigQuery uses database), so this always reads back empty.
+		Dataset:                 types.StringValue(""),
+		Database:                types.StringValue(lib.RemovePtr(apiModel.Database)),
+		Schema:                  types.StringValue(lib.RemovePtr(apiModel.Schema)),
+		UseSameSchemaAsSource:   types.BoolValue(lib.RemovePtr(apiModel.UseSameSchemaAsSource)),
+		SchemaNamePrefix:        types.StringValue(lib.RemovePtr(apiModel.SchemaNamePrefix)),
+		Bucket:                  types.StringValue(lib.RemovePtr(apiModel.BucketName)),
+		TableNameSeparator:      types.StringValue(lib.RemovePtr(apiModel.TableNameSeparator)),
+		Folder:                  types.StringValue(lib.RemovePtr(apiModel.FolderName)),
+		CreateIcebergNamespaces: types.BoolValue(lib.RemovePtr(apiModel.DynamicallyCreateNamespaces)),
 	}
 }
 
@@ -57,31 +58,10 @@ type FlushConfig struct {
 	FlushSizeKB          types.Int64 `tfsdk:"flush_size_kb"`
 }
 
-func (f *FlushConfig) ToAPIModel() *artieclient.FlushConfig {
-	if f == nil {
-		// Support unknown.
-		return nil
-	}
-
-	return &artieclient.FlushConfig{
-		FlushIntervalSeconds: f.FlushIntervalSeconds.ValueInt64(),
-		BufferRows:           f.BufferRows.ValueInt64(),
-		FlushSizeKB:          f.FlushSizeKB.ValueInt64(),
-	}
-}
-
 var flushAttrTypes = map[string]attr.Type{
 	"flush_interval_seconds": types.Int64Type,
 	"buffer_rows":            types.Int64Type,
 	"flush_size_kb":          types.Int64Type,
-}
-
-func FlushConfigFromAPIModel(ctx context.Context, apiModel artieclient.FlushConfig) (types.Object, diag.Diagnostics) {
-	return types.ObjectValueFrom(ctx, flushAttrTypes, FlushConfig{
-		FlushIntervalSeconds: types.Int64Value(apiModel.FlushIntervalSeconds),
-		BufferRows:           types.Int64Value(apiModel.BufferRows),
-		FlushSizeKB:          types.Int64Value(apiModel.FlushSizeKB),
-	})
 }
 
 func buildFlushConfig(ctx context.Context, d types.Object) (*FlushConfig, diag.Diagnostics) {
@@ -108,24 +88,24 @@ var StaticColumnAttrTypes = map[string]attr.Type{
 	"value":  types.StringType,
 }
 
-func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]artieclient.StaticColumn, diag.Diagnostics) {
+func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]openapi.PayloadsStaticColumn, diag.Diagnostics) {
 	staticColumns, diags := parseOptionalList[StaticColumn](ctx, staticColumnsList)
 	if staticColumns == nil {
 		return nil, diags
 	}
 
-	var apiStaticColumns []artieclient.StaticColumn
+	var apiStaticColumns []openapi.PayloadsStaticColumn
 	for _, sc := range *staticColumns {
-		apiStaticColumns = append(apiStaticColumns, artieclient.StaticColumn{
-			Column: sc.Column.ValueString(),
-			Value:  sc.Value.ValueString(),
+		apiStaticColumns = append(apiStaticColumns, openapi.PayloadsStaticColumn{
+			Column: lib.ToPtr(sc.Column.ValueString()),
+			Value:  lib.ToPtr(sc.Value.ValueString()),
 		})
 	}
 
 	return &apiStaticColumns, diags
 }
 
-func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]artieclient.StaticColumn) (types.List, diag.Diagnostics) {
+func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]openapi.PayloadsStaticColumn) (types.List, diag.Diagnostics) {
 	if apiStaticColumns == nil || len(*apiStaticColumns) == 0 {
 		// Return an empty list instead of null to avoid perpetual diffs when
 		// the user explicitly specifies `static_columns = []`
@@ -135,8 +115,8 @@ func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]artieclient.S
 	var staticColumns []StaticColumn
 	for _, sc := range *apiStaticColumns {
 		staticColumns = append(staticColumns, StaticColumn{
-			Column: types.StringValue(sc.Column),
-			Value:  types.StringValue(sc.Value),
+			Column: types.StringValue(lib.RemovePtr(sc.Column)),
+			Value:  types.StringValue(lib.RemovePtr(sc.Value)),
 		})
 	}
 
@@ -185,19 +165,19 @@ type Pipeline struct {
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
 }
 
-func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline, diag.Diagnostics) {
+func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePayload, diag.Diagnostics) {
 	tables := map[string]Table{}
 	diags := p.Tables.ElementsAs(ctx, &tables, false)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
-	apiTables := []artieclient.Table{}
+	apiTables := []openapi.PayloadsTablePayload{}
 	for _, table := range tables {
 		apiTable, tableDiags := table.ToAPIModel(ctx)
 		diags.Append(tableDiags...)
 		if diags.HasError() {
-			return artieclient.BasePipeline{}, diags
+			return openapi.PayloadsPipelinePayload{}, diags
 		}
 		apiTables = append(apiTables, apiTable)
 	}
@@ -205,46 +185,46 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 	sourceReaderUUID, sourceReaderDiags := parseOptionalUUID(p.SourceReaderUUID)
 	diags.Append(sourceReaderDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
 	destinationUUID, destDiags := parseOptionalUUID(p.DestinationUUID)
 	diags.Append(destDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
 	snowflakeEcoScheduleUUID, snowflakeDiags := parseOptionalUUID(p.SnowflakeEcoScheduleUUID)
 	diags.Append(snowflakeDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
 	encryptionKeyUUID, encryptionKeyDiags := parseOptionalUUID(p.EncryptionKeyUUID)
 	diags.Append(encryptionKeyDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
 	columnHashingSaltUUID, columnHashingSaltDiags := parseOptionalUUID(p.ColumnHashingSaltUUID)
 	diags.Append(columnHashingSaltDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
 	flushConfig, flushConfigDiags := buildFlushConfig(ctx, p.FlushConfig)
 	diags.Append(flushConfigDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
 	staticColumns, staticColumnsDiags := staticColumnsToAPI(ctx, p.StaticColumns)
 	diags.Append(staticColumnsDiags...)
 	if diags.HasError() {
-		return artieclient.BasePipeline{}, diags
+		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
-	advancedSettings := artieclient.AdvancedSettings{
+	advancedSettings := openapi.PayloadsAdvancedPipelineSettingsPayload{
 		DropDeletedColumns:                           p.DropDeletedColumns.ValueBoolPointer(),
 		EnableSoftDelete:                             p.SoftDeleteRows.ValueBoolPointer(),
 		IncludeArtieUpdatedAtColumn:                  p.IncludeArtieUpdatedAtColumn.ValueBoolPointer(),
@@ -266,50 +246,33 @@ func (p Pipeline) ToAPIBaseModel(ctx context.Context) (artieclient.BasePipeline,
 		WriteRawBinaryValues:                         p.WriteRawBinaryValues.ValueBoolPointer(),
 		DisableAlerts:                                p.DisableAlerts.ValueBoolPointer(),
 		DatabricksAutoLiquidClustering:               p.DatabricksAutoLiquidClustering.ValueBoolPointer(),
-		MaxConcurrentSnapshots:                       p.MaxConcurrentSnapshots.ValueInt64Pointer(),
+		MaxConcurrentSnapshots:                       int64ToIntPointer(p.MaxConcurrentSnapshots),
 		TurboWarehouse:                               p.TurboWarehouse.ValueStringPointer(),
-		TurboRowThreshold:                            p.TurboRowThreshold.ValueInt64Pointer(),
-		TurboLatencyThresholdMinutes:                 p.TurboLatencyThresholdMinutes.ValueInt64Pointer(),
+		TurboRowThreshold:                            int64ToIntPointer(p.TurboRowThreshold),
+		TurboLatencyThresholdMinutes:                 int64ToIntPointer(p.TurboLatencyThresholdMinutes),
 	}
 	if flushConfig != nil {
-		advancedSettings.FlushIntervalSeconds = flushConfig.FlushIntervalSeconds.ValueInt64Pointer()
-		advancedSettings.BufferRows = flushConfig.BufferRows.ValueInt64Pointer()
-		advancedSettings.FlushSizeKB = flushConfig.FlushSizeKB.ValueInt64Pointer()
+		advancedSettings.FlushIntervalSeconds = int64ToIntPointer(flushConfig.FlushIntervalSeconds)
+		advancedSettings.BufferRows = int64ToIntPointer(flushConfig.BufferRows)
+		advancedSettings.FlushSizeKb = int64ToIntPointer(flushConfig.FlushSizeKB)
 	}
 
-	return artieclient.BasePipeline{
-		Name:                     p.Name.ValueString(),
+	destinationConfig := p.DestinationConfig.ToAPIModel()
+	return openapi.PayloadsPipelinePayload{
+		Name:                     lib.ToPtr(p.Name.ValueString()),
 		SourceReaderUUID:         sourceReaderUUID,
-		Tables:                   apiTables,
+		Tables:                   &apiTables,
 		DestinationUUID:          destinationUUID,
-		DestinationConfig:        p.DestinationConfig.ToAPIModel(),
+		SpecificDestCfg:          &destinationConfig,
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		EncryptionKeyUUID:        encryptionKeyUUID,
 		ColumnHashingSaltUUID:    columnHashingSaltUUID,
-		DataPlaneName:            p.DataPlaneName.ValueString(),
+		DataPlaneName:            lib.ToPtr(p.DataPlaneName.ValueString()),
 		AdvancedSettings:         &advancedSettings,
 	}, diags
 }
 
-func (p Pipeline) ToAPIModel(ctx context.Context) (artieclient.Pipeline, diag.Diagnostics) {
-	apiBaseModel, diags := p.ToAPIBaseModel(ctx)
-	if diags.HasError() {
-		return artieclient.Pipeline{}, diags
-	}
-
-	uuid, uuidDiags := parseUUID(p.UUID)
-	diags.Append(uuidDiags...)
-	if diags.HasError() {
-		return artieclient.Pipeline{}, diags
-	}
-
-	return artieclient.Pipeline{
-		UUID:         uuid,
-		BasePipeline: apiBaseModel,
-	}, diags
-}
-
-func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (Pipeline, diag.Diagnostics) {
+func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipeline) (Pipeline, diag.Diagnostics) {
 	tables, diags := TablesFromAPIModel(ctx, apiModel.Tables)
 	if diags.HasError() {
 		return Pipeline{}, diags
@@ -321,7 +284,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 		return Pipeline{}, diags
 	}
 
-	destinationConfig := PipelineDestinationConfigFromAPIModel(apiModel.DestinationConfig)
+	destinationConfig := PipelineDestinationConfigFromAPIModel(apiModel.SpecificDestCfg)
 
 	var flushConfig types.Object
 	var dropDeletedColumns types.Bool
@@ -348,113 +311,103 @@ func PipelineFromAPIModel(ctx context.Context, apiModel artieclient.Pipeline) (P
 	var turboLatencyThresholdMinutes types.Int64
 
 	autoReplicateNewTables := types.BoolValue(false)
-	disableAlerts := types.BoolValue(false)
-	databricksAutoLiquidClustering := types.BoolValue(false)
-	staticColumns, staticColumnsDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: StaticColumnAttrTypes}, []StaticColumn{})
-	diags.Append(staticColumnsDiags...)
-	if diags.HasError() {
-		return Pipeline{}, diags
+
+	settings := apiModel.AdvancedSettings
+	if settings.DropDeletedColumns != nil {
+		dropDeletedColumns = types.BoolValue(*settings.DropDeletedColumns)
 	}
-
-	if apiModel.AdvancedSettings != nil {
-		if apiModel.AdvancedSettings.DropDeletedColumns != nil {
-			dropDeletedColumns = types.BoolValue(*apiModel.AdvancedSettings.DropDeletedColumns)
-		}
-		if apiModel.AdvancedSettings.EnableSoftDelete != nil {
-			softDeleteRows = types.BoolValue(*apiModel.AdvancedSettings.EnableSoftDelete)
-		}
-		if apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn != nil {
-			includeArtieUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn)
-		}
-		if apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn != nil {
-			includeDatabaseUpdatedAtColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeDatabaseUpdatedAtColumn)
-		}
-		if apiModel.AdvancedSettings.IncludeArtieOperationColumn != nil {
-			includeArtieOperationColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeArtieOperationColumn)
-		}
-		if apiModel.AdvancedSettings.IncludeFullSourceTableNameColumn != nil {
-			includeFullSourceTableNameColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeFullSourceTableNameColumn)
-		}
-		if apiModel.AdvancedSettings.IncludeFullSourceTableNameColumnAsPrimaryKey != nil {
-			includeFullSourceTableNameColumnAsPrimaryKey = types.BoolValue(*apiModel.AdvancedSettings.IncludeFullSourceTableNameColumnAsPrimaryKey)
-		}
-		if apiModel.AdvancedSettings.DefaultSourceSchema != nil {
-			defaultSourceSchema = types.StringValue(*apiModel.AdvancedSettings.DefaultSourceSchema)
-		}
-		if apiModel.AdvancedSettings.SplitEventsByType != nil {
-			splitEventsByType = types.BoolValue(*apiModel.AdvancedSettings.SplitEventsByType)
-		}
-		if apiModel.AdvancedSettings.IncludeSourceMetadataColumn != nil {
-			includeSourceMetadataColumn = types.BoolValue(*apiModel.AdvancedSettings.IncludeSourceMetadataColumn)
-		}
-		if apiModel.AdvancedSettings.AutoEnableHistoryForNewTables != nil {
-			autoEnableHistoryForNewTables = types.BoolValue(*apiModel.AdvancedSettings.AutoEnableHistoryForNewTables)
-		}
-		if apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex != nil {
-			autoEnableHistoryIgnoreRegex = types.StringValue(*apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex)
-		}
-		if apiModel.AdvancedSettings.AutoReplicateIgnoreRegex != nil {
-			autoReplicateIgnoreRegex = types.StringValue(*apiModel.AdvancedSettings.AutoReplicateIgnoreRegex)
-		}
-		if apiModel.AdvancedSettings.AutoReplicateNewTables != nil {
-			autoReplicateNewTables = types.BoolValue(*apiModel.AdvancedSettings.AutoReplicateNewTables)
-		}
-		if apiModel.AdvancedSettings.AppendOnly != nil {
-			appendOnly = types.BoolValue(*apiModel.AdvancedSettings.AppendOnly)
-		}
-		if apiModel.AdvancedSettings.StagingSchema != nil {
-			stagingSchema = types.StringValue(*apiModel.AdvancedSettings.StagingSchema)
-		}
-		if apiModel.AdvancedSettings.ForceUTCTimezone != nil {
-			forceUTCTimezone = types.BoolValue(*apiModel.AdvancedSettings.ForceUTCTimezone)
-		}
-		if apiModel.AdvancedSettings.WriteRawBinaryValues != nil {
-			writeRawBinaryValues = types.BoolValue(*apiModel.AdvancedSettings.WriteRawBinaryValues)
-		}
-		if apiModel.AdvancedSettings.TurboWarehouse != nil {
-			turboWarehouse = types.StringValue(*apiModel.AdvancedSettings.TurboWarehouse)
-		}
-		if apiModel.AdvancedSettings.TurboRowThreshold != nil {
-			turboRowThreshold = types.Int64Value(*apiModel.AdvancedSettings.TurboRowThreshold)
-		}
-		if apiModel.AdvancedSettings.TurboLatencyThresholdMinutes != nil {
-			turboLatencyThresholdMinutes = types.Int64Value(*apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
-		}
-		if apiModel.AdvancedSettings.MaxConcurrentSnapshots != nil {
-			maxConcurrentSnapshots = types.Int64Value(*apiModel.AdvancedSettings.MaxConcurrentSnapshots)
-		}
-		disableAlerts = boolPointerValueOrFalse(apiModel.AdvancedSettings.DisableAlerts)
-		databricksAutoLiquidClustering = boolPointerValueOrFalse(apiModel.AdvancedSettings.DatabricksAutoLiquidClustering)
-		flushConfigMap := map[string]attr.Value{}
-		if apiModel.AdvancedSettings.FlushIntervalSeconds != nil {
-			flushConfigMap["flush_interval_seconds"] = types.Int64Value(*apiModel.AdvancedSettings.FlushIntervalSeconds)
-		}
-		if apiModel.AdvancedSettings.BufferRows != nil {
-			flushConfigMap["buffer_rows"] = types.Int64Value(*apiModel.AdvancedSettings.BufferRows)
-		}
-		if apiModel.AdvancedSettings.FlushSizeKB != nil {
-			flushConfigMap["flush_size_kb"] = types.Int64Value(*apiModel.AdvancedSettings.FlushSizeKB)
-		}
-		if len(flushConfigMap) > 0 {
-			var flushConfigDiags diag.Diagnostics
-			flushConfig, flushConfigDiags = types.ObjectValue(flushAttrTypes, flushConfigMap)
-			diags.Append(flushConfigDiags...)
-			if diags.HasError() {
-				return Pipeline{}, diags
-			}
-		}
-
-		// Convert static columns
-		var staticColumnsDiags diag.Diagnostics
-		staticColumns, staticColumnsDiags = staticColumnsFromAPI(ctx, apiModel.AdvancedSettings.StaticColumns)
-		diags.Append(staticColumnsDiags...)
+	if settings.EnableSoftDelete != nil {
+		softDeleteRows = types.BoolValue(*settings.EnableSoftDelete)
+	}
+	if settings.IncludeArtieUpdatedAtColumn != nil {
+		includeArtieUpdatedAtColumn = types.BoolValue(*settings.IncludeArtieUpdatedAtColumn)
+	}
+	if settings.IncludeDatabaseUpdatedAtColumn != nil {
+		includeDatabaseUpdatedAtColumn = types.BoolValue(*settings.IncludeDatabaseUpdatedAtColumn)
+	}
+	if settings.IncludeArtieOperationColumn != nil {
+		includeArtieOperationColumn = types.BoolValue(*settings.IncludeArtieOperationColumn)
+	}
+	if settings.IncludeFullSourceTableNameColumn != nil {
+		includeFullSourceTableNameColumn = types.BoolValue(*settings.IncludeFullSourceTableNameColumn)
+	}
+	if settings.IncludeFullSourceTableNameColumnAsPrimaryKey != nil {
+		includeFullSourceTableNameColumnAsPrimaryKey = types.BoolValue(*settings.IncludeFullSourceTableNameColumnAsPrimaryKey)
+	}
+	if settings.DefaultSourceSchema != nil {
+		defaultSourceSchema = types.StringValue(*settings.DefaultSourceSchema)
+	}
+	if settings.SplitEventsByType != nil {
+		splitEventsByType = types.BoolValue(*settings.SplitEventsByType)
+	}
+	if settings.IncludeSourceMetadataColumn != nil {
+		includeSourceMetadataColumn = types.BoolValue(*settings.IncludeSourceMetadataColumn)
+	}
+	if settings.AutoEnableHistoryForNewTables != nil {
+		autoEnableHistoryForNewTables = types.BoolValue(*settings.AutoEnableHistoryForNewTables)
+	}
+	if settings.AutoEnableHistoryIgnoreRegex != nil {
+		autoEnableHistoryIgnoreRegex = types.StringValue(*settings.AutoEnableHistoryIgnoreRegex)
+	}
+	if settings.AutoReplicateIgnoreRegex != nil {
+		autoReplicateIgnoreRegex = types.StringValue(*settings.AutoReplicateIgnoreRegex)
+	}
+	if settings.AutoReplicateNewTables != nil {
+		autoReplicateNewTables = types.BoolValue(*settings.AutoReplicateNewTables)
+	}
+	if settings.AppendOnly != nil {
+		appendOnly = types.BoolValue(*settings.AppendOnly)
+	}
+	if settings.StagingSchema != nil {
+		stagingSchema = types.StringValue(*settings.StagingSchema)
+	}
+	if settings.ForceUTCTimezone != nil {
+		forceUTCTimezone = types.BoolValue(*settings.ForceUTCTimezone)
+	}
+	if settings.WriteRawBinaryValues != nil {
+		writeRawBinaryValues = types.BoolValue(*settings.WriteRawBinaryValues)
+	}
+	if settings.TurboWarehouse != nil {
+		turboWarehouse = types.StringValue(*settings.TurboWarehouse)
+	}
+	if settings.TurboRowThreshold != nil {
+		turboRowThreshold = types.Int64Value(int64(*settings.TurboRowThreshold))
+	}
+	if settings.TurboLatencyThresholdMinutes != nil {
+		turboLatencyThresholdMinutes = types.Int64Value(int64(*settings.TurboLatencyThresholdMinutes))
+	}
+	if settings.MaxConcurrentSnapshots != nil {
+		maxConcurrentSnapshots = types.Int64Value(int64(*settings.MaxConcurrentSnapshots))
+	}
+	disableAlerts := boolPointerValueOrFalse(settings.DisableAlerts)
+	databricksAutoLiquidClustering := boolPointerValueOrFalse(settings.DatabricksAutoLiquidClustering)
+	flushConfigMap := map[string]attr.Value{}
+	if settings.FlushIntervalSeconds != nil {
+		flushConfigMap["flush_interval_seconds"] = types.Int64Value(int64(*settings.FlushIntervalSeconds))
+	}
+	if settings.BufferRows != nil {
+		flushConfigMap["buffer_rows"] = types.Int64Value(int64(*settings.BufferRows))
+	}
+	if settings.FlushSizeKb != nil {
+		flushConfigMap["flush_size_kb"] = types.Int64Value(int64(*settings.FlushSizeKb))
+	}
+	if len(flushConfigMap) > 0 {
+		var flushConfigDiags diag.Diagnostics
+		flushConfig, flushConfigDiags = types.ObjectValue(flushAttrTypes, flushConfigMap)
+		diags.Append(flushConfigDiags...)
 		if diags.HasError() {
 			return Pipeline{}, diags
 		}
 	}
 
+	staticColumns, staticColumnsDiags := staticColumnsFromAPI(ctx, settings.StaticColumns)
+	diags.Append(staticColumnsDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
+
 	return Pipeline{
-		UUID:                     types.StringValue(apiModel.UUID.String()),
+		UUID:                     types.StringValue(apiModel.Uuid.String()),
 		Name:                     types.StringValue(apiModel.Name),
 		Tables:                   tablesMap,
 		SourceReaderUUID:         optionalUUIDToStringValue(apiModel.SourceReaderUUID),

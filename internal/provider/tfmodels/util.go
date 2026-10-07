@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+
+	"terraform-provider-artie/internal/lib"
 )
 
 func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
@@ -132,4 +134,12 @@ func nonEmptyStringPointer(value types.String) *string {
 		return nil
 	}
 	return value.ValueStringPointer()
+}
+
+// int64ToIntPointer converts a Terraform Int64 to the *int the OpenAPI client uses, returning nil for null or unknown.
+func int64ToIntPointer(value types.Int64) *int {
+	if value.IsNull() || value.IsUnknown() {
+		return nil
+	}
+	return lib.ToPtr(int(value.ValueInt64()))
 }
