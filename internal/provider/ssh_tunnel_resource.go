@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -28,7 +29,7 @@ func NewSSHTunnelResource() resource.Resource {
 }
 
 type SSHTunnelResource struct {
-	client artieclient.Client
+	client *openapi.ClientWithResponses
 }
 
 func (r *SSHTunnelResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -76,7 +77,7 @@ func (r *SSHTunnelResource) Configure(ctx context.Context, req resource.Configur
 		return
 	}
 
-	client, err := providerData.NewClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
@@ -97,7 +98,7 @@ func (r *SSHTunnelResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, di
 	return planData, diagnostics.HasError()
 }
 
-func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, sshTunnel artieclient.SSHTunnel) {
+func (r *SSHTunnelResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, sshTunnel openapi.PayloadsSSHTunnel) {
 	// Translate API response type into Terraform model and save it into state
 	diagnostics.Append(state.Set(ctx, tfmodels.SSHTunnelFromAPIModel(sshTunnel))...)
 }
@@ -108,13 +109,13 @@ func (r *SSHTunnelResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	sshTunnel, err := r.client.SSHTunnels().Create(ctx, planData.ToAPIBaseModel())
+	sshTunnel, err := artieclient.JSON200(r.client.SshTunnelCreateWithResponse(ctx, planData.ToAPICreateRequest()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create SSH Tunnel", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sshTunnel)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sshTunnel)
 }
 
 func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -123,13 +124,13 @@ func (r *SSHTunnelResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	sshTunnel, err := r.client.SSHTunnels().Get(ctx, tunnelUUID)
+	sshTunnel, err := artieclient.JSON200(r.client.SshTunnelDetailWithResponse(ctx, tunnelUUID))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read SSH Tunnel", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sshTunnel)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sshTunnel)
 }
 
 func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -138,19 +139,13 @@ func (r *SSHTunnelResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	apiModel, diags := planData.ToAPIModel()
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
-	sshTunnel, err := r.client.SSHTunnels().Update(ctx, apiModel)
+	sshTunnel, err := artieclient.JSON200(r.client.SshTunnelUpdateWithResponse(ctx, planData.UUID.ValueString(), planData.ToAPIUpdateRequest()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update SSH Tunnel", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, sshTunnel)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sshTunnel)
 }
 
 func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -159,7 +154,7 @@ func (r *SSHTunnelResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	if err := r.client.SSHTunnels().Delete(ctx, tunnelUUID); err != nil {
+	if err := artieclient.CheckResponse(r.client.SshTunnelDeleteWithResponse(ctx, tunnelUUID)); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete SSH Tunnel", err.Error())
 	}
 }
