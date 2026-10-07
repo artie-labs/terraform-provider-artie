@@ -37,7 +37,7 @@ func NewSourceReaderResource() resource.Resource {
 }
 
 type SourceReaderResource struct {
-	sourceReaders artieclient.SourceReaderClient
+	client *openapi.ClientWithResponses
 }
 
 func (r *SourceReaderResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -116,13 +116,13 @@ func (r *SourceReaderResource) Configure(ctx context.Context, req resource.Confi
 		return
 	}
 
-	openAPIClient, err := providerData.NewOpenAPIClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
 	}
 
-	r.sourceReaders = artieclient.NewSourceReaderClient(openAPIClient)
+	r.client = client
 }
 
 func (r *SourceReaderResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {
@@ -228,13 +228,13 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	if err := r.sourceReaders.Validate(ctx, apiModel); err != nil {
+	if err := r.validate(ctx, apiModel); err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
 	}
 
 	createReq := tfmodels.SourceReaderCreateRequestFromAPIModel(apiModel)
-	sourceReader, err := r.sourceReaders.Create(ctx, createReq)
+	sourceReader, err := artieclient.JSON200(r.client.SourceReaderCreateWithResponse(ctx, createReq))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Source Reader", err.Error())
 		return
@@ -243,7 +243,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, planData.StatusOverride)
 
 	if lib.RemovePtr(sourceReader.IsShared) {
-		if err := r.sourceReaders.Deploy(ctx, sourceReader.Uuid.String()); err != nil {
+		if err := artieclient.CheckResponse(r.client.SourceReaderDeployWithResponse(ctx, sourceReader.Uuid.String())); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
 	}
@@ -256,7 +256,7 @@ func (r *SourceReaderResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	sourceReader, err := r.sourceReaders.Get(ctx, stateData.UUID.ValueString())
+	sourceReader, err := artieclient.JSON200(r.client.SourceReaderDetailWithResponse(ctx, stateData.UUID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read Source Reader", err.Error())
 		return
@@ -277,12 +277,12 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	if err := r.sourceReaders.Validate(ctx, apiModel); err != nil {
+	if err := r.validate(ctx, apiModel); err != nil {
 		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
 		return
 	}
 
-	updatedSourceReader, err := r.sourceReaders.Update(ctx, apiModel.Uuid.String(), apiModel)
+	updatedSourceReader, err := artieclient.JSON200(r.client.SourceReaderUpdateWithResponse(ctx, apiModel.Uuid.String(), apiModel))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Source Reader", err.Error())
 		return
@@ -292,11 +292,13 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 
 	if lib.RemovePtr(updatedSourceReader.IsShared) {
 		if planData.StatusOverride.ValueString() == "paused" {
-			if err := r.sourceReaders.UpdateStatus(ctx, updatedSourceReader.Uuid.String(), "paused"); err != nil {
+			if err := artieclient.CheckResponse(r.client.SourceReaderUpdateStatusWithResponse(ctx, updatedSourceReader.Uuid.String(), openapi.RouterSourceReaderUpdateStatusRequest{
+				Status: openapi.EnumsSourceReaderStatusPaused,
+			})); err != nil {
 				resp.Diagnostics.AddError("Unable to pause Source Reader", err.Error())
 			}
 		} else {
-			if err := r.sourceReaders.Deploy(ctx, updatedSourceReader.Uuid.String()); err != nil {
+			if err := artieclient.CheckResponse(r.client.SourceReaderDeployWithResponse(ctx, updatedSourceReader.Uuid.String())); err != nil {
 				resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 			}
 		}
@@ -309,10 +311,22 @@ func (r *SourceReaderResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	if err := r.sourceReaders.Delete(ctx, sourceReaderUUID); err != nil {
+	if err := artieclient.CheckResponse(r.client.SourceReaderDeleteWithResponse(ctx, sourceReaderUUID)); err != nil {
 		resp.Diagnostics.AddError("Unable to delete Source Reader", err.Error())
 		return
 	}
+}
+
+// validate runs the API's checks against an unsaved source reader.
+func (r *SourceReaderResource) validate(ctx context.Context, sourceReader openapi.PayloadsSourceReader) error {
+	resp, err := r.client.SourceReaderValidateUnsavedWithResponse(ctx, openapi.RouterSourceReaderValidateUnsavedRequest{SourceReader: sourceReader})
+	if err := artieclient.CheckResponse(resp, err); err != nil {
+		return err
+	}
+	if resp.JSON200 != nil && resp.JSON200.Error != "" {
+		return fmt.Errorf("source reader validation failed: %s", resp.JSON200.Error)
+	}
+	return nil
 }
 
 func (r *SourceReaderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
