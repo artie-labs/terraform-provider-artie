@@ -173,10 +173,6 @@ func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineCl
 	return PipelineClient{client: c, openAPIClient: openAPIClient}
 }
 
-func (c Client) PrivateLinks() PrivateLinkClient {
-	return PrivateLinkClient{client: c}
-}
-
 func (c Client) EncryptionKeys() EncryptionKeyClient {
 	return EncryptionKeyClient{client: c}
 }

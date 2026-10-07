@@ -124,3 +124,12 @@ func IsExplicitlyTrue(value types.Bool) bool {
 func IsExplicitlyFalse(value types.Bool) bool {
 	return IsKnown(value) && !value.ValueBool()
 }
+
+// nonEmptyStringPointer returns nil for a null, unknown, or empty string, so the field is omitted from the request body
+// the same way the hand-written client's `omitempty` tags did.
+func nonEmptyStringPointer(value types.String) *string {
+	if value.ValueString() == "" {
+		return nil
+	}
+	return value.ValueStringPointer()
+}
