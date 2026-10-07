@@ -348,10 +348,11 @@ func (o OracleSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 
 func OracleSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *OracleSharedConfig {
 	return &OracleSharedConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		Username: types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		Username:     types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
 	}
 }
 
@@ -375,10 +376,11 @@ func (p PostgresSharedConfig) ToAPIModel() artieclient.ConnectorConfig {
 
 func PostgresSharedConfigFromAPIModel(apiModel artieclient.ConnectorConfig) *PostgresSharedConfig {
 	return &PostgresSharedConfig{
-		Host:     types.StringValue(apiModel.Host),
-		Port:     types.Int32Value(apiModel.Port),
-		Username: types.StringValue(apiModel.User),
-		Password: types.StringValue(apiModel.Password),
+		Host:         types.StringValue(apiModel.Host),
+		SnapshotHost: types.StringValue(apiModel.SnapshotHost),
+		Port:         types.Int32Value(apiModel.Port),
+		Username:     types.StringValue(apiModel.User),
+		Password:     types.StringValue(apiModel.Password),
 	}
 }
 
