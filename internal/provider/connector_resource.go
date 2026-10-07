@@ -20,6 +20,7 @@ import (
 	"terraform-provider-artie/internal/maputil"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 )
 
@@ -28,12 +29,32 @@ var _ resource.Resource = &ConnectorResource{}
 var _ resource.ResourceWithConfigure = &ConnectorResource{}
 var _ resource.ResourceWithImportState = &ConnectorResource{}
 
+// supportedConnectorTypes lists the source and destination connector types this resource can configure.
+var supportedConnectorTypes = []string{
+	string(openapi.EnumsConnectorSlugApi),
+	string(openapi.EnumsConnectorSlugBigquery),
+	string(openapi.EnumsConnectorSlugCockroach),
+	string(openapi.EnumsConnectorSlugDatabricks),
+	string(openapi.EnumsConnectorSlugDynamodb),
+	string(openapi.EnumsConnectorSlugGcs),
+	string(openapi.EnumsConnectorSlugIceberg),
+	string(openapi.EnumsConnectorSlugKeyspaces),
+	string(openapi.EnumsConnectorSlugMongodb),
+	string(openapi.EnumsConnectorSlugMssql),
+	string(openapi.EnumsConnectorSlugMysql),
+	string(openapi.EnumsConnectorSlugOracle),
+	string(openapi.EnumsConnectorSlugPostgresql),
+	string(openapi.EnumsConnectorSlugRedshift),
+	string(openapi.EnumsConnectorSlugS3),
+	string(openapi.EnumsConnectorSlugSnowflake),
+}
+
 func NewConnectorResource() resource.Resource {
 	return &ConnectorResource{}
 }
 
 type ConnectorResource struct {
-	client artieclient.Client
+	client *openapi.ClientWithResponses
 }
 
 func (r *ConnectorResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -42,7 +63,7 @@ func (r *ConnectorResource) Metadata(ctx context.Context, req resource.MetadataR
 
 func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	connectorTypes := maputil.NewSortedStringsMap[bool]()
-	for _, connectorType := range artieclient.AllConnectorTypes {
+	for _, connectorType := range supportedConnectorTypes {
 		connectorTypes.Add(fmt.Sprintf("`%s`", connectorType), true)
 	}
 
@@ -54,7 +75,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"type": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: fmt.Sprintf("The type of connector. This must be one of the following: %s.", strings.Join(connectorTypes.Keys(), ", ")),
-				Validators:          []validator.String{stringvalidator.OneOf(artieclient.AllConnectorTypes...)},
+				Validators:          []validator.String{stringvalidator.OneOf(supportedConnectorTypes...)},
 			},
 			"name": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this connector."},
 			"data_plane_name": schema.StringAttribute{
@@ -297,7 +318,7 @@ func (r *ConnectorResource) Configure(ctx context.Context, req resource.Configur
 		return
 	}
 
-	client, err := providerData.NewClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
@@ -318,7 +339,7 @@ func (r *ConnectorResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, di
 	return planData, diagnostics.HasError()
 }
 
-func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector artieclient.Connector) {
+func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector openapi.PayloadsFullConnector) {
 	// Translate API response type into Terraform model and save it into state
 	connector, diags := tfmodels.ConnectorFromAPIModel(apiConnector)
 	diagnostics.Append(diags...)
@@ -337,17 +358,17 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	}
 
 	switch configData.Type.ValueString() {
-	case string(artieclient.BigQuery):
+	case string(openapi.EnumsConnectorSlugBigquery):
 		if configData.BigQueryConfig == nil {
 			resp.Diagnostics.AddError("bigquery_config is required", "Please provide `bigquery_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.CockroachDB):
+	case string(openapi.EnumsConnectorSlugCockroach):
 		if configData.CockroachDBConfig == nil {
 			resp.Diagnostics.AddError("cockroach_config is required", "Please provide `cockroach_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.DynamoDB):
+	case string(openapi.EnumsConnectorSlugDynamodb):
 		if configData.DynamoDBConfig == nil {
 			resp.Diagnostics.AddError("dynamodb_config is required", "Please provide `dynamodb_config` inside `connector`.")
 			return
@@ -361,12 +382,12 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `dynamodb_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
-	case string(artieclient.GCS):
+	case string(openapi.EnumsConnectorSlugGcs):
 		if configData.GCSConfig == nil {
 			resp.Diagnostics.AddError("gcs_config is required", "Please provide `gcs_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.Iceberg):
+	case string(openapi.EnumsConnectorSlugIceberg):
 		if configData.IcebergConfig == nil {
 			resp.Diagnostics.AddError("iceberg_config is required", "Please provide `iceberg_config` inside `connector`.")
 			return
@@ -397,7 +418,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 				resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
 			}
 		}
-	case string(artieclient.Keyspaces):
+	case string(openapi.EnumsConnectorSlugKeyspaces):
 		if configData.KeyspacesConfig == nil {
 			resp.Diagnostics.AddError("keyspaces_config is required", "Please provide `keyspaces_config` inside `connector`.")
 			return
@@ -411,37 +432,37 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `keyspaces_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
-	case string(artieclient.MongoDB):
+	case string(openapi.EnumsConnectorSlugMongodb):
 		if configData.MongoDBConfig == nil {
 			resp.Diagnostics.AddError("mongodb_config is required", "Please provide `mongodb_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.MySQL):
+	case string(openapi.EnumsConnectorSlugMysql):
 		if configData.MySQLConfig == nil {
 			resp.Diagnostics.AddError("mysql_config is required", "Please provide `mysql_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.MSSQL):
+	case string(openapi.EnumsConnectorSlugMssql):
 		if configData.MSSQLConfig == nil {
 			resp.Diagnostics.AddError("mssql_config is required", "Please provide `mssql_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.Oracle):
+	case string(openapi.EnumsConnectorSlugOracle):
 		if configData.OracleConfig == nil {
 			resp.Diagnostics.AddError("oracle_config is required", "Please provide `oracle_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.PostgreSQL):
+	case string(openapi.EnumsConnectorSlugPostgresql):
 		if configData.PostgresConfig == nil {
 			resp.Diagnostics.AddError("postgresql_config is required", "Please provide `postgresql_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.Redshift):
+	case string(openapi.EnumsConnectorSlugRedshift):
 		if configData.RedshiftConfig == nil {
 			resp.Diagnostics.AddError("redshift_config is required", "Please provide `redshift_config` inside `connector`.")
 			return
 		}
-	case string(artieclient.S3):
+	case string(openapi.EnumsConnectorSlugS3):
 		if configData.S3Config == nil {
 			resp.Diagnostics.AddError("s3_config is required", "Please provide `s3_config` inside `connector`.")
 			return
@@ -455,7 +476,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `s3_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
-	case string(artieclient.Snowflake):
+	case string(openapi.EnumsConnectorSlugSnowflake):
 		if configData.SnowflakeConfig == nil {
 			resp.Diagnostics.AddError("snowflake_config is required", "Please provide `snowflake_config` inside `connector`.")
 			return
@@ -470,7 +491,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.SnowflakeConfig.Password.IsNull() && configData.SnowflakeConfig.PrivateKey.IsNull() {
 			resp.Diagnostics.AddError("Either password or private_key must be provided", "Please provide either `password` or `private_key` inside `snowflake_config`. We recommend using `private_key`.")
 		}
-	case string(artieclient.Databricks):
+	case string(openapi.EnumsConnectorSlugDatabricks):
 		if configData.DatabricksConfig == nil {
 			resp.Diagnostics.AddError("databricks_config is required", "Please provide `databricks_config` inside `connector`.")
 			return
@@ -498,19 +519,19 @@ func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	baseConnector, diags := planData.ToAPIBaseModel()
+	body, diags := planData.ToAPIModel()
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	connector, err := r.client.Connectors().Create(ctx, baseConnector)
+	connector, err := artieclient.JSON200(r.client.ConnectorCreateWithResponse(ctx, body))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Create Connector", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, connector)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *connector)
 }
 
 func (r *ConnectorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -519,13 +540,13 @@ func (r *ConnectorResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	connector, err := r.client.Connectors().Get(ctx, connectorUUID)
+	connector, err := artieclient.JSON200(r.client.ConnectorDetailWithResponse(ctx, connectorUUID))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Connector", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, connector)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *connector)
 }
 
 func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -534,19 +555,19 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	apiModel, diags := planData.ToAPIModel()
+	body, diags := planData.ToAPIModel()
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
 
-	updatedConnector, err := r.client.Connectors().Update(ctx, apiModel)
+	updatedConnector, err := artieclient.JSON200(r.client.ConnectorUpdateWithResponse(ctx, planData.UUID.ValueString(), body))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Update Connector", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, updatedConnector)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedConnector)
 }
 
 func (r *ConnectorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -555,7 +576,7 @@ func (r *ConnectorResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	if err := r.client.Connectors().Delete(ctx, connectorUUID); err != nil {
+	if err := artieclient.CheckResponse(r.client.ConnectorDeleteWithResponse(ctx, connectorUUID)); err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Connector", err.Error())
 		return
 	}

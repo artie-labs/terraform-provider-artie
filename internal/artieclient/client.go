@@ -165,10 +165,6 @@ func CheckResponse(resp openAPIResponse, err error) error {
 	return nil
 }
 
-func (c Client) Connectors() ConnectorClient {
-	return ConnectorClient{client: c}
-}
-
 func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineClient {
 	return PipelineClient{client: c, openAPIClient: openAPIClient}
 }
