@@ -172,11 +172,3 @@ func (c Client) Connectors() ConnectorClient {
 func (c Client) Pipelines(openAPIClient *openapi.ClientWithResponses) PipelineClient {
 	return PipelineClient{client: c, openAPIClient: openAPIClient}
 }
-
-func (c Client) EncryptionKeys() EncryptionKeyClient {
-	return EncryptionKeyClient{client: c}
-}
-
-func (c Client) ColumnHashingSalts() ColumnHashingSaltClient {
-	return ColumnHashingSaltClient{client: c}
-}

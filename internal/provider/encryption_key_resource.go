@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"terraform-provider-artie/internal/artieclient"
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -25,7 +26,7 @@ func NewEncryptionKeyResource() resource.Resource {
 }
 
 type EncryptionKeyResource struct {
-	client artieclient.Client
+	client *openapi.ClientWithResponses
 }
 
 func (r *EncryptionKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -81,7 +82,7 @@ func (r *EncryptionKeyResource) Configure(ctx context.Context, req resource.Conf
 		return
 	}
 
-	client, err := providerData.NewClient()
+	client, err := providerData.NewOpenAPIClient()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build Artie client", err.Error())
 		return
@@ -102,8 +103,8 @@ func (r *EncryptionKeyResource) GetPlanData(ctx context.Context, plan tfsdk.Plan
 	return planData, diagnostics.HasError()
 }
 
-func (r *EncryptionKeyResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiModel artieclient.EncryptionKey) {
-	diagnostics.Append(state.Set(ctx, tfmodels.EncryptionKeyFromAPIModel(apiModel))...)
+func (r *EncryptionKeyResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, encryptionKey tfmodels.EncryptionKey) {
+	diagnostics.Append(state.Set(ctx, encryptionKey)...)
 }
 
 func (r *EncryptionKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -112,19 +113,19 @@ func (r *EncryptionKeyResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	apiBaseModel, diags := planData.ToAPIBaseModel()
+	body, diags := planData.ToAPICreateRequest()
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	encryptionKey, err := r.client.EncryptionKeys().Create(ctx, apiBaseModel)
+	created, err := artieclient.JSON200(r.client.EncryptionKeyCreateWithResponse(ctx, body))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create Encryption Key", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, encryptionKey)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, tfmodels.EncryptionKeyFromAPIModel(created.EncryptionKey, created.Key))
 }
 
 func (r *EncryptionKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -134,15 +135,16 @@ func (r *EncryptionKeyResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	encryptionKey, err := r.client.EncryptionKeys().Get(ctx, stateData.UUID.ValueString())
+	detail, err := artieclient.JSON200(r.client.EncryptionKeyDetailWithResponse(ctx, stateData.UUID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read Encryption Key", err.Error())
 		return
 	}
 
-	// The API only returns key material on Create, so preserve the value from state.
-	if encryptionKey.Key == "" {
-		encryptionKey.Key = stateData.Key.ValueString()
+	encryptionKey := tfmodels.EncryptionKeyFromAPIDetail(*detail)
+	// Keep the key material from state if the API omits it.
+	if encryptionKey.Key.ValueString() == "" {
+		encryptionKey.Key = stateData.Key
 	}
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, encryptionKey)
@@ -160,22 +162,14 @@ func (r *EncryptionKeyResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	encryptionKeyUUID := planData.UUID.ValueString()
-	encryptionKey, err := r.client.EncryptionKeys().Update(ctx, encryptionKeyUUID, artieclient.UpdateEncryptionKeyRequest{
-		Name:        planData.Name.ValueString(),
-		Description: planData.Description.ValueString(),
-	})
+	updated, err := artieclient.JSON200(r.client.EncryptionKeyUpdateWithResponse(ctx, planData.UUID.ValueString(), planData.ToAPIUpdateRequest()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to update Encryption Key", err.Error())
 		return
 	}
 
-	// The API only returns key material on Create, so preserve the value from state.
-	if encryptionKey.Key == "" {
-		encryptionKey.Key = stateData.Key.ValueString()
-	}
-
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, encryptionKey)
+	// The update response has no key material, so preserve the value from state.
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, tfmodels.EncryptionKeyFromAPIModel(*updated, stateData.Key.ValueString()))
 }
 
 func (r *EncryptionKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -184,7 +178,7 @@ func (r *EncryptionKeyResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	if err := r.client.EncryptionKeys().Delete(ctx, encryptionKeyUUID); err != nil {
+	if err := artieclient.CheckResponse(r.client.EncryptionKeyDeleteWithResponse(ctx, encryptionKeyUUID)); err != nil {
 		resp.Diagnostics.AddError("Unable to delete Encryption Key", err.Error())
 	}
 }
