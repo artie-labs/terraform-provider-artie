@@ -656,6 +656,7 @@ func (e RouterConnectorConnectionRole) Valid() bool {
 const (
 	RouterPipelineBackfillRequestBeforeBackfillDropTable     RouterPipelineBackfillRequestBeforeBackfill = "drop_table"
 	RouterPipelineBackfillRequestBeforeBackfillEmpty         RouterPipelineBackfillRequestBeforeBackfill = ""
+	RouterPipelineBackfillRequestBeforeBackfillSwapTable     RouterPipelineBackfillRequestBeforeBackfill = "swap_table"
 	RouterPipelineBackfillRequestBeforeBackfillTruncateTable RouterPipelineBackfillRequestBeforeBackfill = "truncate_table"
 )
 
@@ -665,6 +666,8 @@ func (e RouterPipelineBackfillRequestBeforeBackfill) Valid() bool {
 	case RouterPipelineBackfillRequestBeforeBackfillDropTable:
 		return true
 	case RouterPipelineBackfillRequestBeforeBackfillEmpty:
+		return true
+	case RouterPipelineBackfillRequestBeforeBackfillSwapTable:
 		return true
 	case RouterPipelineBackfillRequestBeforeBackfillTruncateTable:
 		return true
@@ -776,7 +779,9 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
 	AutoEnableHistoryForNewTables                *bool                           `json:"autoEnableHistoryForNewTables,omitempty"`
 	AutoEnableHistoryIgnoreRegex                 *string                         `json:"autoEnableHistoryIgnoreRegex,omitempty"`
+	AutoEnableHistoryIncludeRegex                *string                         `json:"autoEnableHistoryIncludeRegex,omitempty"`
 	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
+	AutoReplicateIncludeRegex                    *string                         `json:"autoReplicateIncludeRegex,omitempty"`
 	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
@@ -1358,7 +1363,9 @@ type PayloadsPipelineAdvancedSettings struct {
 	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
 	AutoEnableHistoryForNewTables                *bool                           `json:"autoEnableHistoryForNewTables,omitempty"`
 	AutoEnableHistoryIgnoreRegex                 *string                         `json:"autoEnableHistoryIgnoreRegex,omitempty"`
+	AutoEnableHistoryIncludeRegex                *string                         `json:"autoEnableHistoryIncludeRegex,omitempty"`
 	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
+	AutoReplicateIncludeRegex                    *string                         `json:"autoReplicateIncludeRegex,omitempty"`
 	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
@@ -1383,13 +1390,10 @@ type PayloadsPipelineAdvancedSettings struct {
 	NullOutInvalidValues                         *bool                           `json:"nullOutInvalidValues,omitempty"`
 	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
 	ReuseStagingTable                            *bool                           `json:"reuseStagingTable,omitempty"`
-	SessionDriverMemory                          *string                         `json:"sessionDriverMemory,omitempty"`
-	SessionExecutorMemory                        *string                         `json:"sessionExecutorMemory,omitempty"`
 	SnowpipeStreamingMaxChannels                 *int                            `json:"snowpipeStreamingMaxChannels,omitempty"`
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
 	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
-	TablesPerTransferPod                         *int                            `json:"tablesPerTransferPod,omitempty"`
 	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
 	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
 	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
@@ -1399,7 +1403,6 @@ type PayloadsPipelineAdvancedSettings struct {
 	UseDoubleForVariableNumeric                  *bool                           `json:"useDoubleForVariableNumeric,omitempty"`
 	UseNewStringMethod                           *bool                           `json:"useNewStringMethod,omitempty"`
 	UseSnowpipeStreaming                         *bool                           `json:"useSnowpipeStreaming,omitempty"`
-	WaitForTopics                                *bool                           `json:"waitForTopics,omitempty"`
 	WriteRawBinaryValues                         *bool                           `json:"writeRawBinaryValues,omitempty"`
 }
 
@@ -1729,9 +1732,11 @@ type PayloadsTableAdvancedSettings struct {
 	IncludeColumns                  *[]string                       `json:"includeColumns,omitempty"`
 	K8sRequestCPU                   *int                            `json:"k8sRequestCPU,omitempty"`
 	K8sRequestMemoryMB              *int                            `json:"k8sRequestMemoryMB,omitempty"`
+	KeepOldSwapTable                *bool                           `json:"keepOldSwapTable,omitempty"`
 	MergePredicates                 *[]PayloadsMergePredicates      `json:"mergePredicates,omitempty"`
 	MsmFlushCount                   *int                            `json:"msmFlushCount,omitempty"`
 	PartitionRangeSettings          *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
+	PreviousSwapTableSuffix         *string                         `json:"previousSwapTableSuffix,omitempty"`
 	PrimaryKeysOverride             *[]string                       `json:"primaryKeysOverride,omitempty"`
 	RangeSettings                   *PayloadsRangeSettings          `json:"rangeSettings,omitempty"`
 	ShouldBackfillHistoryTable      *bool                           `json:"shouldBackfillHistoryTable,omitempty"`
@@ -1741,6 +1746,7 @@ type PayloadsTableAdvancedSettings struct {
 	SoftPartitioning                *PayloadsSoftPartitioning       `json:"softPartitioning,omitempty"`
 	StartingPrimaryKey              *string                         `json:"startingPrimaryKey,omitempty"`
 	StreamARN                       *string                         `json:"streamARN,omitempty"`
+	SwapTableSuffix                 *string                         `json:"swapTableSuffix,omitempty"`
 	UnifyAcrossDatabases            *bool                           `json:"unifyAcrossDatabases,omitempty"`
 	UnifyAcrossSchemas              *bool                           `json:"unifyAcrossSchemas,omitempty"`
 }
@@ -2668,6 +2674,11 @@ type RouterCreateIngestionAPIKeyResponse struct {
 	Secret          string                  `json:"secret"`
 }
 
+// RouterCreateKafkaAdminUserRequest defines model for RouterCreateKafkaAdminUserRequest.
+type RouterCreateKafkaAdminUserRequest struct {
+	Username string `json:"username"`
+}
+
 // RouterCreateKafkaTopicRequest defines model for RouterCreateKafkaTopicRequest.
 type RouterCreateKafkaTopicRequest struct {
 	ConfigEntries     *map[string]string `json:"configEntries,omitempty"`
@@ -2678,6 +2689,7 @@ type RouterCreateKafkaTopicRequest struct {
 
 // RouterCreateKafkaUserRequest defines model for RouterCreateKafkaUserRequest.
 type RouterCreateKafkaUserRequest struct {
+	// AccessProfile Must be producer_consumer; create admin-profile users with POST /kafka-clusters/{uuid}/admin-users.
 	AccessProfile string `json:"accessProfile"`
 	Username      string `json:"username"`
 }
@@ -2709,6 +2721,12 @@ type RouterKafkaUserDeleteResponse struct {
 
 // RouterPipelineBackfillRequest defines model for RouterPipelineBackfillRequest.
 type RouterPipelineBackfillRequest struct {
+	// BackfillBatchSize Optional rows per batch. Saved as the pipeline's backfill batch size before the backfill starts, so later backfills use it too.
+	BackfillBatchSize *int `json:"backfillBatchSize,omitempty"`
+
+	// BackfillDefaults Optional backfill speed. Saved as the pipeline's backfill speed before the backfill starts, so later backfills use it too.
+	BackfillDefaults *PayloadsBackfillDefaultsPayload `json:"backfillDefaults,omitempty"`
+
 	// BackfillFromDatabases Optional source databases to backfill for regular-table backfills. Requires beforeBackfill to be the empty-string do-nothing option.
 	BackfillFromDatabases *[]string `json:"backfillFromDatabases,omitempty"`
 
@@ -2720,6 +2738,9 @@ type RouterPipelineBackfillRequest struct {
 
 	// HistoryMode When true, backfill the selected history tables instead of the regular tables.
 	HistoryMode *bool `json:"historyMode,omitempty"`
+
+	// KeepOldTable Only for swap_table: keep the destination table's old rows in a separate table after the swap, until the next swap_table backfill of this table.
+	KeepOldTable *bool `json:"keepOldTable,omitempty"`
 
 	// TableUUIDs UUIDs of the regular or history tables to backfill.
 	TableUUIDs []openapi_types.UUID `json:"tableUUIDs"`
@@ -3089,6 +3110,9 @@ type IngestionApiKeyCreateJSONRequestBody = RouterCreateIngestionAPIKeyRequest
 
 // IngestionApiKeyUpdateJSONRequestBody defines body for IngestionApiKeyUpdate for application/json ContentType.
 type IngestionApiKeyUpdateJSONRequestBody = RouterUpdateIngestionAPIKeyRequest
+
+// KafkaAdminUserCreateJSONRequestBody defines body for KafkaAdminUserCreate for application/json ContentType.
+type KafkaAdminUserCreateJSONRequestBody = RouterCreateKafkaAdminUserRequest
 
 // KafkaTopicCreateJSONRequestBody defines body for KafkaTopicCreate for application/json ContentType.
 type KafkaTopicCreateJSONRequestBody = RouterCreateKafkaTopicRequest
@@ -4730,6 +4754,38 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
 	KafkaClusterDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaAdminUserCreateWithBody Create an admin Kafka user
+	//
+	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+	KafkaAdminUserCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaAdminUserCreate Create an admin Kafka user
+	//
+	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+	KafkaAdminUserCreate(ctx context.Context, uuid string, body KafkaAdminUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaAdminUserDelete Delete an admin Kafka user
+	//
+	// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
+	KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaAdminUserCredentials Get admin Kafka user credentials
+	//
+	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
+	KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaConsumerGroupList List consumer groups
 	//
 	// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
@@ -4863,7 +4919,7 @@ type ClientInterface interface {
 
 	// KafkaUserCreateWithBody Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4872,7 +4928,7 @@ type ClientInterface interface {
 
 	// KafkaUserCreate Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4881,14 +4937,14 @@ type ClientInterface interface {
 
 	// KafkaUserDelete Delete a Kafka user
 	//
-	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 	KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaUserCredentials Get Kafka user credentials
 	//
-	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
 	KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6444,6 +6500,78 @@ func (c *Client) KafkaClusterDetail(ctx context.Context, uuid string, reqEditors
 	return c.Client.Do(req)
 }
 
+// KafkaAdminUserCreateWithBody Create an admin Kafka user
+//
+// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+func (c *Client) KafkaAdminUserCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaAdminUserCreateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaAdminUserCreate Create an admin Kafka user
+//
+// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+func (c *Client) KafkaAdminUserCreate(ctx context.Context, uuid string, body KafkaAdminUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaAdminUserCreateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaAdminUserDelete Delete an admin Kafka user
+//
+// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
+func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaAdminUserDeleteRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaAdminUserCredentials Get admin Kafka user credentials
+//
+// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
+func (c *Client) KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaAdminUserCredentialsRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaConsumerGroupList List consumer groups
 //
 // Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
@@ -6747,7 +6875,7 @@ func (c *Client) KafkaUserList(ctx context.Context, uuid string, reqEditors ...R
 
 // KafkaUserCreateWithBody Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6766,7 +6894,7 @@ func (c *Client) KafkaUserCreateWithBody(ctx context.Context, uuid string, conte
 
 // KafkaUserCreate Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6785,7 +6913,7 @@ func (c *Client) KafkaUserCreate(ctx context.Context, uuid string, body KafkaUse
 
 // KafkaUserDelete Delete a Kafka user
 //
-// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
 //
 // Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6802,7 +6930,7 @@ func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID stri
 
 // KafkaUserCredentials Get Kafka user credentials
 //
-// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
 func (c *Client) KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9479,6 +9607,135 @@ func NewKafkaClusterDetailRequest(server string, uuid string) (*http.Request, er
 	}
 
 	operationPath := fmt.Sprintf("/kafka-clusters/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaAdminUserCreateRequest calls the generic KafkaAdminUserCreate builder with application/json body
+func NewKafkaAdminUserCreateRequest(server string, uuid string, body KafkaAdminUserCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaAdminUserCreateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaAdminUserCreateRequestWithBody constructs an http.Request for the KafkaAdminUserCreate method, with any body, and a specified content type
+func NewKafkaAdminUserCreateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-users", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaAdminUserDeleteRequest constructs an http.Request for the KafkaAdminUserDelete method
+func NewKafkaAdminUserDeleteRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaAdminUserCredentialsRequest constructs an http.Request for the KafkaAdminUserCredentials method
+func NewKafkaAdminUserCredentialsRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-users/%s/credentials", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -12382,6 +12639,42 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
 	KafkaClusterDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterDetailResponse, error)
 
+	// KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
+	//
+	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+	KafkaAdminUserCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaAdminUserCreateResponse, error)
+
+	// KafkaAdminUserCreateWithResponse Create an admin Kafka user
+	//
+	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+	KafkaAdminUserCreateWithResponse(ctx context.Context, uuid string, body KafkaAdminUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaAdminUserCreateResponse, error)
+
+	// KafkaAdminUserDeleteWithResponse Delete an admin Kafka user
+	//
+	// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
+	KafkaAdminUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDeleteResponse, error)
+
+	// KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
+	//
+	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
+	KafkaAdminUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserCredentialsResponse, error)
+
 	// KafkaConsumerGroupListWithResponse List consumer groups
 	//
 	// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
@@ -12537,7 +12830,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCreateWithBodyWithResponse Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12546,7 +12839,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCreateWithResponse Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12555,7 +12848,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserDeleteWithResponse Delete a Kafka user
 	//
-	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12564,7 +12857,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCredentialsWithResponse Get Kafka user credentials
 	//
-	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -14602,6 +14895,129 @@ func (r KafkaClusterDetailResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaAdminUserCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaUserCreateResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaAdminUserCreateResponse) GetJSON200() *RouterKafkaUserCreateResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaAdminUserCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaAdminUserCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaAdminUserCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaAdminUserCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaAdminUserDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaUserDeleteResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaAdminUserDeleteResponse) GetJSON200() *RouterKafkaUserDeleteResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaAdminUserDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaAdminUserDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaAdminUserDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaAdminUserDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaAdminUserCredentialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaUserCredentialsResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaAdminUserCredentialsResponse) GetJSON200() *RouterKafkaUserCredentialsResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaAdminUserCredentialsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaAdminUserCredentialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaAdminUserCredentialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaAdminUserCredentialsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -17482,6 +17898,66 @@ func (c *ClientWithResponses) KafkaClusterDetailWithResponse(ctx context.Context
 	return ParseKafkaClusterDetailResponse(rsp)
 }
 
+// KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
+//
+// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+func (c *ClientWithResponses) KafkaAdminUserCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaAdminUserCreateResponse, error) {
+	rsp, err := c.KafkaAdminUserCreateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaAdminUserCreateResponse(rsp)
+}
+
+// KafkaAdminUserCreateWithResponse Create an admin Kafka user
+//
+// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/admin-users (the `KafkaAdminUserCreate` operationId).
+func (c *ClientWithResponses) KafkaAdminUserCreateWithResponse(ctx context.Context, uuid string, body KafkaAdminUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaAdminUserCreateResponse, error) {
+	rsp, err := c.KafkaAdminUserCreate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaAdminUserCreateResponse(rsp)
+}
+
+// KafkaAdminUserDeleteWithResponse Delete an admin Kafka user
+//
+// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
+func (c *ClientWithResponses) KafkaAdminUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDeleteResponse, error) {
+	rsp, err := c.KafkaAdminUserDelete(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaAdminUserDeleteResponse(rsp)
+}
+
+// KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
+//
+// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
+func (c *ClientWithResponses) KafkaAdminUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserCredentialsResponse, error) {
+	rsp, err := c.KafkaAdminUserCredentials(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaAdminUserCredentialsResponse(rsp)
+}
+
 // KafkaConsumerGroupListWithResponse List consumer groups
 //
 // Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
@@ -17739,7 +18215,7 @@ func (c *ClientWithResponses) KafkaUserListWithResponse(ctx context.Context, uui
 
 // KafkaUserCreateWithBodyWithResponse Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -17754,7 +18230,7 @@ func (c *ClientWithResponses) KafkaUserCreateWithBodyWithResponse(ctx context.Co
 
 // KafkaUserCreateWithResponse Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -17769,7 +18245,7 @@ func (c *ClientWithResponses) KafkaUserCreateWithResponse(ctx context.Context, u
 
 // KafkaUserDeleteWithResponse Delete a Kafka user
 //
-// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users require a company admin; API keys can only delete producer/consumer users.
+// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -17784,7 +18260,7 @@ func (c *ClientWithResponses) KafkaUserDeleteWithResponse(ctx context.Context, u
 
 // KafkaUserCredentialsWithResponse Get Kafka user credentials
 //
-// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users require a company admin; API keys can only manage producer/consumer users.
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -19676,6 +20152,117 @@ func ParseKafkaClusterDetailResponse(rsp *http.Response) (*KafkaClusterDetailRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaAdminUserCreateResponse parses an HTTP response from a KafkaAdminUserCreateWithResponse call
+func ParseKafkaAdminUserCreateResponse(rsp *http.Response) (*KafkaAdminUserCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaAdminUserCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaUserCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaAdminUserDeleteResponse parses an HTTP response from a KafkaAdminUserDeleteWithResponse call
+func ParseKafkaAdminUserDeleteResponse(rsp *http.Response) (*KafkaAdminUserDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaAdminUserDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaUserDeleteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaAdminUserCredentialsResponse parses an HTTP response from a KafkaAdminUserCredentialsWithResponse call
+func ParseKafkaAdminUserCredentialsResponse(rsp *http.Response) (*KafkaAdminUserCredentialsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaAdminUserCredentialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaUserCredentialsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
