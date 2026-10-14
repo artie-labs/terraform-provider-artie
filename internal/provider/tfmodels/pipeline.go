@@ -150,7 +150,9 @@ type Pipeline struct {
 	IncludeSourceMetadataColumn                  types.Bool   `tfsdk:"include_source_metadata_column"`
 	AutoEnableHistoryForNewTables                types.Bool   `tfsdk:"auto_enable_history_for_new_tables"`
 	AutoEnableHistoryIgnoreRegex                 types.String `tfsdk:"auto_enable_history_ignore_regex"`
+	AutoEnableHistoryIncludeRegex                types.String `tfsdk:"auto_enable_history_include_regex"`
 	AutoReplicateIgnoreRegex                     types.String `tfsdk:"auto_replicate_ignore_regex"`
+	AutoReplicateIncludeRegex                    types.String `tfsdk:"auto_replicate_include_regex"`
 	AutoReplicateNewTables                       types.Bool   `tfsdk:"auto_replicate_new_tables"`
 	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
@@ -237,7 +239,9 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		IncludeSourceMetadataColumn:                  p.IncludeSourceMetadataColumn.ValueBoolPointer(),
 		AutoEnableHistoryForNewTables:                p.AutoEnableHistoryForNewTables.ValueBoolPointer(),
 		AutoEnableHistoryIgnoreRegex:                 p.AutoEnableHistoryIgnoreRegex.ValueStringPointer(),
+		AutoEnableHistoryIncludeRegex:                p.AutoEnableHistoryIncludeRegex.ValueStringPointer(),
 		AutoReplicateIgnoreRegex:                     p.AutoReplicateIgnoreRegex.ValueStringPointer(),
+		AutoReplicateIncludeRegex:                    p.AutoReplicateIncludeRegex.ValueStringPointer(),
 		AutoReplicateNewTables:                       p.AutoReplicateNewTables.ValueBoolPointer(),
 		AppendOnly:                                   p.AppendOnly.ValueBoolPointer(),
 		StaticColumns:                                staticColumns,
@@ -297,8 +301,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
 	var includeSourceMetadataColumn types.Bool
-	var autoEnableHistoryIgnoreRegex types.String
-	var autoReplicateIgnoreRegex types.String
 	// These should default to false even if they're omitted from the API response.
 	autoEnableHistoryForNewTables := types.BoolValue(false)
 	var appendOnly types.Bool
@@ -345,12 +347,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	}
 	if settings.AutoEnableHistoryForNewTables != nil {
 		autoEnableHistoryForNewTables = types.BoolValue(*settings.AutoEnableHistoryForNewTables)
-	}
-	if settings.AutoEnableHistoryIgnoreRegex != nil {
-		autoEnableHistoryIgnoreRegex = types.StringValue(*settings.AutoEnableHistoryIgnoreRegex)
-	}
-	if settings.AutoReplicateIgnoreRegex != nil {
-		autoReplicateIgnoreRegex = types.StringValue(*settings.AutoReplicateIgnoreRegex)
 	}
 	if settings.AutoReplicateNewTables != nil {
 		autoReplicateNewTables = types.BoolValue(*settings.AutoReplicateNewTables)
@@ -431,19 +427,22 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		SplitEventsByType:                            splitEventsByType,
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
-		AutoEnableHistoryIgnoreRegex:                 autoEnableHistoryIgnoreRegex,
-		AutoReplicateIgnoreRegex:                     autoReplicateIgnoreRegex,
-		AutoReplicateNewTables:                       autoReplicateNewTables,
-		AppendOnly:                                   appendOnly,
-		StaticColumns:                                staticColumns,
-		StagingSchema:                                stagingSchema,
-		ForceUTCTimezone:                             forceUTCTimezone,
-		WriteRawBinaryValues:                         writeRawBinaryValues,
-		DisableAlerts:                                disableAlerts,
-		DatabricksAutoLiquidClustering:               databricksAutoLiquidClustering,
-		MaxConcurrentSnapshots:                       maxConcurrentSnapshots,
-		TurboWarehouse:                               turboWarehouse,
-		TurboRowThreshold:                            turboRowThreshold,
-		TurboLatencyThresholdMinutes:                 turboLatencyThresholdMinutes,
+		// The API omits an empty regex, so it reads back as "" (not null) to match a config that clears it with "".
+		AutoEnableHistoryIgnoreRegex:   types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
+		AutoEnableHistoryIncludeRegex:  types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
+		AutoReplicateIgnoreRegex:       types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
+		AutoReplicateIncludeRegex:      types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
+		AutoReplicateNewTables:         autoReplicateNewTables,
+		AppendOnly:                     appendOnly,
+		StaticColumns:                  staticColumns,
+		StagingSchema:                  stagingSchema,
+		ForceUTCTimezone:               forceUTCTimezone,
+		WriteRawBinaryValues:           writeRawBinaryValues,
+		DisableAlerts:                  disableAlerts,
+		DatabricksAutoLiquidClustering: databricksAutoLiquidClustering,
+		MaxConcurrentSnapshots:         maxConcurrentSnapshots,
+		TurboWarehouse:                 turboWarehouse,
+		TurboRowThreshold:              turboRowThreshold,
+		TurboLatencyThresholdMinutes:   turboLatencyThresholdMinutes,
 	}, diags
 }

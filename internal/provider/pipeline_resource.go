@@ -33,6 +33,13 @@ import (
 var _ resource.Resource = &PipelineResource{}
 var _ resource.ResourceWithConfigure = &PipelineResource{}
 var _ resource.ResourceWithImportState = &PipelineResource{}
+var _ resource.ResourceWithModifyPlan = &PipelineResource{}
+
+// regexPairs are the new-table ignore/include regexes; the API rejects both of a pair being set.
+var regexPairs = [][2]string{
+	{"auto_replicate_ignore_regex", "auto_replicate_include_regex"},
+	{"auto_enable_history_ignore_regex", "auto_enable_history_include_regex"},
+}
 
 func NewPipelineResource() resource.Resource {
 	return &PipelineResource{}
@@ -241,8 +248,10 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"split_events_by_type":                                 schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API."},
 			"auto_replicate_new_tables":                            schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically start replicating any new tables that are created in the source database."},
 			"auto_replicate_ignore_regex":                          schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for excluding newly discovered tables from auto-replication."},
+			"auto_replicate_include_regex":                         schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for only auto-replicating newly discovered tables that match it. Cannot be combined with `auto_replicate_ignore_regex`; set either one to `\"\"` to clear it."},
 			"auto_enable_history_for_new_tables":                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically enable history mode for new tables that are created in the source database."},
 			"auto_enable_history_ignore_regex":                     schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for excluding newly discovered tables from auto-enable history mode."},
+			"auto_enable_history_include_regex":                    schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for only adding newly discovered tables that match it while auto-enable history mode is on. Cannot be combined with `auto_enable_history_ignore_regex`; set either one to `\"\"` to clear it."},
 			"append_only":                                          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, data will always be appended instead of merged into the destination table. This should only be used for data that is known to be append-only (e.g. event tracking data). Rows will not be deduplicated."},
 			"staging_schema":                                       schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces."},
 			"force_utc_timezone":                                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, timestamps without timezone information in the source will be written as UTC in the destination."},
@@ -342,6 +351,15 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 		)
 	}
 
+	for _, pair := range regexPairs {
+		var ignore, include types.String
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(pair[0]), &ignore)...)
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(pair[1]), &include)...)
+		if ignore.ValueString() != "" && include.ValueString() != "" {
+			resp.Diagnostics.AddError("Invalid configuration", fmt.Sprintf("Only one of `%s` and `%s` can be set.", pair[0], pair[1]))
+		}
+	}
+
 	if tfmodels.IsKnown(configData.Tables) {
 		tables := map[string]tfmodels.Table{}
 		resp.Diagnostics.Append(configData.Tables.ElementsAs(ctx, &tables, false)...)
@@ -392,6 +410,40 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 				"One or more tables have `columns_to_encrypt` or `encrypt_jsonb_columns` set, but the pipeline does not have `encryption_key_uuid` configured. An encryption key is required when encrypting columns.",
 			)
 		}
+	}
+}
+
+// ModifyPlan clears a regex left out of the config while the other of its pair is set, so switching from an ignore
+// regex to an include regex (or back) doesn't send the old one from state alongside the new one.
+func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return // destroying
+	}
+	for _, pair := range regexPairs {
+		for _, attrs := range [][2]string{pair, {pair[1], pair[0]}} {
+			var value, other types.String
+			resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(attrs[0]), &value)...)
+			resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(attrs[1]), &other)...)
+			if planned, ok := clearedRegexPlan(value, other); ok {
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(attrs[0]), planned)...)
+			}
+		}
+	}
+}
+
+// clearedRegexPlan returns the plan for a regex whose config value is `value` while the other of its pair is
+// configured as `other`, and whether it overrides the plan: "" when it's left out and the other is set, unknown when
+// the other is only known at apply time (so the plan can't change between plan and apply).
+func clearedRegexPlan(value, other types.String) (types.String, bool) {
+	switch {
+	case !value.IsNull():
+		return types.String{}, false
+	case other.IsUnknown():
+		return types.StringUnknown(), true
+	case other.ValueString() != "":
+		return types.StringValue(""), true
+	default:
+		return types.String{}, false
 	}
 }
 
