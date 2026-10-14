@@ -150,7 +150,9 @@ type Pipeline struct {
 	IncludeSourceMetadataColumn                  types.Bool   `tfsdk:"include_source_metadata_column"`
 	AutoEnableHistoryForNewTables                types.Bool   `tfsdk:"auto_enable_history_for_new_tables"`
 	AutoEnableHistoryIgnoreRegex                 types.String `tfsdk:"auto_enable_history_ignore_regex"`
+	AutoEnableHistoryIncludeRegex                types.String `tfsdk:"auto_enable_history_include_regex"`
 	AutoReplicateIgnoreRegex                     types.String `tfsdk:"auto_replicate_ignore_regex"`
+	AutoReplicateIncludeRegex                    types.String `tfsdk:"auto_replicate_include_regex"`
 	AutoReplicateNewTables                       types.Bool   `tfsdk:"auto_replicate_new_tables"`
 	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
@@ -237,7 +239,9 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		IncludeSourceMetadataColumn:                  p.IncludeSourceMetadataColumn.ValueBoolPointer(),
 		AutoEnableHistoryForNewTables:                p.AutoEnableHistoryForNewTables.ValueBoolPointer(),
 		AutoEnableHistoryIgnoreRegex:                 p.AutoEnableHistoryIgnoreRegex.ValueStringPointer(),
+		AutoEnableHistoryIncludeRegex:                p.AutoEnableHistoryIncludeRegex.ValueStringPointer(),
 		AutoReplicateIgnoreRegex:                     p.AutoReplicateIgnoreRegex.ValueStringPointer(),
+		AutoReplicateIncludeRegex:                    p.AutoReplicateIncludeRegex.ValueStringPointer(),
 		AutoReplicateNewTables:                       p.AutoReplicateNewTables.ValueBoolPointer(),
 		AppendOnly:                                   p.AppendOnly.ValueBoolPointer(),
 		StaticColumns:                                staticColumns,
@@ -298,7 +302,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	var splitEventsByType types.Bool
 	var includeSourceMetadataColumn types.Bool
 	var autoEnableHistoryIgnoreRegex types.String
+	var autoEnableHistoryIncludeRegex types.String
 	var autoReplicateIgnoreRegex types.String
+	var autoReplicateIncludeRegex types.String
 	// These should default to false even if they're omitted from the API response.
 	autoEnableHistoryForNewTables := types.BoolValue(false)
 	var appendOnly types.Bool
@@ -349,8 +355,14 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	if settings.AutoEnableHistoryIgnoreRegex != nil {
 		autoEnableHistoryIgnoreRegex = types.StringValue(*settings.AutoEnableHistoryIgnoreRegex)
 	}
+	if settings.AutoEnableHistoryIncludeRegex != nil {
+		autoEnableHistoryIncludeRegex = types.StringValue(*settings.AutoEnableHistoryIncludeRegex)
+	}
 	if settings.AutoReplicateIgnoreRegex != nil {
 		autoReplicateIgnoreRegex = types.StringValue(*settings.AutoReplicateIgnoreRegex)
+	}
+	if settings.AutoReplicateIncludeRegex != nil {
+		autoReplicateIncludeRegex = types.StringValue(*settings.AutoReplicateIncludeRegex)
 	}
 	if settings.AutoReplicateNewTables != nil {
 		autoReplicateNewTables = types.BoolValue(*settings.AutoReplicateNewTables)
@@ -432,7 +444,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
 		AutoEnableHistoryIgnoreRegex:                 autoEnableHistoryIgnoreRegex,
+		AutoEnableHistoryIncludeRegex:                autoEnableHistoryIncludeRegex,
 		AutoReplicateIgnoreRegex:                     autoReplicateIgnoreRegex,
+		AutoReplicateIncludeRegex:                    autoReplicateIncludeRegex,
 		AutoReplicateNewTables:                       autoReplicateNewTables,
 		AppendOnly:                                   appendOnly,
 		StaticColumns:                                staticColumns,

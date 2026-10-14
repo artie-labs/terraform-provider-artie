@@ -104,6 +104,58 @@ func TestPipelineAutoEnableHistoryIgnoreRegex(t *testing.T) {
 	assert.Equal(t, "^archive\\..*", model.AutoEnableHistoryIgnoreRegex.ValueString())
 }
 
+func TestPipelineAutoReplicateIncludeRegex(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                      types.StringValue("test"),
+		Tables:                    tablesMap,
+		DestinationConfig:         &PipelineDestinationConfig{},
+		AutoReplicateIncludeRegex: types.StringValue("^public\\.billing_.*"),
+	}
+
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "^public\\.billing_.*", *apiModel.AdvancedSettings.AutoReplicateIncludeRegex)
+
+	apiModel.AdvancedSettings.AutoReplicateIncludeRegex = ptr("^public\\.orders_.*")
+	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{AutoReplicateIncludeRegex: apiModel.AdvancedSettings.AutoReplicateIncludeRegex},
+	})
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "^public\\.orders_.*", model.AutoReplicateIncludeRegex.ValueString())
+}
+
+func TestPipelineAutoEnableHistoryIncludeRegex(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                          types.StringValue("test"),
+		Tables:                        tablesMap,
+		DestinationConfig:             &PipelineDestinationConfig{},
+		AutoEnableHistoryIncludeRegex: types.StringValue("^audit\\..*"),
+	}
+
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "^audit\\..*", *apiModel.AdvancedSettings.AutoEnableHistoryIncludeRegex)
+
+	apiModel.AdvancedSettings.AutoEnableHistoryIncludeRegex = ptr("^events\\..*")
+	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{AutoEnableHistoryIncludeRegex: apiModel.AdvancedSettings.AutoEnableHistoryIncludeRegex},
+	})
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "^events\\..*", model.AutoEnableHistoryIncludeRegex.ValueString())
+}
+
 func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	// disable_alerts is an "absent means off" toggle. The backend persists false as
 	// nil, so both an omitted value and an explicit false must read back as a stable
