@@ -301,10 +301,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	var defaultSourceSchema types.String
 	var splitEventsByType types.Bool
 	var includeSourceMetadataColumn types.Bool
-	var autoEnableHistoryIgnoreRegex types.String
-	var autoEnableHistoryIncludeRegex types.String
-	var autoReplicateIgnoreRegex types.String
-	var autoReplicateIncludeRegex types.String
 	// These should default to false even if they're omitted from the API response.
 	autoEnableHistoryForNewTables := types.BoolValue(false)
 	var appendOnly types.Bool
@@ -351,18 +347,6 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	}
 	if settings.AutoEnableHistoryForNewTables != nil {
 		autoEnableHistoryForNewTables = types.BoolValue(*settings.AutoEnableHistoryForNewTables)
-	}
-	if settings.AutoEnableHistoryIgnoreRegex != nil {
-		autoEnableHistoryIgnoreRegex = types.StringValue(*settings.AutoEnableHistoryIgnoreRegex)
-	}
-	if settings.AutoEnableHistoryIncludeRegex != nil {
-		autoEnableHistoryIncludeRegex = types.StringValue(*settings.AutoEnableHistoryIncludeRegex)
-	}
-	if settings.AutoReplicateIgnoreRegex != nil {
-		autoReplicateIgnoreRegex = types.StringValue(*settings.AutoReplicateIgnoreRegex)
-	}
-	if settings.AutoReplicateIncludeRegex != nil {
-		autoReplicateIncludeRegex = types.StringValue(*settings.AutoReplicateIncludeRegex)
 	}
 	if settings.AutoReplicateNewTables != nil {
 		autoReplicateNewTables = types.BoolValue(*settings.AutoReplicateNewTables)
@@ -443,21 +427,22 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		SplitEventsByType:                            splitEventsByType,
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
-		AutoEnableHistoryIgnoreRegex:                 autoEnableHistoryIgnoreRegex,
-		AutoEnableHistoryIncludeRegex:                autoEnableHistoryIncludeRegex,
-		AutoReplicateIgnoreRegex:                     autoReplicateIgnoreRegex,
-		AutoReplicateIncludeRegex:                    autoReplicateIncludeRegex,
-		AutoReplicateNewTables:                       autoReplicateNewTables,
-		AppendOnly:                                   appendOnly,
-		StaticColumns:                                staticColumns,
-		StagingSchema:                                stagingSchema,
-		ForceUTCTimezone:                             forceUTCTimezone,
-		WriteRawBinaryValues:                         writeRawBinaryValues,
-		DisableAlerts:                                disableAlerts,
-		DatabricksAutoLiquidClustering:               databricksAutoLiquidClustering,
-		MaxConcurrentSnapshots:                       maxConcurrentSnapshots,
-		TurboWarehouse:                               turboWarehouse,
-		TurboRowThreshold:                            turboRowThreshold,
-		TurboLatencyThresholdMinutes:                 turboLatencyThresholdMinutes,
+		// The API omits an empty regex, so it reads back as "" (not null) to match a config that clears it with "".
+		AutoEnableHistoryIgnoreRegex:   types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
+		AutoEnableHistoryIncludeRegex:  types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
+		AutoReplicateIgnoreRegex:       types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
+		AutoReplicateIncludeRegex:      types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
+		AutoReplicateNewTables:         autoReplicateNewTables,
+		AppendOnly:                     appendOnly,
+		StaticColumns:                  staticColumns,
+		StagingSchema:                  stagingSchema,
+		ForceUTCTimezone:               forceUTCTimezone,
+		WriteRawBinaryValues:           writeRawBinaryValues,
+		DisableAlerts:                  disableAlerts,
+		DatabricksAutoLiquidClustering: databricksAutoLiquidClustering,
+		MaxConcurrentSnapshots:         maxConcurrentSnapshots,
+		TurboWarehouse:                 turboWarehouse,
+		TurboRowThreshold:              turboRowThreshold,
+		TurboLatencyThresholdMinutes:   turboLatencyThresholdMinutes,
 	}, diags
 }

@@ -156,6 +156,40 @@ func TestPipelineAutoEnableHistoryIncludeRegex(t *testing.T) {
 	assert.Equal(t, "^events\\..*", model.AutoEnableHistoryIncludeRegex.ValueString())
 }
 
+func TestPipelineFromAPIModel_OmittedRegexesReadBackAsEmpty(t *testing.T) {
+	// The API omits an empty regex. It reads back as "" (never null), so a config that clears one with "" matches
+	// the state after apply.
+	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
+		Uuid:   uuid.New(),
+		Name:   "test",
+		Tables: []openapi.PayloadsTable{},
+	})
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	for _, regex := range []types.String{model.AutoReplicateIgnoreRegex, model.AutoReplicateIncludeRegex, model.AutoEnableHistoryIgnoreRegex, model.AutoEnableHistoryIncludeRegex} {
+		assert.False(t, regex.IsNull())
+		assert.Empty(t, regex.ValueString())
+	}
+}
+
+func TestPipelineSwitchIgnoreToIncludeRegex(t *testing.T) {
+	// Switching sends the cleared ignore regex as "" alongside the new include regex.
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                      types.StringValue("test"),
+		Tables:                    tablesMap,
+		DestinationConfig:         &PipelineDestinationConfig{},
+		AutoReplicateIgnoreRegex:  types.StringValue(""),
+		AutoReplicateIncludeRegex: types.StringValue("^public\\.billing_.*"),
+	}
+
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, "", *apiModel.AdvancedSettings.AutoReplicateIgnoreRegex)
+	assert.Equal(t, "^public\\.billing_.*", *apiModel.AdvancedSettings.AutoReplicateIncludeRegex)
+}
+
 func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	// disable_alerts is an "absent means off" toggle. The backend persists false as
 	// nil, so both an omitted value and an explicit false must read back as a stable
