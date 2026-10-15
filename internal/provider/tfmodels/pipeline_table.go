@@ -31,6 +31,14 @@ func (m MergePredicate) ToAPIModel() openapi.PayloadsMergePredicates {
 	return openapi.PayloadsMergePredicates{PartitionField: lib.ToPtr(m.PartitionField.ValueString()), PartitionType: nonEmptyStringPointer(m.PartitionType), PartitionBy: nonEmptyStringPointer(m.PartitionBy)}
 }
 
+// Validate mirrors the API's check that only time predicates can have a partition_by.
+func (m MergePredicate) Validate() error {
+	if m.PartitionType.ValueString() == "integer" && m.PartitionBy.ValueString() != "" {
+		return fmt.Errorf("merge predicate %q is an integer column, so it cannot have a `partition_by`", m.PartitionField.ValueString())
+	}
+	return nil
+}
+
 func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]openapi.PayloadsMergePredicates) (types.List, diag.Diagnostics) {
 	attrTypes := MergePredicateAttrTypes
 	if apiMergePredicates == nil {

@@ -220,3 +220,19 @@ func TestMergePredicatesPartitionByRoundTrip(t *testing.T) {
 		assert.Nil(t, preds[0].ToAPIModel().PartitionBy)
 	}
 }
+
+func TestMergePredicateValidate(t *testing.T) {
+	{
+		// partition_by on a time predicate
+		assert.NoError(t, MergePredicate{PartitionField: types.StringValue("created_at"), PartitionType: types.StringValue("time"), PartitionBy: types.StringValue("hourly")}.Validate())
+	}
+	{
+		// Integer predicate without partition_by
+		assert.NoError(t, MergePredicate{PartitionField: types.StringValue("id"), PartitionType: types.StringValue("integer")}.Validate())
+	}
+	{
+		// partition_by on an integer predicate
+		err := MergePredicate{PartitionField: types.StringValue("id"), PartitionType: types.StringValue("integer"), PartitionBy: types.StringValue("daily")}.Validate()
+		assert.ErrorContains(t, err, `merge predicate "id" is an integer column, so it cannot have a `+"`partition_by`")
+	}
+}
