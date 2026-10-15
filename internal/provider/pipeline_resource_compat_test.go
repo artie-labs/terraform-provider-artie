@@ -32,8 +32,8 @@ var localProvider = map[string]func() (tfprotov6.ProviderServer, error){
 
 var partitionByPath = tfjsonpath.New("tables").AtMapKey("public.events").AtMapKey("merge_predicates").AtSliceIndex(0).AtMapKey("partition_by")
 
-// fakeArtieAPI serves the pipeline endpoints the pipeline resource calls. Like the dashboard, an update replaces the
-// stored pipeline with the request, so a merge predicate sent without partitionBy loses it (and transfer uses daily).
+// fakeArtieAPI serves the pipeline endpoints the pipeline resource calls. Like the API, an update replaces the stored
+// pipeline with the request, except that a time merge predicate sent without partitionBy keeps the stored one.
 type fakeArtieAPI struct {
 	*httptest.Server
 	mu       sync.Mutex
@@ -104,8 +104,14 @@ func (a *fakeArtieAPI) save(w http.ResponseWriter, r *http.Request) {
 			table["uuid"] = uuid.NewString()
 		}
 	}
+	sent := firstMergePredicate(pipeline)
+	a.sentPartitionBy = sent["partitionBy"]
+	if a.pipeline != nil && sent["partitionBy"] == nil && sent["partitionType"] != "integer" {
+		if stored := firstMergePredicate(a.pipeline); stored["partitionField"] == sent["partitionField"] {
+			sent["partitionBy"] = stored["partitionBy"]
+		}
+	}
 	a.pipeline = pipeline
-	a.sentPartitionBy = a.mergePredicate()["partitionBy"]
 	a.write(nil, w)
 }
 
@@ -130,8 +136,8 @@ func (a *fakeArtieAPI) write(t *testing.T, w http.ResponseWriter) {
 	_, _ = w.Write(out)
 }
 
-func (a *fakeArtieAPI) mergePredicate() map[string]any {
-	tables, _ := a.pipeline["tables"].([]any)
+func firstMergePredicate(pipeline map[string]any) map[string]any {
+	tables, _ := pipeline["tables"].([]any)
 	table, _ := tables[0].(map[string]any)
 	settings, _ := table["advancedSettings"].(map[string]any)
 	preds, _ := settings["mergePredicates"].([]any)
@@ -143,13 +149,13 @@ func (a *fakeArtieAPI) mergePredicate() map[string]any {
 func (a *fakeArtieAPI) setPartitionBy(value string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.mergePredicate()["partitionBy"] = value
+	firstMergePredicate(a.pipeline)["partitionBy"] = value
 }
 
 func (a *fakeArtieAPI) storedPartitionBy() any {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.mergePredicate()["partitionBy"]
+	return firstMergePredicate(a.pipeline)["partitionBy"]
 }
 
 func (a *fakeArtieAPI) lastSentPartitionBy() any {
@@ -304,10 +310,10 @@ func TestPipelinePartitionBy_EmptyStringIsRejected(t *testing.T) {
 
 func TestPipelinePartitionBy_ApplyWithoutRefresh(t *testing.T) {
 	// State has no partition_by (as after upgrading, see above) while the API has "monthly", and the plan skips the
-	// refresh that would have read it, so partition_by is planned unknown. Update reads the current value from the API
-	// instead of sending none, which would reset the table to daily. State comes from this provider rather than the
-	// published release because that release predates other pipeline attributes, which a -refresh=false plan can't
-	// fill in either.
+	// refresh that would have read it, so partition_by is planned unknown and left out of the request. The API keeps
+	// the stored value for a field left out, so the table stays monthly. State comes from this provider rather than
+	// the published release because that release predates other pipeline attributes, which a -refresh=false plan
+	// can't fill in either.
 	api := newFakeArtieAPI(t)
 	config := pipelineConfig(api.URL, "time", "")
 	resource.UnitTest(t, resource.TestCase{
@@ -323,6 +329,6 @@ func TestPipelinePartitionBy_ApplyWithoutRefresh(t *testing.T) {
 			},
 		},
 	})
-	assert.Equal(t, "monthly", api.lastSentPartitionBy())
+	assert.Nil(t, api.lastSentPartitionBy())
 	assert.Equal(t, "monthly", api.storedPartitionBy())
 }

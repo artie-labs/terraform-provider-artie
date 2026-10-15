@@ -553,11 +553,6 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	if err := r.keepPartitionBy(ctx, planData.UUID.ValueString(), &pipeline); err != nil {
-		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
-		return
-	}
-
 	if err := r.validate(ctx, pipeline); err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
@@ -621,44 +616,6 @@ func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.Payloa
 		return fmt.Errorf("destination validation failed: %w", err)
 	}
 
-	return nil
-}
-
-// keepPartitionBy fills in the partitionBy of time merge predicates whose partition_by is in neither the config nor
-// the state (e.g. a plan with -refresh=false after a granularity was set in the dashboard) from the API, since sending
-// none resets the table to daily. It only calls the API when there is such a predicate.
-func (r *PipelineResource) keepPartitionBy(ctx context.Context, pipelineUUID string, pipeline *openapi.PayloadsPipelinePayload) error {
-	missing := map[*openapi.PayloadsMergePredicates]string{}
-	for _, table := range lib.RemovePtr(pipeline.Tables) {
-		if table.AdvancedSettings == nil || table.AdvancedSettings.MergePredicates == nil {
-			continue
-		}
-		for i, pred := range *table.AdvancedSettings.MergePredicates {
-			if pred.PartitionBy == nil && lib.RemovePtr(pred.PartitionType) != "integer" {
-				missing[&(*table.AdvancedSettings.MergePredicates)[i]] = fmt.Sprintf("%s.%s.%s", lib.RemovePtr(table.Schema), lib.RemovePtr(table.Name), lib.RemovePtr(pred.PartitionField))
-			}
-		}
-	}
-	if len(missing) == 0 {
-		return nil
-	}
-
-	current, err := artieclient.JSON200(r.client.PipelineDetailWithResponse(ctx, pipelineUUID, nil))
-	if err != nil {
-		return err
-	}
-	partitionBys := map[string]*string{}
-	for _, table := range current.Tables {
-		if table.AdvancedSettings == nil {
-			continue
-		}
-		for _, pred := range lib.RemovePtr(table.AdvancedSettings.MergePredicates) {
-			partitionBys[fmt.Sprintf("%s.%s.%s", lib.RemovePtr(table.Schema), lib.RemovePtr(table.Name), lib.RemovePtr(pred.PartitionField))] = pred.PartitionBy
-		}
-	}
-	for pred, key := range missing {
-		pred.PartitionBy = partitionBys[key]
-	}
 	return nil
 }
 
