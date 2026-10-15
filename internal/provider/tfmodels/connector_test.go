@@ -27,7 +27,7 @@ func TestConnectorAPIModelRoundTrip(t *testing.T) {
 		"isValid": true
 	}`), &apiConnector))
 
-	connector, diags := ConnectorFromAPIModel(apiConnector)
+	connector, diags := ConnectorFromAPIModel(apiConnector, Connector{})
 	require.False(t, diags.HasError(), diags)
 	{
 		// Response fields and untyped sharedConfig land in the Terraform model
@@ -66,4 +66,29 @@ func TestConnectorAPIModelRoundTrip(t *testing.T) {
 		assert.Nil(t, body.DataPlaneName)
 		assert.Nil(t, body.SshTunnelUUID)
 	}
+}
+
+func TestConnectorFromAPIModelKeepsMaskedSecrets(t *testing.T) {
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "snowflake",
+		"label": "warehouse",
+		"sharedConfig": {"accountURL": "https://acme.snowflakecomputing.com", "username": "artie", "password": "", "privateKey": "********"}
+	}`), &apiConnector))
+	prior := Connector{
+		Type: types.StringValue("snowflake"),
+		SnowflakeConfig: &SnowflakeSharedConfig{
+			AccountURL: types.StringValue("https://acme.snowflakecomputing.com"),
+			Username:   types.StringValue("artie"),
+			Password:   types.StringValue(""),
+			PrivateKey: types.StringValue("real-key"),
+		},
+	}
+
+	connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+	require.False(t, diags.HasError(), diags)
+	require.NotNil(t, connector.SnowflakeConfig)
+	assert.Equal(t, "real-key", connector.SnowflakeConfig.PrivateKey.ValueString())
+	assert.Equal(t, "https://acme.snowflakecomputing.com", connector.SnowflakeConfig.AccountURL.ValueString())
 }
