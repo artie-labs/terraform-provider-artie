@@ -339,9 +339,9 @@ func (r *ConnectorResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, di
 	return planData, diagnostics.HasError()
 }
 
-func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector openapi.PayloadsFullConnector) {
+func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector openapi.PayloadsFullConnector, prior tfmodels.Connector) {
 	// Translate API response type into Terraform model and save it into state
-	connector, diags := tfmodels.ConnectorFromAPIModel(apiConnector)
+	connector, diags := tfmodels.ConnectorFromAPIModel(apiConnector, prior)
 	diagnostics.Append(diags...)
 	if diagnostics.HasError() {
 		return
@@ -531,22 +531,23 @@ func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *connector)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *connector, planData)
 }
 
 func (r *ConnectorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	connectorUUID, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
-	if hasError {
+	var stateData tfmodels.Connector
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	connector, err := artieclient.JSON200(r.client.ConnectorDetailWithResponse(ctx, connectorUUID))
+	connector, err := artieclient.JSON200(r.client.ConnectorDetailWithResponse(ctx, stateData.UUID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to Read Connector", err.Error())
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *connector)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *connector, stateData)
 }
 
 func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -567,7 +568,7 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedConnector)
+	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedConnector, planData)
 }
 
 func (r *ConnectorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

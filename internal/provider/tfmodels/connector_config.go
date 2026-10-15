@@ -66,6 +66,31 @@ type ConnectorConfig struct {
 	IcebergPrefix     string `json:"prefix,omitempty"`
 }
 
+// maskedSecret is what the API returns in place of a secret when it masks it.
+const maskedSecret = "********"
+
+// keepMaskedSecrets replaces each masked secret with its value from prior, since the API won't return the real one.
+func (c *ConnectorConfig) keepMaskedSecrets(prior ConnectorConfig) {
+	secrets := []struct {
+		value *string
+		prior string
+	}{
+		{&c.Password, prior.Password},
+		{&c.GCPCredentialsData, prior.GCPCredentialsData},
+		{&c.SnowflakePrivateKey, prior.SnowflakePrivateKey},
+		{&c.DatabricksPersonalAccessToken, prior.DatabricksPersonalAccessToken},
+		{&c.DatabricksClientSecret, prior.DatabricksClientSecret},
+		{&c.AWSSecretAccessKey, prior.AWSSecretAccessKey},
+		{&c.IcebergToken, prior.IcebergToken},
+		{&c.IcebergCredential, prior.IcebergCredential},
+	}
+	for _, secret := range secrets {
+		if *secret.value == maskedSecret {
+			*secret.value = secret.prior
+		}
+	}
+}
+
 func (c ConnectorConfig) toAPIModel() (*map[string]any, error) {
 	body, err := json.Marshal(c)
 	if err != nil {
