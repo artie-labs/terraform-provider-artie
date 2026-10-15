@@ -105,6 +105,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 								Attributes: map[string]schema.Attribute{
 									"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
 									"partition_type":  schema.StringAttribute{Optional: true, MarkdownDescription: "The type of partition to use. One of 'time' or 'integer'. Required for BigQuery.", Validators: []validator.String{stringvalidator.OneOf("time", "integer")}},
+									"partition_by":    schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The time-partition granularity of the destination table. One of 'hourly', 'daily', 'monthly', or 'yearly'. Only applies to BigQuery time-partitioned columns; if omitted, the existing value (e.g. one set in the dashboard) is kept, and new predicates default to 'daily'.", Validators: []validator.String{stringvalidator.OneOf("hourly", "daily", "monthly", "yearly")}},
 								},
 							}},
 						"soft_partitioning": schema.SingleNestedAttribute{
