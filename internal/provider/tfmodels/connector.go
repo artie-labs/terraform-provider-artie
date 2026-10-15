@@ -33,7 +33,7 @@ type Connector struct {
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
 }
 
-func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnostics) {
+func (c Connector) sharedConfig() (ConnectorConfig, error) {
 	var sharedConfig ConnectorConfig
 	switch openapi.EnumsConnectorSlug(c.Type.ValueString()) {
 	case openapi.EnumsConnectorSlugApi:
@@ -69,9 +69,15 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
 	default:
-		return openapi.PayloadsConnectorPayload{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
-			"Unable to convert Connector to API model", fmt.Sprintf("unhandled connector type: %s", c.Type.ValueString()),
-		)}
+		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
+	}
+	return sharedConfig, nil
+}
+
+func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnostics) {
+	sharedConfig, err := c.sharedConfig()
+	if err != nil {
+		return openapi.PayloadsConnectorPayload{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to convert Connector to API model", err.Error())}
 	}
 
 	apiSharedConfig, err := sharedConfig.toAPIModel()
@@ -95,10 +101,16 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 	}, diags
 }
 
-func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector) (Connector, diag.Diagnostics) {
+// ConnectorFromAPIModel converts an API connector into the Terraform model. prior is the plan or state the request
+// started from; its secrets replace any the API returned masked.
+func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connector) (Connector, diag.Diagnostics) {
 	config, err := connectorConfigFromAPIModel(apiModel.SharedConfig)
 	if err != nil {
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Unable to convert API model to Connector", err.Error())}
+	}
+	// prior has no type after an import, so there are no secrets to keep yet.
+	if priorConfig, err := prior.sharedConfig(); err == nil {
+		config.keepMaskedSecrets(priorConfig)
 	}
 
 	connector := Connector{
