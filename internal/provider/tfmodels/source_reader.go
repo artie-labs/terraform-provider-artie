@@ -120,7 +120,7 @@ type SourceReader struct {
 func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSourceReaderSettingsPayload, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	settings := openapi.PayloadsSourceReaderSettingsPayload{
-		BackfillBatchSize:            lib.ToPtr(int(s.BackfillBatchSize.ValueInt64())),
+		BackfillBatchSize:            int64ToIntPointer(s.BackfillBatchSize),
 		EnableHeartbeats:             boolPointer(s.EnableHeartbeats),
 		OneTopicPerSchema:            boolPointer(s.OneTopicPerSchema),
 		PublicationNameOverride:      stringPointer(s.PostgresPublicationNameOverride),
