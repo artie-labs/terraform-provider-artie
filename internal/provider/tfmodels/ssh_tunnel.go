@@ -17,7 +17,7 @@ type SSHTunnel struct {
 
 func (s SSHTunnel) ToAPICreateRequest() openapi.RouterSSHTunnelCreateRequest {
 	return openapi.RouterSSHTunnelCreateRequest{
-		Name:     s.Name.ValueStringPointer(),
+		Name:     stringPointer(s.Name),
 		Host:     s.Host.ValueString(),
 		Port:     int(s.Port.ValueInt32()),
 		Username: s.Username.ValueString(),

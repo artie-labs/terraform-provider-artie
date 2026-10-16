@@ -143,3 +143,20 @@ func int64ToIntPointer(value types.Int64) *int {
 	}
 	return lib.ToPtr(int(value.ValueInt64()))
 }
+
+// boolPointer returns nil for null or unknown, so a setting left out of the config is omitted from the request and the
+// API applies its default. [types.Bool.ValueBoolPointer] would send false for unknown.
+func boolPointer(value types.Bool) *bool {
+	if value.IsUnknown() {
+		return nil
+	}
+	return value.ValueBoolPointer()
+}
+
+// stringPointer is [boolPointer] for strings. [types.String.ValueStringPointer] would send "" for unknown.
+func stringPointer(value types.String) *string {
+	if value.IsUnknown() {
+		return nil
+	}
+	return value.ValueStringPointer()
+}
