@@ -405,3 +405,23 @@ func TestFlushConfigFromAPIModel(t *testing.T) {
 		assert.Equal(t, 1000, *apiModel.AdvancedSettings.FlushSizeKb)
 	}
 }
+
+func TestPipelineToAPIModel_UnknownSettingsAreOmitted(t *testing.T) {
+	// On create, an optional+computed setting the config leaves out is unknown. It must be omitted so the API applies
+	// its default (e.g. includeArtieUpdatedAtColumn defaults to true), not sent as false or "".
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:                        types.StringValue("test"),
+		Tables:                      tablesMap,
+		DestinationConfig:           &PipelineDestinationConfig{},
+		IncludeArtieUpdatedAtColumn: types.BoolUnknown(),
+		StagingSchema:               types.StringUnknown(),
+	}
+
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Nil(t, apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn)
+	assert.Nil(t, apiModel.AdvancedSettings.StagingSchema)
+}

@@ -39,12 +39,12 @@ func (s SourceReaderTable) ToAPIModel(ctx context.Context) (openapi.PayloadsSour
 	diags.Append(includeDiags...)
 
 	return openapi.PayloadsSourceReaderTable{
-		Name:                 s.Name.ValueStringPointer(),
-		Schema:               s.Schema.ValueStringPointer(),
+		Name:                 stringPointer(s.Name),
+		Schema:               stringPointer(s.Schema),
 		ExcludeColumns:       colsToExclude,
 		IncludeColumns:       colsToInclude,
-		UnifyAcrossSchemas:   s.UnifyAcrossSchemas.ValueBoolPointer(),
-		UnifyAcrossDatabases: s.UnifyAcrossDatabases.ValueBoolPointer(),
+		UnifyAcrossSchemas:   boolPointer(s.UnifyAcrossSchemas),
+		UnifyAcrossDatabases: boolPointer(s.UnifyAcrossDatabases),
 	}, diags
 }
 
@@ -120,22 +120,22 @@ type SourceReader struct {
 func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSourceReaderSettingsPayload, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	settings := openapi.PayloadsSourceReaderSettingsPayload{
-		BackfillBatchSize:            lib.ToPtr(int(s.BackfillBatchSize.ValueInt64())),
-		EnableHeartbeats:             s.EnableHeartbeats.ValueBoolPointer(),
-		OneTopicPerSchema:            s.OneTopicPerSchema.ValueBoolPointer(),
-		PublicationNameOverride:      s.PostgresPublicationNameOverride.ValueStringPointer(),
-		PublicationAutoCreateMode:    s.PostgresPublicationMode.ValueStringPointer(),
-		ReplicationSlotOverride:      s.PostgresReplicationSlotOverride.ValueStringPointer(),
-		PublishViaPartitionRoot:      s.PublishViaPartitionRoot.ValueBoolPointer(),
-		CompositeTypesAsText:         s.CompositeTypesAsText.ValueBoolPointer(),
-		EnableRelationMessageCaching: s.EnableRelationMessageCaching.ValueBoolPointer(),
-		UseFailoverReplicationSlot:   s.UseFailoverReplicationSlot.ValueBoolPointer(),
-		UseAdvanceOnPrimaryKeepAlive: s.UseAdvanceOnPrimaryKeepAlive.ValueBoolPointer(),
-		UnifyAcrossSchemas:           s.EnableUnifyAcrossSchemas.ValueBoolPointer(),
-		UnifyAcrossSchemasRegex:      s.UnifyAcrossSchemasRegex.ValueStringPointer(),
-		MssqlReplicationMethod:       s.MSSQLReplicationMethod.ValueStringPointer(),
-		UnifyAcrossDatabases:         s.EnableUnifyAcrossDatabases.ValueBoolPointer(),
-		DisableAutoFetchTables:       s.DisableAutoFetchTables.ValueBoolPointer(),
+		BackfillBatchSize:            int64ToIntPointer(s.BackfillBatchSize),
+		EnableHeartbeats:             boolPointer(s.EnableHeartbeats),
+		OneTopicPerSchema:            boolPointer(s.OneTopicPerSchema),
+		PublicationNameOverride:      stringPointer(s.PostgresPublicationNameOverride),
+		PublicationAutoCreateMode:    stringPointer(s.PostgresPublicationMode),
+		ReplicationSlotOverride:      stringPointer(s.PostgresReplicationSlotOverride),
+		PublishViaPartitionRoot:      boolPointer(s.PublishViaPartitionRoot),
+		CompositeTypesAsText:         boolPointer(s.CompositeTypesAsText),
+		EnableRelationMessageCaching: boolPointer(s.EnableRelationMessageCaching),
+		UseFailoverReplicationSlot:   boolPointer(s.UseFailoverReplicationSlot),
+		UseAdvanceOnPrimaryKeepAlive: boolPointer(s.UseAdvanceOnPrimaryKeepAlive),
+		UnifyAcrossSchemas:           boolPointer(s.EnableUnifyAcrossSchemas),
+		UnifyAcrossSchemasRegex:      stringPointer(s.UnifyAcrossSchemasRegex),
+		MssqlReplicationMethod:       stringPointer(s.MSSQLReplicationMethod),
+		UnifyAcrossDatabases:         boolPointer(s.EnableUnifyAcrossDatabases),
+		DisableAutoFetchTables:       boolPointer(s.DisableAutoFetchTables),
 	}
 
 	if IsKnown(s.MessageCompression) {
@@ -213,7 +213,7 @@ func (s SourceReader) ToAPIPayload(ctx context.Context) (openapi.PayloadsSourceR
 		DataPlaneName: s.DataPlaneName.ValueString(),
 		Database:      s.DatabaseName.ValueString(),
 		ContainerName: s.OracleContainerName.ValueString(),
-		IsShared:      s.IsShared.ValueBoolPointer(),
+		IsShared:      boolPointer(s.IsShared),
 		Settings:      settings,
 		TablesConfig:  tablesConfig,
 	}, diags

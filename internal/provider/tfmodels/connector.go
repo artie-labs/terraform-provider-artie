@@ -93,9 +93,9 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 	return openapi.PayloadsConnectorPayload{
 		// UUID is unknown on create; on update the API uses it to resolve masked sensitive values.
 		Uuid:          nonEmptyStringPointer(c.UUID),
-		Type:          c.Type.ValueStringPointer(),
+		Type:          stringPointer(c.Type),
 		DataPlaneName: nonEmptyStringPointer(c.DataPlaneName),
-		Label:         c.Name.ValueStringPointer(),
+		Label:         stringPointer(c.Name),
 		SharedConfig:  apiSharedConfig,
 		SshTunnelUUID: sshTunnelUUID,
 	}, diags

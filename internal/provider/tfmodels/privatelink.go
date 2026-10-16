@@ -25,7 +25,7 @@ type PrivateLink struct {
 func (p PrivateLink) ToAPICreateRequest(ctx context.Context) (openapi.RouterPrivateLinkConnectionCreateRequest, diag.Diagnostics) {
 	azIDs, diags := parseList[string](ctx, p.AzIDs)
 	return openapi.RouterPrivateLinkConnectionCreateRequest{
-		Name:                p.Name.ValueStringPointer(),
+		Name:                stringPointer(p.Name),
 		VpcServiceName:      p.VpcServiceName.ValueString(),
 		AvailabilityZoneIds: azIDs,
 		DataPlaneName:       nonEmptyStringPointer(p.DataPlaneName),
