@@ -156,6 +156,7 @@ Required:
 
 Optional:
 
+- `partition_by` (String) The time-partition granularity of the destination table. One of 'hourly', 'daily', 'monthly', or 'yearly'. Only applies to BigQuery time-partitioned columns and can't be set when `partition_type` is 'integer'; if omitted, the existing value (e.g. one set in the dashboard) is kept, and new predicates default to 'daily'.
 - `partition_type` (String) The type of partition to use. One of 'time' or 'integer'. Required for BigQuery.
 
 

@@ -35,3 +35,22 @@ func TestClearedRegexPlan(t *testing.T) {
 		assert.False(t, ok)
 	}
 }
+
+func TestPlannedPartitionBy(t *testing.T) {
+	{
+		// Left out on a time predicate: the granularity from state (e.g. set in the dashboard) is kept.
+		assert.Equal(t, types.StringValue("monthly"), plannedPartitionBy(types.StringValue("time"), types.StringValue("monthly")))
+	}
+	{
+		// No prior state: left to the API's default.
+		assert.True(t, plannedPartitionBy(types.StringValue("time"), types.StringNull()).IsUnknown())
+	}
+	{
+		// Switched to an integer predicate: dropped, since the API rejects partitionBy there.
+		assert.True(t, plannedPartitionBy(types.StringValue("integer"), types.StringValue("monthly")).IsNull())
+	}
+	{
+		// Partition type only known at apply time: the granularity from state is kept.
+		assert.Equal(t, types.StringValue("monthly"), plannedPartitionBy(types.StringUnknown(), types.StringValue("monthly")))
+	}
+}

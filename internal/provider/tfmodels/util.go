@@ -136,6 +136,14 @@ func nonEmptyStringPointer(value types.String) *string {
 	return value.ValueStringPointer()
 }
 
+// nonEmptyStringValue is the inverse of nonEmptyStringPointer: nil or empty reads back as null.
+func nonEmptyStringValue(value *string) types.String {
+	if lib.RemovePtr(value) == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(*value)
+}
+
 // int64ToIntPointer converts a Terraform Int64 to the *int the OpenAPI client uses, returning nil for null or unknown.
 func int64ToIntPointer(value types.Int64) *int {
 	if value.IsNull() || value.IsUnknown() {

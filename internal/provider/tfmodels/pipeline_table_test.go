@@ -196,3 +196,43 @@ func TestBoolPointerValueOrFalse(t *testing.T) {
 	assert.False(t, boolPointerValueOrFalse(nil).IsNull(), "nil should coalesce to a known false, not null")
 	assert.False(t, boolPointerValueOrFalse(nil).ValueBool())
 }
+
+func TestMergePredicatesPartitionByRoundTrip(t *testing.T) {
+	{
+		// partitionBy set in the dashboard survives a read and is sent back on apply
+		apiPreds := []openapi.PayloadsMergePredicates{{PartitionField: ptr("created_at"), PartitionType: ptr("time"), PartitionBy: ptr("monthly")}}
+		list, diags := MergePredicatesFromAPIModel(t.Context(), &apiPreds)
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		apiTable, diags := Table{Name: types.StringValue("events"), MergePredicates: list}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Equal(t, &apiPreds, apiTable.AdvancedSettings.MergePredicates)
+	}
+	{
+		// No partitionBy reads back as null and is omitted from the request
+		apiPreds := []openapi.PayloadsMergePredicates{{PartitionField: ptr("id"), PartitionType: ptr("integer")}}
+		list, diags := MergePredicatesFromAPIModel(t.Context(), &apiPreds)
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		var preds []MergePredicate
+		assert.False(t, list.ElementsAs(t.Context(), &preds, false).HasError())
+		assert.True(t, preds[0].PartitionBy.IsNull())
+		assert.Nil(t, preds[0].ToAPIModel().PartitionBy)
+	}
+}
+
+func TestMergePredicateValidate(t *testing.T) {
+	{
+		// partition_by on a time predicate
+		assert.NoError(t, MergePredicate{PartitionField: types.StringValue("created_at"), PartitionType: types.StringValue("time"), PartitionBy: types.StringValue("hourly")}.Validate())
+	}
+	{
+		// Integer predicate without partition_by
+		assert.NoError(t, MergePredicate{PartitionField: types.StringValue("id"), PartitionType: types.StringValue("integer")}.Validate())
+	}
+	{
+		// partition_by on an integer predicate
+		err := MergePredicate{PartitionField: types.StringValue("id"), PartitionType: types.StringValue("integer"), PartitionBy: types.StringValue("daily")}.Validate()
+		assert.ErrorContains(t, err, `merge predicate "id" is an integer column, so it cannot have a `+"`partition_by`")
+	}
+}

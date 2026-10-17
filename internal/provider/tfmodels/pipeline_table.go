@@ -18,15 +18,25 @@ import (
 type MergePredicate struct {
 	PartitionField types.String `tfsdk:"partition_field"`
 	PartitionType  types.String `tfsdk:"partition_type"`
+	PartitionBy    types.String `tfsdk:"partition_by"`
 }
 
 var MergePredicateAttrTypes = map[string]attr.Type{
 	"partition_field": types.StringType,
 	"partition_type":  types.StringType,
+	"partition_by":    types.StringType,
 }
 
 func (m MergePredicate) ToAPIModel() openapi.PayloadsMergePredicates {
-	return openapi.PayloadsMergePredicates{PartitionField: lib.ToPtr(m.PartitionField.ValueString()), PartitionType: nonEmptyStringPointer(m.PartitionType)}
+	return openapi.PayloadsMergePredicates{PartitionField: lib.ToPtr(m.PartitionField.ValueString()), PartitionType: nonEmptyStringPointer(m.PartitionType), PartitionBy: nonEmptyStringPointer(m.PartitionBy)}
+}
+
+// Validate mirrors the API's check that only time predicates can have a partition_by.
+func (m MergePredicate) Validate() error {
+	if m.PartitionType.ValueString() == "integer" && m.PartitionBy.ValueString() != "" {
+		return fmt.Errorf("merge predicate %q is an integer column, so it cannot have a `partition_by`", m.PartitionField.ValueString())
+	}
+	return nil
 }
 
 func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]openapi.PayloadsMergePredicates) (types.List, diag.Diagnostics) {
@@ -38,14 +48,11 @@ func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]open
 	var diags diag.Diagnostics
 	preds := []attr.Value{}
 	for _, mp := range *apiMergePredicates {
-		var partitionType types.String
-		if lib.RemovePtr(mp.PartitionType) == "" {
-			partitionType = types.StringNull()
-		} else {
-			partitionType = types.StringValue(*mp.PartitionType)
-		}
-
-		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{PartitionField: types.StringValue(lib.RemovePtr(mp.PartitionField)), PartitionType: partitionType})
+		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{
+			PartitionField: types.StringValue(lib.RemovePtr(mp.PartitionField)),
+			PartitionType:  nonEmptyStringValue(mp.PartitionType),
+			PartitionBy:    nonEmptyStringValue(mp.PartitionBy),
+		})
 		diags.Append(predDiags...)
 		preds = append(preds, pred)
 	}

@@ -105,6 +105,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 								Attributes: map[string]schema.Attribute{
 									"partition_field": schema.StringAttribute{Required: true, MarkdownDescription: "The name of the column the destination table is partitioned by."},
 									"partition_type":  schema.StringAttribute{Optional: true, MarkdownDescription: "The type of partition to use. One of 'time' or 'integer'. Required for BigQuery.", Validators: []validator.String{stringvalidator.OneOf("time", "integer")}},
+									"partition_by":    schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{partitionByPlanModifier{}}, MarkdownDescription: "The time-partition granularity of the destination table. One of 'hourly', 'daily', 'monthly', or 'yearly'. Only applies to BigQuery time-partitioned columns and can't be set when `partition_type` is 'integer'; if omitted, the existing value (e.g. one set in the dashboard) is kept, and new predicates default to 'daily'.", Validators: []validator.String{stringvalidator.OneOf("hourly", "daily", "monthly", "yearly")}},
 								},
 							}},
 						"soft_partitioning": schema.SingleNestedAttribute{
@@ -395,6 +396,15 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 					resp.Diagnostics.AddError("Range batch size is required", "range_batch_size is required when range_backfill is enabled.")
 				}
 			}
+			if tfmodels.IsKnown(table.MergePredicates) {
+				var preds []tfmodels.MergePredicate
+				resp.Diagnostics.Append(table.MergePredicates.ElementsAs(ctx, &preds, false)...)
+				for _, pred := range preds {
+					if err := pred.Validate(); err != nil {
+						resp.Diagnostics.AddError("Invalid merge predicate", fmt.Sprintf("%q table: %s", tableKey, err))
+					}
+				}
+			}
 			if tfmodels.IsKnown(table.ColumnsToEncrypt) && len(table.ColumnsToEncrypt.Elements()) > 0 {
 				hasColumnsToEncrypt = true
 			}
@@ -428,6 +438,40 @@ func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(attrs[0]), planned)...)
 			}
 		}
+	}
+}
+
+// partitionByPlanModifier keeps a merge predicate's `partition_by` from state when it's left out of the config, so a
+// granularity set in the dashboard isn't reset to daily, except on an integer predicate, which can't have one.
+type partitionByPlanModifier struct{}
+
+func (partitionByPlanModifier) Description(context.Context) string {
+	return "Keeps the prior partition_by unless the predicate is an integer predicate."
+}
+
+func (m partitionByPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (partitionByPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.PlanValue.IsUnknown() {
+		return
+	}
+	var partitionType types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, req.Path.ParentPath().AtName("partition_type"), &partitionType)...)
+	resp.PlanValue = plannedPartitionBy(partitionType, req.StateValue)
+}
+
+// plannedPartitionBy returns the plan for a `partition_by` left out of the config: null on an integer predicate,
+// otherwise the prior state, or unknown (the API's default) when there is none.
+func plannedPartitionBy(partitionType, state types.String) types.String {
+	switch {
+	case partitionType.ValueString() == "integer":
+		return types.StringNull()
+	case state.IsNull():
+		return types.StringUnknown()
+	default:
+		return state
 	}
 }
 
