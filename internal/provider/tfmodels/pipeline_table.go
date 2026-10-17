@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -28,7 +28,7 @@ var MergePredicateAttrTypes = map[string]attr.Type{
 }
 
 func (m MergePredicate) ToAPIModel() openapi.PayloadsMergePredicates {
-	return openapi.PayloadsMergePredicates{PartitionField: lib.ToPtr(m.PartitionField.ValueString()), PartitionType: nonEmptyStringPointer(m.PartitionType), PartitionBy: nonEmptyStringPointer(m.PartitionBy)}
+	return openapi.PayloadsMergePredicates{PartitionField: ptr.ToPtr(m.PartitionField.ValueString()), PartitionType: nonEmptyStringPointer(m.PartitionType), PartitionBy: nonEmptyStringPointer(m.PartitionBy)}
 }
 
 // Validate mirrors the API's check that only time predicates can have a partition_by.
@@ -49,7 +49,7 @@ func MergePredicatesFromAPIModel(ctx context.Context, apiMergePredicates *[]open
 	preds := []attr.Value{}
 	for _, mp := range *apiMergePredicates {
 		pred, predDiags := types.ObjectValueFrom(ctx, attrTypes, MergePredicate{
-			PartitionField: types.StringValue(lib.RemovePtr(mp.PartitionField)),
+			PartitionField: types.StringValue(ptr.FromPtr(mp.PartitionField)),
 			PartitionType:  nonEmptyStringValue(mp.PartitionType),
 			PartitionBy:    nonEmptyStringValue(mp.PartitionBy),
 		})
@@ -72,10 +72,10 @@ type SoftPartitioning struct {
 
 func (s SoftPartitioning) ToAPIModel() *openapi.PayloadsSoftPartitioning {
 	return &openapi.PayloadsSoftPartitioning{
-		Enabled:            lib.ToPtr(s.Enabled.ValueBool()),
-		PartitionFrequency: lib.ToPtr(s.PartitionFrequency.ValueString()),
-		PartitionColumn:    lib.ToPtr(s.PartitionColumn.ValueString()),
-		MaxPartitions:      lib.ToPtr(int(s.MaxPartitions.ValueInt32())),
+		Enabled:            ptr.ToPtr(s.Enabled.ValueBool()),
+		PartitionFrequency: ptr.ToPtr(s.PartitionFrequency.ValueString()),
+		PartitionColumn:    ptr.ToPtr(s.PartitionColumn.ValueString()),
+		MaxPartitions:      ptr.ToPtr(int(s.MaxPartitions.ValueInt32())),
 	}
 }
 
@@ -93,10 +93,10 @@ func SoftPartitioningFromAPIModel(ctx context.Context, apiSoftPartitioning *open
 	}
 
 	return types.ObjectValue(attrTypes, map[string]attr.Value{
-		"enabled":             types.BoolValue(lib.RemovePtr(apiSoftPartitioning.Enabled)),
-		"partition_frequency": types.StringValue(lib.RemovePtr(apiSoftPartitioning.PartitionFrequency)),
-		"partition_column":    types.StringValue(lib.RemovePtr(apiSoftPartitioning.PartitionColumn)),
-		"max_partitions":      types.Int32Value(int32(lib.RemovePtr(apiSoftPartitioning.MaxPartitions))),
+		"enabled":             types.BoolValue(ptr.FromPtr(apiSoftPartitioning.Enabled)),
+		"partition_frequency": types.StringValue(ptr.FromPtr(apiSoftPartitioning.PartitionFrequency)),
+		"partition_column":    types.StringValue(ptr.FromPtr(apiSoftPartitioning.PartitionColumn)),
+		"max_partitions":      types.Int32Value(int32(ptr.FromPtr(apiSoftPartitioning.MaxPartitions))),
 	})
 }
 
@@ -211,19 +211,19 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 	var clientCTIDSettings *openapi.PayloadsCTIDSettings
 	if IsKnown(t.CTIDBackfill) {
 		clientCTIDSettings = &openapi.PayloadsCTIDSettings{
-			Enabled:        lib.ToPtr(t.CTIDBackfill.ValueBool()),
-			ChunkSize:      lib.ToPtr(int(t.CTIDChunkSize.ValueInt64())),
-			MaxParallelism: lib.ToPtr(int(t.CTIDMaxParallelism.ValueInt64())),
+			Enabled:        ptr.ToPtr(t.CTIDBackfill.ValueBool()),
+			ChunkSize:      ptr.ToPtr(int(t.CTIDChunkSize.ValueInt64())),
+			MaxParallelism: ptr.ToPtr(int(t.CTIDMaxParallelism.ValueInt64())),
 		}
 	}
 
 	var clientRangeSettings *openapi.PayloadsRangeSettings
 	if IsKnown(t.RangeBackfill) {
 		clientRangeSettings = &openapi.PayloadsRangeSettings{
-			Enabled:        lib.ToPtr(t.RangeBackfill.ValueBool()),
-			ChunksSize:     lib.ToPtr(int(t.RangeChunkSize.ValueInt64())),
-			MaxParallelism: lib.ToPtr(int(t.RangeMaxParallelism.ValueInt64())),
-			BatchSize:      lib.ToPtr(int(t.RangeBatchSize.ValueInt64())),
+			Enabled:        ptr.ToPtr(t.RangeBackfill.ValueBool()),
+			ChunksSize:     ptr.ToPtr(int(t.RangeChunkSize.ValueInt64())),
+			MaxParallelism: ptr.ToPtr(int(t.RangeMaxParallelism.ValueInt64())),
+			BatchSize:      ptr.ToPtr(int(t.RangeBatchSize.ValueInt64())),
 		}
 	}
 
@@ -234,10 +234,10 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 	return openapi.PayloadsTablePayload{
 		// New tables send the nil UUID, as the hand-written client did.
 		Uuid:               &tableUUID,
-		Name:               lib.ToPtr(t.Name.ValueString()),
-		Schema:             lib.ToPtr(t.Schema.ValueString()),
-		EnableHistoryMode:  lib.ToPtr(t.EnableHistoryMode.ValueBool()),
-		DisableReplication: lib.ToPtr(t.DisableReplication.ValueBool()),
+		Name:               ptr.ToPtr(t.Name.ValueString()),
+		Schema:             ptr.ToPtr(t.Schema.ValueString()),
+		EnableHistoryMode:  ptr.ToPtr(t.EnableHistoryMode.ValueBool()),
+		DisableReplication: ptr.ToPtr(t.DisableReplication.ValueBool()),
 		AdvancedSettings: &openapi.PayloadsAdvancedTableSettingsPayload{
 			Alias:                      stringPointer(t.Alias),
 			ExcludeColumns:             colsToExclude,
@@ -265,9 +265,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 	tables := map[string]Table{}
 	var diags diag.Diagnostics
 	for _, apiTable := range apiModelTables {
-		name := lib.RemovePtr(apiTable.Name)
-		schema := lib.RemovePtr(apiTable.Schema)
-		settings := lib.RemovePtr(apiTable.AdvancedSettings)
+		name := ptr.FromPtr(apiTable.Name)
+		schema := ptr.FromPtr(apiTable.Schema)
+		settings := ptr.FromPtr(apiTable.AdvancedSettings)
 		tableKey := name
 		if schema != "" {
 			tableKey = fmt.Sprintf("%s.%s", schema, name)
@@ -303,9 +303,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 		ctidChunkSize := types.Int64Value(0)
 		ctidMaxParallelism := types.Int64Value(0)
 		if settings.CtidSettings != nil {
-			ctidBackfill = types.BoolValue(lib.RemovePtr(settings.CtidSettings.Enabled))
-			ctidChunkSize = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.ChunkSize)))
-			ctidMaxParallelism = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.MaxParallelism)))
+			ctidBackfill = types.BoolValue(ptr.FromPtr(settings.CtidSettings.Enabled))
+			ctidChunkSize = types.Int64Value(int64(ptr.FromPtr(settings.CtidSettings.ChunkSize)))
+			ctidMaxParallelism = types.Int64Value(int64(ptr.FromPtr(settings.CtidSettings.MaxParallelism)))
 		}
 
 		rangeBackfill := types.BoolValue(false)
@@ -313,18 +313,18 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 		rangeMaxParallelism := types.Int64Value(0)
 		rangeBatchSize := types.Int64Value(0)
 		if settings.RangeSettings != nil {
-			rangeBackfill = types.BoolValue(lib.RemovePtr(settings.RangeSettings.Enabled))
-			rangeChunkSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.ChunksSize)))
-			rangeMaxParallelism = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.MaxParallelism)))
-			rangeBatchSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.BatchSize)))
+			rangeBackfill = types.BoolValue(ptr.FromPtr(settings.RangeSettings.Enabled))
+			rangeChunkSize = types.Int64Value(int64(ptr.FromPtr(settings.RangeSettings.ChunksSize)))
+			rangeMaxParallelism = types.Int64Value(int64(ptr.FromPtr(settings.RangeSettings.MaxParallelism)))
+			rangeBatchSize = types.Int64Value(int64(ptr.FromPtr(settings.RangeSettings.BatchSize)))
 		}
 
 		tables[tableKey] = Table{
-			UUID:                types.StringValue(lib.RemovePtr(apiTable.Uuid).String()),
+			UUID:                types.StringValue(ptr.FromPtr(apiTable.Uuid).String()),
 			Name:                types.StringValue(name),
 			Schema:              types.StringValue(schema),
-			EnableHistoryMode:   types.BoolValue(lib.RemovePtr(apiTable.EnableHistoryMode)),
-			DisableReplication:  types.BoolValue(lib.RemovePtr(apiTable.DisableReplication)),
+			EnableHistoryMode:   types.BoolValue(ptr.FromPtr(apiTable.EnableHistoryMode)),
+			DisableReplication:  types.BoolValue(ptr.FromPtr(apiTable.DisableReplication)),
 			Alias:               types.StringPointerValue(settings.Alias),
 			ExcludeColumns:      colsToExclude,
 			IncludeColumns:      colsToInclude,

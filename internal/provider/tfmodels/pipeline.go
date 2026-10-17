@@ -3,12 +3,12 @@ package tfmodels
 import (
 	"context"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -26,14 +26,14 @@ type PipelineDestinationConfig struct {
 
 func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
 	return openapi.PayloadsSpecificConfig{
-		Database:                    lib.ToPtr(d.Database.ValueString()),
-		Schema:                      lib.ToPtr(d.Schema.ValueString()),
-		UseSameSchemaAsSource:       lib.ToPtr(d.UseSameSchemaAsSource.ValueBool()),
-		SchemaNamePrefix:            lib.ToPtr(d.SchemaNamePrefix.ValueString()),
-		BucketName:                  lib.ToPtr(d.Bucket.ValueString()),
-		TableNameSeparator:          lib.ToPtr(d.TableNameSeparator.ValueString()),
-		FolderName:                  lib.ToPtr(d.Folder.ValueString()),
-		DynamicallyCreateNamespaces: lib.ToPtr(d.CreateIcebergNamespaces.ValueBool()),
+		Database:                    ptr.ToPtr(d.Database.ValueString()),
+		Schema:                      ptr.ToPtr(d.Schema.ValueString()),
+		UseSameSchemaAsSource:       ptr.ToPtr(d.UseSameSchemaAsSource.ValueBool()),
+		SchemaNamePrefix:            ptr.ToPtr(d.SchemaNamePrefix.ValueString()),
+		BucketName:                  ptr.ToPtr(d.Bucket.ValueString()),
+		TableNameSeparator:          ptr.ToPtr(d.TableNameSeparator.ValueString()),
+		FolderName:                  ptr.ToPtr(d.Folder.ValueString()),
+		DynamicallyCreateNamespaces: ptr.ToPtr(d.CreateIcebergNamespaces.ValueBool()),
 	}
 }
 
@@ -41,14 +41,14 @@ func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConf
 	return PipelineDestinationConfig{
 		// The API has no dataset field (BigQuery uses database), so this always reads back empty.
 		Dataset:                 types.StringValue(""),
-		Database:                types.StringValue(lib.RemovePtr(apiModel.Database)),
-		Schema:                  types.StringValue(lib.RemovePtr(apiModel.Schema)),
-		UseSameSchemaAsSource:   types.BoolValue(lib.RemovePtr(apiModel.UseSameSchemaAsSource)),
-		SchemaNamePrefix:        types.StringValue(lib.RemovePtr(apiModel.SchemaNamePrefix)),
-		Bucket:                  types.StringValue(lib.RemovePtr(apiModel.BucketName)),
-		TableNameSeparator:      types.StringValue(lib.RemovePtr(apiModel.TableNameSeparator)),
-		Folder:                  types.StringValue(lib.RemovePtr(apiModel.FolderName)),
-		CreateIcebergNamespaces: types.BoolValue(lib.RemovePtr(apiModel.DynamicallyCreateNamespaces)),
+		Database:                types.StringValue(ptr.FromPtr(apiModel.Database)),
+		Schema:                  types.StringValue(ptr.FromPtr(apiModel.Schema)),
+		UseSameSchemaAsSource:   types.BoolValue(ptr.FromPtr(apiModel.UseSameSchemaAsSource)),
+		SchemaNamePrefix:        types.StringValue(ptr.FromPtr(apiModel.SchemaNamePrefix)),
+		Bucket:                  types.StringValue(ptr.FromPtr(apiModel.BucketName)),
+		TableNameSeparator:      types.StringValue(ptr.FromPtr(apiModel.TableNameSeparator)),
+		Folder:                  types.StringValue(ptr.FromPtr(apiModel.FolderName)),
+		CreateIcebergNamespaces: types.BoolValue(ptr.FromPtr(apiModel.DynamicallyCreateNamespaces)),
 	}
 }
 
@@ -97,8 +97,8 @@ func staticColumnsToAPI(ctx context.Context, staticColumnsList types.List) (*[]o
 	var apiStaticColumns []openapi.PayloadsStaticColumn
 	for _, sc := range *staticColumns {
 		apiStaticColumns = append(apiStaticColumns, openapi.PayloadsStaticColumn{
-			Column: lib.ToPtr(sc.Column.ValueString()),
-			Value:  lib.ToPtr(sc.Value.ValueString()),
+			Column: ptr.ToPtr(sc.Column.ValueString()),
+			Value:  ptr.ToPtr(sc.Value.ValueString()),
 		})
 	}
 
@@ -115,8 +115,8 @@ func staticColumnsFromAPI(ctx context.Context, apiStaticColumns *[]openapi.Paylo
 	var staticColumns []StaticColumn
 	for _, sc := range *apiStaticColumns {
 		staticColumns = append(staticColumns, StaticColumn{
-			Column: types.StringValue(lib.RemovePtr(sc.Column)),
-			Value:  types.StringValue(lib.RemovePtr(sc.Value)),
+			Column: types.StringValue(ptr.FromPtr(sc.Column)),
+			Value:  types.StringValue(ptr.FromPtr(sc.Value)),
 		})
 	}
 
@@ -263,7 +263,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 
 	destinationConfig := p.DestinationConfig.ToAPIModel()
 	return openapi.PayloadsPipelinePayload{
-		Name:                     lib.ToPtr(p.Name.ValueString()),
+		Name:                     ptr.ToPtr(p.Name.ValueString()),
 		SourceReaderUUID:         sourceReaderUUID,
 		Tables:                   &apiTables,
 		DestinationUUID:          destinationUUID,
@@ -271,7 +271,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		SnowflakeEcoScheduleUUID: snowflakeEcoScheduleUUID,
 		EncryptionKeyUUID:        encryptionKeyUUID,
 		ColumnHashingSaltUUID:    columnHashingSaltUUID,
-		DataPlaneName:            lib.ToPtr(p.DataPlaneName.ValueString()),
+		DataPlaneName:            ptr.ToPtr(p.DataPlaneName.ValueString()),
 		AdvancedSettings:         &advancedSettings,
 	}, diags
 }
@@ -428,10 +428,10 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
 		// The API omits an empty regex, so it reads back as "" (not null) to match a config that clears it with "".
-		AutoEnableHistoryIgnoreRegex:   types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
-		AutoEnableHistoryIncludeRegex:  types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
-		AutoReplicateIgnoreRegex:       types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
-		AutoReplicateIncludeRegex:      types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
+		AutoEnableHistoryIgnoreRegex:   types.StringValue(ptr.FromPtr(settings.AutoEnableHistoryIgnoreRegex)),
+		AutoEnableHistoryIncludeRegex:  types.StringValue(ptr.FromPtr(settings.AutoEnableHistoryIncludeRegex)),
+		AutoReplicateIgnoreRegex:       types.StringValue(ptr.FromPtr(settings.AutoReplicateIgnoreRegex)),
+		AutoReplicateIncludeRegex:      types.StringValue(ptr.FromPtr(settings.AutoReplicateIncludeRegex)),
 		AutoReplicateNewTables:         autoReplicateNewTables,
 		AppendOnly:                     appendOnly,
 		StaticColumns:                  staticColumns,

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/artie-labs/base/lib/ptr"
+
 	"terraform-provider-artie/internal/artieclient"
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
@@ -242,7 +243,7 @@ func (r *SourceReaderResource) Create(ctx context.Context, req resource.CreateRe
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *sourceReader, planData.StatusOverride)
 
-	if lib.RemovePtr(sourceReader.IsShared) {
+	if ptr.FromPtr(sourceReader.IsShared) {
 		if err := artieclient.CheckResponse(r.client.SourceReaderDeployWithResponse(ctx, sourceReader.Uuid.String())); err != nil {
 			resp.Diagnostics.AddError("Unable to deploy Source Reader", err.Error())
 		}
@@ -290,7 +291,7 @@ func (r *SourceReaderResource) Update(ctx context.Context, req resource.UpdateRe
 
 	r.SetStateData(ctx, &resp.State, &resp.Diagnostics, *updatedSourceReader, planData.StatusOverride)
 
-	if lib.RemovePtr(updatedSourceReader.IsShared) {
+	if ptr.FromPtr(updatedSourceReader.IsShared) {
 		if planData.StatusOverride.ValueString() == "paused" {
 			if err := artieclient.CheckResponse(r.client.SourceReaderUpdateStatusWithResponse(ctx, updatedSourceReader.Uuid.String(), openapi.RouterSourceReaderUpdateStatusRequest{
 				Status: openapi.EnumsSourceReaderStatusPaused,

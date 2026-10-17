@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"testing"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -10,8 +11,6 @@ import (
 
 	"terraform-provider-artie/internal/openapi"
 )
-
-func ptr[T any](v T) *T { return &v }
 
 func TestPipelineAutoEnableHistoryForNewTables(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
@@ -40,13 +39,13 @@ func TestPipelineAutoEnableHistoryForNewTables(t *testing.T) {
 	assert.False(t, model.AutoEnableHistoryForNewTables.IsNull(), "auto_enable_history_for_new_tables should not be null when omitted")
 	assert.False(t, model.AutoEnableHistoryForNewTables.ValueBool())
 
-	base.AdvancedSettings.AutoEnableHistoryForNewTables = ptr(false)
+	base.AdvancedSettings.AutoEnableHistoryForNewTables = ptr.ToPtr(false)
 	model, diags = PipelineFromAPIModel(t.Context(), base)
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.False(t, model.AutoEnableHistoryForNewTables.IsNull(), "auto_enable_history_for_new_tables should not be null when false")
 	assert.False(t, model.AutoEnableHistoryForNewTables.ValueBool())
 
-	base.AdvancedSettings.AutoEnableHistoryForNewTables = ptr(true)
+	base.AdvancedSettings.AutoEnableHistoryForNewTables = ptr.ToPtr(true)
 	model, diags = PipelineFromAPIModel(t.Context(), base)
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.True(t, model.AutoEnableHistoryForNewTables.ValueBool())
@@ -67,7 +66,7 @@ func TestPipelineAutoReplicateIgnoreRegex(t *testing.T) {
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^public\\.tmp_.*", *apiModel.AdvancedSettings.AutoReplicateIgnoreRegex)
 
-	apiModel.AdvancedSettings.AutoReplicateIgnoreRegex = ptr("^public\\.archive_.*")
+	apiModel.AdvancedSettings.AutoReplicateIgnoreRegex = ptr.ToPtr("^public\\.archive_.*")
 	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
 		Uuid:             uuid.New(),
 		Name:             "test",
@@ -93,7 +92,7 @@ func TestPipelineAutoEnableHistoryIgnoreRegex(t *testing.T) {
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^audit\\..*", *apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex)
 
-	apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex = ptr("^archive\\..*")
+	apiModel.AdvancedSettings.AutoEnableHistoryIgnoreRegex = ptr.ToPtr("^archive\\..*")
 	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
 		Uuid:             uuid.New(),
 		Name:             "test",
@@ -119,7 +118,7 @@ func TestPipelineAutoReplicateIncludeRegex(t *testing.T) {
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^public\\.billing_.*", *apiModel.AdvancedSettings.AutoReplicateIncludeRegex)
 
-	apiModel.AdvancedSettings.AutoReplicateIncludeRegex = ptr("^public\\.orders_.*")
+	apiModel.AdvancedSettings.AutoReplicateIncludeRegex = ptr.ToPtr("^public\\.orders_.*")
 	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
 		Uuid:             uuid.New(),
 		Name:             "test",
@@ -145,7 +144,7 @@ func TestPipelineAutoEnableHistoryIncludeRegex(t *testing.T) {
 	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 	assert.Equal(t, "^audit\\..*", *apiModel.AdvancedSettings.AutoEnableHistoryIncludeRegex)
 
-	apiModel.AdvancedSettings.AutoEnableHistoryIncludeRegex = ptr("^events\\..*")
+	apiModel.AdvancedSettings.AutoEnableHistoryIncludeRegex = ptr.ToPtr("^events\\..*")
 	model, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{
 		Uuid:             uuid.New(),
 		Name:             "test",
@@ -211,7 +210,7 @@ func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	}
 	{
 		// DisableAlerts explicitly false -> false
-		base.AdvancedSettings.DisableAlerts = ptr(false)
+		base.AdvancedSettings.DisableAlerts = ptr.ToPtr(false)
 		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
 		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 		assert.False(t, pipeline.DisableAlerts.IsNull(), "disable_alerts should not be null when false")
@@ -219,7 +218,7 @@ func TestPipelineFromAPIModel_DisableAlertsReadsBackAsFalse(t *testing.T) {
 	}
 	{
 		// DisableAlerts explicitly true -> true
-		base.AdvancedSettings.DisableAlerts = ptr(true)
+		base.AdvancedSettings.DisableAlerts = ptr.ToPtr(true)
 		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
 		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 		assert.True(t, pipeline.DisableAlerts.ValueBool())
@@ -243,7 +242,7 @@ func TestPipelineFromAPIModel_DatabricksAutoLiquidClustering(t *testing.T) {
 	}
 	{
 		// Explicitly true -> true
-		base.AdvancedSettings.DatabricksAutoLiquidClustering = ptr(true)
+		base.AdvancedSettings.DatabricksAutoLiquidClustering = ptr.ToPtr(true)
 		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
 		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 		assert.True(t, pipeline.DatabricksAutoLiquidClustering.ValueBool())
@@ -310,7 +309,7 @@ func TestPipelineFromAPIModel_MaxConcurrentSnapshots(t *testing.T) {
 		Name:   "test",
 		Tables: []openapi.PayloadsTable{},
 		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{
-			MaxConcurrentSnapshots: ptr(6),
+			MaxConcurrentSnapshots: ptr.ToPtr(6),
 		},
 	}
 
@@ -343,9 +342,9 @@ func TestPipelineFromAPIModel_TurboSettings(t *testing.T) {
 		Name:   "test",
 		Tables: []openapi.PayloadsTable{},
 		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{
-			TurboWarehouse:               ptr("ARTIE_WEB_WH_LARGE"),
-			TurboRowThreshold:            ptr(500000),
-			TurboLatencyThresholdMinutes: ptr(30),
+			TurboWarehouse:               ptr.ToPtr("ARTIE_WEB_WH_LARGE"),
+			TurboRowThreshold:            ptr.ToPtr(500000),
+			TurboLatencyThresholdMinutes: ptr.ToPtr(30),
 		},
 	}
 

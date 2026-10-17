@@ -3,10 +3,10 @@ package tfmodels
 import (
 	"context"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -52,11 +52,11 @@ func PrivateLinkFromAPIModel(ctx context.Context, apiModel openapi.PayloadsPriva
 		UUID:           types.StringValue(apiModel.Uuid.String()),
 		VpcServiceName: types.StringValue(apiModel.VpcServiceName),
 		Region:         types.StringValue(apiModel.Region),
-		VpcEndpointID:  types.StringValue(lib.RemovePtr(apiModel.VpcEndpointId)),
+		VpcEndpointID:  types.StringValue(ptr.FromPtr(apiModel.VpcEndpointId)),
 		Name:           types.StringValue(apiModel.Name),
 		AzIDs:          azIDs,
 		Status:         types.StringValue(apiModel.Status),
 		DnsEntry:       types.StringValue(apiModel.DnsEntry),
-		DataPlaneName:  types.StringValue(lib.RemovePtr(apiModel.DataPlaneName)),
+		DataPlaneName:  types.StringValue(ptr.FromPtr(apiModel.DataPlaneName)),
 	}, diags
 }

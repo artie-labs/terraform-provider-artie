@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-
-	"terraform-provider-artie/internal/lib"
 )
 
 func parseUUID(value types.String) (uuid.UUID, diag.Diagnostics) {
@@ -138,7 +137,7 @@ func nonEmptyStringPointer(value types.String) *string {
 
 // nonEmptyStringValue is the inverse of nonEmptyStringPointer: nil or empty reads back as null.
 func nonEmptyStringValue(value *string) types.String {
-	if lib.RemovePtr(value) == "" {
+	if ptr.FromPtr(value) == "" {
 		return types.StringNull()
 	}
 	return types.StringValue(*value)
@@ -149,7 +148,7 @@ func int64ToIntPointer(value types.Int64) *int {
 	if value.IsNull() || value.IsUnknown() {
 		return nil
 	}
-	return lib.ToPtr(int(value.ValueInt64()))
+	return ptr.ToPtr(int(value.ValueInt64()))
 }
 
 // boolPointer returns nil for null or unknown, so a setting left out of the config is omitted from the request and the

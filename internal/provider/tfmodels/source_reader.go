@@ -3,11 +3,11 @@ package tfmodels
 import (
 	"context"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -69,14 +69,14 @@ func SourceReaderTablesFromAPIModel(ctx context.Context, apiTablesConfig *openap
 			}
 
 			tables[key] = SourceReaderTable{
-				Name:                     types.StringValue(lib.RemovePtr(apiTable.Name)),
-				Schema:                   types.StringValue(lib.RemovePtr(apiTable.Schema)),
+				Name:                     types.StringValue(ptr.FromPtr(apiTable.Name)),
+				Schema:                   types.StringValue(ptr.FromPtr(apiTable.Schema)),
 				IsPartitioned:            types.BoolValue(false),
 				ColumnsToExclude:         colsToExclude,
 				ColumnsToInclude:         colsToInclude,
 				ChildPartitionSchemaName: types.StringValue(""),
-				UnifyAcrossSchemas:       types.BoolValue(lib.RemovePtr(apiTable.UnifyAcrossSchemas)),
-				UnifyAcrossDatabases:     types.BoolValue(lib.RemovePtr(apiTable.UnifyAcrossDatabases)),
+				UnifyAcrossSchemas:       types.BoolValue(ptr.FromPtr(apiTable.UnifyAcrossSchemas)),
+				UnifyAcrossDatabases:     types.BoolValue(ptr.FromPtr(apiTable.UnifyAcrossDatabases)),
 			}
 		}
 	}
@@ -252,26 +252,26 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		Name:                            types.StringValue(apiModel.Name),
 		DataPlaneName:                   types.StringValue(apiModel.DataPlaneName),
 		ConnectorUUID:                   types.StringValue(apiModel.ConnectorUUID.String()),
-		IsShared:                        types.BoolValue(lib.RemovePtr(apiModel.IsShared)),
+		IsShared:                        types.BoolValue(ptr.FromPtr(apiModel.IsShared)),
 		DatabaseName:                    types.StringValue(apiModel.Database),
 		OracleContainerName:             types.StringValue(apiModel.ContainerName),
-		BackfillBatchSize:               types.Int64Value(int64(lib.RemovePtr(apiModel.Settings.BackfillBatchSize))),
-		EnableHeartbeats:                types.BoolValue(lib.RemovePtr(apiModel.Settings.EnableHeartbeats)),
-		OneTopicPerSchema:               types.BoolValue(lib.RemovePtr(apiModel.Settings.OneTopicPerSchema)),
-		PostgresPublicationNameOverride: types.StringValue(lib.RemovePtr(apiModel.Settings.PublicationNameOverride)),
-		PostgresPublicationMode:         types.StringValue(lib.RemovePtr(apiModel.Settings.PublicationAutoCreateMode)),
-		PostgresReplicationSlotOverride: types.StringValue(lib.RemovePtr(apiModel.Settings.ReplicationSlotOverride)),
+		BackfillBatchSize:               types.Int64Value(int64(ptr.FromPtr(apiModel.Settings.BackfillBatchSize))),
+		EnableHeartbeats:                types.BoolValue(ptr.FromPtr(apiModel.Settings.EnableHeartbeats)),
+		OneTopicPerSchema:               types.BoolValue(ptr.FromPtr(apiModel.Settings.OneTopicPerSchema)),
+		PostgresPublicationNameOverride: types.StringValue(ptr.FromPtr(apiModel.Settings.PublicationNameOverride)),
+		PostgresPublicationMode:         types.StringValue(ptr.FromPtr(apiModel.Settings.PublicationAutoCreateMode)),
+		PostgresReplicationSlotOverride: types.StringValue(ptr.FromPtr(apiModel.Settings.ReplicationSlotOverride)),
 		PublishViaPartitionRoot:         types.BoolPointerValue(apiModel.Settings.PublishViaPartitionRoot),
 		CompositeTypesAsText:            types.BoolPointerValue(apiModel.Settings.CompositeTypesAsText),
 		EnableRelationMessageCaching:    types.BoolPointerValue(apiModel.Settings.EnableRelationMessageCaching),
 		UseFailoverReplicationSlot:      types.BoolPointerValue(apiModel.Settings.UseFailoverReplicationSlot),
 		UseAdvanceOnPrimaryKeepAlive:    types.BoolPointerValue(apiModel.Settings.UseAdvanceOnPrimaryKeepAlive),
-		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
+		EnableUnifyAcrossSchemas:        types.BoolValue(ptr.FromPtr(apiModel.Settings.UnifyAcrossSchemas)),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
-		MSSQLReplicationMethod:          types.StringValue(lib.RemovePtr(apiModel.Settings.MssqlReplicationMethod)),
-		EnableUnifyAcrossDatabases:      types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossDatabases)),
+		MSSQLReplicationMethod:          types.StringValue(ptr.FromPtr(apiModel.Settings.MssqlReplicationMethod)),
+		EnableUnifyAcrossDatabases:      types.BoolValue(ptr.FromPtr(apiModel.Settings.UnifyAcrossDatabases)),
 		DatabasesToUnify:                databasesToUnify,
-		DisableAutoFetchTables:          types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),
+		DisableAutoFetchTables:          types.BoolValue(ptr.FromPtr(apiModel.Settings.DisableAutoFetchTables)),
 		Tables:                          tablesMap,
 	}
 

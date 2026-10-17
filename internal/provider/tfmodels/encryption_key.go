@@ -1,10 +1,10 @@
 package tfmodels
 
 import (
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -47,7 +47,7 @@ func EncryptionKeyFromAPIModel(apiModel openapi.PayloadsEncryptionKey, key strin
 	return EncryptionKey{
 		UUID:        types.StringValue(apiModel.Uuid.String()),
 		Name:        types.StringValue(apiModel.Name),
-		Description: types.StringValue(lib.RemovePtr(apiModel.Description)),
+		Description: types.StringValue(ptr.FromPtr(apiModel.Description)),
 		KMSKeyUUID:  kmsKeyUUID,
 		Type:        types.StringValue(apiModel.Type),
 		Key:         types.StringValue(key),

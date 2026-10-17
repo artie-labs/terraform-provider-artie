@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"testing"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -16,9 +17,9 @@ func TestTablesFromAPIModel_NilBoolSettingsReadBackAsFalse(t *testing.T) {
 	// `false` in the Terraform config triggers a post-apply consistency error (false -> null).
 	apiTables := []openapi.PayloadsTable{
 		{
-			Uuid:   ptr(uuid.New()),
-			Name:   ptr("billing_counter_event"),
-			Schema: ptr("task_mgmt"),
+			Uuid:   ptr.ToPtr(uuid.New()),
+			Name:   ptr.ToPtr("billing_counter_event"),
+			Schema: ptr.ToPtr("task_mgmt"),
 			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				EncryptJSONBColumns:        nil,
 				SkipDelete:                 nil,
@@ -63,8 +64,8 @@ func TestTablesFromAPIModel_BoolSettingsRoundTripExplicitValues(t *testing.T) {
 	falseVal := false
 	apiTables := []openapi.PayloadsTable{
 		{
-			Uuid: ptr(uuid.New()),
-			Name: ptr("orders"),
+			Uuid: ptr.ToPtr(uuid.New()),
+			Name: ptr.ToPtr("orders"),
 			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				EncryptJSONBColumns: &trueVal,
 				SkipDelete:          &falseVal,
@@ -114,9 +115,9 @@ func TestTableToAPIModel_NullRangeBackfillOmitsRangeSettings(t *testing.T) {
 func TestTablesFromAPIModel_NilRangeSettingsReadBackAsDisabled(t *testing.T) {
 	apiTables := []openapi.PayloadsTable{
 		{
-			Uuid:   ptr(uuid.New()),
-			Name:   ptr("offers"),
-			Schema: ptr("public"),
+			Uuid:   ptr.ToPtr(uuid.New()),
+			Name:   ptr.ToPtr("offers"),
+			Schema: ptr.ToPtr("public"),
 			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				RangeSettings: nil,
 			},
@@ -137,15 +138,15 @@ func TestTablesFromAPIModel_NilRangeSettingsReadBackAsDisabled(t *testing.T) {
 func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
 	apiTables := []openapi.PayloadsTable{
 		{
-			Uuid:   ptr(uuid.New()),
-			Name:   ptr("offers"),
-			Schema: ptr("public"),
+			Uuid:   ptr.ToPtr(uuid.New()),
+			Name:   ptr.ToPtr("offers"),
+			Schema: ptr.ToPtr("public"),
 			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
 				RangeSettings: &openapi.PayloadsRangeSettings{
-					Enabled:        ptr(true),
-					ChunksSize:     ptr(5000000),
-					MaxParallelism: ptr(5),
-					BatchSize:      ptr(0),
+					Enabled:        ptr.ToPtr(true),
+					ChunksSize:     ptr.ToPtr(5000000),
+					MaxParallelism: ptr.ToPtr(5),
+					BatchSize:      ptr.ToPtr(0),
 				},
 			},
 		},
@@ -200,7 +201,7 @@ func TestBoolPointerValueOrFalse(t *testing.T) {
 func TestMergePredicatesPartitionByRoundTrip(t *testing.T) {
 	{
 		// partitionBy set in the dashboard survives a read and is sent back on apply
-		apiPreds := []openapi.PayloadsMergePredicates{{PartitionField: ptr("created_at"), PartitionType: ptr("time"), PartitionBy: ptr("monthly")}}
+		apiPreds := []openapi.PayloadsMergePredicates{{PartitionField: ptr.ToPtr("created_at"), PartitionType: ptr.ToPtr("time"), PartitionBy: ptr.ToPtr("monthly")}}
 		list, diags := MergePredicatesFromAPIModel(t.Context(), &apiPreds)
 		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 
@@ -210,7 +211,7 @@ func TestMergePredicatesPartitionByRoundTrip(t *testing.T) {
 	}
 	{
 		// No partitionBy reads back as null and is omitted from the request
-		apiPreds := []openapi.PayloadsMergePredicates{{PartitionField: ptr("id"), PartitionType: ptr("integer")}}
+		apiPreds := []openapi.PayloadsMergePredicates{{PartitionField: ptr.ToPtr("id"), PartitionType: ptr.ToPtr("integer")}}
 		list, diags := MergePredicatesFromAPIModel(t.Context(), &apiPreds)
 		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 

@@ -1,9 +1,9 @@
 package tfmodels
 
 import (
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -34,7 +34,7 @@ func ColumnHashingSaltFromAPIModel(apiModel openapi.PayloadsColumnHashingSalt, s
 	return ColumnHashingSalt{
 		UUID:        types.StringValue(apiModel.Uuid.String()),
 		Name:        types.StringValue(apiModel.Name),
-		Description: types.StringValue(lib.RemovePtr(apiModel.Description)),
+		Description: types.StringValue(ptr.FromPtr(apiModel.Description)),
 		Salt:        types.StringValue(salt),
 	}
 }

@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/artie-labs/base/lib/ptr"
+
 	"terraform-provider-artie/internal/artieclient"
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
@@ -609,7 +610,7 @@ func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.Payloa
 	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedDestinationWithResponse(ctx, openapi.RouterPipelineValidateUnsavedDestinationRequest{
 		DestinationUUID:  pipeline.DestinationUUID,
 		SourceReaderUUID: pipeline.SourceReaderUUID,
-		SpecificCfg:      lib.RemovePtr(pipeline.SpecificDestCfg),
+		SpecificCfg:      ptr.FromPtr(pipeline.SpecificDestCfg),
 		Tables:           &tables,
 		AdvancedSettings: pipeline.AdvancedSettings,
 	})); err != nil {

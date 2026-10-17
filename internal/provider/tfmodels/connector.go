@@ -3,10 +3,10 @@ package tfmodels
 import (
 	"fmt"
 
+	"github.com/artie-labs/base/lib/ptr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
 
@@ -116,7 +116,7 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 	connector := Connector{
 		UUID:          types.StringValue(apiModel.Uuid.String()),
 		Type:          types.StringValue(string(apiModel.Type)),
-		DataPlaneName: types.StringValue(lib.RemovePtr(apiModel.DataPlaneName)),
+		DataPlaneName: types.StringValue(ptr.FromPtr(apiModel.DataPlaneName)),
 		Name:          types.StringValue(apiModel.Label),
 		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SshTunnelUUID),
 	}
