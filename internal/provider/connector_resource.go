@@ -82,7 +82,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				MarkdownDescription: "The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.",
 				Optional:            true,
 				Computed:            true,
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
 			},
 			"bigquery_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `bigquery`.",
