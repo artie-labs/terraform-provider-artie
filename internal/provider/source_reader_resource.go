@@ -52,10 +52,10 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"connector_uuid": schema.StringAttribute{Required: true, MarkdownDescription: "The source connector that we should read data from."},
 			"name":           schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this source reader."},
 			"data_plane_name": schema.StringAttribute{
-				MarkdownDescription: "The name of the data plane to deploy this source reader in. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Changing this destroys and recreates the source reader, so change the data plane of the pipelines that use it in the same apply.",
+				MarkdownDescription: "The name of the data plane to deploy this source reader in. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing source reader to a different data plane destroys and recreates it, so change the data plane of its connector and the pipelines that use it in the same apply. " + dataPlaneReplaceNote,
 				Optional:            true,
 				Computed:            true,
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), dataPlaneRequiresReplace()},
 			},
 			"is_shared":                          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, this source reader can be used by multiple pipelines."},
 			"database_name":                      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The name of the database we should read data from in the source connector. This should be specified if the source connector's type is DocumentDB, MongoDB, MySQL, MS SQL, Oracle (this maps to the service name), or PostgreSQL."},

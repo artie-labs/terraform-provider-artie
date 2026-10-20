@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-artie/internal/maputil"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -80,15 +79,10 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 			"name": schema.StringAttribute{Optional: true, MarkdownDescription: "An optional human-readable label for this connector."},
 			"data_plane_name": schema.StringAttribute{
-				MarkdownDescription: "The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing connector to a different data plane destroys and recreates it, so change the data plane of the source readers and pipelines that use it in the same apply.",
+				MarkdownDescription: "The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing connector to a different data plane destroys and recreates it, so change the data plane of the source readers and pipelines that use it in the same apply. " + dataPlaneReplaceNote,
 				Optional:            true,
 				Computed:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
-						resp.RequiresReplace = dataPlaneChangeRequiresReplace(req.StateValue, req.PlanValue)
-					}, "Changing the data plane from one to another forces a new connector.", "Changing the data plane from one to another forces a new connector."),
-				},
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), dataPlaneRequiresReplace()},
 			},
 			"bigquery_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `bigquery`.",
@@ -591,9 +585,4 @@ func (r *ConnectorResource) Delete(ctx context.Context, req resource.DeleteReque
 
 func (r *ConnectorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
-}
-
-// The API lets a connector without a data plane gain one in place, but rejects moving it between data planes.
-func dataPlaneChangeRequiresReplace(state, plan types.String) bool {
-	return state.ValueString() != "" && plan.ValueString() != "" && state.ValueString() != plan.ValueString()
 }
