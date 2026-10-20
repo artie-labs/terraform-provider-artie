@@ -26,8 +26,8 @@ func (p PrivateLink) ToAPICreateRequest(ctx context.Context) (openapi.RouterPriv
 	azIDs, diags := parseList[string](ctx, p.AzIDs)
 	return openapi.RouterPrivateLinkConnectionCreateRequest{
 		Name:                stringPointer(p.Name),
-		VpcServiceName:      p.VpcServiceName.ValueString(),
-		AvailabilityZoneIds: azIDs,
+		VpcServiceName:      p.VpcServiceName.ValueStringPointer(),
+		AvailabilityZoneIds: &azIDs,
 		DataPlaneName:       nonEmptyStringPointer(p.DataPlaneName),
 	}, diags
 }
@@ -36,8 +36,8 @@ func (p PrivateLink) ToAPIUpdateRequest(ctx context.Context) (openapi.RouterPriv
 	azIDs, diags := parseList[string](ctx, p.AzIDs)
 	return openapi.RouterPrivateLinkConnectionUpdateRequest{
 		Name:                p.Name.ValueString(),
-		VpcServiceName:      p.VpcServiceName.ValueString(),
-		AvailabilityZoneIds: azIDs,
+		VpcServiceName:      p.VpcServiceName.ValueStringPointer(),
+		AvailabilityZoneIds: &azIDs,
 		DataPlaneName:       nonEmptyStringPointer(p.DataPlaneName),
 	}, diags
 }
