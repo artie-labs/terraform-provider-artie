@@ -113,6 +113,7 @@ type SourceReader struct {
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
 	DatabasesToUnify                types.List   `tfsdk:"databases_to_unify"`
 	DisableAutoFetchTables          types.Bool   `tfsdk:"disable_auto_fetch_tables"`
+	MongoDBDeploymentScopedMode     types.Bool   `tfsdk:"mongodb_deployment_scoped_mode"`
 	MessageCompression              types.String `tfsdk:"message_compression"`
 	Tables                          types.Map    `tfsdk:"tables"`
 }
@@ -136,6 +137,7 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 		MssqlReplicationMethod:       stringPointer(s.MSSQLReplicationMethod),
 		UnifyAcrossDatabases:         boolPointer(s.EnableUnifyAcrossDatabases),
 		DisableAutoFetchTables:       boolPointer(s.DisableAutoFetchTables),
+		DeploymentScopedMode:         boolPointer(s.MongoDBDeploymentScopedMode),
 	}
 
 	if IsKnown(s.MessageCompression) {
@@ -272,6 +274,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		EnableUnifyAcrossDatabases:      types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossDatabases)),
 		DatabasesToUnify:                databasesToUnify,
 		DisableAutoFetchTables:          types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),
+		MongoDBDeploymentScopedMode:     types.BoolValue(lib.RemovePtr(apiModel.Settings.DeploymentScopedMode)),
 		Tables:                          tablesMap,
 	}
 

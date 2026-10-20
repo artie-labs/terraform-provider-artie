@@ -104,7 +104,7 @@ Optional:
 - `schema` (String) The name of the schema or namespace that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, Iceberg, or Snowflake (unless `use_same_schema_as_source` is set to true).
 - `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this pipeline's schemas in the destination.
 - `table_name_separator` (String) If provided, this is the separator between database, schema and table name. This is only applicable if the destination is S3 or GCS.
-- `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, etc).
+- `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, Databricks, etc). A MongoDB source supports this when its source reader has `mongodb_deployment_scoped_mode` set to true, and each collection's database is used as its schema.
 
 
 <a id="nestedatt--tables"></a>
@@ -135,7 +135,7 @@ Optional:
 - `range_batch_size` (Number) The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true.
 - `range_chunk_size` (Number) The number of source rows or range units Artie should target per range backfill chunk. This is only applicable if `range_backfill` is set to true.
 - `range_max_parallelism` (Number) The maximum number of range backfill chunks Artie should process in parallel for this table. This is only applicable if `range_backfill` is set to true.
-- `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
+- `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`. For a MongoDB source reader with `mongodb_deployment_scoped_mode` set to true, this is the collection's database.
 - `skip_backfill` (Boolean) If set to true, Artie will skip backfilling this table and only process new changes going forward.
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
 - `skip_no_op_updates` (Boolean) If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL.
