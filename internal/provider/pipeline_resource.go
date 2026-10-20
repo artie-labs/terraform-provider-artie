@@ -72,7 +72,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 					Attributes: map[string]schema.Attribute{
 						"uuid":                   schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}},
 						"name":                   schema.StringAttribute{Required: true, MarkdownDescription: "The name of the table in the source database."},
-						"schema":                 schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`."},
+						"schema":                 schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`. For a MongoDB source reader with `mongodb_deployment_scoped_mode` set to true, this is the collection's database."},
 						"enable_history_mode":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time."},
 						"disable_replication":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true along with `enable_history_mode`, this table will only replicate to the history table and not the main destination table."},
 						"alias":                  schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional alias for the table. If set, this will be the name of the destination table."},
@@ -189,7 +189,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
 					"use_same_schema_as_source": schema.BoolAttribute{
-						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, etc).",
+						MarkdownDescription: "If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, Databricks, etc). A MongoDB source supports this when its source reader has `mongodb_deployment_scoped_mode` set to true, and each collection's database is used as its schema.",
 						Optional:            true,
 						Computed:            true, Default: booldefault.StaticBool(false),
 						PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},

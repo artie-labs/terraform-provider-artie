@@ -64,6 +64,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 - `enable_unify_across_schemas` (Boolean) If set to true, you can specify tables that should be generalized to all schemas, meaning we will sync all tables with the same name into the same destination table. This is useful if you have multiple identical schemas and want to fan-in the data. This is only applicable if the source type is PostgreSQL.
 - `is_shared` (Boolean) If set to true, this source reader can be used by multiple pipelines.
 - `message_compression` (String) When set to `gzip`, large Kafka messages produced by this source reader will be gzip-compressed before being sent. Transfer must be deployed with decompression support before enabling this. Valid values: `gzip` or omit/empty to disable.
+- `mongodb_deployment_scoped_mode` (Boolean) If set to true, Artie reads one change stream for the whole MongoDB cluster instead of one per database, so a pipeline can include collections from several databases. Each table's `schema` should be set to the collection's database. Pipelines can then set `use_same_schema_as_source` to write each database to its own destination schema. This is only applicable if the source type is MongoDB. Defaults to false.
 - `mssql_replication_method` (String) If unset, we will use the default replication method (Capture Instances). If set to `fn_dblog`, we will stream data from transaction logs via SQL access. This is only applicable if the source type is Microsoft SQL Server.
 - `name` (String) An optional human-readable label for this source reader.
 - `one_topic_per_schema` (Boolean) If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This is currently only supported if your source is Oracle and your account has this feature enabled.
@@ -95,7 +96,7 @@ Optional:
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from CDC events. This cannot be used if `columns_to_include` is also specified.
 - `columns_to_include` (List of String) An optional list of columns to include in CDC events. If not provided, all columns will be included. This cannot be used if `columns_to_exclude` is also specified.
 - `is_partitioned` (Boolean, Deprecated) If the source table is partitioned, set this to true and we will ingest data from all of its partitions.
-- `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`.
+- `schema` (String) The name of the schema the table belongs to in the source database. This must be specified if your source database uses schemas (such as PostgreSQL), e.g. `public`. For a MongoDB source reader with `mongodb_deployment_scoped_mode` set to true, this is the collection's database.
 - `unify_across_databases` (Boolean) This should be set to true for any tables that you intend to unify across databases in any pipeline that uses this source reader. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled.
 - `unify_across_schemas` (Boolean) This should be set to true for any tables that you intend to unify across schemas in any pipeline that uses this source reader. This is only applicable if the source reader has `enable_unify_across_schemas` set to true.
 
