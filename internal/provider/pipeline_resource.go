@@ -232,10 +232,10 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 				},
 			},
 			"data_plane_name": schema.StringAttribute{
-				MarkdownDescription: "The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI.",
+				MarkdownDescription: "The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing pipeline to a different data plane destroys and recreates it (with a new UUID), so change the data plane of its source reader and destination connector in the same apply. " + dataPlaneReplaceNote,
 				Optional:            true,
 				Computed:            true,
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), dataPlaneRequiresReplace()},
 			},
 			"drop_deleted_columns":                                 schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a column is dropped from the source it will also be dropped in the destination."},
 			"soft_delete_rows":                                     schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source."},
