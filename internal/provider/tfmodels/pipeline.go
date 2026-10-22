@@ -159,6 +159,7 @@ type Pipeline struct {
 	StagingSchema                                types.String `tfsdk:"staging_schema"`
 	ForceUTCTimezone                             types.Bool   `tfsdk:"force_utc_timezone"`
 	WriteRawBinaryValues                         types.Bool   `tfsdk:"write_raw_binary_values"`
+	StructAsVariant                              types.Bool   `tfsdk:"struct_as_variant"`
 	DisableAlerts                                types.Bool   `tfsdk:"disable_alerts"`
 	DatabricksAutoLiquidClustering               types.Bool   `tfsdk:"databricks_auto_liquid_clustering"`
 	MaxConcurrentSnapshots                       types.Int64  `tfsdk:"max_concurrent_snapshots"`
@@ -248,6 +249,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		StagingSchema:                                stringPointer(p.StagingSchema),
 		ForceUTCTimezone:                             boolPointer(p.ForceUTCTimezone),
 		WriteRawBinaryValues:                         boolPointer(p.WriteRawBinaryValues),
+		StructAsVariant:                              boolPointer(p.StructAsVariant),
 		DisableAlerts:                                boolPointer(p.DisableAlerts),
 		DatabricksAutoLiquidClustering:               boolPointer(p.DatabricksAutoLiquidClustering),
 		MaxConcurrentSnapshots:                       int64ToIntPointer(p.MaxConcurrentSnapshots),
@@ -444,5 +446,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		TurboWarehouse:                 turboWarehouse,
 		TurboRowThreshold:              turboRowThreshold,
 		TurboLatencyThresholdMinutes:   turboLatencyThresholdMinutes,
+		// The API omits structAsVariant when it's false, so it reads back as false (not null) to match a config that sets false.
+		StructAsVariant: boolPointerValueOrFalse(settings.StructAsVariant),
 	}, diags
 }

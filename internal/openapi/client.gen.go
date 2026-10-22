@@ -839,6 +839,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
 	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
+	StructAsVariant                              *bool                           `json:"structAsVariant,omitempty"`
 	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
 	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
 	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
@@ -1439,6 +1440,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
 	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
+	StructAsVariant                              *bool                           `json:"structAsVariant,omitempty"`
 	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
 	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
 	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
@@ -1740,20 +1742,21 @@ type PayloadsStaticColumn struct {
 
 // PayloadsTable defines model for PayloadsTable.
 type PayloadsTable struct {
-	AdvancedSettings      *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
-	BackfillStages        *[]PayloadsBackfillStageEvent  `json:"backfillStages,omitempty"`
-	CreatedAt             *time.Time                     `json:"createdAt,omitempty"`
-	DestinationTableName  *string                        `json:"destinationTableName,omitempty"`
-	DisableReplication    *bool                          `json:"disableReplication,omitempty"`
-	EnableHistoryMode     *bool                          `json:"enableHistoryMode,omitempty"`
-	HistoryBackfillStages *[]PayloadsBackfillStageEvent  `json:"historyBackfillStages,omitempty"`
-	HistoryTableStatus    *string                        `json:"historyTableStatus,omitempty"`
-	IndividualDeployment  *bool                          `json:"individualDeployment,omitempty"`
-	Name                  *string                        `json:"name,omitempty"`
-	Schema                *string                        `json:"schema,omitempty"`
-	Status                *string                        `json:"status,omitempty"`
-	UpdatedAt             *time.Time                     `json:"updatedAt,omitempty"`
-	Uuid                  *openapi_types.UUID            `json:"uuid,omitempty"`
+	AdvancedSettings     *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
+	BackfillStages       *[]PayloadsBackfillStageEvent  `json:"backfillStages,omitempty"`
+	CreatedAt            *time.Time                     `json:"createdAt,omitempty"`
+	DestinationTableName *string                        `json:"destinationTableName,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	DisableReplication    *bool                         `json:"disableReplication,omitempty"`
+	EnableHistoryMode     *bool                         `json:"enableHistoryMode,omitempty"`
+	HistoryBackfillStages *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
+	HistoryTableStatus    *string                       `json:"historyTableStatus,omitempty"`
+	IndividualDeployment  *bool                         `json:"individualDeployment,omitempty"`
+	Name                  *string                       `json:"name,omitempty"`
+	Schema                *string                       `json:"schema,omitempty"`
+	Status                *string                       `json:"status,omitempty"`
+	UpdatedAt             *time.Time                    `json:"updatedAt,omitempty"`
+	Uuid                  *openapi_types.UUID           `json:"uuid,omitempty"`
 }
 
 // PayloadsTableAdvancedSettings defines model for PayloadsTableAdvancedSettings.
@@ -1800,14 +1803,15 @@ type PayloadsTableAdvancedSettings struct {
 
 // PayloadsTablePayload defines model for PayloadsTablePayload.
 type PayloadsTablePayload struct {
-	AdvancedSettings     *PayloadsAdvancedTableSettingsPayload `json:"advancedSettings,omitempty"`
-	DisableReplication   *bool                                 `json:"disableReplication,omitempty"`
-	EnableHistoryMode    *bool                                 `json:"enableHistoryMode,omitempty"`
-	IndividualDeployment *bool                                 `json:"individualDeployment,omitempty"`
-	Name                 *string                               `json:"name,omitempty"`
-	Schema               *string                               `json:"schema,omitempty"`
-	Status               *string                               `json:"status,omitempty"`
-	Uuid                 *openapi_types.UUID                   `json:"uuid,omitempty"`
+	AdvancedSettings *PayloadsAdvancedTableSettingsPayload `json:"advancedSettings,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	DisableReplication   *bool               `json:"disableReplication,omitempty"`
+	EnableHistoryMode    *bool               `json:"enableHistoryMode,omitempty"`
+	IndividualDeployment *bool               `json:"individualDeployment,omitempty"`
+	Name                 *string             `json:"name,omitempty"`
+	Schema               *string             `json:"schema,omitempty"`
+	Status               *string             `json:"status,omitempty"`
+	Uuid                 *openapi_types.UUID `json:"uuid,omitempty"`
 }
 
 // PayloadsWebhookBackfillCompleted Backfill completed
@@ -2754,8 +2758,10 @@ type RouterIncreaseKafkaTopicPartitionsRequest struct {
 // RouterKafkaUserCreateResponse defines model for RouterKafkaUserCreateResponse.
 type RouterKafkaUserCreateResponse struct {
 	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
-	Password  string            `json:"password"`
-	Warning   *string           `json:"warning,omitempty"`
+
+	// Password The SCRAM-SHA-512 password Strimzi generated, returned when the user is already active. Otherwise get it from the credentials endpoint once the user is active.
+	Password *string `json:"password,omitempty"`
+	Warning  *string `json:"warning,omitempty"`
 }
 
 // RouterKafkaUserCredentialsResponse defines model for RouterKafkaUserCredentialsResponse.
@@ -2882,6 +2888,7 @@ type RouterPipelineValidateUnsavedDestinationRequest struct {
 	AdvancedSettings *PayloadsAdvancedPipelineSettingsPayload `json:"advancedSettings,omitempty"`
 	Destination      *PayloadsConnectorPayload                `json:"destination,omitempty"`
 	DestinationUUID  *openapi_types.UUID                      `json:"destinationUUID,omitempty"`
+	PipelineUUID     *openapi_types.UUID                      `json:"pipelineUUID,omitempty"`
 	SourceReaderUUID *openapi_types.UUID                      `json:"sourceReaderUUID,omitempty"`
 	SourceType       *string                                  `json:"sourceType,omitempty"`
 	SpecificCfg      PayloadsSpecificConfig                   `json:"specificCfg"`
@@ -4810,7 +4817,7 @@ type ClientInterface interface {
 
 	// KafkaAdminUserCreateWithBody Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4819,7 +4826,7 @@ type ClientInterface interface {
 
 	// KafkaAdminUserCreate Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4828,14 +4835,14 @@ type ClientInterface interface {
 
 	// KafkaAdminUserDelete Delete an admin Kafka user
 	//
-	// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+	// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 	KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaAdminUserCredentials Get admin Kafka user credentials
 	//
-	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 	KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4973,7 +4980,7 @@ type ClientInterface interface {
 
 	// KafkaUserCreateWithBody Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4982,7 +4989,7 @@ type ClientInterface interface {
 
 	// KafkaUserCreate Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4991,14 +4998,14 @@ type ClientInterface interface {
 
 	// KafkaUserDelete Delete a Kafka user
 	//
-	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+	// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 	KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaUserCredentials Get Kafka user credentials
 	//
-	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
 	KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6556,7 +6563,7 @@ func (c *Client) KafkaClusterDetail(ctx context.Context, uuid string, reqEditors
 
 // KafkaAdminUserCreateWithBody Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6575,7 +6582,7 @@ func (c *Client) KafkaAdminUserCreateWithBody(ctx context.Context, uuid string, 
 
 // KafkaAdminUserCreate Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6594,7 +6601,7 @@ func (c *Client) KafkaAdminUserCreate(ctx context.Context, uuid string, body Kaf
 
 // KafkaAdminUserDelete Delete an admin Kafka user
 //
-// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 //
 // Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6611,7 +6618,7 @@ func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID
 
 // KafkaAdminUserCredentials Get admin Kafka user credentials
 //
-// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 func (c *Client) KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6929,7 +6936,7 @@ func (c *Client) KafkaUserList(ctx context.Context, uuid string, reqEditors ...R
 
 // KafkaUserCreateWithBody Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6948,7 +6955,7 @@ func (c *Client) KafkaUserCreateWithBody(ctx context.Context, uuid string, conte
 
 // KafkaUserCreate Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6967,7 +6974,7 @@ func (c *Client) KafkaUserCreate(ctx context.Context, uuid string, body KafkaUse
 
 // KafkaUserDelete Delete a Kafka user
 //
-// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 //
 // Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6984,7 +6991,7 @@ func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID stri
 
 // KafkaUserCredentials Get Kafka user credentials
 //
-// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
 func (c *Client) KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -12695,7 +12702,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12704,7 +12711,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserCreateWithResponse Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12713,7 +12720,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserDeleteWithResponse Delete an admin Kafka user
 	//
-	// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+	// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12722,7 +12729,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 	//
-	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12884,7 +12891,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCreateWithBodyWithResponse Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12893,7 +12900,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCreateWithResponse Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12902,7 +12909,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserDeleteWithResponse Delete a Kafka user
 	//
-	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+	// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12911,7 +12918,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCredentialsWithResponse Get Kafka user credentials
 	//
-	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17954,7 +17961,7 @@ func (c *ClientWithResponses) KafkaClusterDetailWithResponse(ctx context.Context
 
 // KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -17969,7 +17976,7 @@ func (c *ClientWithResponses) KafkaAdminUserCreateWithBodyWithResponse(ctx conte
 
 // KafkaAdminUserCreateWithResponse Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -17984,7 +17991,7 @@ func (c *ClientWithResponses) KafkaAdminUserCreateWithResponse(ctx context.Conte
 
 // KafkaAdminUserDeleteWithResponse Delete an admin Kafka user
 //
-// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -17999,7 +18006,7 @@ func (c *ClientWithResponses) KafkaAdminUserDeleteWithResponse(ctx context.Conte
 
 // KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 //
-// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18269,7 +18276,7 @@ func (c *ClientWithResponses) KafkaUserListWithResponse(ctx context.Context, uui
 
 // KafkaUserCreateWithBodyWithResponse Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18284,7 +18291,7 @@ func (c *ClientWithResponses) KafkaUserCreateWithBodyWithResponse(ctx context.Co
 
 // KafkaUserCreateWithResponse Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18299,7 +18306,7 @@ func (c *ClientWithResponses) KafkaUserCreateWithResponse(ctx context.Context, u
 
 // KafkaUserDeleteWithResponse Delete a Kafka user
 //
-// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18314,7 +18321,7 @@ func (c *ClientWithResponses) KafkaUserDeleteWithResponse(ctx context.Context, u
 
 // KafkaUserCredentialsWithResponse Get Kafka user credentials
 //
-// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -20322,7 +20329,13 @@ func ParseKafkaAdminUserCredentialsResponse(rsp *http.Response) (*KafkaAdminUser
 		}
 		response.JSON200 = &dest
 
+	case rsp.StatusCode == 400:
+		break // No content-type
+
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
@@ -20854,7 +20867,13 @@ func ParseKafkaUserCredentialsResponse(rsp *http.Response) (*KafkaUserCredential
 		}
 		response.JSON200 = &dest
 
+	case rsp.StatusCode == 400:
+		break // No content-type
+
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
