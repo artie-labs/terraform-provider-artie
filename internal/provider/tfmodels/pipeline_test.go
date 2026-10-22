@@ -52,6 +52,45 @@ func TestPipelineAutoEnableHistoryForNewTables(t *testing.T) {
 	assert.True(t, model.AutoEnableHistoryForNewTables.ValueBool())
 }
 
+func TestPipelineStructAsVariant(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	{
+		// Set values are sent; unknown (omitted from config) is left out so the API keeps the stored value
+		pipeline := Pipeline{
+			Name:              types.StringValue("test"),
+			Tables:            tablesMap,
+			DestinationConfig: &PipelineDestinationConfig{},
+			StructAsVariant:   types.BoolValue(true),
+		}
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, *apiModel.AdvancedSettings.StructAsVariant)
+
+		pipeline.StructAsVariant = types.BoolUnknown()
+		apiModel, diags = pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.StructAsVariant)
+	}
+	{
+		// The API omits false, which reads back as false rather than null
+		base := openapi.PayloadsFullPipeline{
+			Uuid:             uuid.New(),
+			Name:             "test",
+			Tables:           []openapi.PayloadsTable{},
+			AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+		}
+		model, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.BoolValue(false), model.StructAsVariant)
+
+		base.AdvancedSettings.StructAsVariant = ptr(true)
+		model, diags = PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.BoolValue(true), model.StructAsVariant)
+	}
+}
+
 func TestPipelineAutoReplicateIgnoreRegex(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
