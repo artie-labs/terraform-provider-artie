@@ -43,3 +43,47 @@ func TestSourceReaderToAPIModel_UnknownBackfillBatchSizeIsOmitted(t *testing.T) 
 	assert.False(t, diags.HasError())
 	assert.Nil(t, payload.Settings.BackfillBatchSize)
 }
+
+func TestSourceReaderMongoDBDeploymentScopedMode(t *testing.T) {
+	{
+		// Set: sent to the API and read back.
+		model := SourceReader{
+			UUID:                        types.StringValue(uuid.NewString()),
+			ConnectorUUID:               types.StringValue(uuid.NewString()),
+			MongoDBDeploymentScopedMode: types.BoolValue(true),
+		}
+
+		payload, diags := model.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError())
+		assert.True(t, *payload.Settings.DeploymentScopedMode)
+
+		fromAPI, diags := SourceReaderFromAPIModel(t.Context(), openapi.PayloadsSourceReader{
+			Uuid:          payload.Uuid,
+			ConnectorUUID: payload.ConnectorUUID,
+			Settings:      payload.Settings,
+		})
+		assert.False(t, diags.HasError())
+		assert.True(t, fromAPI.MongoDBDeploymentScopedMode.ValueBool())
+	}
+	{
+		// Left out of the config: omitted so the API keeps the stored value.
+		model := SourceReader{
+			UUID:                        types.StringValue(uuid.NewString()),
+			ConnectorUUID:               types.StringValue(uuid.NewString()),
+			MongoDBDeploymentScopedMode: types.BoolUnknown(),
+		}
+
+		payload, diags := model.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError())
+		assert.Nil(t, payload.Settings.DeploymentScopedMode)
+	}
+	{
+		// Unset in the API: read as false.
+		fromAPI, diags := SourceReaderFromAPIModel(t.Context(), openapi.PayloadsSourceReader{
+			Uuid:          uuid.New(),
+			ConnectorUUID: uuid.New(),
+		})
+		assert.False(t, diags.HasError())
+		assert.False(t, fromAPI.MongoDBDeploymentScopedMode.ValueBool())
+	}
+}

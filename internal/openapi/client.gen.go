@@ -52,6 +52,27 @@ func (e EnumsBackfillStage) Valid() bool {
 	}
 }
 
+// Defines values for EnumsCloudProvider.
+const (
+	EnumsCloudProviderAws   EnumsCloudProvider = "aws"
+	EnumsCloudProviderAzure EnumsCloudProvider = "azure"
+	EnumsCloudProviderGcp   EnumsCloudProvider = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the EnumsCloudProvider enum.
+func (e EnumsCloudProvider) Valid() bool {
+	switch e {
+	case EnumsCloudProviderAws:
+		return true
+	case EnumsCloudProviderAzure:
+		return true
+	case EnumsCloudProviderGcp:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EnumsConnectorSlug.
 const (
 	EnumsConnectorSlugApi         EnumsConnectorSlug = "api"
@@ -64,6 +85,7 @@ const (
 	EnumsConnectorSlugDynamodb    EnumsConnectorSlug = "dynamodb"
 	EnumsConnectorSlugGcs         EnumsConnectorSlug = "gcs"
 	EnumsConnectorSlugIceberg     EnumsConnectorSlug = "iceberg"
+	EnumsConnectorSlugKafka       EnumsConnectorSlug = "kafka"
 	EnumsConnectorSlugKeyspaces   EnumsConnectorSlug = "keyspaces"
 	EnumsConnectorSlugMongodb     EnumsConnectorSlug = "mongodb"
 	EnumsConnectorSlugMotherduck  EnumsConnectorSlug = "motherduck"
@@ -75,6 +97,7 @@ const (
 	EnumsConnectorSlugRedis       EnumsConnectorSlug = "redis"
 	EnumsConnectorSlugRedshift    EnumsConnectorSlug = "redshift"
 	EnumsConnectorSlugS3          EnumsConnectorSlug = "s3"
+	EnumsConnectorSlugSmbShare    EnumsConnectorSlug = "smb_share"
 	EnumsConnectorSlugSnowflake   EnumsConnectorSlug = "snowflake"
 )
 
@@ -101,6 +124,8 @@ func (e EnumsConnectorSlug) Valid() bool {
 		return true
 	case EnumsConnectorSlugIceberg:
 		return true
+	case EnumsConnectorSlugKafka:
+		return true
 	case EnumsConnectorSlugKeyspaces:
 		return true
 	case EnumsConnectorSlugMongodb:
@@ -122,6 +147,8 @@ func (e EnumsConnectorSlug) Valid() bool {
 	case EnumsConnectorSlugRedshift:
 		return true
 	case EnumsConnectorSlugS3:
+		return true
+	case EnumsConnectorSlugSmbShare:
 		return true
 	case EnumsConnectorSlugSnowflake:
 		return true
@@ -679,6 +706,9 @@ func (e RouterPipelineBackfillRequestBeforeBackfill) Valid() bool {
 // EnumsBackfillStage defines model for EnumsBackfillStage.
 type EnumsBackfillStage string
 
+// EnumsCloudProvider defines model for EnumsCloudProvider.
+type EnumsCloudProvider string
+
 // EnumsConnectorSlug defines model for EnumsConnectorSlug.
 type EnumsConnectorSlug string
 
@@ -783,6 +813,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
 	AutoReplicateIncludeRegex                    *string                         `json:"autoReplicateIncludeRegex,omitempty"`
 	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
+	BackfillMySQLFloatsAsShortestDecimal         *bool                           `json:"backfillMySQLFloatsAsShortestDecimal,omitempty"`
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
 	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
@@ -808,6 +839,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
 	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
+	StructAsVariant                              *bool                           `json:"structAsVariant,omitempty"`
 	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
 	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
 	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
@@ -961,8 +993,11 @@ type PayloadsConnectorFetchDatabasesResponse struct {
 
 // PayloadsConnectorPayload defines model for PayloadsConnectorPayload.
 type PayloadsConnectorPayload struct {
-	DataPlaneName           *string                 `json:"dataPlaneName,omitempty"`
-	DefaultDatabase         *string                 `json:"defaultDatabase,omitempty"`
+	DataPlaneName   *string `json:"dataPlaneName,omitempty"`
+	DefaultDatabase *string `json:"defaultDatabase,omitempty"`
+
+	// DraftPipelineUUID On create only: the draft pipeline this connector is for.
+	DraftPipelineUUID       *openapi_types.UUID     `json:"draftPipelineUUID,omitempty"`
 	EnvironmentUUID         *openapi_types.UUID     `json:"environmentUUID,omitempty"`
 	Label                   *string                 `json:"label,omitempty"`
 	PrivateLinkUUID         *openapi_types.UUID     `json:"privateLinkUUID,omitempty"`
@@ -1060,11 +1095,14 @@ type PayloadsEncryptionKeyDetail struct {
 
 // PayloadsFullConnector defines model for PayloadsFullConnector.
 type PayloadsFullConnector struct {
-	CompanyUUID             openapi_types.UUID  `json:"companyUUID"`
-	ConnectionLabel         *string             `json:"connectionLabel,omitempty"`
-	CreatedAt               time.Time           `json:"createdAt"`
-	DataPlaneName           *string             `json:"dataPlaneName,omitempty"`
-	DefaultDatabase         *string             `json:"defaultDatabase,omitempty"`
+	CompanyUUID     openapi_types.UUID `json:"companyUUID"`
+	ConnectionLabel *string            `json:"connectionLabel,omitempty"`
+	CreatedAt       time.Time          `json:"createdAt"`
+	DataPlaneName   *string            `json:"dataPlaneName,omitempty"`
+	DefaultDatabase *string            `json:"defaultDatabase,omitempty"`
+
+	// DraftPipelineUUID The draft pipeline this connector was created for. Unset once a pipeline or source reader past draft uses it.
+	DraftPipelineUUID       *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
 	EnvironmentUUID         openapi_types.UUID  `json:"environmentUUID"`
 	IsValid                 bool                `json:"isValid"`
 	Label                   string              `json:"label"`
@@ -1092,6 +1130,8 @@ type PayloadsFullPipeline struct {
 	HasUndeployedChanges     bool                             `json:"hasUndeployedChanges"`
 	HistoryBackfillStages    *[]PayloadsBackfillStageEvent    `json:"historyBackfillStages,omitempty"`
 	IsDeploying              bool                             `json:"isDeploying"`
+	LastDeployError          *string                          `json:"lastDeployError,omitempty"`
+	LastDeployFailedAt       *time.Time                       `json:"lastDeployFailedAt,omitempty"`
 	LastDeployedAt           *time.Time                       `json:"lastDeployedAt,omitempty"`
 	LastUpdatedAt            time.Time                        `json:"lastUpdatedAt"`
 	Name                     string                           `json:"name"`
@@ -1300,10 +1340,13 @@ type PayloadsKafkaUser struct {
 
 // PayloadsLightConnector defines model for PayloadsLightConnector.
 type PayloadsLightConnector struct {
-	CompanyUUID             openapi_types.UUID  `json:"companyUUID"`
-	ConnectionLabel         *string             `json:"connectionLabel,omitempty"`
-	CreatedAt               time.Time           `json:"createdAt"`
-	DataPlaneName           *string             `json:"dataPlaneName,omitempty"`
+	CompanyUUID     openapi_types.UUID `json:"companyUUID"`
+	ConnectionLabel *string            `json:"connectionLabel,omitempty"`
+	CreatedAt       time.Time          `json:"createdAt"`
+	DataPlaneName   *string            `json:"dataPlaneName,omitempty"`
+
+	// DraftPipelineUUID The draft pipeline this connector was created for. Unset once a pipeline or source reader past draft uses it.
+	DraftPipelineUUID       *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
 	EnvironmentUUID         openapi_types.UUID  `json:"environmentUUID"`
 	IsValid                 bool                `json:"isValid"`
 	Label                   string              `json:"label"`
@@ -1329,6 +1372,8 @@ type PayloadsLightPipeline struct {
 	HasUndeployedChanges     bool                          `json:"hasUndeployedChanges"`
 	HistoryBackfillStages    *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
 	IsDeploying              bool                          `json:"isDeploying"`
+	LastDeployError          *string                       `json:"lastDeployError,omitempty"`
+	LastDeployFailedAt       *time.Time                    `json:"lastDeployFailedAt,omitempty"`
 	LastDeployedAt           *time.Time                    `json:"lastDeployedAt,omitempty"`
 	LastUpdatedAt            time.Time                     `json:"lastUpdatedAt"`
 	Name                     string                        `json:"name"`
@@ -1367,6 +1412,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
 	AutoReplicateIncludeRegex                    *string                         `json:"autoReplicateIncludeRegex,omitempty"`
 	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
+	BackfillMySQLFloatsAsShortestDecimal         *bool                           `json:"backfillMySQLFloatsAsShortestDecimal,omitempty"`
 	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
 	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
@@ -1394,6 +1440,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
 	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
 	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
+	StructAsVariant                              *bool                           `json:"structAsVariant,omitempty"`
 	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
 	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
 	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
@@ -1470,22 +1517,24 @@ type PayloadsPostgresSetting struct {
 
 // PayloadsPrivateLinkConnection defines model for PayloadsPrivateLinkConnection.
 type PayloadsPrivateLinkConnection struct {
-	ApprovedAt          *time.Time         `json:"approvedAt,omitempty"`
-	AvailabilityZoneIds []string           `json:"availabilityZoneIds"`
-	CompanyUUID         openapi_types.UUID `json:"companyUUID"`
-	CreatedAt           time.Time          `json:"createdAt"`
-	CreatedBy           *string            `json:"createdBy,omitempty"`
-	DataPlaneName       *string            `json:"dataPlaneName,omitempty"`
-	DnsEntry            string             `json:"dnsEntry"`
-	EnvironmentUUID     openapi_types.UUID `json:"environmentUUID"`
-	Name                string             `json:"name"`
-	ProvisioningError   *string            `json:"provisioningError,omitempty"`
-	Region              string             `json:"region"`
-	Status              string             `json:"status"`
-	UpdatedAt           time.Time          `json:"updatedAt"`
-	Uuid                openapi_types.UUID `json:"uuid"`
-	VpcEndpointId       *string            `json:"vpcEndpointId,omitempty"`
-	VpcServiceName      string             `json:"vpcServiceName"`
+	ApprovedAt              *time.Time         `json:"approvedAt,omitempty"`
+	AvailabilityZoneIds     []string           `json:"availabilityZoneIds"`
+	CompanyUUID             openapi_types.UUID `json:"companyUUID"`
+	CreatedAt               time.Time          `json:"createdAt"`
+	CreatedBy               *string            `json:"createdBy,omitempty"`
+	DataPlaneName           *string            `json:"dataPlaneName,omitempty"`
+	DnsEntry                string             `json:"dnsEntry"`
+	EnvironmentUUID         openapi_types.UUID `json:"environmentUUID"`
+	Name                    string             `json:"name"`
+	PrivateLinkServiceAlias string             `json:"privateLinkServiceAlias"`
+	Provider                EnumsCloudProvider `json:"provider"`
+	ProvisioningError       *string            `json:"provisioningError,omitempty"`
+	Region                  string             `json:"region"`
+	Status                  string             `json:"status"`
+	UpdatedAt               time.Time          `json:"updatedAt"`
+	Uuid                    openapi_types.UUID `json:"uuid"`
+	VpcEndpointId           *string            `json:"vpcEndpointId,omitempty"`
+	VpcServiceName          string             `json:"vpcServiceName"`
 }
 
 // PayloadsRangeSettings defines model for PayloadsRangeSettings.
@@ -1586,30 +1635,33 @@ type PayloadsSoftPartitioning struct {
 
 // PayloadsSourceReader defines model for PayloadsSourceReader.
 type PayloadsSourceReader struct {
-	ApiBaseURL      *string                             `json:"apiBaseURL,omitempty"`
-	CompanyUUID     openapi_types.UUID                  `json:"companyUUID"`
-	ConnectorUUID   openapi_types.UUID                  `json:"connectorUUID"`
-	ContainerName   string                              `json:"containerName"`
-	CreatedAt       *time.Time                          `json:"createdAt,omitempty"`
-	DataPlaneName   string                              `json:"dataPlaneName"`
-	Database        string                              `json:"database"`
-	EnvironmentUUID openapi_types.UUID                  `json:"environmentUUID"`
-	IsShared        *bool                               `json:"isShared,omitempty"`
-	IsValid         bool                                `json:"isValid"`
-	Name            string                              `json:"name"`
-	Settings        PayloadsSourceReaderSettingsPayload `json:"settings"`
-	Status          EnumsSourceReaderStatus             `json:"status"`
-	TablesConfig    *PayloadsSourceReaderTablesConfig   `json:"tablesConfig,omitempty"`
-	UpdatedAt       *time.Time                          `json:"updatedAt,omitempty"`
-	Uuid            openapi_types.UUID                  `json:"uuid"`
+	ApiBaseURL           *string                             `json:"apiBaseURL,omitempty"`
+	ArchiveConnectorUUID *openapi_types.UUID                 `json:"archiveConnectorUUID,omitempty"`
+	CompanyUUID          openapi_types.UUID                  `json:"companyUUID"`
+	ConnectorUUID        openapi_types.UUID                  `json:"connectorUUID"`
+	ContainerName        string                              `json:"containerName"`
+	CreatedAt            *time.Time                          `json:"createdAt,omitempty"`
+	DataPlaneName        string                              `json:"dataPlaneName"`
+	Database             string                              `json:"database"`
+	EnvironmentUUID      openapi_types.UUID                  `json:"environmentUUID"`
+	IsShared             *bool                               `json:"isShared,omitempty"`
+	IsValid              bool                                `json:"isValid"`
+	Name                 string                              `json:"name"`
+	Settings             PayloadsSourceReaderSettingsPayload `json:"settings"`
+	Status               EnumsSourceReaderStatus             `json:"status"`
+	TablesConfig         *PayloadsSourceReaderTablesConfig   `json:"tablesConfig,omitempty"`
+	UpdatedAt            *time.Time                          `json:"updatedAt,omitempty"`
+	Uuid                 openapi_types.UUID                  `json:"uuid"`
 }
 
 // PayloadsSourceReaderSettingsPayload defines model for PayloadsSourceReaderSettingsPayload.
 type PayloadsSourceReaderSettingsPayload struct {
-	ArchiveLocationType                *EnumsMSSQLArchiveLocationType                         `json:"archiveLocationType,omitempty"`
-	ArchiveLogPassword                 *string                                                `json:"archiveLogPassword,omitempty"`
-	ArchiveLogPath                     *string                                                `json:"archiveLogPath,omitempty"`
-	ArchiveLogPrivateLinkUUID          *openapi_types.UUID                                    `json:"archiveLogPrivateLinkUUID,omitempty"`
+	ArchiveLocationType *EnumsMSSQLArchiveLocationType `json:"archiveLocationType,omitempty"`
+	ArchiveLogPassword  *string                        `json:"archiveLogPassword,omitempty"`
+	ArchiveLogPath      *string                        `json:"archiveLogPath,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	ArchiveLogPrivateLinkUUID *openapi_types.UUID `json:"archiveLogPrivateLinkUUID,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ArchiveLogUsername                 *string                                                `json:"archiveLogUsername,omitempty"`
 	AzureBlobStorageConfig             *PayloadsAzureBlobStorageConfig                        `json:"azureBlobStorageConfig,omitempty"`
 	BackfillBatchSize                  *int                                                   `json:"backfillBatchSize,omitempty"`
@@ -1617,6 +1669,7 @@ type PayloadsSourceReaderSettingsPayload struct {
 	CollectionScopedMode               *bool                                                  `json:"collectionScopedMode,omitempty"`
 	CompositeTypesAsText               *bool                                                  `json:"compositeTypesAsText,omitempty"`
 	DatabasesToSync                    *[]string                                              `json:"databasesToSync,omitempty"`
+	DeploymentScopedMode               *bool                                                  `json:"deploymentScopedMode,omitempty"`
 	DisableAutoFetchTables             *bool                                                  `json:"disableAutoFetchTables,omitempty"`
 	DisableFullDocumentBeforeChange    *bool                                                  `json:"disableFullDocumentBeforeChange,omitempty"`
 	DisableNoCursorTimeout             *bool                                                  `json:"disableNoCursorTimeout,omitempty"`
@@ -1689,24 +1742,21 @@ type PayloadsStaticColumn struct {
 
 // PayloadsTable defines model for PayloadsTable.
 type PayloadsTable struct {
-	AdvancedSettings *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
+	AdvancedSettings     *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
+	BackfillStages       *[]PayloadsBackfillStageEvent  `json:"backfillStages,omitempty"`
+	CreatedAt            *time.Time                     `json:"createdAt,omitempty"`
+	DestinationTableName *string                        `json:"destinationTableName,omitempty"`
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	BackfillStage         *EnumsBackfillStage           `json:"backfillStage,omitempty"`
-	BackfillStages        *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
-	CreatedAt             *time.Time                    `json:"createdAt,omitempty"`
-	DestinationTableName  *string                       `json:"destinationTableName,omitempty"`
 	DisableReplication    *bool                         `json:"disableReplication,omitempty"`
 	EnableHistoryMode     *bool                         `json:"enableHistoryMode,omitempty"`
 	HistoryBackfillStages *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
-	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	HistoryTableBackfillStage *EnumsBackfillStage `json:"historyTableBackfillStage,omitempty"`
-	HistoryTableStatus        *string             `json:"historyTableStatus,omitempty"`
-	IndividualDeployment      *bool               `json:"individualDeployment,omitempty"`
-	Name                      *string             `json:"name,omitempty"`
-	Schema                    *string             `json:"schema,omitempty"`
-	Status                    *string             `json:"status,omitempty"`
-	UpdatedAt                 *time.Time          `json:"updatedAt,omitempty"`
-	Uuid                      *openapi_types.UUID `json:"uuid,omitempty"`
+	HistoryTableStatus    *string                       `json:"historyTableStatus,omitempty"`
+	IndividualDeployment  *bool                         `json:"individualDeployment,omitempty"`
+	Name                  *string                       `json:"name,omitempty"`
+	Schema                *string                       `json:"schema,omitempty"`
+	Status                *string                       `json:"status,omitempty"`
+	UpdatedAt             *time.Time                    `json:"updatedAt,omitempty"`
+	Uuid                  *openapi_types.UUID           `json:"uuid,omitempty"`
 }
 
 // PayloadsTableAdvancedSettings defines model for PayloadsTableAdvancedSettings.
@@ -1753,14 +1803,15 @@ type PayloadsTableAdvancedSettings struct {
 
 // PayloadsTablePayload defines model for PayloadsTablePayload.
 type PayloadsTablePayload struct {
-	AdvancedSettings     *PayloadsAdvancedTableSettingsPayload `json:"advancedSettings,omitempty"`
-	DisableReplication   *bool                                 `json:"disableReplication,omitempty"`
-	EnableHistoryMode    *bool                                 `json:"enableHistoryMode,omitempty"`
-	IndividualDeployment *bool                                 `json:"individualDeployment,omitempty"`
-	Name                 *string                               `json:"name,omitempty"`
-	Schema               *string                               `json:"schema,omitempty"`
-	Status               *string                               `json:"status,omitempty"`
-	Uuid                 *openapi_types.UUID                   `json:"uuid,omitempty"`
+	AdvancedSettings *PayloadsAdvancedTableSettingsPayload `json:"advancedSettings,omitempty"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	DisableReplication   *bool               `json:"disableReplication,omitempty"`
+	EnableHistoryMode    *bool               `json:"enableHistoryMode,omitempty"`
+	IndividualDeployment *bool               `json:"individualDeployment,omitempty"`
+	Name                 *string             `json:"name,omitempty"`
+	Schema               *string             `json:"schema,omitempty"`
+	Status               *string             `json:"status,omitempty"`
+	Uuid                 *openapi_types.UUID `json:"uuid,omitempty"`
 }
 
 // PayloadsWebhookBackfillCompleted Backfill completed
@@ -2568,6 +2619,7 @@ type RouterConnectorFetchSchemasRequest struct {
 
 // RouterConnectorFetchTablesRequest defines model for RouterConnectorFetchTablesRequest.
 type RouterConnectorFetchTablesRequest struct {
+	AllDatabases *bool                    `json:"allDatabases,omitempty"`
 	Connector    PayloadsConnectorPayload `json:"connector"`
 	DatabaseName string                   `json:"databaseName"`
 	ForceRefresh *bool                    `json:"forceRefresh,omitempty"`
@@ -2587,17 +2639,20 @@ type RouterConnectorGenerateShadowScriptResponse struct {
 
 // RouterConnectorPingRequest defines model for RouterConnectorPingRequest.
 type RouterConnectorPingRequest struct {
-	ConnectionRole          *RouterConnectorConnectionRole `json:"connectionRole,omitempty"`
-	DataPlaneName           *string                        `json:"dataPlaneName,omitempty"`
-	DefaultDatabase         *string                        `json:"defaultDatabase,omitempty"`
-	EnvironmentUUID         *openapi_types.UUID            `json:"environmentUUID,omitempty"`
-	Label                   *string                        `json:"label,omitempty"`
-	PrivateLinkUUID         *openapi_types.UUID            `json:"privateLinkUUID,omitempty"`
-	SharedConfig            *map[string]interface{}        `json:"sharedConfig,omitempty"`
-	SnapshotPrivateLinkUUID *openapi_types.UUID            `json:"snapshotPrivateLinkUUID,omitempty"`
-	SshTunnelUUID           *openapi_types.UUID            `json:"sshTunnelUUID,omitempty"`
-	Type                    *string                        `json:"type,omitempty"`
-	Uuid                    *string                        `json:"uuid,omitempty"`
+	ConnectionRole  *RouterConnectorConnectionRole `json:"connectionRole,omitempty"`
+	DataPlaneName   *string                        `json:"dataPlaneName,omitempty"`
+	DefaultDatabase *string                        `json:"defaultDatabase,omitempty"`
+
+	// DraftPipelineUUID On create only: the draft pipeline this connector is for.
+	DraftPipelineUUID       *openapi_types.UUID     `json:"draftPipelineUUID,omitempty"`
+	EnvironmentUUID         *openapi_types.UUID     `json:"environmentUUID,omitempty"`
+	Label                   *string                 `json:"label,omitempty"`
+	PrivateLinkUUID         *openapi_types.UUID     `json:"privateLinkUUID,omitempty"`
+	SharedConfig            *map[string]interface{} `json:"sharedConfig,omitempty"`
+	SnapshotPrivateLinkUUID *openapi_types.UUID     `json:"snapshotPrivateLinkUUID,omitempty"`
+	SshTunnelUUID           *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
+	Type                    *string                 `json:"type,omitempty"`
+	Uuid                    *string                 `json:"uuid,omitempty"`
 }
 
 // RouterConnectorPingResponse defines model for RouterConnectorPingResponse.
@@ -2703,8 +2758,10 @@ type RouterIncreaseKafkaTopicPartitionsRequest struct {
 // RouterKafkaUserCreateResponse defines model for RouterKafkaUserCreateResponse.
 type RouterKafkaUserCreateResponse struct {
 	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
-	Password  string            `json:"password"`
-	Warning   *string           `json:"warning,omitempty"`
+
+	// Password The SCRAM-SHA-512 password Strimzi generated, returned when the user is already active. Otherwise get it from the credentials endpoint once the user is active.
+	Password *string `json:"password,omitempty"`
+	Warning  *string `json:"warning,omitempty"`
 }
 
 // RouterKafkaUserCredentialsResponse defines model for RouterKafkaUserCredentialsResponse.
@@ -2831,6 +2888,7 @@ type RouterPipelineValidateUnsavedDestinationRequest struct {
 	AdvancedSettings *PayloadsAdvancedPipelineSettingsPayload `json:"advancedSettings,omitempty"`
 	Destination      *PayloadsConnectorPayload                `json:"destination,omitempty"`
 	DestinationUUID  *openapi_types.UUID                      `json:"destinationUUID,omitempty"`
+	PipelineUUID     *openapi_types.UUID                      `json:"pipelineUUID,omitempty"`
 	SourceReaderUUID *openapi_types.UUID                      `json:"sourceReaderUUID,omitempty"`
 	SourceType       *string                                  `json:"sourceType,omitempty"`
 	SpecificCfg      PayloadsSpecificConfig                   `json:"specificCfg"`
@@ -2860,19 +2918,21 @@ type RouterPreviewColumnHashingSaltResponse struct {
 
 // RouterPrivateLinkConnectionCreateRequest defines model for RouterPrivateLinkConnectionCreateRequest.
 type RouterPrivateLinkConnectionCreateRequest struct {
-	AvailabilityZoneIds []string            `json:"availabilityZoneIds"`
-	DataPlaneName       *string             `json:"dataPlaneName,omitempty"`
-	EnvironmentUUID     *openapi_types.UUID `json:"environmentUUID,omitempty"`
-	Name                *string             `json:"name,omitempty"`
-	VpcServiceName      string              `json:"vpcServiceName"`
+	AvailabilityZoneIds     *[]string           `json:"availabilityZoneIds,omitempty"`
+	DataPlaneName           *string             `json:"dataPlaneName,omitempty"`
+	EnvironmentUUID         *openapi_types.UUID `json:"environmentUUID,omitempty"`
+	Name                    *string             `json:"name,omitempty"`
+	PrivateLinkServiceAlias *string             `json:"privateLinkServiceAlias,omitempty"`
+	VpcServiceName          *string             `json:"vpcServiceName,omitempty"`
 }
 
 // RouterPrivateLinkConnectionUpdateRequest defines model for RouterPrivateLinkConnectionUpdateRequest.
 type RouterPrivateLinkConnectionUpdateRequest struct {
-	AvailabilityZoneIds []string `json:"availabilityZoneIds"`
-	DataPlaneName       *string  `json:"dataPlaneName,omitempty"`
-	Name                string   `json:"name"`
-	VpcServiceName      string   `json:"vpcServiceName"`
+	AvailabilityZoneIds     *[]string `json:"availabilityZoneIds,omitempty"`
+	DataPlaneName           *string   `json:"dataPlaneName,omitempty"`
+	Name                    string    `json:"name"`
+	PrivateLinkServiceAlias *string   `json:"privateLinkServiceAlias,omitempty"`
+	VpcServiceName          *string   `json:"vpcServiceName,omitempty"`
 }
 
 // RouterSSHTunnelCreateRequest defines model for RouterSSHTunnelCreateRequest.
@@ -2894,14 +2954,15 @@ type RouterSSHTunnelUpdateRequest struct {
 
 // RouterSourceReaderCreateRequest defines model for RouterSourceReaderCreateRequest.
 type RouterSourceReaderCreateRequest struct {
-	ConnectorUUID openapi_types.UUID                   `json:"connectorUUID"`
-	ContainerName *string                              `json:"containerName,omitempty"`
-	DataPlaneName *string                              `json:"dataPlaneName,omitempty"`
-	Database      *string                              `json:"database,omitempty"`
-	IsShared      *bool                                `json:"isShared,omitempty"`
-	Name          *string                              `json:"name,omitempty"`
-	Settings      *PayloadsSourceReaderSettingsPayload `json:"settings,omitempty"`
-	TablesConfig  *PayloadsSourceReaderTablesConfig    `json:"tablesConfig,omitempty"`
+	ArchiveConnectorUUID *openapi_types.UUID                  `json:"archiveConnectorUUID,omitempty"`
+	ConnectorUUID        openapi_types.UUID                   `json:"connectorUUID"`
+	ContainerName        *string                              `json:"containerName,omitempty"`
+	DataPlaneName        *string                              `json:"dataPlaneName,omitempty"`
+	Database             *string                              `json:"database,omitempty"`
+	IsShared             *bool                                `json:"isShared,omitempty"`
+	Name                 *string                              `json:"name,omitempty"`
+	Settings             *PayloadsSourceReaderSettingsPayload `json:"settings,omitempty"`
+	TablesConfig         *PayloadsSourceReaderTablesConfig    `json:"tablesConfig,omitempty"`
 }
 
 // RouterSourceReaderUpdateStatusRequest defines model for RouterSourceReaderUpdateStatusRequest.
@@ -4756,7 +4817,7 @@ type ClientInterface interface {
 
 	// KafkaAdminUserCreateWithBody Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4765,7 +4826,7 @@ type ClientInterface interface {
 
 	// KafkaAdminUserCreate Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4774,14 +4835,14 @@ type ClientInterface interface {
 
 	// KafkaAdminUserDelete Delete an admin Kafka user
 	//
-	// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+	// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 	KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaAdminUserCredentials Get admin Kafka user credentials
 	//
-	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 	KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4919,7 +4980,7 @@ type ClientInterface interface {
 
 	// KafkaUserCreateWithBody Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4928,7 +4989,7 @@ type ClientInterface interface {
 
 	// KafkaUserCreate Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4937,14 +4998,14 @@ type ClientInterface interface {
 
 	// KafkaUserDelete Delete a Kafka user
 	//
-	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+	// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 	KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaUserCredentials Get Kafka user credentials
 	//
-	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
 	KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5205,14 +5266,14 @@ type ClientInterface interface {
 
 	// PrivateLinkConnectionDetail Get a PrivateLink connection
 	//
-	// Retrieves the details of a PrivateLink connection by UUID, including its status, VPC service name, region, DNS entry, and availability zones.
+	// Retrieves the details of a PrivateLink connection by UUID, including its status, cloud provider, region, Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure), and the Artie endpoint's address (dnsEntry: a DNS name on AWS, a private IP on Azure).
 	//
 	// Corresponds with GET /privatelink-connections/{uuid} (the `PrivateLinkConnectionDetail` operationId).
 	PrivateLinkConnectionDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PrivateLinkConnectionUpdateWithBody Update a PrivateLink connection
 	//
-	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5221,7 +5282,7 @@ type ClientInterface interface {
 
 	// PrivateLinkConnectionUpdate Update a PrivateLink connection
 	//
-	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6502,7 +6563,7 @@ func (c *Client) KafkaClusterDetail(ctx context.Context, uuid string, reqEditors
 
 // KafkaAdminUserCreateWithBody Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6521,7 +6582,7 @@ func (c *Client) KafkaAdminUserCreateWithBody(ctx context.Context, uuid string, 
 
 // KafkaAdminUserCreate Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6540,7 +6601,7 @@ func (c *Client) KafkaAdminUserCreate(ctx context.Context, uuid string, body Kaf
 
 // KafkaAdminUserDelete Delete an admin Kafka user
 //
-// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 //
 // Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6557,7 +6618,7 @@ func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID
 
 // KafkaAdminUserCredentials Get admin Kafka user credentials
 //
-// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 func (c *Client) KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6875,7 +6936,7 @@ func (c *Client) KafkaUserList(ctx context.Context, uuid string, reqEditors ...R
 
 // KafkaUserCreateWithBody Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6894,7 +6955,7 @@ func (c *Client) KafkaUserCreateWithBody(ctx context.Context, uuid string, conte
 
 // KafkaUserCreate Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6913,7 +6974,7 @@ func (c *Client) KafkaUserCreate(ctx context.Context, uuid string, body KafkaUse
 
 // KafkaUserDelete Delete a Kafka user
 //
-// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 //
 // Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6930,7 +6991,7 @@ func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID stri
 
 // KafkaUserCredentials Get Kafka user credentials
 //
-// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID}/credentials (the `KafkaUserCredentials` operationId).
 func (c *Client) KafkaUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7501,7 +7562,7 @@ func (c *Client) PrivateLinkConnectionDelete(ctx context.Context, uuid string, r
 
 // PrivateLinkConnectionDetail Get a PrivateLink connection
 //
-// Retrieves the details of a PrivateLink connection by UUID, including its status, VPC service name, region, DNS entry, and availability zones.
+// Retrieves the details of a PrivateLink connection by UUID, including its status, cloud provider, region, Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure), and the Artie endpoint's address (dnsEntry: a DNS name on AWS, a private IP on Azure).
 //
 // Corresponds with GET /privatelink-connections/{uuid} (the `PrivateLinkConnectionDetail` operationId).
 func (c *Client) PrivateLinkConnectionDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7518,7 +7579,7 @@ func (c *Client) PrivateLinkConnectionDetail(ctx context.Context, uuid string, r
 
 // PrivateLinkConnectionUpdateWithBody Update a PrivateLink connection
 //
-// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7537,7 +7598,7 @@ func (c *Client) PrivateLinkConnectionUpdateWithBody(ctx context.Context, uuid s
 
 // PrivateLinkConnectionUpdate Update a PrivateLink connection
 //
-// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -12641,7 +12702,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12650,7 +12711,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserCreateWithResponse Create an admin Kafka user
 	//
-	// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12659,7 +12720,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserDeleteWithResponse Delete an admin Kafka user
 	//
-	// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+	// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12668,7 +12729,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 	//
-	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12830,7 +12891,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCreateWithBodyWithResponse Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12839,7 +12900,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCreateWithResponse Create a Kafka user
 	//
-	// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12848,7 +12909,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserDeleteWithResponse Delete a Kafka user
 	//
-	// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+	// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12857,7 +12918,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaUserCredentialsWithResponse Get Kafka user credentials
 	//
-	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+	// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13136,7 +13197,7 @@ type ClientWithResponsesInterface interface {
 
 	// PrivateLinkConnectionDetailWithResponse Get a PrivateLink connection
 	//
-	// Retrieves the details of a PrivateLink connection by UUID, including its status, VPC service name, region, DNS entry, and availability zones.
+	// Retrieves the details of a PrivateLink connection by UUID, including its status, cloud provider, region, Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure), and the Artie endpoint's address (dnsEntry: a DNS name on AWS, a private IP on Azure).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13145,7 +13206,7 @@ type ClientWithResponsesInterface interface {
 
 	// PrivateLinkConnectionUpdateWithBodyWithResponse Update a PrivateLink connection
 	//
-	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13154,7 +13215,7 @@ type ClientWithResponsesInterface interface {
 
 	// PrivateLinkConnectionUpdateWithResponse Update a PrivateLink connection
 	//
-	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+	// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -17900,7 +17961,7 @@ func (c *ClientWithResponses) KafkaClusterDetailWithResponse(ctx context.Context
 
 // KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -17915,7 +17976,7 @@ func (c *ClientWithResponses) KafkaAdminUserCreateWithBodyWithResponse(ctx conte
 
 // KafkaAdminUserCreateWithResponse Create an admin Kafka user
 //
-// Creates an admin-profile Kafka user and returns its password once. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Creates an admin-profile Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -17930,7 +17991,7 @@ func (c *ClientWithResponses) KafkaAdminUserCreateWithResponse(ctx context.Conte
 
 // KafkaAdminUserDeleteWithResponse Delete an admin Kafka user
 //
-// Revokes the admin-profile Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation.
+// Deletes the admin-profile Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -17945,7 +18006,7 @@ func (c *ClientWithResponses) KafkaAdminUserDeleteWithResponse(ctx context.Conte
 
 // KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 //
-// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
+// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18215,7 +18276,7 @@ func (c *ClientWithResponses) KafkaUserListWithResponse(ctx context.Context, uui
 
 // KafkaUserCreateWithBodyWithResponse Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18230,7 +18291,7 @@ func (c *ClientWithResponses) KafkaUserCreateWithBodyWithResponse(ctx context.Co
 
 // KafkaUserCreateWithResponse Create a Kafka user
 //
-// Creates a Kafka user and returns its password once. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Creates a Kafka user. Strimzi generates its password, which is returned if the user becomes active within a few seconds; otherwise the response has a warning and the user's password is available from the credentials endpoint once it is active. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18245,7 +18306,7 @@ func (c *ClientWithResponses) KafkaUserCreateWithResponse(ctx context.Context, u
 
 // KafkaUserDeleteWithResponse Delete a Kafka user
 //
-// Revokes the Kafka user's ACLs and broker credentials, then deletes it. Returns 204 once revocation completes, or 200 with a warning while revocation is pending reconciliation. Admin-profile users are deleted under /admin-users.
+// Deletes the Kafka user. Kafka then revokes its credentials and ACLs, normally within seconds. Returns 204 once the user is deleted, or 200 with a warning while deletion is pending reconciliation. Admin-profile users are deleted under /admin-users.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18260,7 +18321,7 @@ func (c *ClientWithResponses) KafkaUserDeleteWithResponse(ctx context.Context, u
 
 // KafkaUserCredentialsWithResponse Get Kafka user credentials
 //
-// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
+// Returns the Kafka user's password, which lets the caller act as that user, so kafka_users:read grants read access to all replicated data. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Producer/consumer users can read every topic under the company's prefix, which includes all data Artie replicates, and write to topics under the company's customer prefix. Admin-profile users are managed under /admin-users.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18725,7 +18786,7 @@ func (c *ClientWithResponses) PrivateLinkConnectionDeleteWithResponse(ctx contex
 
 // PrivateLinkConnectionDetailWithResponse Get a PrivateLink connection
 //
-// Retrieves the details of a PrivateLink connection by UUID, including its status, VPC service name, region, DNS entry, and availability zones.
+// Retrieves the details of a PrivateLink connection by UUID, including its status, cloud provider, region, Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure), and the Artie endpoint's address (dnsEntry: a DNS name on AWS, a private IP on Azure).
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18740,7 +18801,7 @@ func (c *ClientWithResponses) PrivateLinkConnectionDetailWithResponse(ctx contex
 
 // PrivateLinkConnectionUpdateWithBodyWithResponse Update a PrivateLink connection
 //
-// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18755,7 +18816,7 @@ func (c *ClientWithResponses) PrivateLinkConnectionUpdateWithBodyWithResponse(ct
 
 // PrivateLinkConnectionUpdateWithResponse Update a PrivateLink connection
 //
-// Updates an existing PrivateLink connection by UUID. The name can always be updated. The config fields (region / VPC service name / data plane / availability zones) are only mutable while the connection is under review or errored — once it is being provisioned or live they are immutable.
+// Updates an existing PrivateLink connection by UUID. The name can always be updated. The data plane and Private Link target (vpcServiceName and availabilityZoneIds on AWS, privateLinkServiceAlias on Azure; the region comes from the target) are only mutable while the connection is under review or errored and has no Artie endpoint. Once the Artie endpoint exists they are immutable.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -20268,7 +20329,13 @@ func ParseKafkaAdminUserCredentialsResponse(rsp *http.Response) (*KafkaAdminUser
 		}
 		response.JSON200 = &dest
 
+	case rsp.StatusCode == 400:
+		break // No content-type
+
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
@@ -20800,7 +20867,13 @@ func ParseKafkaUserCredentialsResponse(rsp *http.Response) (*KafkaUserCredential
 		}
 		response.JSON200 = &dest
 
+	case rsp.StatusCode == 400:
+		break // No content-type
+
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
