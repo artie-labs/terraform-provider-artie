@@ -162,6 +162,7 @@ type Pipeline struct {
 	StructAsVariant                              types.Bool   `tfsdk:"struct_as_variant"`
 	DisableAlerts                                types.Bool   `tfsdk:"disable_alerts"`
 	DatabricksAutoLiquidClustering               types.Bool   `tfsdk:"databricks_auto_liquid_clustering"`
+	DatabricksDisableVariantShredding            types.Bool   `tfsdk:"databricks_disable_variant_shredding"`
 	MaxConcurrentSnapshots                       types.Int64  `tfsdk:"max_concurrent_snapshots"`
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
@@ -252,6 +253,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		StructAsVariant:                              boolPointer(p.StructAsVariant),
 		DisableAlerts:                                boolPointer(p.DisableAlerts),
 		DatabricksAutoLiquidClustering:               boolPointer(p.DatabricksAutoLiquidClustering),
+		DatabricksDisableVariantShredding:            boolPointer(p.DatabricksDisableVariantShredding),
 		MaxConcurrentSnapshots:                       int64ToIntPointer(p.MaxConcurrentSnapshots),
 		TurboWarehouse:                               stringPointer(p.TurboWarehouse),
 		TurboRowThreshold:                            int64ToIntPointer(p.TurboRowThreshold),
@@ -379,6 +381,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	}
 	disableAlerts := boolPointerValueOrFalse(settings.DisableAlerts)
 	databricksAutoLiquidClustering := boolPointerValueOrFalse(settings.DatabricksAutoLiquidClustering)
+	databricksDisableVariantShredding := boolPointerValueOrFalse(settings.DatabricksDisableVariantShredding)
 	flushConfigMap := map[string]attr.Value{}
 	if settings.FlushIntervalSeconds != nil {
 		flushConfigMap["flush_interval_seconds"] = types.Int64Value(int64(*settings.FlushIntervalSeconds))
@@ -430,22 +433,23 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
 		// The API omits an empty regex, so it reads back as "" (not null) to match a config that clears it with "".
-		AutoEnableHistoryIgnoreRegex:   types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
-		AutoEnableHistoryIncludeRegex:  types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
-		AutoReplicateIgnoreRegex:       types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
-		AutoReplicateIncludeRegex:      types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
-		AutoReplicateNewTables:         autoReplicateNewTables,
-		AppendOnly:                     appendOnly,
-		StaticColumns:                  staticColumns,
-		StagingSchema:                  stagingSchema,
-		ForceUTCTimezone:               forceUTCTimezone,
-		WriteRawBinaryValues:           writeRawBinaryValues,
-		DisableAlerts:                  disableAlerts,
-		DatabricksAutoLiquidClustering: databricksAutoLiquidClustering,
-		MaxConcurrentSnapshots:         maxConcurrentSnapshots,
-		TurboWarehouse:                 turboWarehouse,
-		TurboRowThreshold:              turboRowThreshold,
-		TurboLatencyThresholdMinutes:   turboLatencyThresholdMinutes,
+		AutoEnableHistoryIgnoreRegex:      types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
+		AutoEnableHistoryIncludeRegex:     types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
+		AutoReplicateIgnoreRegex:          types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
+		AutoReplicateIncludeRegex:         types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
+		AutoReplicateNewTables:            autoReplicateNewTables,
+		AppendOnly:                        appendOnly,
+		StaticColumns:                     staticColumns,
+		StagingSchema:                     stagingSchema,
+		ForceUTCTimezone:                  forceUTCTimezone,
+		WriteRawBinaryValues:              writeRawBinaryValues,
+		DisableAlerts:                     disableAlerts,
+		DatabricksAutoLiquidClustering:    databricksAutoLiquidClustering,
+		DatabricksDisableVariantShredding: databricksDisableVariantShredding,
+		MaxConcurrentSnapshots:            maxConcurrentSnapshots,
+		TurboWarehouse:                    turboWarehouse,
+		TurboRowThreshold:                 turboRowThreshold,
+		TurboLatencyThresholdMinutes:      turboLatencyThresholdMinutes,
 		// The API omits structAsVariant when it's false, so it reads back as false (not null) to match a config that sets false.
 		StructAsVariant: boolPointerValueOrFalse(settings.StructAsVariant),
 	}, diags

@@ -289,6 +289,28 @@ func TestPipelineFromAPIModel_DatabricksAutoLiquidClustering(t *testing.T) {
 	}
 }
 
+func TestPipelineFromAPIModel_DatabricksDisableVariantShredding(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+	}
+	{
+		// Omitted (nil) -> false
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.False(t, pipeline.DatabricksDisableVariantShredding.IsNull())
+		assert.False(t, pipeline.DatabricksDisableVariantShredding.ValueBool())
+	}
+	{
+		base.AdvancedSettings.DatabricksDisableVariantShredding = ptr(true)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.DatabricksDisableVariantShredding.ValueBool())
+	}
+}
+
 func TestPipelineToAPIModel_TurboSettings(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
@@ -308,6 +330,31 @@ func TestPipelineToAPIModel_TurboSettings(t *testing.T) {
 	assert.Equal(t, "ARTIE_WEB_WH_LARGE", *apiModel.AdvancedSettings.TurboWarehouse)
 	assert.Equal(t, 500000, *apiModel.AdvancedSettings.TurboRowThreshold)
 	assert.Equal(t, 30, *apiModel.AdvancedSettings.TurboLatencyThresholdMinutes)
+}
+
+func TestPipelineToAPIModel_DatabricksDisableVariantShredding(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	pipeline := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}}
+	{
+		// Left out of the config: send nothing, so a value set in the dashboard stays.
+		pipeline.DatabricksDisableVariantShredding = types.BoolUnknown()
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.DatabricksDisableVariantShredding)
+	}
+	{
+		pipeline.DatabricksDisableVariantShredding = types.BoolValue(true)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, true, *apiModel.AdvancedSettings.DatabricksDisableVariantShredding)
+	}
+	{
+		pipeline.DatabricksDisableVariantShredding = types.BoolValue(false)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, false, *apiModel.AdvancedSettings.DatabricksDisableVariantShredding)
+	}
 }
 
 func TestPipelineToAPIModel_MaxConcurrentSnapshots(t *testing.T) {
