@@ -157,10 +157,40 @@ func (e EnumsConnectorSlug) Valid() bool {
 	}
 }
 
+// Defines values for EnumsKafkaDeployStage.
+const (
+	EnumsKafkaDeployStageApplyingCustomResources EnumsKafkaDeployStage = "applying_custom_resources"
+	EnumsKafkaDeployStageCreatingLoadBalancer    EnumsKafkaDeployStage = "creating_load_balancer"
+	EnumsKafkaDeployStageIssuingTlsCertificate   EnumsKafkaDeployStage = "issuing_tls_certificate"
+	EnumsKafkaDeployStageProvisioningBrokerNodes EnumsKafkaDeployStage = "provisioning_broker_nodes"
+	EnumsKafkaDeployStageStartingKafkaBrokers    EnumsKafkaDeployStage = "starting_kafka_brokers"
+)
+
+// Valid indicates whether the value is a known member of the EnumsKafkaDeployStage enum.
+func (e EnumsKafkaDeployStage) Valid() bool {
+	switch e {
+	case EnumsKafkaDeployStageApplyingCustomResources:
+		return true
+	case EnumsKafkaDeployStageCreatingLoadBalancer:
+		return true
+	case EnumsKafkaDeployStageIssuingTlsCertificate:
+		return true
+	case EnumsKafkaDeployStageProvisioningBrokerNodes:
+		return true
+	case EnumsKafkaDeployStageStartingKafkaBrokers:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EnumsKafkaStatus.
 const (
-	EnumsKafkaStatusActive EnumsKafkaStatus = "active"
-	EnumsKafkaStatusDraft  EnumsKafkaStatus = "draft"
+	EnumsKafkaStatusActive    EnumsKafkaStatus = "active"
+	EnumsKafkaStatusDeleted   EnumsKafkaStatus = "deleted"
+	EnumsKafkaStatusDeploying EnumsKafkaStatus = "deploying"
+	EnumsKafkaStatusDraft     EnumsKafkaStatus = "draft"
+	EnumsKafkaStatusFailed    EnumsKafkaStatus = "failed"
 )
 
 // Valid indicates whether the value is a known member of the EnumsKafkaStatus enum.
@@ -168,7 +198,34 @@ func (e EnumsKafkaStatus) Valid() bool {
 	switch e {
 	case EnumsKafkaStatusActive:
 		return true
+	case EnumsKafkaStatusDeleted:
+		return true
+	case EnumsKafkaStatusDeploying:
+		return true
 	case EnumsKafkaStatusDraft:
+		return true
+	case EnumsKafkaStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EnumsKafkaTopicTieredStorageState.
+const (
+	EnumsKafkaTopicTieredStorageStateOff    EnumsKafkaTopicTieredStorageState = "off"
+	EnumsKafkaTopicTieredStorageStateOn     EnumsKafkaTopicTieredStorageState = "on"
+	EnumsKafkaTopicTieredStorageStatePaused EnumsKafkaTopicTieredStorageState = "paused"
+)
+
+// Valid indicates whether the value is a known member of the EnumsKafkaTopicTieredStorageState enum.
+func (e EnumsKafkaTopicTieredStorageState) Valid() bool {
+	switch e {
+	case EnumsKafkaTopicTieredStorageStateOff:
+		return true
+	case EnumsKafkaTopicTieredStorageStateOn:
+		return true
+	case EnumsKafkaTopicTieredStorageStatePaused:
 		return true
 	default:
 		return false
@@ -289,6 +346,48 @@ func (e PayloadsBackfillDefaultsPayloadReadMode) Valid() bool {
 	case PayloadsBackfillDefaultsPayloadReadModePrimaryKey:
 		return true
 	case PayloadsBackfillDefaultsPayloadReadModeRange:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsKafkaClusterChangeField.
+const (
+	PayloadsKafkaClusterChangeFieldAllowedCIDRs PayloadsKafkaClusterChangeField = "allowedCIDRs"
+	PayloadsKafkaClusterChangeFieldBrokers      PayloadsKafkaClusterChangeField = "brokers"
+	PayloadsKafkaClusterChangeFieldInstanceType PayloadsKafkaClusterChangeField = "instanceType"
+	PayloadsKafkaClusterChangeFieldStorageGiB   PayloadsKafkaClusterChangeField = "storageGiB"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsKafkaClusterChangeField enum.
+func (e PayloadsKafkaClusterChangeField) Valid() bool {
+	switch e {
+	case PayloadsKafkaClusterChangeFieldAllowedCIDRs:
+		return true
+	case PayloadsKafkaClusterChangeFieldBrokers:
+		return true
+	case PayloadsKafkaClusterChangeFieldInstanceType:
+		return true
+	case PayloadsKafkaClusterChangeFieldStorageGiB:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsKafkaClusterChangeState.
+const (
+	PayloadsKafkaClusterChangeStateApplying PayloadsKafkaClusterChangeState = "applying"
+	PayloadsKafkaClusterChangeStateFailed   PayloadsKafkaClusterChangeState = "failed"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsKafkaClusterChangeState enum.
+func (e PayloadsKafkaClusterChangeState) Valid() bool {
+	switch e {
+	case PayloadsKafkaClusterChangeStateApplying:
+		return true
+	case PayloadsKafkaClusterChangeStateFailed:
 		return true
 	default:
 		return false
@@ -703,6 +802,30 @@ func (e RouterPipelineBackfillRequestBeforeBackfill) Valid() bool {
 	}
 }
 
+// Defines values for RouterUpdateKafkaTopicSettingsRequestTieredStorage.
+const (
+	RouterUpdateKafkaTopicSettingsRequestTieredStorageLessThannil RouterUpdateKafkaTopicSettingsRequestTieredStorage = "<nil>"
+	RouterUpdateKafkaTopicSettingsRequestTieredStorageOff         RouterUpdateKafkaTopicSettingsRequestTieredStorage = "off"
+	RouterUpdateKafkaTopicSettingsRequestTieredStorageOn          RouterUpdateKafkaTopicSettingsRequestTieredStorage = "on"
+	RouterUpdateKafkaTopicSettingsRequestTieredStoragePaused      RouterUpdateKafkaTopicSettingsRequestTieredStorage = "paused"
+)
+
+// Valid indicates whether the value is a known member of the RouterUpdateKafkaTopicSettingsRequestTieredStorage enum.
+func (e RouterUpdateKafkaTopicSettingsRequestTieredStorage) Valid() bool {
+	switch e {
+	case RouterUpdateKafkaTopicSettingsRequestTieredStorageLessThannil:
+		return true
+	case RouterUpdateKafkaTopicSettingsRequestTieredStorageOff:
+		return true
+	case RouterUpdateKafkaTopicSettingsRequestTieredStorageOn:
+		return true
+	case RouterUpdateKafkaTopicSettingsRequestTieredStoragePaused:
+		return true
+	default:
+		return false
+	}
+}
+
 // EnumsBackfillStage defines model for EnumsBackfillStage.
 type EnumsBackfillStage string
 
@@ -712,8 +835,14 @@ type EnumsCloudProvider string
 // EnumsConnectorSlug defines model for EnumsConnectorSlug.
 type EnumsConnectorSlug string
 
+// EnumsKafkaDeployStage defines model for EnumsKafkaDeployStage.
+type EnumsKafkaDeployStage string
+
 // EnumsKafkaStatus defines model for EnumsKafkaStatus.
 type EnumsKafkaStatus string
+
+// EnumsKafkaTopicTieredStorageState defines model for EnumsKafkaTopicTieredStorageState.
+type EnumsKafkaTopicTieredStorageState string
 
 // EnumsMSSQLArchiveLocationType defines model for EnumsMSSQLArchiveLocationType.
 type EnumsMSSQLArchiveLocationType string
@@ -818,6 +947,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
 	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
 	DatabricksAutoLiquidClustering               *bool                           `json:"databricksAutoLiquidClustering,omitempty"`
+	DatabricksDisableVariantShredding            *bool                           `json:"databricksDisableVariantShredding,omitempty"`
 	DefaultSourceSchema                          *string                         `json:"defaultSourceSchema,omitempty"`
 	DisableAlerts                                *bool                           `json:"disableAlerts,omitempty"`
 	DropDeletedColumns                           *bool                           `json:"dropDeletedColumns,omitempty"`
@@ -912,8 +1042,10 @@ type PayloadsBackfillDefaultsPayloadReadMode string
 
 // PayloadsBackfillStageEvent defines model for PayloadsBackfillStageEvent.
 type PayloadsBackfillStageEvent struct {
-	Stage     EnumsBackfillStage `json:"stage"`
-	Timestamp time.Time          `json:"timestamp"`
+	Error       *string            `json:"error,omitempty"`
+	RowsWritten *int64             `json:"rowsWritten,omitempty"`
+	Stage       EnumsBackfillStage `json:"stage"`
+	Timestamp   time.Time          `json:"timestamp"`
 }
 
 // PayloadsBigQuerySettings defines model for PayloadsBigQuerySettings.
@@ -1126,6 +1258,7 @@ type PayloadsFullPipeline struct {
 	DestinationUUID          *openapi_types.UUID              `json:"destinationUUID,omitempty"`
 	EncryptionKeyUUID        *openapi_types.UUID              `json:"encryptionKeyUUID,omitempty"`
 	EnvironmentUUID          openapi_types.UUID               `json:"environmentUUID"`
+	ForceFlushUntil          *time.Time                       `json:"forceFlushUntil,omitempty"`
 	HasBackfillingTables     *bool                            `json:"hasBackfillingTables,omitempty"`
 	HasUndeployedChanges     bool                             `json:"hasUndeployedChanges"`
 	HistoryBackfillStages    *[]PayloadsBackfillStageEvent    `json:"historyBackfillStages,omitempty"`
@@ -1186,15 +1319,69 @@ type PayloadsJsonValueString = string
 
 // PayloadsKafkaCluster defines model for PayloadsKafkaCluster.
 type PayloadsKafkaCluster struct {
-	Cloud                string             `json:"cloud"`
-	CreatedAt            time.Time          `json:"createdAt"`
-	DisableTLS           bool               `json:"disableTLS"`
-	ExternalBootstrapURL string             `json:"externalBootstrapURL"`
-	Name                 string             `json:"name"`
-	Region               string             `json:"region"`
-	Status               EnumsKafkaStatus   `json:"status"`
-	UsesScram            bool               `json:"usesScram"`
-	Uuid                 openapi_types.UUID `json:"uuid"`
+	Cloud     string    `json:"cloud"`
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DeployStage The step a Managed Kafka cluster's deploy is on. Only set while status is deploying, or failed, where it is the step the deploy stopped at.
+	DeployStage          *EnumsKafkaDeployStage `json:"deployStage,omitempty"`
+	DisableTLS           bool                   `json:"disableTLS"`
+	ExternalBootstrapURL string                 `json:"externalBootstrapURL"`
+
+	// IsManaged Whether this is a Managed Kafka cluster that Artie runs for the company.
+	IsManaged bool `json:"isManaged"`
+
+	// Managed A Managed Kafka cluster's configuration. Only set when isManaged, and only by Get a Kafka cluster.
+	Managed *PayloadsKafkaClusterManaged `json:"managed,omitempty"`
+	Name    string                       `json:"name"`
+	Region  string                       `json:"region"`
+	Status  EnumsKafkaStatus             `json:"status"`
+
+	// StatusMessage Why the last deploy of a Managed Kafka cluster failed. Only set while status is failed.
+	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	// TieredStorageAvailable Whether tiered storage is available on this cluster. Artie turns it on once the cluster's brokers have tiered storage.
+	TieredStorageAvailable bool `json:"tieredStorageAvailable"`
+
+	// UpdatedAt When the cluster row last changed. A deploying cluster can be retried 20 minutes after this.
+	UpdatedAt time.Time          `json:"updatedAt"`
+	UsesScram bool               `json:"usesScram"`
+	Uuid      openapi_types.UUID `json:"uuid"`
+}
+
+// PayloadsKafkaClusterChange defines model for PayloadsKafkaClusterChange.
+type PayloadsKafkaClusterChange struct {
+	// Field The setting the change is to. The other fields already show its new value.
+	Field PayloadsKafkaClusterChangeField `json:"field"`
+
+	// StartedAt When the change was saved.
+	StartedAt time.Time `json:"startedAt"`
+
+	// State Applying until the apply's time limit after the save has passed (15 minutes plus a broker roll per broker, plus 5 minutes), then failed: the apply failed or was lost. Saving the same value again retries it.
+	State PayloadsKafkaClusterChangeState `json:"state"`
+
+	// Summary What the change does, as the Activity feed says it, such as "Grew broker storage from 50 GiB to 80 GiB".
+	Summary string `json:"summary"`
+}
+
+// PayloadsKafkaClusterChangeField The setting the change is to. The other fields already show its new value.
+type PayloadsKafkaClusterChangeField string
+
+// PayloadsKafkaClusterChangeState Applying until the apply's time limit after the save has passed (15 minutes plus a broker roll per broker, plus 5 minutes), then failed: the apply failed or was lost. Saving the same value again retries it.
+type PayloadsKafkaClusterChangeState string
+
+// PayloadsKafkaClusterManaged defines model for PayloadsKafkaClusterManaged.
+type PayloadsKafkaClusterManaged struct {
+	// AllowedCIDRs Client IP ranges allowed to reach the cluster. Empty when any IP can connect.
+	AllowedCIDRs []string `json:"allowedCIDRs"`
+	Brokers      int      `json:"brokers"`
+	InstanceType string   `json:"instanceType"`
+	KafkaVersion string   `json:"kafkaVersion"`
+
+	// PendingChange The cluster's latest change that isn't applied yet. Missing once every change is applied, and while the cluster isn't active.
+	PendingChange *PayloadsKafkaClusterChange `json:"pendingChange,omitempty"`
+
+	// StorageGiB Disk per broker in GiB.
+	StorageGiB int `json:"storageGiB"`
 }
 
 // PayloadsKafkaClusterSummary defines model for PayloadsKafkaClusterSummary.
@@ -1290,12 +1477,16 @@ type PayloadsKafkaStorageGraphSeries struct {
 // PayloadsKafkaTopic defines model for PayloadsKafkaTopic.
 type PayloadsKafkaTopic struct {
 	// ArtieManaged Whether Artie manages this topic: a CDC topic under the company prefix outside the customer namespace, or a Kafka-internal __ topic.
-	ArtieManaged   bool    `json:"artieManaged"`
-	PartitionCount int     `json:"partitionCount"`
-	RetentionMS    string  `json:"retentionMS"`
-	SourceName     *string `json:"sourceName,omitempty"`
-	TableName      *string `json:"tableName,omitempty"`
-	Topic          string  `json:"topic"`
+	ArtieManaged bool `json:"artieManaged"`
+
+	// LocalRetentionMS How long a tiered topic keeps data on broker disks (local.retention.ms). -2 means the same as retention. Left out when the brokers don't report it.
+	LocalRetentionMS *string                         `json:"localRetentionMS,omitempty"`
+	PartitionCount   int                             `json:"partitionCount"`
+	RetentionMS      string                          `json:"retentionMS"`
+	SourceName       *string                         `json:"sourceName,omitempty"`
+	TableName        *string                         `json:"tableName,omitempty"`
+	TieredStorage    PayloadsKafkaTopicTieredStorage `json:"tieredStorage"`
+	Topic            string                          `json:"topic"`
 }
 
 // PayloadsKafkaTopicCreateResponse defines model for PayloadsKafkaTopicCreateResponse.
@@ -1325,7 +1516,16 @@ type PayloadsKafkaTopicPipeline struct {
 // PayloadsKafkaTopicSize defines model for PayloadsKafkaTopicSize.
 type PayloadsKafkaTopicSize struct {
 	Partitions *[]PayloadsKafkaTopicPartitionSize `json:"partitions"`
-	Topic      string                             `json:"topic"`
+
+	// RemoteSizeBytes The topic's size in remote storage (S3). Missing when Datadog has no data for it.
+	RemoteSizeBytes *int   `json:"remoteSizeBytes,omitempty"`
+	Topic           string `json:"topic"`
+}
+
+// PayloadsKafkaTopicTieredStorage defines model for PayloadsKafkaTopicTieredStorage.
+type PayloadsKafkaTopicTieredStorage struct {
+	// State off, on or paused, from the topic's remote.storage.enable and remote.log.copy.disable configs.
+	State EnumsKafkaTopicTieredStorageState `json:"state"`
 }
 
 // PayloadsKafkaUser defines model for PayloadsKafkaUser.
@@ -1417,6 +1617,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
 	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
 	DatabricksAutoLiquidClustering               *bool                           `json:"databricksAutoLiquidClustering,omitempty"`
+	DatabricksDisableVariantShredding            *bool                           `json:"databricksDisableVariantShredding,omitempty"`
 	DefaultSourceSchema                          *string                         `json:"defaultSourceSchema,omitempty"`
 	DisableAlerts                                *bool                           `json:"disableAlerts,omitempty"`
 	DropDeletedColumns                           *bool                           `json:"dropDeletedColumns,omitempty"`
@@ -2395,7 +2596,13 @@ type PayloadsWebhookOomKilled struct {
 	// Message Human-readable summary of the event.
 	Message    string                        `json:"message"`
 	Pipelines  []PayloadsWebhookPipelineInfo `json:"pipelines"`
-	Properties map[string]interface{}        `json:"properties"`
+	Properties struct {
+		// Schema Schema containing the table whose snapshot pod ran out of memory (scrubbed).
+		Schema *string `json:"schema,omitempty"`
+
+		// Table Table whose snapshot pod ran out of memory (scrubbed).
+		Table string `json:"table"`
+	} `json:"properties"`
 
 	// Severity Severity of the event.
 	Severity PayloadsWebhookSeverity `json:"severity"`
@@ -3004,6 +3211,21 @@ type RouterUpdateKafkaTopicRetentionRequest struct {
 	RetentionMS int `json:"retentionMS"`
 }
 
+// RouterUpdateKafkaTopicSettingsRequest defines model for RouterUpdateKafkaTopicSettingsRequest.
+type RouterUpdateKafkaTopicSettingsRequest struct {
+	// LocalRetentionMS How long the tiered topic keeps data on broker disks: from 86400000 (one day) up to retention. Turning tiered storage on without it uses 7 days, capped at retention.
+	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
+
+	// RetentionMS New retention.ms: at least 86400000 (one day); -1 (keep forever) isn't supported. At most 1209600000 (14 days) while tiered storage is on or paused.
+	RetentionMS *int `json:"retentionMS,omitempty"`
+
+	// TieredStorage off, on or paused. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
+	TieredStorage *RouterUpdateKafkaTopicSettingsRequestTieredStorage `json:"tieredStorage,omitempty"`
+}
+
+// RouterUpdateKafkaTopicSettingsRequestTieredStorage off, on or paused. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
+type RouterUpdateKafkaTopicSettingsRequestTieredStorage string
+
 // RouterValidateErrorResponse defines model for RouterValidateErrorResponse.
 type RouterValidateErrorResponse struct {
 	Error *string `json:"error,omitempty"`
@@ -3177,6 +3399,9 @@ type KafkaAdminUserCreateJSONRequestBody = RouterCreateKafkaAdminUserRequest
 
 // KafkaTopicCreateJSONRequestBody defines body for KafkaTopicCreate for application/json ContentType.
 type KafkaTopicCreateJSONRequestBody = RouterCreateKafkaTopicRequest
+
+// KafkaTopicSettingsUpdateJSONRequestBody defines body for KafkaTopicSettingsUpdate for application/json ContentType.
+type KafkaTopicSettingsUpdateJSONRequestBody = RouterUpdateKafkaTopicSettingsRequest
 
 // KafkaTopicPartitionsIncreaseJSONRequestBody defines body for KafkaTopicPartitionsIncrease for application/json ContentType.
 type KafkaTopicPartitionsIncreaseJSONRequestBody = RouterIncreaseKafkaTopicPartitionsRequest
@@ -4928,6 +5153,24 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDetail` operationId).
 	KafkaTopicDetail(ctx context.Context, uuid string, topic string, params *KafkaTopicDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaTopicSettingsUpdateWithBody Change Kafka topic settings
+	//
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+	KafkaTopicSettingsUpdateWithBody(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicSettingsUpdate Change Kafka topic settings
+	//
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+	KafkaTopicSettingsUpdate(ctx context.Context, uuid string, topic string, body KafkaTopicSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaTopicLatestMessage Get latest Kafka topic message
 	//
 	// Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
@@ -4955,7 +5198,7 @@ type ClientInterface interface {
 
 	// KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4964,7 +5207,7 @@ type ClientInterface interface {
 
 	// KafkaTopicRetentionUpdate Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6824,6 +7067,44 @@ func (c *Client) KafkaTopicDetail(ctx context.Context, uuid string, topic string
 	return c.Client.Do(req)
 }
 
+// KafkaTopicSettingsUpdateWithBody Change Kafka topic settings
+//
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+func (c *Client) KafkaTopicSettingsUpdateWithBody(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicSettingsUpdateRequestWithBody(c.Server, uuid, topic, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicSettingsUpdate Change Kafka topic settings
+//
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+func (c *Client) KafkaTopicSettingsUpdate(ctx context.Context, uuid string, topic string, body KafkaTopicSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicSettingsUpdateRequest(c.Server, uuid, topic, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaTopicLatestMessage Get latest Kafka topic message
 //
 // Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
@@ -6881,7 +7162,7 @@ func (c *Client) KafkaTopicPartitionsIncrease(ctx context.Context, uuid string, 
 
 // KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6900,7 +7181,7 @@ func (c *Client) KafkaTopicRetentionUpdateWithBody(ctx context.Context, uuid str
 
 // KafkaTopicRetentionUpdate Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10412,6 +10693,60 @@ func NewKafkaTopicDetailRequest(server string, uuid string, topic string, params
 	return req, nil
 }
 
+// NewKafkaTopicSettingsUpdateRequest calls the generic KafkaTopicSettingsUpdate builder with application/json body
+func NewKafkaTopicSettingsUpdateRequest(server string, uuid string, topic string, body KafkaTopicSettingsUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaTopicSettingsUpdateRequestWithBody(server, uuid, topic, "application/json", bodyReader)
+}
+
+// NewKafkaTopicSettingsUpdateRequestWithBody constructs an http.Request for the KafkaTopicSettingsUpdate method, with any body, and a specified content type
+func NewKafkaTopicSettingsUpdateRequestWithBody(server string, uuid string, topic string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewKafkaTopicLatestMessageRequest constructs an http.Request for the KafkaTopicLatestMessage method
 func NewKafkaTopicLatestMessageRequest(server string, uuid string, topic string) (*http.Request, error) {
 	var err error
@@ -12835,6 +13170,24 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDetail` operationId).
 	KafkaTopicDetailWithResponse(ctx context.Context, uuid string, topic string, params *KafkaTopicDetailParams, reqEditors ...RequestEditorFn) (*KafkaTopicDetailResponse, error)
 
+	// KafkaTopicSettingsUpdateWithBodyWithResponse Change Kafka topic settings
+	//
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+	KafkaTopicSettingsUpdateWithBodyWithResponse(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicSettingsUpdateResponse, error)
+
+	// KafkaTopicSettingsUpdateWithResponse Change Kafka topic settings
+	//
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+	KafkaTopicSettingsUpdateWithResponse(ctx context.Context, uuid string, topic string, body KafkaTopicSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicSettingsUpdateResponse, error)
+
 	// KafkaTopicLatestMessageWithResponse Get latest Kafka topic message
 	//
 	// Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
@@ -12864,7 +13217,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -12873,7 +13226,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -15482,6 +15835,47 @@ func (r KafkaTopicDetailResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaTopicDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicSettingsUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaTopic
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicSettingsUpdateResponse) GetJSON200() *PayloadsKafkaTopic {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicSettingsUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicSettingsUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicSettingsUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicSettingsUpdateResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -18184,6 +18578,36 @@ func (c *ClientWithResponses) KafkaTopicDetailWithResponse(ctx context.Context, 
 	return ParseKafkaTopicDetailResponse(rsp)
 }
 
+// KafkaTopicSettingsUpdateWithBodyWithResponse Change Kafka topic settings
+//
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+func (c *ClientWithResponses) KafkaTopicSettingsUpdateWithBodyWithResponse(ctx context.Context, uuid string, topic string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaTopicSettingsUpdateResponse, error) {
+	rsp, err := c.KafkaTopicSettingsUpdateWithBody(ctx, uuid, topic, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicSettingsUpdateResponse(rsp)
+}
+
+// KafkaTopicSettingsUpdateWithResponse Change Kafka topic settings
+//
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicSettingsUpdate` operationId).
+func (c *ClientWithResponses) KafkaTopicSettingsUpdateWithResponse(ctx context.Context, uuid string, topic string, body KafkaTopicSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaTopicSettingsUpdateResponse, error) {
+	rsp, err := c.KafkaTopicSettingsUpdate(ctx, uuid, topic, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicSettingsUpdateResponse(rsp)
+}
+
 // KafkaTopicLatestMessageWithResponse Get latest Kafka topic message
 //
 // Retrieves the newest message from partition 0, including its contents. Results are not cached. Only available when the company allows reading Kafka messages.
@@ -18231,7 +18655,7 @@ func (c *ClientWithResponses) KafkaTopicPartitionsIncreaseWithResponse(ctx conte
 
 // KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18246,7 +18670,7 @@ func (c *ClientWithResponses) KafkaTopicRetentionUpdateWithBodyWithResponse(ctx 
 
 // KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -20665,6 +21089,44 @@ func ParseKafkaTopicDetailResponse(rsp *http.Response) (*KafkaTopicDetailRespons
 	return response, nil
 }
 
+// ParseKafkaTopicSettingsUpdateResponse parses an HTTP response from a KafkaTopicSettingsUpdateWithResponse call
+func ParseKafkaTopicSettingsUpdateResponse(rsp *http.Response) (*KafkaTopicSettingsUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicSettingsUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaTopic
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 502:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseKafkaTopicLatestMessageResponse parses an HTTP response from a KafkaTopicLatestMessageWithResponse call
 func ParseKafkaTopicLatestMessageResponse(rsp *http.Response) (*KafkaTopicLatestMessageResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -21696,6 +22158,9 @@ func ParseSshTunnelCreateResponse(rsp *http.Response) (*SshTunnelCreateResponse,
 		response.JSON200 = &dest
 
 	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 429:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
