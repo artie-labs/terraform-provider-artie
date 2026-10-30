@@ -160,13 +160,53 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 
 		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
-		assert.Contains(t, diags.Errors()[0].Detail(), "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `fn_dblog` or `change_tracking`.")
+		assert.Contains(t, diags.Errors()[0].Detail(), "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `change_tracking` or `trn_log_backup`.")
+	}
+	{
+		// fn_dblog was removed, so it can't unify
+		config := tfmodels.SourceReader{
+			ConnectorUUID:              types.StringValue(connectorUUID),
+			DatabaseName:               types.StringValue("test_db"),
+			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			EnableUnifyAcrossDatabases: types.BoolValue(true),
+			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db")}),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "is set to `change_tracking` or `trn_log_backup`.")
+	}
+	{
+		// Transaction log backups can unify
+		config := tfmodels.SourceReader{
+			ConnectorUUID:              types.StringValue(connectorUUID),
+			DatabaseName:               types.StringValue("test_db"),
+			MSSQLReplicationMethod:     types.StringValue("trn_log_backup"),
+			EnableUnifyAcrossDatabases: types.BoolValue(true),
+			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db")}),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.False(t, diags.HasError())
+	}
+	{
+		// A method that isn't known yet isn't rejected
+		config := tfmodels.SourceReader{
+			ConnectorUUID:              types.StringValue(connectorUUID),
+			DatabaseName:               types.StringValue("test_db"),
+			MSSQLReplicationMethod:     types.StringUnknown(),
+			EnableUnifyAcrossDatabases: types.BoolValue(true),
+			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db")}),
+		}
+
+		diags := validateSourceReaderConfig(t.Context(), config)
+		assert.False(t, diags.HasError())
 	}
 	{
 		config := tfmodels.SourceReader{
 			ConnectorUUID:              types.StringValue(connectorUUID),
 			DatabaseName:               types.StringValue("test_db"),
-			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			MSSQLReplicationMethod:     types.StringValue("change_tracking"),
 			EnableUnifyAcrossDatabases: types.BoolValue(true),
 			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{}),
 		}
@@ -179,7 +219,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		config := tfmodels.SourceReader{
 			ConnectorUUID:              types.StringValue(connectorUUID),
 			DatabaseName:               types.StringValue("test_db"),
-			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			MSSQLReplicationMethod:     types.StringValue("change_tracking"),
 			EnableUnifyAcrossDatabases: types.BoolValue(true),
 			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db2")}),
 		}
@@ -192,7 +232,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		config := tfmodels.SourceReader{
 			ConnectorUUID:              types.StringValue(connectorUUID),
 			DatabaseName:               types.StringValue("test_db"),
-			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			MSSQLReplicationMethod:     types.StringValue("change_tracking"),
 			EnableUnifyAcrossDatabases: types.BoolValue(true),
 			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db")}),
 		}
