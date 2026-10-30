@@ -74,7 +74,7 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"enable_unify_across_schemas":        schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify tables that should be generalized to all schemas, meaning we will sync all tables with the same name into the same destination table. This is useful if you have multiple identical schemas and want to fan-in the data. This is only applicable if the source type is PostgreSQL."},
 			"unify_across_schemas_regex":         schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If unify across schemas is enabled, this is an additional regex pattern that you can use to filter which schemas should be unified. This is only applicable if the source type is PostgreSQL."},
 			"mssql_replication_method":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If unset, we will use the default replication method (Capture Instances). Other values: `change_tracking`, `trn_log_backup`. This is only applicable if the source type is Microsoft SQL Server."},
-			"enable_unify_across_databases":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify multiple databases within your Microsoft SQL Server that we should sync data from, and we will unify tables with the same name and schema into a single destination table. This is useful if you have multiple identical databases and want to fan-in the data. This is only applicable if the source type is Microsoft SQL Server and `mssql_replication_method` is set to `change_tracking`."},
+			"enable_unify_across_databases":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify multiple databases within your Microsoft SQL Server that we should sync data from, and we will unify tables with the same name and schema into a single destination table. This is useful if you have multiple identical databases and want to fan-in the data. This is only applicable if the source type is Microsoft SQL Server and `mssql_replication_method` is set to `change_tracking` or `trn_log_backup`."},
 			"databases_to_unify":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If `enable_unify_across_databases` is set to true, this should be a list of databases within your Microsoft SQL Server that we should sync data from. All tables that you opt into being unified should exist in each of these databases. This is only applicable if the source type is Microsoft SQL Server."},
 			"status_override": schema.StringAttribute{
 				Optional:            true,
@@ -186,8 +186,8 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 	}
 
 	if configData.EnableUnifyAcrossDatabases.ValueBool() {
-		if configData.MSSQLReplicationMethod.ValueString() != "change_tracking" {
-			diags.AddError("Invalid configuration", "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `change_tracking`.")
+		if !supportsUnifyAcrossDatabases(configData.MSSQLReplicationMethod) {
+			diags.AddError("Invalid configuration", "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `change_tracking` or `trn_log_backup`.")
 		} else if configData.DatabasesToUnify.IsNull() || len(configData.DatabasesToUnify.Elements()) == 0 {
 			diags.AddError("Invalid configuration", "You must specify `databases_to_unify` if `enable_unify_across_databases` is set to true.")
 		} else if !configData.DatabaseName.IsUnknown() {
@@ -200,6 +200,15 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 	}
 
 	return diags
+}
+
+// supportsUnifyAcrossDatabases reports whether Reader can unify tables across databases for an MSSQL replication method.
+// An unknown method is checked once it's known.
+func supportsUnifyAcrossDatabases(method types.String) bool {
+	if method.IsUnknown() {
+		return true
+	}
+	return slices.Contains([]string{"change_tracking", "trn_log_backup"}, method.ValueString())
 }
 
 func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
