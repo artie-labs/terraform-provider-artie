@@ -160,13 +160,13 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 
 		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.True(t, diags.HasError())
-		assert.Contains(t, diags.Errors()[0].Detail(), "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `fn_dblog` or `change_tracking`.")
+		assert.Contains(t, diags.Errors()[0].Detail(), "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `change_tracking`.")
 	}
 	{
 		config := tfmodels.SourceReader{
 			ConnectorUUID:              types.StringValue(connectorUUID),
 			DatabaseName:               types.StringValue("test_db"),
-			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			MSSQLReplicationMethod:     types.StringValue("change_tracking"),
 			EnableUnifyAcrossDatabases: types.BoolValue(true),
 			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{}),
 		}
@@ -179,7 +179,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		config := tfmodels.SourceReader{
 			ConnectorUUID:              types.StringValue(connectorUUID),
 			DatabaseName:               types.StringValue("test_db"),
-			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			MSSQLReplicationMethod:     types.StringValue("change_tracking"),
 			EnableUnifyAcrossDatabases: types.BoolValue(true),
 			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db2")}),
 		}
@@ -192,7 +192,7 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		config := tfmodels.SourceReader{
 			ConnectorUUID:              types.StringValue(connectorUUID),
 			DatabaseName:               types.StringValue("test_db"),
-			MSSQLReplicationMethod:     types.StringValue("fn_dblog"),
+			MSSQLReplicationMethod:     types.StringValue("change_tracking"),
 			EnableUnifyAcrossDatabases: types.BoolValue(true),
 			DatabasesToUnify:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("test_db")}),
 		}
