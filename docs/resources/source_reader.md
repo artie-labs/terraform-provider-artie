@@ -65,7 +65,7 @@ resource "artie_source_reader" "postgres_dev_reader" {
 - `is_shared` (Boolean) If set to true, this source reader can be used by multiple pipelines.
 - `message_compression` (String) When set to `gzip`, large Kafka messages produced by this source reader will be gzip-compressed before being sent. Transfer must be deployed with decompression support before enabling this. Valid values: `gzip` or omit/empty to disable.
 - `mongodb_deployment_scoped_mode` (Boolean) If set to true, Artie reads one change stream for the whole MongoDB cluster instead of one per database, so a pipeline can include collections from several databases. Each table's `schema` should be set to the collection's database. Pipelines can then set `use_same_schema_as_source` to write each database to its own destination schema. This is only applicable if the source type is MongoDB. Defaults to false.
-- `mssql_replication_method` (String) If unset, we will use the default replication method (Capture Instances). This is only applicable if the source type is Microsoft SQL Server.
+- `mssql_replication_method` (String) If unset, we will use the default replication method (Capture Instances). Other values: `change_tracking`, `trn_log_backup`. This is only applicable if the source type is Microsoft SQL Server.
 - `name` (String) An optional human-readable label for this source reader.
 - `one_topic_per_schema` (Boolean) If set to true, Artie will write all incoming CDC events into a single Kafka topic per schema. This is currently only supported if your source is Oracle and your account has this feature enabled.
 - `oracle_container_name` (String) The name of the container (pluggable database) if the source type is Oracle and you are using a container database.
