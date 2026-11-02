@@ -54,3 +54,32 @@ func TestPlannedPartitionBy(t *testing.T) {
 		assert.Equal(t, types.StringValue("monthly"), plannedPartitionBy(types.StringUnknown(), types.StringValue("monthly")))
 	}
 }
+
+func TestBackfillSwitchChanges(t *testing.T) {
+	{
+		// Turning on from no stored config.
+		assert.True(t, backfillSwitchChanges(types.BoolNull(), types.BoolValue(true), types.BoolValue(true)))
+	}
+	{
+		// Turning on from false.
+		assert.True(t, backfillSwitchChanges(types.BoolValue(false), types.BoolValue(true), types.BoolValue(true)))
+	}
+	{
+		// Turning off.
+		assert.True(t, backfillSwitchChanges(types.BoolValue(true), types.BoolValue(false), types.BoolValue(false)))
+	}
+	{
+		// Unchanged, or kept from state because the config leaves it out.
+		assert.False(t, backfillSwitchChanges(types.BoolValue(true), types.BoolValue(true), types.BoolNull()))
+		assert.False(t, backfillSwitchChanges(types.BoolNull(), types.BoolNull(), types.BoolNull()))
+		assert.False(t, backfillSwitchChanges(types.BoolNull(), types.BoolValue(false), types.BoolValue(false)))
+	}
+	{
+		// Left unknown with no stored value: it resolves to false, so nothing changes.
+		assert.False(t, backfillSwitchChanges(types.BoolNull(), types.BoolUnknown(), types.BoolNull()))
+	}
+	{
+		// Only known after apply: it might change.
+		assert.True(t, backfillSwitchChanges(types.BoolValue(false), types.BoolUnknown(), types.BoolUnknown()))
+	}
+}

@@ -274,25 +274,25 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 					"enabled": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
-						MarkdownDescription: "If set to true, Artie backfills from a DynamoDB export in S3.",
+						MarkdownDescription: "If set to true, Artie backfills from a DynamoDB export in S3. This requires `export_arn`.",
 						PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()},
 					},
 					"bucket": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						MarkdownDescription: "The S3 bucket Artie exports the table to. Required when `enabled` is true, unless `export_arn` is set.",
+						MarkdownDescription: "The S3 bucket that holds the export.",
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 					},
 					"export_arn": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						MarkdownDescription: "The ARN of an existing DynamoDB export to backfill from. If not set, Artie starts a new export into `bucket`.",
+						MarkdownDescription: "The ARN of the DynamoDB export to backfill from. The backfill needs it to run.",
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 					},
 					"optional_folder": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						MarkdownDescription: "The folder in `bucket` to export to.",
+						MarkdownDescription: "The folder in `bucket` that holds the export.",
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 					},
 					"max_parallelism": schema.Int64Attribute{
@@ -465,11 +465,13 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 }
 
 // ModifyPlan clears a regex left out of the config while the other of its pair is set, so switching from an ignore
-// regex to an include regex (or back) doesn't send the old one from state alongside the new one.
+// regex to an include regex (or back) doesn't send the old one from state alongside the new one. It also leaves
+// skip_backfill to the API on tables that don't set it when the DynamoDB export backfill turns on or off.
 func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroying
 	}
+	r.planSkipBackfillOnSwitch(ctx, req, resp)
 	for _, pair := range regexPairs {
 		for _, attrs := range [][2]string{pair, {pair[1], pair[0]}} {
 			var value, other types.String
@@ -480,6 +482,62 @@ func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 			}
 		}
 	}
+}
+
+// planSkipBackfillOnSwitch handles the API rewriting skip_backfill when an update turns the DynamoDB export backfill
+// on (cleared on every table) or off (set on tables still waiting to backfill). A table that leaves skip_backfill out
+// gets it as unknown, so it takes whatever the API returns. Turning it on while a table sets skip_backfill = true
+// is an error, because the API would clear it.
+func (r *PipelineResource) planSkipBackfillOnSwitch(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.State.Raw.IsNull() {
+		return // creating: the API only rewrites existing tables
+	}
+	enabledPath := path.Root("dynamodb_backfill_config").AtName("enabled")
+	var stateEnabled, planEnabled, configEnabled types.Bool
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, enabledPath, &stateEnabled)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, enabledPath, &planEnabled)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, enabledPath, &configEnabled)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !backfillSwitchChanges(stateEnabled, planEnabled, configEnabled) {
+		return
+	}
+
+	var tables types.Map
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("tables"), &tables)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if tables.IsUnknown() {
+		return
+	}
+	for key := range tables.Elements() {
+		skipPath := path.Root("tables").AtMapKey(key).AtName("skip_backfill")
+		var configSkip types.Bool
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, skipPath, &configSkip)...)
+		if configSkip.IsNull() {
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, skipPath, types.BoolUnknown())...)
+			continue
+		}
+		if !planEnabled.ValueBool() {
+			continue
+		}
+		if configSkip.ValueBool() {
+			resp.Diagnostics.AddAttributeError(skipPath, "skip_backfill conflicts with turning on the DynamoDB backfill",
+				"Turning on `dynamodb_backfill_config.enabled` clears `skip_backfill` on every table. Remove `skip_backfill = true` from this table, or set it in a later apply.")
+		}
+	}
+}
+
+// backfillSwitchChanges reports whether a plan may turn the DynamoDB export backfill on or off. A missing or null
+// enabled counts as off. A planned value left unknown by the config resolves to the stored one, so only an unknown
+// config value (known after apply) might change it.
+func backfillSwitchChanges(state, plan, config types.Bool) bool {
+	if plan.IsUnknown() {
+		return config.IsUnknown()
+	}
+	return plan.ValueBool() != state.ValueBool()
 }
 
 // partitionByPlanModifier keeps a merge predicate's `partition_by` from state when it's left out of the config, so a
@@ -638,11 +696,17 @@ func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.Payloa
 		return err
 	}
 
+	var dynamoDBBackfillConfig *openapi.PayloadsDynamoDBSnapshotConfig
+	if pipeline.AdvancedSettings != nil {
+		dynamoDBBackfillConfig = pipeline.AdvancedSettings.DynamoDBBackfillConfig
+	}
+
 	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedSourceWithResponse(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
-		SourceReaderUUID: pipeline.SourceReaderUUID,
-		ValidateTables:   true,
-		Tables:           tables,
-		DataPlaneName:    pipeline.DataPlaneName,
+		SourceReaderUUID:       pipeline.SourceReaderUUID,
+		ValidateTables:         true,
+		Tables:                 tables,
+		DataPlaneName:          pipeline.DataPlaneName,
+		DynamoDBBackfillConfig: dynamoDBBackfillConfig,
 	})); err != nil {
 		return fmt.Errorf("source validation failed: %w", err)
 	}

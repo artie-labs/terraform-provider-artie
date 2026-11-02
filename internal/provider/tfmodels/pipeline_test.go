@@ -561,6 +561,21 @@ func TestDynamoDBBackfillToAPI(t *testing.T) {
 	}
 }
 
+func TestDynamoDBBackfillToAPI_UnknownFields(t *testing.T) {
+	// A block added with fields left out plans them as unknown; they're omitted, not sent as "" or false.
+	obj, objDiags := types.ObjectValue(dynamoDBBackfillAttrTypes, map[string]attr.Value{
+		"enabled":         types.BoolUnknown(),
+		"bucket":          types.StringUnknown(),
+		"export_arn":      types.StringUnknown(),
+		"optional_folder": types.StringUnknown(),
+		"max_parallelism": types.Int64Value(5),
+	})
+	assert.False(t, objDiags.HasError(), "unexpected diags: %v", objDiags)
+	cfg, diags := dynamoDBBackfillToAPI(t.Context(), obj)
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, &openapi.PayloadsDynamoDBSnapshotConfig{MaxParallelism: ptr(5)}, cfg)
+}
+
 func TestDynamoDBBackfillFromAPI(t *testing.T) {
 	{
 		obj, diags := dynamoDBBackfillFromAPI(nil)

@@ -180,11 +180,11 @@ Required:
 
 Optional:
 
-- `bucket` (String) The S3 bucket Artie exports the table to. Required when `enabled` is true, unless `export_arn` is set.
-- `enabled` (Boolean) If set to true, Artie backfills from a DynamoDB export in S3.
-- `export_arn` (String) The ARN of an existing DynamoDB export to backfill from. If not set, Artie starts a new export into `bucket`.
+- `bucket` (String) The S3 bucket that holds the export.
+- `enabled` (Boolean) If set to true, Artie backfills from a DynamoDB export in S3. This requires `export_arn`.
+- `export_arn` (String) The ARN of the DynamoDB export to backfill from. The backfill needs it to run.
 - `max_parallelism` (Number) How many export files Artie reads and writes at once. If it has never been set, Artie reads one file at a time; set it to 1 to go back to that. A higher value backfills faster but uses more memory.
-- `optional_folder` (String) The folder in `bucket` to export to.
+- `optional_folder` (String) The folder in `bucket` that holds the export.
 
 
 <a id="nestedatt--flush_rules"></a>
