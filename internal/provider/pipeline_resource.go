@@ -533,7 +533,7 @@ func (r *PipelineResource) planSkipBackfillOnSwitch(ctx context.Context, req res
 		}
 		if !configSkip.ValueBool() {
 			resp.Diagnostics.AddAttributeWarning(skipPath, "skip_backfill may conflict with turning off the DynamoDB backfill",
-				"Turning off `dynamodb_backfill_config.enabled` sets `skip_backfill` to true on tables that haven't backfilled yet. If this table hasn't, the apply fails. Remove `skip_backfill = false` from this table for this apply; you can add it back afterwards.")
+				"Turning off `dynamodb_backfill_config.enabled` sets `skip_backfill` to true on tables that haven't backfilled yet. If this table hasn't, the apply fails. Remove `skip_backfill = false` from this table.")
 		}
 	}
 }
