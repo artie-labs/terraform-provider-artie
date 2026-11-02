@@ -487,7 +487,8 @@ func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 // planSkipBackfillOnSwitch handles the API rewriting skip_backfill when an update turns the DynamoDB export backfill
 // on (cleared on every table) or off (set on tables still waiting to backfill). A table that leaves skip_backfill out
 // gets it as unknown, so it takes whatever the API returns. Turning it on while a table sets skip_backfill = true
-// is an error, because the API would clear it.
+// is an error, because the API would clear it. Turning it off while a table sets skip_backfill = false is a warning:
+// the API sets it only on tables that haven't backfilled yet, and the provider can't tell which those are.
 func (r *PipelineResource) planSkipBackfillOnSwitch(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.State.Raw.IsNull() {
 		return // creating: the API only rewrites existing tables
@@ -520,12 +521,19 @@ func (r *PipelineResource) planSkipBackfillOnSwitch(ctx context.Context, req res
 			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, skipPath, types.BoolUnknown())...)
 			continue
 		}
-		if !planEnabled.ValueBool() {
+		if configSkip.IsUnknown() {
 			continue
 		}
-		if configSkip.ValueBool() {
-			resp.Diagnostics.AddAttributeError(skipPath, "skip_backfill conflicts with turning on the DynamoDB backfill",
-				"Turning on `dynamodb_backfill_config.enabled` clears `skip_backfill` on every table. Remove `skip_backfill = true` from this table, or set it in a later apply.")
+		if planEnabled.ValueBool() {
+			if configSkip.ValueBool() {
+				resp.Diagnostics.AddAttributeError(skipPath, "skip_backfill conflicts with turning on the DynamoDB backfill",
+					"Turning on `dynamodb_backfill_config.enabled` clears `skip_backfill` on every table. Remove `skip_backfill = true` from this table, or set it in a later apply.")
+			}
+			continue
+		}
+		if !configSkip.ValueBool() {
+			resp.Diagnostics.AddAttributeWarning(skipPath, "skip_backfill may conflict with turning off the DynamoDB backfill",
+				"Turning off `dynamodb_backfill_config.enabled` sets `skip_backfill` to true on tables that haven't backfilled yet. If this table hasn't, the apply fails. Remove `skip_backfill = false` from this table for this apply; you can add it back afterwards.")
 		}
 	}
 }
