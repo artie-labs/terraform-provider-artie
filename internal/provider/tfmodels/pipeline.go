@@ -124,7 +124,7 @@ func dynamoDBBackfillFromAPI(cfg *openapi.PayloadsDynamoDBSnapshotConfig) (types
 	if cfg.MaxParallelism != nil {
 		maxParallelism = types.Int64Value(int64(*cfg.MaxParallelism))
 	}
-	// The API omits empty strings and false, so they read back as "" and false (not null) to match a config that sets them.
+	// A missing field reads back as "" or false (not null), so it matches a config that sets "" or false.
 	return types.ObjectValue(dynamoDBBackfillAttrTypes, map[string]attr.Value{
 		"enabled":         boolPointerValueOrFalse(cfg.Enabled),
 		"bucket":          types.StringValue(lib.RemovePtr(cfg.Bucket)),

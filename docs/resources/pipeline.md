@@ -67,7 +67,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true).
 - `disable_alerts` (Boolean) If set to true, Artie will not send email alerts for this pipeline (connection failures, replication errors, ingestion lag, etc.). Pipeline health is still tracked in the dashboard.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
-- `dynamodb_backfill_config` (Attributes) How Artie backfills a DynamoDB source from an S3 export. This is only applicable if the source is DynamoDB. Fields left out keep their current value. (see [below for nested schema](#nestedatt--dynamodb_backfill_config))
+- `dynamodb_backfill_config` (Attributes) How Artie backfills a DynamoDB source from an S3 export. This is only applicable if the source is DynamoDB. Removing this block or a field in it keeps the current value; to turn the export backfill off, set `enabled` to false. (see [below for nested schema](#nestedatt--dynamodb_backfill_config))
 - `encryption_key_uuid` (String) UUID of an `artie_encryption_key` to use for column-level encryption. Required if any table has `columns_to_encrypt` set.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
 - `force_utc_timezone` (Boolean) If set to true, timestamps without timezone information in the source will be written as UTC in the destination.
@@ -183,7 +183,7 @@ Optional:
 - `bucket` (String) The S3 bucket Artie exports the table to. Required when `enabled` is true, unless `export_arn` is set.
 - `enabled` (Boolean) If set to true, Artie backfills from a DynamoDB export in S3.
 - `export_arn` (String) The ARN of an existing DynamoDB export to backfill from. If not set, Artie starts a new export into `bucket`.
-- `max_parallelism` (Number) How many export files Artie reads and writes at once. Defaults to 1. A higher value backfills faster but uses more memory.
+- `max_parallelism` (Number) How many export files Artie reads and writes at once. If it has never been set, Artie reads one file at a time; set it to 1 to go back to that. A higher value backfills faster but uses more memory.
 - `optional_folder` (String) The folder in `bucket` to export to.
 
 

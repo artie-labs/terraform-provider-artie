@@ -268,7 +268,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"dynamodb_backfill_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "How Artie backfills a DynamoDB source from an S3 export. This is only applicable if the source is DynamoDB. Fields left out keep their current value.",
+				MarkdownDescription: "How Artie backfills a DynamoDB source from an S3 export. This is only applicable if the source is DynamoDB. Removing this block or a field in it keeps the current value; to turn the export backfill off, set `enabled` to false.",
 				PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -298,7 +298,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 					"max_parallelism": schema.Int64Attribute{
 						Optional:            true,
 						Computed:            true,
-						MarkdownDescription: "How many export files Artie reads and writes at once. Defaults to 1. A higher value backfills faster but uses more memory.",
+						MarkdownDescription: "How many export files Artie reads and writes at once. If it has never been set, Artie reads one file at a time; set it to 1 to go back to that. A higher value backfills faster but uses more memory.",
 						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 						Validators:          []validator.Int64{int64validator.AtLeast(1)},
 					},
