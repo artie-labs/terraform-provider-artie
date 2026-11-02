@@ -295,6 +295,30 @@ func (e EnumsSourceReaderStatus) Valid() bool {
 	}
 }
 
+// Defines values for PayloadsAnalyticsUnit.
+const (
+	PayloadsAnalyticsUnitBytes     PayloadsAnalyticsUnit = "bytes"
+	PayloadsAnalyticsUnitCount     PayloadsAnalyticsUnit = "count"
+	PayloadsAnalyticsUnitMegabytes PayloadsAnalyticsUnit = "megabytes"
+	PayloadsAnalyticsUnitMs        PayloadsAnalyticsUnit = "ms"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsAnalyticsUnit enum.
+func (e PayloadsAnalyticsUnit) Valid() bool {
+	switch e {
+	case PayloadsAnalyticsUnitBytes:
+		return true
+	case PayloadsAnalyticsUnitCount:
+		return true
+	case PayloadsAnalyticsUnitMegabytes:
+		return true
+	case PayloadsAnalyticsUnitMs:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PayloadsBackfillDefaultsPayloadPagination.
 const (
 	PayloadsBackfillDefaultsPayloadPaginationClient PayloadsBackfillDefaultsPayloadPagination = "client"
@@ -354,10 +378,11 @@ func (e PayloadsBackfillDefaultsPayloadReadMode) Valid() bool {
 
 // Defines values for PayloadsKafkaClusterChangeField.
 const (
-	PayloadsKafkaClusterChangeFieldAllowedCIDRs PayloadsKafkaClusterChangeField = "allowedCIDRs"
-	PayloadsKafkaClusterChangeFieldBrokers      PayloadsKafkaClusterChangeField = "brokers"
-	PayloadsKafkaClusterChangeFieldInstanceType PayloadsKafkaClusterChangeField = "instanceType"
-	PayloadsKafkaClusterChangeFieldStorageGiB   PayloadsKafkaClusterChangeField = "storageGiB"
+	PayloadsKafkaClusterChangeFieldAllowedCIDRs  PayloadsKafkaClusterChangeField = "allowedCIDRs"
+	PayloadsKafkaClusterChangeFieldBrokers       PayloadsKafkaClusterChangeField = "brokers"
+	PayloadsKafkaClusterChangeFieldInstanceType  PayloadsKafkaClusterChangeField = "instanceType"
+	PayloadsKafkaClusterChangeFieldStorageGiB    PayloadsKafkaClusterChangeField = "storageGiB"
+	PayloadsKafkaClusterChangeFieldTieredStorage PayloadsKafkaClusterChangeField = "tieredStorage"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsKafkaClusterChangeField enum.
@@ -370,6 +395,8 @@ func (e PayloadsKafkaClusterChangeField) Valid() bool {
 	case PayloadsKafkaClusterChangeFieldInstanceType:
 		return true
 	case PayloadsKafkaClusterChangeFieldStorageGiB:
+		return true
+	case PayloadsKafkaClusterChangeFieldTieredStorage:
 		return true
 	default:
 		return false
@@ -826,6 +853,24 @@ func (e RouterUpdateKafkaTopicSettingsRequestTieredStorage) Valid() bool {
 	}
 }
 
+// Defines values for KafkaClusterRatesParamsRange.
+const (
+	KafkaClusterRatesParamsRangeN1h KafkaClusterRatesParamsRange = "1h"
+	KafkaClusterRatesParamsRangeN6h KafkaClusterRatesParamsRange = "6h"
+)
+
+// Valid indicates whether the value is a known member of the KafkaClusterRatesParamsRange enum.
+func (e KafkaClusterRatesParamsRange) Valid() bool {
+	switch e {
+	case KafkaClusterRatesParamsRangeN1h:
+		return true
+	case KafkaClusterRatesParamsRangeN6h:
+		return true
+	default:
+		return false
+	}
+}
+
 // EnumsBackfillStage defines model for EnumsBackfillStage.
 type EnumsBackfillStage string
 
@@ -886,6 +931,11 @@ type ListResponseBodyKafkaCluster struct {
 // ListResponseBodyKafkaConsumerGroup defines model for ListResponseBodyKafkaConsumerGroup.
 type ListResponseBodyKafkaConsumerGroup struct {
 	Items []PayloadsKafkaConsumerGroup `json:"items"`
+}
+
+// ListResponseBodyKafkaConsumerGroupDetail defines model for ListResponseBodyKafkaConsumerGroupDetail.
+type ListResponseBodyKafkaConsumerGroupDetail struct {
+	Items []PayloadsKafkaConsumerGroupDetail `json:"items"`
 }
 
 // ListResponseBodyKafkaTopic defines model for ListResponseBodyKafkaTopic.
@@ -1015,12 +1065,44 @@ type PayloadsAdvancedTableSettingsPayload struct {
 	UnifyAcrossSchemas         *bool                           `json:"unifyAcrossSchemas,omitempty"`
 }
 
-// PayloadsAzureBlobStorageConfig defines model for PayloadsAzureBlobStorageConfig.
-type PayloadsAzureBlobStorageConfig struct {
-	AccountURL    *string `json:"accountURL,omitempty"`
-	ContainerName *string `json:"containerName,omitempty"`
-	SasToken      *string `json:"sasToken,omitempty"`
+// PayloadsAnalyticsDimensions defines model for PayloadsAnalyticsDimensions.
+type PayloadsAnalyticsDimensions struct {
+	Operation     *string             `json:"operation,omitempty"`
+	PipelineUUID  *openapi_types.UUID `json:"pipelineUUID,omitempty"`
+	Reason        *string             `json:"reason,omitempty"`
+	Slot          *string             `json:"slot,omitempty"`
+	Table         *string             `json:"table,omitempty"`
+	WarehouseName *string             `json:"warehouseName,omitempty"`
+	WarehouseSize *string             `json:"warehouseSize,omitempty"`
 }
+
+// PayloadsAnalyticsScalarIntPoint defines model for PayloadsAnalyticsScalarIntPoint.
+type PayloadsAnalyticsScalarIntPoint struct {
+	Value *int64 `json:"value,omitempty"`
+}
+
+// PayloadsAnalyticsScalarSeries defines model for PayloadsAnalyticsScalarSeries.
+type PayloadsAnalyticsScalarSeries struct {
+	Dimensions          *PayloadsAnalyticsDimensions       `json:"dimensions,omitempty"`
+	GranularityInterval *int                               `json:"granularityInterval,omitempty"`
+	Points              *[]PayloadsAnalyticsScalarIntPoint `json:"points,omitempty"`
+}
+
+// PayloadsAnalyticsTimeseries defines model for PayloadsAnalyticsTimeseries.
+type PayloadsAnalyticsTimeseries struct {
+	Dimensions          *PayloadsAnalyticsDimensions        `json:"dimensions,omitempty"`
+	GranularityInterval *int                                `json:"granularityInterval,omitempty"`
+	Points              *[]PayloadsAnalyticsTimeseriesPoint `json:"points,omitempty"`
+}
+
+// PayloadsAnalyticsTimeseriesPoint defines model for PayloadsAnalyticsTimeseriesPoint.
+type PayloadsAnalyticsTimeseriesPoint struct {
+	Time  *int64   `json:"time,omitempty"`
+	Value *float64 `json:"value,omitempty"`
+}
+
+// PayloadsAnalyticsUnit defines model for PayloadsAnalyticsUnit.
+type PayloadsAnalyticsUnit string
 
 // PayloadsBackfillDefaultsPayload defines model for PayloadsBackfillDefaultsPayload.
 type PayloadsBackfillDefaultsPayload struct {
@@ -1199,6 +1281,7 @@ type PayloadsDynamoDBSnapshotConfig struct {
 	Bucket         *string `json:"bucket,omitempty"`
 	Enabled        *bool   `json:"enabled,omitempty"`
 	ExportArn      *string `json:"exportArn,omitempty"`
+	MaxParallelism *int    `json:"maxParallelism,omitempty"`
 	OptionalFolder *string `json:"optionalFolder,omitempty"`
 }
 
@@ -1322,6 +1405,9 @@ type PayloadsKafkaCluster struct {
 	Cloud     string    `json:"cloud"`
 	CreatedAt time.Time `json:"createdAt"`
 
+	// DataKeptUntil When a deleted Managed Kafka cluster's data is deleted for good. It can be restored until then. Only set while status is deleted.
+	DataKeptUntil *time.Time `json:"dataKeptUntil,omitempty"`
+
 	// DeployStage The step a Managed Kafka cluster's deploy is on. Only set while status is deploying, or failed, where it is the step the deploy stopped at.
 	DeployStage          *EnumsKafkaDeployStage `json:"deployStage,omitempty"`
 	DisableTLS           bool                   `json:"disableTLS"`
@@ -1330,17 +1416,35 @@ type PayloadsKafkaCluster struct {
 	// IsManaged Whether this is a Managed Kafka cluster that Artie runs for the company.
 	IsManaged bool `json:"isManaged"`
 
+	// LocalRetentionBytes Disk cap per partition: the most broker disk each partition of the cluster's tiered topics keeps, in bytes (log.local.retention.bytes). Missing when there is no cap.
+	LocalRetentionBytes *int `json:"localRetentionBytes,omitempty"`
+
+	// LocalRetentionMS Days on disk: how long the cluster's tiered topics keep data on broker disks, in ms (log.local.retention.ms). Missing on clusters made before it, whose brokers use Kafka's default.
+	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
+
 	// Managed A Managed Kafka cluster's configuration. Only set when isManaged, and only by Get a Kafka cluster.
 	Managed *PayloadsKafkaClusterManaged `json:"managed,omitempty"`
 	Name    string                       `json:"name"`
 	Region  string                       `json:"region"`
-	Status  EnumsKafkaStatus             `json:"status"`
+
+	// ShuttingDown Whether a deleted Managed Kafka cluster is still being taken down. It can't be restored until that finishes. Only set in the clusters list.
+	ShuttingDown *bool            `json:"shuttingDown,omitempty"`
+	Status       EnumsKafkaStatus `json:"status"`
 
 	// StatusMessage Why the last deploy of a Managed Kafka cluster failed. Only set while status is failed.
 	StatusMessage *string `json:"statusMessage,omitempty"`
 
+	// StorageAutoscale A Managed Kafka cluster's storage autoscaling. Only set when isManaged.
+	StorageAutoscale *PayloadsKafkaClusterStorageAutoscale `json:"storageAutoscale,omitempty"`
+
+	// TierAllTopics Whether Artie turns tiered storage on for every topic of a Managed Kafka cluster that doesn't choose otherwise.
+	TierAllTopics bool `json:"tierAllTopics"`
+
 	// TieredStorageAvailable Whether tiered storage is available on this cluster. Artie turns it on once the cluster's brokers have tiered storage.
 	TieredStorageAvailable bool `json:"tieredStorageAvailable"`
+
+	// TieredStorageSyncedAt When the sync last made a Managed Kafka cluster's topics match the tiered storage choice for each. Missing until its first run.
+	TieredStorageSyncedAt *time.Time `json:"tieredStorageSyncedAt,omitempty"`
 
 	// UpdatedAt When the cluster row last changed. A deploying cluster can be retried 20 minutes after this.
 	UpdatedAt time.Time          `json:"updatedAt"`
@@ -1384,6 +1488,52 @@ type PayloadsKafkaClusterManaged struct {
 	StorageGiB int `json:"storageGiB"`
 }
 
+// PayloadsKafkaClusterRates defines model for PayloadsKafkaClusterRates.
+type PayloadsKafkaClusterRates struct {
+	Cluster PayloadsKafkaClusterRatesCluster    `json:"cluster"`
+	Groups  []PayloadsKafkaClusterRatesGroupLag `json:"groups"`
+	Topics  []PayloadsKafkaClusterRatesTopic    `json:"topics"`
+}
+
+// PayloadsKafkaClusterRatesCluster defines model for PayloadsKafkaClusterRatesCluster.
+type PayloadsKafkaClusterRatesCluster struct {
+	BytesInPerSecond    *float32                         `json:"bytesInPerSecond"`
+	BytesInSeries       []PayloadsKafkaMetricsGraphPoint `json:"bytesInSeries"`
+	BytesOutPerSecond   *float32                         `json:"bytesOutPerSecond"`
+	BytesOutSeries      []PayloadsKafkaMetricsGraphPoint `json:"bytesOutSeries"`
+	MessagesInPerSecond *float32                         `json:"messagesInPerSecond"`
+}
+
+// PayloadsKafkaClusterRatesGroupLag defines model for PayloadsKafkaClusterRatesGroupLag.
+type PayloadsKafkaClusterRatesGroupLag struct {
+	Group         string                           `json:"group"`
+	Lag           []PayloadsKafkaMetricsGraphPoint `json:"lag"`
+	ReadPerSecond *float32                         `json:"readPerSecond"`
+	Topic         string                           `json:"topic"`
+}
+
+// PayloadsKafkaClusterRatesTopic defines model for PayloadsKafkaClusterRatesTopic.
+type PayloadsKafkaClusterRatesTopic struct {
+	MessagesInPerSecond *float32                         `json:"messagesInPerSecond"`
+	MessagesInSeries    []PayloadsKafkaMetricsGraphPoint `json:"messagesInSeries"`
+	Topic               string                           `json:"topic"`
+}
+
+// PayloadsKafkaClusterStorageAutoscale defines model for PayloadsKafkaClusterStorageAutoscale.
+type PayloadsKafkaClusterStorageAutoscale struct {
+	// BumpAtPercent How full, in %, a broker's disk gets before every broker's disk grows. At most 99. Defaults to 65.
+	BumpAtPercent int `json:"bumpAtPercent"`
+
+	// Enabled Whether Artie grows the brokers' disks before they fill.
+	Enabled bool `json:"enabled"`
+
+	// MaxGiB The most disk per broker, in GiB, a grow goes to. Missing is no limit.
+	MaxGiB *int `json:"maxGiB,omitempty"`
+
+	// TargetPercent How full, in %, the fullest broker's disk is after a grow. Less than bumpAtPercent. Defaults to 55.
+	TargetPercent int `json:"targetPercent"`
+}
+
 // PayloadsKafkaClusterSummary defines model for PayloadsKafkaClusterSummary.
 type PayloadsKafkaClusterSummary struct {
 	ConsumerGroupCount int `json:"consumerGroupCount"`
@@ -1397,10 +1547,18 @@ type PayloadsKafkaConsumerGroup struct {
 
 // PayloadsKafkaConsumerGroupDetail defines model for PayloadsKafkaConsumerGroupDetail.
 type PayloadsKafkaConsumerGroupDetail struct {
-	ConsumerCount int                                `json:"consumerCount"`
-	GroupID       string                             `json:"groupID"`
-	State         string                             `json:"state"`
-	Topics        *[]PayloadsKafkaConsumerGroupTopic `json:"topics"`
+	ConsumerCount int                                 `json:"consumerCount"`
+	GroupID       string                              `json:"groupID"`
+	Members       *[]PayloadsKafkaConsumerGroupMember `json:"members,omitempty"`
+	ReadAt        time.Time                           `json:"readAt"`
+	State         string                              `json:"state"`
+	Topics        *[]PayloadsKafkaConsumerGroupTopic  `json:"topics"`
+}
+
+// PayloadsKafkaConsumerGroupMember defines model for PayloadsKafkaConsumerGroupMember.
+type PayloadsKafkaConsumerGroupMember struct {
+	ClientHost string `json:"clientHost"`
+	ClientID   string `json:"clientID"`
 }
 
 // PayloadsKafkaConsumerGroupTopic defines model for PayloadsKafkaConsumerGroupTopic.
@@ -1411,10 +1569,11 @@ type PayloadsKafkaConsumerGroupTopic struct {
 
 // PayloadsKafkaConsumerGroupTopicPartition defines model for PayloadsKafkaConsumerGroupTopicPartition.
 type PayloadsKafkaConsumerGroupTopicPartition struct {
-	CurrentOffset int64 `json:"currentOffset"`
-	Lag           int64 `json:"lag"`
-	LogEndOffset  int64 `json:"logEndOffset"`
-	Partition     int   `json:"partition"`
+	CommittedMessageTimestamp *time.Time `json:"committedMessageTimestamp,omitempty"`
+	CurrentOffset             int64      `json:"currentOffset"`
+	Lag                       int64      `json:"lag"`
+	LogEndOffset              int64      `json:"logEndOffset"`
+	Partition                 int        `json:"partition"`
 }
 
 // PayloadsKafkaMessage defines model for PayloadsKafkaMessage.
@@ -1496,9 +1655,32 @@ type PayloadsKafkaTopicCreateResponse struct {
 
 // PayloadsKafkaTopicDetail defines model for PayloadsKafkaTopicDetail.
 type PayloadsKafkaTopicDetail struct {
+	// Managed The topic's replication and per-partition leader and offsets. Only set when the cluster isManaged: on shared clusters broker details are Artie infra.
+	Managed        *PayloadsKafkaTopicDetailManaged   `json:"managed,omitempty"`
 	PartitionSizes *[]PayloadsKafkaTopicPartitionSize `json:"partitionSizes"`
 	Pipelines      *[]PayloadsKafkaTopicPipeline      `json:"pipelines"`
 	Topic          PayloadsKafkaTopic                 `json:"topic"`
+}
+
+// PayloadsKafkaTopicDetailManaged defines model for PayloadsKafkaTopicDetailManaged.
+type PayloadsKafkaTopicDetailManaged struct {
+	Partitions []PayloadsKafkaTopicPartition `json:"partitions"`
+
+	// ReplicationFactor How many copies of each partition the brokers keep.
+	ReplicationFactor int `json:"replicationFactor"`
+}
+
+// PayloadsKafkaTopicPartition defines model for PayloadsKafkaTopicPartition.
+type PayloadsKafkaTopicPartition struct {
+	// InSyncCount How many copies are caught up with the leader, the leader included.
+	InSyncCount int `json:"inSyncCount"`
+
+	// LatestOffset The offset the next message gets. Missing when the brokers didn't answer for it.
+	LatestOffset *int `json:"latestOffset,omitempty"`
+
+	// LeaderID The broker that serves the partition. Missing while it has no leader, except that a leaderless partition whose last in-sync copy was broker 0 still shows 0.
+	LeaderID  *int `json:"leaderID,omitempty"`
+	Partition int  `json:"partition"`
 }
 
 // PayloadsKafkaTopicPartitionSize defines model for PayloadsKafkaTopicPartitionSize.
@@ -1524,8 +1706,14 @@ type PayloadsKafkaTopicSize struct {
 
 // PayloadsKafkaTopicTieredStorage defines model for PayloadsKafkaTopicTieredStorage.
 type PayloadsKafkaTopicTieredStorage struct {
+	// CanTier Whether tiered storage can be on for this topic. Kafka refuses it on compacted topics, and Artie keeps it off Kafka's and Cruise Control's own topics and topics keeping more than 14 days.
+	CanTier bool `json:"canTier"`
+
 	// State off, on or paused, from the topic's remote.storage.enable and remote.log.copy.disable configs.
 	State EnumsKafkaTopicTieredStorageState `json:"state"`
+
+	// SwitchOn Whether the topic's tiered storage switch is on. On a Managed Kafka cluster it's the topic's own switch, else the cluster's tierAllTopics; elsewhere it's whether the topic is tiered (on or paused).
+	SwitchOn bool `json:"switchOn"`
 }
 
 // PayloadsKafkaUser defines model for PayloadsKafkaUser.
@@ -1864,7 +2052,6 @@ type PayloadsSourceReaderSettingsPayload struct {
 	ArchiveLogPrivateLinkUUID *openapi_types.UUID `json:"archiveLogPrivateLinkUUID,omitempty"`
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ArchiveLogUsername                 *string                                                `json:"archiveLogUsername,omitempty"`
-	AzureBlobStorageConfig             *PayloadsAzureBlobStorageConfig                        `json:"azureBlobStorageConfig,omitempty"`
 	BackfillBatchSize                  *int                                                   `json:"backfillBatchSize,omitempty"`
 	BackfillDefaults                   *PayloadsBackfillDefaultsPayload                       `json:"backfillDefaults,omitempty"`
 	CollectionScopedMode               *bool                                                  `json:"collectionScopedMode,omitempty"`
@@ -2784,6 +2971,22 @@ type PayloadsWebhookRowSkippedEvent string
 // PayloadsWebhookSeverity defines model for PayloadsWebhookSeverity.
 type PayloadsWebhookSeverity string
 
+// RouterAnalyticsDatasetData defines model for RouterAnalyticsDatasetData.
+type RouterAnalyticsDatasetData struct {
+	union json.RawMessage
+}
+
+// RouterAnalyticsDatasetData0 defines model for RouterAnalyticsDatasetData.0.
+type RouterAnalyticsDatasetData0 = []PayloadsAnalyticsScalarSeries
+
+// RouterAnalyticsDatasetData1 defines model for RouterAnalyticsDatasetData.1.
+type RouterAnalyticsDatasetData1 = []PayloadsAnalyticsTimeseries
+
+// RouterAnalyticsResponse defines model for RouterAnalyticsResponse.
+type RouterAnalyticsResponse struct {
+	Datasets map[string]RouterQueryResult `json:"datasets"`
+}
+
 // RouterConnectorConnectionRole defines model for RouterConnectorConnectionRole.
 type RouterConnectorConnectionRole string
 
@@ -2876,8 +3079,11 @@ type RouterConnectorShadowScriptTable struct {
 
 // RouterConnectorStartDynamoDBExportRequest defines model for RouterConnectorStartDynamoDBExportRequest.
 type RouterConnectorStartDynamoDBExportRequest struct {
-	S3Bucket string  `json:"s3Bucket"`
-	S3Prefix *string `json:"s3Prefix,omitempty"`
+	S3Bucket string `json:"s3Bucket"`
+
+	// S3BucketOwner AWS account ID that owns the S3 bucket. Required when the bucket is in a different account than the table.
+	S3BucketOwner *string `json:"s3BucketOwner,omitempty"`
+	S3Prefix      *string `json:"s3Prefix,omitempty"`
 }
 
 // RouterConnectorStartDynamoDBExportResponse defines model for RouterConnectorStartDynamoDBExportResponse.
@@ -3065,6 +3271,7 @@ type RouterPipelineUpdateRequest struct {
 
 // RouterPipelineUpdateStatusRequest defines model for RouterPipelineUpdateStatusRequest.
 type RouterPipelineUpdateStatusRequest struct {
+	// Status running resumes the pipeline and its source reader. transfer paused stops writing to the destination while the source reader keeps reading. paused stops writing and pauses the source reader, unless the source reader is shared and another pipeline still reads from it.
 	Status EnumsPipelineStatus `json:"status"`
 }
 
@@ -3142,6 +3349,13 @@ type RouterPrivateLinkConnectionUpdateRequest struct {
 	VpcServiceName          *string   `json:"vpcServiceName,omitempty"`
 }
 
+// RouterQueryResult defines model for RouterQueryResult.
+type RouterQueryResult struct {
+	Data *RouterAnalyticsDatasetData `json:"data"`
+	Err  *string                     `json:"err"`
+	Unit PayloadsAnalyticsUnit       `json:"unit"`
+}
+
 // RouterSSHTunnelCreateRequest defines model for RouterSSHTunnelCreateRequest.
 type RouterSSHTunnelCreateRequest struct {
 	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
@@ -3174,6 +3388,7 @@ type RouterSourceReaderCreateRequest struct {
 
 // RouterSourceReaderUpdateStatusRequest defines model for RouterSourceReaderUpdateStatusRequest.
 type RouterSourceReaderUpdateStatusRequest struct {
+	// Status running or paused. Pausing a shared source reader stops reading for every pipeline on it.
 	Status EnumsSourceReaderStatus `json:"status"`
 }
 
@@ -3213,7 +3428,7 @@ type RouterUpdateKafkaTopicRetentionRequest struct {
 
 // RouterUpdateKafkaTopicSettingsRequest defines model for RouterUpdateKafkaTopicSettingsRequest.
 type RouterUpdateKafkaTopicSettingsRequest struct {
-	// LocalRetentionMS How long the tiered topic keeps data on broker disks: from 86400000 (one day) up to retention. Turning tiered storage on without it uses 7 days, capped at retention.
+	// LocalRetentionMS How long the tiered topic keeps data on broker disks: from 86400000 (one day) up to retention. Turning tiered storage on without it uses 7 days, capped at retention; on a Managed Kafka cluster it uses the cluster's days on disk.
 	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
 
 	// RetentionMS New retention.ms: at least 86400000 (one day); -1 (keep forever) isn't supported. At most 1209600000 (14 days) while tiered storage is on or paused.
@@ -3229,6 +3444,18 @@ type RouterUpdateKafkaTopicSettingsRequestTieredStorage string
 // RouterValidateErrorResponse defines model for RouterValidateErrorResponse.
 type RouterValidateErrorResponse struct {
 	Error *string `json:"error,omitempty"`
+}
+
+// AnalyticsQueryParams defines parameters for AnalyticsQuery.
+type AnalyticsQueryParams struct {
+	From            string    `form:"from" json:"from"`
+	To              string    `form:"to" json:"to"`
+	Datasets        []string  `form:"datasets[]" json:"datasets[]"`
+	PipelineUUID    *string   `form:"pipelineUUID,omitempty" json:"pipelineUUID,omitempty"`
+	Tables          *[]string `form:"tables[],omitempty" json:"tables[],omitempty"`
+	BackfillOptions *string   `form:"backfillOptions,omitempty" json:"backfillOptions,omitempty"`
+	TransferMode    *string   `form:"transferMode,omitempty" json:"transferMode,omitempty"`
+	GroupBy         *string   `form:"groupBy,omitempty" json:"groupBy,omitempty"`
 }
 
 // ConnectorListParams defines parameters for ConnectorList.
@@ -3270,6 +3497,16 @@ type ConnectorFetchTablesParams struct {
 	SchemaName   *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
 }
 
+// KafkaClusterListParams defines parameters for KafkaClusterList.
+type KafkaClusterListParams struct {
+	IncludeDeleted *bool `form:"includeDeleted,omitempty" json:"includeDeleted,omitempty"`
+}
+
+// KafkaConsumerGroupDetailsParams defines parameters for KafkaConsumerGroupDetails.
+type KafkaConsumerGroupDetailsParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
+
 // KafkaConsumerGroupListParams defines parameters for KafkaConsumerGroupList.
 type KafkaConsumerGroupListParams struct {
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
@@ -3285,6 +3522,15 @@ type KafkaClusterMetricsGraphParams struct {
 	From string `form:"from" json:"from"`
 	To   string `form:"to" json:"to"`
 }
+
+// KafkaClusterRatesParams defines parameters for KafkaClusterRates.
+type KafkaClusterRatesParams struct {
+	// Range How far back the topic and consumer group series go, defaults to 1h
+	Range *KafkaClusterRatesParamsRange `form:"range,omitempty" json:"range,omitempty"`
+}
+
+// KafkaClusterRatesParamsRange defines parameters for KafkaClusterRates.
+type KafkaClusterRatesParamsRange string
 
 // KafkaClusterStorageGraphParams defines parameters for KafkaClusterStorageGraph.
 type KafkaClusterStorageGraphParams struct {
@@ -4455,6 +4701,68 @@ func (t *PayloadsWebhookOutgoingPayload) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsRouterAnalyticsDatasetData0 returns the union data inside the RouterAnalyticsDatasetData as a RouterAnalyticsDatasetData0
+func (t RouterAnalyticsDatasetData) AsRouterAnalyticsDatasetData0() (RouterAnalyticsDatasetData0, error) {
+	var body RouterAnalyticsDatasetData0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRouterAnalyticsDatasetData0 overwrites any union data inside the RouterAnalyticsDatasetData as the provided RouterAnalyticsDatasetData0
+func (t *RouterAnalyticsDatasetData) FromRouterAnalyticsDatasetData0(v RouterAnalyticsDatasetData0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRouterAnalyticsDatasetData0 performs a merge with any union data inside the RouterAnalyticsDatasetData, using the provided RouterAnalyticsDatasetData0
+func (t *RouterAnalyticsDatasetData) MergeRouterAnalyticsDatasetData0(v RouterAnalyticsDatasetData0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRouterAnalyticsDatasetData1 returns the union data inside the RouterAnalyticsDatasetData as a RouterAnalyticsDatasetData1
+func (t RouterAnalyticsDatasetData) AsRouterAnalyticsDatasetData1() (RouterAnalyticsDatasetData1, error) {
+	var body RouterAnalyticsDatasetData1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRouterAnalyticsDatasetData1 overwrites any union data inside the RouterAnalyticsDatasetData as the provided RouterAnalyticsDatasetData1
+func (t *RouterAnalyticsDatasetData) FromRouterAnalyticsDatasetData1(v RouterAnalyticsDatasetData1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRouterAnalyticsDatasetData1 performs a merge with any union data inside the RouterAnalyticsDatasetData, using the provided RouterAnalyticsDatasetData1
+func (t *RouterAnalyticsDatasetData) MergeRouterAnalyticsDatasetData1(v RouterAnalyticsDatasetData1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t RouterAnalyticsDatasetData) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *RouterAnalyticsDatasetData) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // RequestEditorFn is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -4528,6 +4836,13 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+
+	// AnalyticsQuery Query analytics data
+	//
+	// Queries Datadog metrics for analytics datasets such as rows synced, ingestion lag, flush time, and more. pipelineUUID is required for API keys bound to an environment. For windows of 59 minutes or longer, from and to are floored to 30 s and results are cached for up to 1 minute.
+	//
+	// Corresponds with GET /analytics (the `AnalyticsQuery` operationId).
+	AnalyticsQuery(ctx context.Context, params *AnalyticsQueryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ColumnHashingSaltList List column hashing salts
 	//
@@ -5031,7 +5346,7 @@ type ClientInterface interface {
 	// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
 	//
 	// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
-	KafkaClusterList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	KafkaClusterList(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaClusterDetail Get a Kafka cluster
 	//
@@ -5072,16 +5387,23 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 	KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaConsumerGroupDetails Get every consumer group's detail
+	//
+	// Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/consumer-group-details (the `KafkaConsumerGroupDetails` operationId).
+	KafkaConsumerGroupDetails(ctx context.Context, uuid string, params *KafkaConsumerGroupDetailsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaConsumerGroupList List consumer groups
 	//
-	// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+	// Retrieves the consumer groups for the cluster. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups (the `KafkaConsumerGroupList` operationId).
 	KafkaConsumerGroupList(ctx context.Context, uuid string, params *KafkaConsumerGroupListParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaConsumerGroupDetail Get Kafka consumer group detail
 	//
-	// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+	// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
 	KafkaConsumerGroupDetail(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5092,6 +5414,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
 	KafkaClusterMetricsGraph(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterRates Get Managed Kafka cluster rates
+	//
+	// Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/rates (the `KafkaClusterRates` operationId).
+	KafkaClusterRates(ctx context.Context, uuid string, params *KafkaClusterRatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaClusterStorageGraph Get Kafka storage graph
 	//
@@ -5123,7 +5452,7 @@ type ClientInterface interface {
 
 	// KafkaTopicCreateWithBody Create a Kafka topic
 	//
-	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5132,7 +5461,7 @@ type ClientInterface interface {
 
 	// KafkaTopicCreate Create a Kafka topic
 	//
-	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5141,7 +5470,7 @@ type ClientInterface interface {
 
 	// KafkaTopicDelete Delete a Kafka topic
 	//
-	// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+	// Deletes a topic and all of its messages. On a shared cluster only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can, and the cluster must be active (409 otherwise).
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDelete` operationId).
 	KafkaTopicDelete(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5155,7 +5484,7 @@ type ClientInterface interface {
 
 	// KafkaTopicSettingsUpdateWithBody Change Kafka topic settings
 	//
-	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5164,7 +5493,7 @@ type ClientInterface interface {
 
 	// KafkaTopicSettingsUpdate Change Kafka topic settings
 	//
-	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5180,7 +5509,7 @@ type ClientInterface interface {
 
 	// KafkaTopicPartitionsIncreaseWithBody Increase Kafka topic partitions
 	//
-	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5189,7 +5518,7 @@ type ClientInterface interface {
 
 	// KafkaTopicPartitionsIncrease Increase Kafka topic partitions
 	//
-	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5198,7 +5527,7 @@ type ClientInterface interface {
 
 	// KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5207,7 +5536,7 @@ type ClientInterface interface {
 
 	// KafkaTopicRetentionUpdate Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5298,7 +5627,7 @@ type ClientInterface interface {
 
 	// PipelineValidateUnsavedDestinationWithBody Validate unsaved destination
 	//
-	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5307,7 +5636,7 @@ type ClientInterface interface {
 
 	// PipelineValidateUnsavedDestination Validate unsaved destination
 	//
-	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5316,7 +5645,7 @@ type ClientInterface interface {
 
 	// PipelineValidateUnsavedSourceWithBody Validate unsaved source
 	//
-	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5325,7 +5654,7 @@ type ClientInterface interface {
 
 	// PipelineValidateUnsavedSource Validate unsaved source
 	//
-	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5441,7 +5770,7 @@ type ClientInterface interface {
 
 	// PipelineUpdateStatusWithBody Update pipeline status
 	//
-	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5450,7 +5779,7 @@ type ClientInterface interface {
 
 	// PipelineUpdateStatus Update pipeline status
 	//
-	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5616,7 +5945,7 @@ type ClientInterface interface {
 
 	// SourceReaderUpdateStatusWithBody Update source reader status
 	//
-	// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+	// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5625,7 +5954,7 @@ type ClientInterface interface {
 
 	// SourceReaderUpdateStatus Update source reader status
 	//
-	// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+	// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -5681,6 +6010,23 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /ssh-tunnels/{uuid} (the `SshTunnelUpdate` operationId).
 	SshTunnelUpdate(ctx context.Context, uuid string, body SshTunnelUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+// AnalyticsQuery Query analytics data
+//
+// Queries Datadog metrics for analytics datasets such as rows synced, ingestion lag, flush time, and more. pipelineUUID is required for API keys bound to an environment. For windows of 59 minutes or longer, from and to are floored to 30 s and results are cached for up to 1 minute.
+//
+// Corresponds with GET /analytics (the `AnalyticsQuery` operationId).
+func (c *Client) AnalyticsQuery(ctx context.Context, params *AnalyticsQueryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAnalyticsQueryRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 // ColumnHashingSaltList List column hashing salts
@@ -6775,8 +7121,8 @@ func (c *Client) IngestionApiKeyUpdate(ctx context.Context, uuid string, body In
 // Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
 //
 // Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
-func (c *Client) KafkaClusterList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewKafkaClusterListRequest(c.Server)
+func (c *Client) KafkaClusterList(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterListRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -6876,9 +7222,26 @@ func (c *Client) KafkaAdminUserCredentials(ctx context.Context, uuid string, use
 	return c.Client.Do(req)
 }
 
+// KafkaConsumerGroupDetails Get every consumer group's detail
+//
+// Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/consumer-group-details (the `KafkaConsumerGroupDetails` operationId).
+func (c *Client) KafkaConsumerGroupDetails(ctx context.Context, uuid string, params *KafkaConsumerGroupDetailsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaConsumerGroupDetailsRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaConsumerGroupList List consumer groups
 //
-// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+// Retrieves the consumer groups for the cluster. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/consumer-groups (the `KafkaConsumerGroupList` operationId).
 func (c *Client) KafkaConsumerGroupList(ctx context.Context, uuid string, params *KafkaConsumerGroupListParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6895,7 +7258,7 @@ func (c *Client) KafkaConsumerGroupList(ctx context.Context, uuid string, params
 
 // KafkaConsumerGroupDetail Get Kafka consumer group detail
 //
-// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 //
 // Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
 func (c *Client) KafkaConsumerGroupDetail(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6917,6 +7280,23 @@ func (c *Client) KafkaConsumerGroupDetail(ctx context.Context, uuid string, grou
 // Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
 func (c *Client) KafkaClusterMetricsGraph(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterMetricsGraphRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterRates Get Managed Kafka cluster rates
+//
+// Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/rates (the `KafkaClusterRates` operationId).
+func (c *Client) KafkaClusterRates(ctx context.Context, uuid string, params *KafkaClusterRatesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterRatesRequest(c.Server, uuid, params)
 	if err != nil {
 		return nil, err
 	}
@@ -6997,7 +7377,7 @@ func (c *Client) KafkaTopicList(ctx context.Context, uuid string, params *KafkaT
 
 // KafkaTopicCreateWithBody Create a Kafka topic
 //
-// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type.
 //
@@ -7016,7 +7396,7 @@ func (c *Client) KafkaTopicCreateWithBody(ctx context.Context, uuid string, cont
 
 // KafkaTopicCreate Create a Kafka topic
 //
-// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7035,7 +7415,7 @@ func (c *Client) KafkaTopicCreate(ctx context.Context, uuid string, body KafkaTo
 
 // KafkaTopicDelete Delete a Kafka topic
 //
-// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+// Deletes a topic and all of its messages. On a shared cluster only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can, and the cluster must be active (409 otherwise).
 //
 // Corresponds with DELETE /kafka-clusters/{uuid}/topics/{topic} (the `KafkaTopicDelete` operationId).
 func (c *Client) KafkaTopicDelete(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7069,7 +7449,7 @@ func (c *Client) KafkaTopicDetail(ctx context.Context, uuid string, topic string
 
 // KafkaTopicSettingsUpdateWithBody Change Kafka topic settings
 //
-// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7088,7 +7468,7 @@ func (c *Client) KafkaTopicSettingsUpdateWithBody(ctx context.Context, uuid stri
 
 // KafkaTopicSettingsUpdate Change Kafka topic settings
 //
-// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7124,7 +7504,7 @@ func (c *Client) KafkaTopicLatestMessage(ctx context.Context, uuid string, topic
 
 // KafkaTopicPartitionsIncreaseWithBody Increase Kafka topic partitions
 //
-// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type.
 //
@@ -7143,7 +7523,7 @@ func (c *Client) KafkaTopicPartitionsIncreaseWithBody(ctx context.Context, uuid 
 
 // KafkaTopicPartitionsIncrease Increase Kafka topic partitions
 //
-// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7162,7 +7542,7 @@ func (c *Client) KafkaTopicPartitionsIncrease(ctx context.Context, uuid string, 
 
 // KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type.
 //
@@ -7181,7 +7561,7 @@ func (c *Client) KafkaTopicRetentionUpdateWithBody(ctx context.Context, uuid str
 
 // KafkaTopicRetentionUpdate Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7382,7 +7762,7 @@ func (c *Client) PipelineCreateFromSource(ctx context.Context, body PipelineCrea
 
 // PipelineValidateUnsavedDestinationWithBody Validate unsaved destination
 //
-// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7401,7 +7781,7 @@ func (c *Client) PipelineValidateUnsavedDestinationWithBody(ctx context.Context,
 
 // PipelineValidateUnsavedDestination Validate unsaved destination
 //
-// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7420,7 +7800,7 @@ func (c *Client) PipelineValidateUnsavedDestination(ctx context.Context, body Pi
 
 // PipelineValidateUnsavedSourceWithBody Validate unsaved source
 //
-// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7439,7 +7819,7 @@ func (c *Client) PipelineValidateUnsavedSourceWithBody(ctx context.Context, cont
 
 // PipelineValidateUnsavedSource Validate unsaved source
 //
-// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7695,7 +8075,7 @@ func (c *Client) PipelineStart(ctx context.Context, uuid string, body PipelineSt
 
 // PipelineUpdateStatusWithBody Update pipeline status
 //
-// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7714,7 +8094,7 @@ func (c *Client) PipelineUpdateStatusWithBody(ctx context.Context, uuid string, 
 
 // PipelineUpdateStatus Update pipeline status
 //
-// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8080,7 +8460,7 @@ func (c *Client) SourceReaderDeploy(ctx context.Context, uuid string, reqEditors
 
 // SourceReaderUpdateStatusWithBody Update source reader status
 //
-// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8099,7 +8479,7 @@ func (c *Client) SourceReaderUpdateStatusWithBody(ctx context.Context, uuid stri
 
 // SourceReaderUpdateStatus Update source reader status
 //
-// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8224,6 +8604,136 @@ func (c *Client) SshTunnelUpdate(ctx context.Context, uuid string, body SshTunne
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewAnalyticsQueryRequest constructs an http.Request for the AnalyticsQuery method
+func NewAnalyticsQueryRequest(server string, params *AnalyticsQueryParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/analytics")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Datasets != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "datasets[]", params.Datasets, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.PipelineUUID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pipelineUUID", *params.PipelineUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Tables != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "tables[]", *params.Tables, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.BackfillOptions != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "backfillOptions", *params.BackfillOptions, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.TransferMode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "transferMode", *params.TransferMode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.GroupBy != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "groupBy", *params.GroupBy, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewColumnHashingSaltListRequest constructs an http.Request for the ColumnHashingSaltList method
@@ -9906,7 +10416,7 @@ func NewIngestionApiKeyUpdateRequestWithBody(server string, uuid string, content
 }
 
 // NewKafkaClusterListRequest constructs an http.Request for the KafkaClusterList method
-func NewKafkaClusterListRequest(server string) (*http.Request, error) {
+func NewKafkaClusterListRequest(server string, params *KafkaClusterListParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -9922,6 +10432,33 @@ func NewKafkaClusterListRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.IncludeDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "includeDeleted", *params.IncludeDeleted, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -10085,6 +10622,67 @@ func NewKafkaAdminUserCredentialsRequest(server string, uuid string, userUUID st
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaConsumerGroupDetailsRequest constructs an http.Request for the KafkaConsumerGroupDetails method
+func NewKafkaConsumerGroupDetailsRequest(server string, uuid string, params *KafkaConsumerGroupDetailsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/consumer-group-details", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -10273,6 +10871,67 @@ func NewKafkaClusterMetricsGraphRequest(server string, uuid string, params *Kafk
 			for _, qp := range strings.Split(queryFrag, "&") {
 				rawQueryFragments = append(rawQueryFragments, qp)
 			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterRatesRequest constructs an http.Request for the KafkaClusterRates method
+func NewKafkaClusterRatesRequest(server string, uuid string, params *KafkaClusterRatesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/rates", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Range != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "range", *params.Range, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
 		}
 
 		if encoded := queryValues.Encode(); encoded != "" {
@@ -12486,6 +13145,15 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 
+	// AnalyticsQueryWithResponse Query analytics data
+	//
+	// Queries Datadog metrics for analytics datasets such as rows synced, ingestion lag, flush time, and more. pipelineUUID is required for API keys bound to an environment. For windows of 59 minutes or longer, from and to are floored to 30 s and results are cached for up to 1 minute.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /analytics (the `AnalyticsQuery` operationId).
+	AnalyticsQueryWithResponse(ctx context.Context, params *AnalyticsQueryParams, reqEditors ...RequestEditorFn) (*AnalyticsQueryResponse, error)
+
 	// ColumnHashingSaltListWithResponse List column hashing salts
 	//
 	// Lists all column hashing salts for the authenticated company.
@@ -13024,7 +13692,7 @@ type ClientWithResponsesInterface interface {
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
-	KafkaClusterListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error)
+	KafkaClusterListWithResponse(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error)
 
 	// KafkaClusterDetailWithResponse Get a Kafka cluster
 	//
@@ -13071,9 +13739,18 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 	KafkaAdminUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserCredentialsResponse, error)
 
+	// KafkaConsumerGroupDetailsWithResponse Get every consumer group's detail
+	//
+	// Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/consumer-group-details (the `KafkaConsumerGroupDetails` operationId).
+	KafkaConsumerGroupDetailsWithResponse(ctx context.Context, uuid string, params *KafkaConsumerGroupDetailsParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupDetailsResponse, error)
+
 	// KafkaConsumerGroupListWithResponse List consumer groups
 	//
-	// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+	// Retrieves the consumer groups for the cluster. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13082,7 +13759,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaConsumerGroupDetailWithResponse Get Kafka consumer group detail
 	//
-	// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+	// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13097,6 +13774,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
 	KafkaClusterMetricsGraphWithResponse(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*KafkaClusterMetricsGraphResponse, error)
+
+	// KafkaClusterRatesWithResponse Get Managed Kafka cluster rates
+	//
+	// Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/rates (the `KafkaClusterRates` operationId).
+	KafkaClusterRatesWithResponse(ctx context.Context, uuid string, params *KafkaClusterRatesParams, reqEditors ...RequestEditorFn) (*KafkaClusterRatesResponse, error)
 
 	// KafkaClusterStorageGraphWithResponse Get Kafka storage graph
 	//
@@ -13136,7 +13822,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicCreateWithBodyWithResponse Create a Kafka topic
 	//
-	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13145,7 +13831,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicCreateWithResponse Create a Kafka topic
 	//
-	// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+	// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13154,7 +13840,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicDeleteWithResponse Delete a Kafka topic
 	//
-	// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+	// Deletes a topic and all of its messages. On a shared cluster only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can, and the cluster must be active (409 otherwise).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13172,7 +13858,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicSettingsUpdateWithBodyWithResponse Change Kafka topic settings
 	//
-	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13181,7 +13867,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicSettingsUpdateWithResponse Change Kafka topic settings
 	//
-	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+	// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13199,7 +13885,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicPartitionsIncreaseWithBodyWithResponse Increase Kafka topic partitions
 	//
-	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13208,7 +13894,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicPartitionsIncreaseWithResponse Increase Kafka topic partitions
 	//
-	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+	// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13217,7 +13903,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13226,7 +13912,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13325,7 +14011,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineValidateUnsavedDestinationWithBodyWithResponse Validate unsaved destination
 	//
-	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13334,7 +14020,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineValidateUnsavedDestinationWithResponse Validate unsaved destination
 	//
-	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13343,7 +14029,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineValidateUnsavedSourceWithBodyWithResponse Validate unsaved source
 	//
-	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13352,7 +14038,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineValidateUnsavedSourceWithResponse Validate unsaved source
 	//
-	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+	// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13478,7 +14164,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineUpdateStatusWithBodyWithResponse Update pipeline status
 	//
-	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13487,7 +14173,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineUpdateStatusWithResponse Update pipeline status
 	//
-	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+	// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13667,7 +14353,7 @@ type ClientWithResponsesInterface interface {
 
 	// SourceReaderUpdateStatusWithBodyWithResponse Update source reader status
 	//
-	// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+	// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13676,7 +14362,7 @@ type ClientWithResponsesInterface interface {
 
 	// SourceReaderUpdateStatusWithResponse Update source reader status
 	//
-	// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+	// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13736,6 +14422,47 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /ssh-tunnels/{uuid} (the `SshTunnelUpdate` operationId).
 	SshTunnelUpdateWithResponse(ctx context.Context, uuid string, body SshTunnelUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*SshTunnelUpdateResponse, error)
+}
+
+type AnalyticsQueryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterAnalyticsResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r AnalyticsQueryResponse) GetJSON200() *RouterAnalyticsResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r AnalyticsQueryResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r AnalyticsQueryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AnalyticsQueryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r AnalyticsQueryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
 }
 
 type ColumnHashingSaltListResponse struct {
@@ -15438,6 +16165,47 @@ func (r KafkaAdminUserCredentialsResponse) ContentType() string {
 	return ""
 }
 
+type KafkaConsumerGroupDetailsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyKafkaConsumerGroupDetail
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaConsumerGroupDetailsResponse) GetJSON200() *ListResponseBodyKafkaConsumerGroupDetail {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaConsumerGroupDetailsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaConsumerGroupDetailsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaConsumerGroupDetailsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaConsumerGroupDetailsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaConsumerGroupListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -15555,6 +16323,47 @@ func (r KafkaClusterMetricsGraphResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterMetricsGraphResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterRatesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaClusterRates
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterRatesResponse) GetJSON200() *PayloadsKafkaClusterRates {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterRatesResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterRatesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterRatesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterRatesResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -17438,6 +18247,21 @@ func (r SshTunnelUpdateResponse) ContentType() string {
 	return ""
 }
 
+// AnalyticsQueryWithResponse Query analytics data
+//
+// Queries Datadog metrics for analytics datasets such as rows synced, ingestion lag, flush time, and more. pipelineUUID is required for API keys bound to an environment. For windows of 59 minutes or longer, from and to are floored to 30 s and results are cached for up to 1 minute.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /analytics (the `AnalyticsQuery` operationId).
+func (c *ClientWithResponses) AnalyticsQueryWithResponse(ctx context.Context, params *AnalyticsQueryParams, reqEditors ...RequestEditorFn) (*AnalyticsQueryResponse, error) {
+	rsp, err := c.AnalyticsQuery(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAnalyticsQueryResponse(rsp)
+}
+
 // ColumnHashingSaltListWithResponse List column hashing salts
 //
 // Lists all column hashing salts for the authenticated company.
@@ -18330,8 +19154,8 @@ func (c *ClientWithResponses) IngestionApiKeyUpdateWithResponse(ctx context.Cont
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
-func (c *ClientWithResponses) KafkaClusterListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error) {
-	rsp, err := c.KafkaClusterList(ctx, reqEditors...)
+func (c *ClientWithResponses) KafkaClusterListWithResponse(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error) {
+	rsp, err := c.KafkaClusterList(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -18413,9 +19237,24 @@ func (c *ClientWithResponses) KafkaAdminUserCredentialsWithResponse(ctx context.
 	return ParseKafkaAdminUserCredentialsResponse(rsp)
 }
 
+// KafkaConsumerGroupDetailsWithResponse Get every consumer group's detail
+//
+// Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/consumer-group-details (the `KafkaConsumerGroupDetails` operationId).
+func (c *ClientWithResponses) KafkaConsumerGroupDetailsWithResponse(ctx context.Context, uuid string, params *KafkaConsumerGroupDetailsParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupDetailsResponse, error) {
+	rsp, err := c.KafkaConsumerGroupDetails(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaConsumerGroupDetailsResponse(rsp)
+}
+
 // KafkaConsumerGroupListWithResponse List consumer groups
 //
-// Retrieves the consumer groups for the cluster. Results are cached for two minutes unless forceRefresh is true.
+// Retrieves the consumer groups for the cluster. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18430,7 +19269,7 @@ func (c *ClientWithResponses) KafkaConsumerGroupListWithResponse(ctx context.Con
 
 // KafkaConsumerGroupDetailWithResponse Get Kafka consumer group detail
 //
-// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes unless forceRefresh is true.
+// Retrieves a consumer group's members and per-topic offset lag. Results are cached for two minutes (10 seconds on Managed Kafka clusters) unless forceRefresh is true.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18456,6 +19295,21 @@ func (c *ClientWithResponses) KafkaClusterMetricsGraphWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseKafkaClusterMetricsGraphResponse(rsp)
+}
+
+// KafkaClusterRatesWithResponse Get Managed Kafka cluster rates
+//
+// Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/rates (the `KafkaClusterRates` operationId).
+func (c *ClientWithResponses) KafkaClusterRatesWithResponse(ctx context.Context, uuid string, params *KafkaClusterRatesParams, reqEditors ...RequestEditorFn) (*KafkaClusterRatesResponse, error) {
+	rsp, err := c.KafkaClusterRates(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterRatesResponse(rsp)
 }
 
 // KafkaClusterStorageGraphWithResponse Get Kafka storage graph
@@ -18520,7 +19374,7 @@ func (c *ClientWithResponses) KafkaTopicListWithResponse(ctx context.Context, uu
 
 // KafkaTopicCreateWithBodyWithResponse Create a Kafka topic
 //
-// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18535,7 +19389,7 @@ func (c *ClientWithResponses) KafkaTopicCreateWithBodyWithResponse(ctx context.C
 
 // KafkaTopicCreateWithResponse Create a Kafka topic
 //
-// Creates a topic in the company's customer namespace: the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to.
+// Creates a topic. On a shared cluster the name must start with `<companyUUID>.customer.`, the namespace customer Kafka users can produce to. On a Managed Kafka cluster any name works except the cluster's own topics (Kafka's `__` topics and Cruise Control's `strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18550,7 +19404,7 @@ func (c *ClientWithResponses) KafkaTopicCreateWithResponse(ctx context.Context, 
 
 // KafkaTopicDeleteWithResponse Delete a Kafka topic
 //
-// Deletes a topic and all of its messages. Only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted.
+// Deletes a topic and all of its messages. On a shared cluster only topics in the company's customer namespace (starting with `<companyUUID>.customer.`) can be deleted. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can, and the cluster must be active (409 otherwise).
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -18580,7 +19434,7 @@ func (c *ClientWithResponses) KafkaTopicDetailWithResponse(ctx context.Context, 
 
 // KafkaTopicSettingsUpdateWithBodyWithResponse Change Kafka topic settings
 //
-// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18595,7 +19449,7 @@ func (c *ClientWithResponses) KafkaTopicSettingsUpdateWithBodyWithResponse(ctx c
 
 // KafkaTopicSettingsUpdateWithResponse Change Kafka topic settings
 //
-// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. A change the rules refuse is a 400 that says why.
+// Changes a topic's retention and tiered storage; send only the settings to change. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change; on a Managed Kafka cluster neither can Cruise Control's (`strimzi.cruisecontrol.*`), and the cluster must be active (409 otherwise). A change the rules refuse is a 400 that says why.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18625,7 +19479,7 @@ func (c *ClientWithResponses) KafkaTopicLatestMessageWithResponse(ctx context.Co
 
 // KafkaTopicPartitionsIncreaseWithBodyWithResponse Increase Kafka topic partitions
 //
-// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18640,7 +19494,7 @@ func (c *ClientWithResponses) KafkaTopicPartitionsIncreaseWithBodyWithResponse(c
 
 // KafkaTopicPartitionsIncreaseWithResponse Increase Kafka topic partitions
 //
-// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines.
+// Increases a topic's partition count. Not allowed on Artie-managed topics (anything under `<companyUUID>.` outside the customer namespace, or Kafka-internal `__` topics), because adding partitions breaks per-key ordering for Artie pipelines. On a Managed Kafka cluster any topic but the cluster's own (`__` and `strimzi.cruisecontrol.*`) can grow, and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18655,7 +19509,7 @@ func (c *ClientWithResponses) KafkaTopicPartitionsIncreaseWithResponse(ctx conte
 
 // KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18670,7 +19524,7 @@ func (c *ClientWithResponses) KafkaTopicRetentionUpdateWithBodyWithResponse(ctx 
 
 // KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change.
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18835,7 +19689,7 @@ func (c *ClientWithResponses) PipelineCreateFromSourceWithResponse(ctx context.C
 
 // PipelineValidateUnsavedDestinationWithBodyWithResponse Validate unsaved destination
 //
-// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18850,7 +19704,7 @@ func (c *ClientWithResponses) PipelineValidateUnsavedDestinationWithBodyWithResp
 
 // PipelineValidateUnsavedDestinationWithResponse Validate unsaved destination
 //
-// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates destination configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A destination that names a saved connector by uuid also needs connectors:write.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18865,7 +19719,7 @@ func (c *ClientWithResponses) PipelineValidateUnsavedDestinationWithResponse(ctx
 
 // PipelineValidateUnsavedSourceWithBodyWithResponse Validate unsaved source
 //
-// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -18880,7 +19734,7 @@ func (c *ClientWithResponses) PipelineValidateUnsavedSourceWithBodyWithResponse(
 
 // PipelineValidateUnsavedSourceWithResponse Validate unsaved source
 //
-// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure.
+// Validates source reader and connector configuration without persisting. Returns 204 on success or 200 with error message on validation failure. A sourceConnector that names a saved connector by uuid also needs connectors:write.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -19090,7 +19944,7 @@ func (c *ClientWithResponses) PipelineStartWithResponse(ctx context.Context, uui
 
 // PipelineUpdateStatusWithBodyWithResponse Update pipeline status
 //
-// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -19105,7 +19959,7 @@ func (c *ClientWithResponses) PipelineUpdateStatusWithBodyWithResponse(ctx conte
 
 // PipelineUpdateStatusWithResponse Update pipeline status
 //
-// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change.
+// Changes the status of a pipeline (e.g. running, paused). Validates the pipeline before resuming and deploys the configuration change. Pausing a pipeline pauses its source reader, unless the source reader is shared and another pipeline still reads from it; resuming a pipeline resumes its source reader.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -19405,7 +20259,7 @@ func (c *ClientWithResponses) SourceReaderDeployWithResponse(ctx context.Context
 
 // SourceReaderUpdateStatusWithBodyWithResponse Update source reader status
 //
-// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -19420,7 +20274,7 @@ func (c *ClientWithResponses) SourceReaderUpdateStatusWithBodyWithResponse(ctx c
 
 // SourceReaderUpdateStatusWithResponse Update source reader status
 //
-// Changes the status of a shared source reader (e.g. running, paused). Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
+// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -19521,6 +20375,38 @@ func (c *ClientWithResponses) SshTunnelUpdateWithResponse(ctx context.Context, u
 		return nil, err
 	}
 	return ParseSshTunnelUpdateResponse(rsp)
+}
+
+// ParseAnalyticsQueryResponse parses an HTTP response from a AnalyticsQueryWithResponse call
+func ParseAnalyticsQueryResponse(rsp *http.Response) (*AnalyticsQueryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AnalyticsQueryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterAnalyticsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
 }
 
 // ParseColumnHashingSaltListResponse parses an HTTP response from a ColumnHashingSaltListWithResponse call
@@ -20770,6 +21656,41 @@ func ParseKafkaAdminUserCredentialsResponse(rsp *http.Response) (*KafkaAdminUser
 	return response, nil
 }
 
+// ParseKafkaConsumerGroupDetailsResponse parses an HTTP response from a KafkaConsumerGroupDetailsWithResponse call
+func ParseKafkaConsumerGroupDetailsResponse(rsp *http.Response) (*KafkaConsumerGroupDetailsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaConsumerGroupDetailsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyKafkaConsumerGroupDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseKafkaConsumerGroupListResponse parses an HTTP response from a KafkaConsumerGroupListWithResponse call
 func ParseKafkaConsumerGroupListResponse(rsp *http.Response) (*KafkaConsumerGroupListResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -20859,6 +21780,44 @@ func ParseKafkaClusterMetricsGraphResponse(rsp *http.Response) (*KafkaClusterMet
 		break // No content-type
 
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterRatesResponse parses an HTTP response from a KafkaClusterRatesWithResponse call
+func ParseKafkaClusterRatesResponse(rsp *http.Response) (*KafkaClusterRatesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterRatesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaClusterRates
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
@@ -21114,6 +22073,9 @@ func ParseKafkaTopicSettingsUpdateResponse(rsp *http.Response) (*KafkaTopicSetti
 		break // No content-type
 
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
