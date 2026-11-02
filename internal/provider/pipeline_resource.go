@@ -265,6 +265,45 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"turbo_warehouse":                                      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The Snowflake warehouse Artie should use for Turbo mode."},
 			"turbo_row_threshold":                                  schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The source row threshold for enabling Turbo mode on Snowflake pipelines."},
 			"turbo_latency_threshold_minutes":                      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The replication latency threshold, in minutes, for enabling Turbo mode on Snowflake pipelines."},
+			"dynamodb_backfill_config": schema.SingleNestedAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "How Artie backfills a DynamoDB source from an S3 export. This is only applicable if the source is DynamoDB. Fields left out keep their current value.",
+				PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
+				Attributes: map[string]schema.Attribute{
+					"enabled": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "If set to true, Artie backfills from a DynamoDB export in S3.",
+						PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+					},
+					"bucket": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "The S3 bucket Artie exports the table to. Required when `enabled` is true, unless `export_arn` is set.",
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"export_arn": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "The ARN of an existing DynamoDB export to backfill from. If not set, Artie starts a new export into `bucket`.",
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"optional_folder": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "The folder in `bucket` to export to.",
+						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"max_parallelism": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						MarkdownDescription: "How many export files Artie reads and writes at once. Defaults to 1. A higher value backfills faster but uses more memory.",
+						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+						Validators:          []validator.Int64{int64validator.AtLeast(1)},
+					},
+				},
+			},
 			"status_override": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.",

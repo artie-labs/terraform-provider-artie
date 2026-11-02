@@ -511,3 +511,110 @@ func TestPipelineToAPIModel_UnknownSettingsAreOmitted(t *testing.T) {
 	assert.Nil(t, apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn)
 	assert.Nil(t, apiModel.AdvancedSettings.StagingSchema)
 }
+
+func TestDynamoDBBackfillToAPI(t *testing.T) {
+	{
+		// Null block: omitted so the API keeps the stored config.
+		cfg, diags := dynamoDBBackfillToAPI(t.Context(), types.ObjectNull(dynamoDBBackfillAttrTypes))
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, cfg)
+	}
+	{
+		// Unknown block: also omitted.
+		cfg, diags := dynamoDBBackfillToAPI(t.Context(), types.ObjectUnknown(dynamoDBBackfillAttrTypes))
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, cfg)
+	}
+	{
+		// Set block: every field is sent, since the API replaces the whole config.
+		obj, objDiags := types.ObjectValue(dynamoDBBackfillAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"export_arn":      types.StringValue("arn"),
+			"optional_folder": types.StringValue(""),
+			"max_parallelism": types.Int64Value(5),
+		})
+		assert.False(t, objDiags.HasError(), "unexpected diags: %v", objDiags)
+		cfg, diags := dynamoDBBackfillToAPI(t.Context(), obj)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, &openapi.PayloadsDynamoDBSnapshotConfig{
+			Enabled:        ptr(true),
+			Bucket:         ptr("bucket"),
+			ExportArn:      ptr("arn"),
+			OptionalFolder: ptr(""),
+			MaxParallelism: ptr(5),
+		}, cfg)
+	}
+	{
+		// Unset max_parallelism is omitted, so the reader uses its default.
+		obj, objDiags := types.ObjectValue(dynamoDBBackfillAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"export_arn":      types.StringValue(""),
+			"optional_folder": types.StringValue(""),
+			"max_parallelism": types.Int64Null(),
+		})
+		assert.False(t, objDiags.HasError(), "unexpected diags: %v", objDiags)
+		cfg, diags := dynamoDBBackfillToAPI(t.Context(), obj)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, cfg.MaxParallelism)
+	}
+}
+
+func TestDynamoDBBackfillFromAPI(t *testing.T) {
+	{
+		obj, diags := dynamoDBBackfillFromAPI(nil)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, obj.IsNull())
+	}
+	{
+		obj, diags := dynamoDBBackfillFromAPI(&openapi.PayloadsDynamoDBSnapshotConfig{
+			Enabled:        ptr(true),
+			Bucket:         ptr("bucket"),
+			MaxParallelism: ptr(5),
+		})
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"export_arn":      types.StringValue(""),
+			"optional_folder": types.StringValue(""),
+			"max_parallelism": types.Int64Value(5),
+		}, obj.Attributes())
+	}
+	{
+		// Omitted fields read back as "", false and null.
+		obj, diags := dynamoDBBackfillFromAPI(&openapi.PayloadsDynamoDBSnapshotConfig{})
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.BoolValue(false), obj.Attributes()["enabled"])
+		assert.Equal(t, types.StringValue(""), obj.Attributes()["bucket"])
+		assert.True(t, obj.Attributes()["max_parallelism"].IsNull())
+	}
+}
+
+func TestPipelineDynamoDBBackfillRoundTrip(t *testing.T) {
+	apiModel := openapi.PayloadsFullPipeline{
+		Uuid:   uuid.New(),
+		Name:   "test",
+		Tables: []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{
+			DynamoDBBackfillConfig: &openapi.PayloadsDynamoDBSnapshotConfig{
+				Enabled:        ptr(true),
+				ExportArn:      ptr("arn"),
+				MaxParallelism: ptr(5),
+			},
+		},
+	}
+	pipeline, diags := PipelineFromAPIModel(t.Context(), apiModel)
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+
+	payload, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Equal(t, &openapi.PayloadsDynamoDBSnapshotConfig{
+		Enabled:        ptr(true),
+		Bucket:         ptr(""),
+		ExportArn:      ptr("arn"),
+		OptionalFolder: ptr(""),
+		MaxParallelism: ptr(5),
+	}, payload.AdvancedSettings.DynamoDBBackfillConfig)
+}

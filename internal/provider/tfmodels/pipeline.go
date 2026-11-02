@@ -78,6 +78,62 @@ func buildFlushConfig(ctx context.Context, d types.Object) (*FlushConfig, diag.D
 	return flushConfig, nil
 }
 
+type DynamoDBBackfillConfig struct {
+	Enabled        types.Bool   `tfsdk:"enabled"`
+	Bucket         types.String `tfsdk:"bucket"`
+	ExportARN      types.String `tfsdk:"export_arn"`
+	OptionalFolder types.String `tfsdk:"optional_folder"`
+	MaxParallelism types.Int64  `tfsdk:"max_parallelism"`
+}
+
+var dynamoDBBackfillAttrTypes = map[string]attr.Type{
+	"enabled":         types.BoolType,
+	"bucket":          types.StringType,
+	"export_arn":      types.StringType,
+	"optional_folder": types.StringType,
+	"max_parallelism": types.Int64Type,
+}
+
+// dynamoDBBackfillToAPI returns nil when the block is null or unknown, so the API keeps the stored config. Otherwise it
+// sends every field, because the API replaces the whole config.
+func dynamoDBBackfillToAPI(ctx context.Context, d types.Object) (*openapi.PayloadsDynamoDBSnapshotConfig, diag.Diagnostics) {
+	if d.IsNull() {
+		return nil, nil
+	}
+	if d.IsUnknown() {
+		return nil, nil
+	}
+	var cfg DynamoDBBackfillConfig
+	if diags := d.As(ctx, &cfg, basetypes.ObjectAsOptions{}); diags.HasError() {
+		return nil, diags
+	}
+	return &openapi.PayloadsDynamoDBSnapshotConfig{
+		Enabled:        boolPointer(cfg.Enabled),
+		Bucket:         stringPointer(cfg.Bucket),
+		ExportArn:      stringPointer(cfg.ExportARN),
+		OptionalFolder: stringPointer(cfg.OptionalFolder),
+		MaxParallelism: int64ToIntPointer(cfg.MaxParallelism),
+	}, nil
+}
+
+func dynamoDBBackfillFromAPI(cfg *openapi.PayloadsDynamoDBSnapshotConfig) (types.Object, diag.Diagnostics) {
+	if cfg == nil {
+		return types.ObjectNull(dynamoDBBackfillAttrTypes), nil
+	}
+	maxParallelism := types.Int64Null()
+	if cfg.MaxParallelism != nil {
+		maxParallelism = types.Int64Value(int64(*cfg.MaxParallelism))
+	}
+	// The API omits empty strings and false, so they read back as "" and false (not null) to match a config that sets them.
+	return types.ObjectValue(dynamoDBBackfillAttrTypes, map[string]attr.Value{
+		"enabled":         boolPointerValueOrFalse(cfg.Enabled),
+		"bucket":          types.StringValue(lib.RemovePtr(cfg.Bucket)),
+		"export_arn":      types.StringValue(lib.RemovePtr(cfg.ExportArn)),
+		"optional_folder": types.StringValue(lib.RemovePtr(cfg.OptionalFolder)),
+		"max_parallelism": maxParallelism,
+	})
+}
+
 type StaticColumn struct {
 	Column types.String `tfsdk:"column"`
 	Value  types.String `tfsdk:"value"`
@@ -167,6 +223,7 @@ type Pipeline struct {
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
+	DynamoDBBackfillConfig                       types.Object `tfsdk:"dynamodb_backfill_config"`
 }
 
 func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePayload, diag.Diagnostics) {
@@ -228,6 +285,12 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
+	dynamoDBBackfill, dynamoDBBackfillDiags := dynamoDBBackfillToAPI(ctx, p.DynamoDBBackfillConfig)
+	diags.Append(dynamoDBBackfillDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsPipelinePayload{}, diags
+	}
+
 	advancedSettings := openapi.PayloadsAdvancedPipelineSettingsPayload{
 		DropDeletedColumns:                           boolPointer(p.DropDeletedColumns),
 		EnableSoftDelete:                             boolPointer(p.SoftDeleteRows),
@@ -258,6 +321,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		TurboWarehouse:                               stringPointer(p.TurboWarehouse),
 		TurboRowThreshold:                            int64ToIntPointer(p.TurboRowThreshold),
 		TurboLatencyThresholdMinutes:                 int64ToIntPointer(p.TurboLatencyThresholdMinutes),
+		DynamoDBBackfillConfig:                       dynamoDBBackfill,
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = int64ToIntPointer(flushConfig.FlushIntervalSeconds)
@@ -407,6 +471,12 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		return Pipeline{}, diags
 	}
 
+	dynamoDBBackfill, dynamoDBBackfillDiags := dynamoDBBackfillFromAPI(settings.DynamoDBBackfillConfig)
+	diags.Append(dynamoDBBackfillDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
+
 	return Pipeline{
 		UUID:                     types.StringValue(apiModel.Uuid.String()),
 		Name:                     types.StringValue(apiModel.Name),
@@ -450,6 +520,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		TurboWarehouse:                    turboWarehouse,
 		TurboRowThreshold:                 turboRowThreshold,
 		TurboLatencyThresholdMinutes:      turboLatencyThresholdMinutes,
+		DynamoDBBackfillConfig:            dynamoDBBackfill,
 		// The API omits structAsVariant when it's false, so it reads back as false (not null) to match a config that sets false.
 		StructAsVariant: boolPointerValueOrFalse(settings.StructAsVariant),
 	}, diags
