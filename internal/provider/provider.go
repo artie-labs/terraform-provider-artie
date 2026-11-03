@@ -123,6 +123,7 @@ func (p *ArtieProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewPrivateLinkResource,
 		NewEncryptionKeyResource,
 		NewColumnHashingSaltResource,
+		NewKafkaClusterResource,
 	}
 }
 
