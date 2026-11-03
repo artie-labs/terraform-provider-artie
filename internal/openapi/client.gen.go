@@ -421,6 +421,54 @@ func (e PayloadsKafkaClusterChangeState) Valid() bool {
 	}
 }
 
+// Defines values for PayloadsKafkaInstanceType.
+const (
+	PayloadsKafkaInstanceTypeM8g2xlarge PayloadsKafkaInstanceType = "m8g.2xlarge"
+	PayloadsKafkaInstanceTypeM8g4xlarge PayloadsKafkaInstanceType = "m8g.4xlarge"
+	PayloadsKafkaInstanceTypeM8gXlarge  PayloadsKafkaInstanceType = "m8g.xlarge"
+	PayloadsKafkaInstanceTypeM8i2xlarge PayloadsKafkaInstanceType = "m8i.2xlarge"
+	PayloadsKafkaInstanceTypeM8i4xlarge PayloadsKafkaInstanceType = "m8i.4xlarge"
+	PayloadsKafkaInstanceTypeM8iXlarge  PayloadsKafkaInstanceType = "m8i.xlarge"
+	PayloadsKafkaInstanceTypeR8g2xlarge PayloadsKafkaInstanceType = "r8g.2xlarge"
+	PayloadsKafkaInstanceTypeR8gLarge   PayloadsKafkaInstanceType = "r8g.large"
+	PayloadsKafkaInstanceTypeR8gXlarge  PayloadsKafkaInstanceType = "r8g.xlarge"
+	PayloadsKafkaInstanceTypeR8i2xlarge PayloadsKafkaInstanceType = "r8i.2xlarge"
+	PayloadsKafkaInstanceTypeR8iLarge   PayloadsKafkaInstanceType = "r8i.large"
+	PayloadsKafkaInstanceTypeR8iXlarge  PayloadsKafkaInstanceType = "r8i.xlarge"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsKafkaInstanceType enum.
+func (e PayloadsKafkaInstanceType) Valid() bool {
+	switch e {
+	case PayloadsKafkaInstanceTypeM8g2xlarge:
+		return true
+	case PayloadsKafkaInstanceTypeM8g4xlarge:
+		return true
+	case PayloadsKafkaInstanceTypeM8gXlarge:
+		return true
+	case PayloadsKafkaInstanceTypeM8i2xlarge:
+		return true
+	case PayloadsKafkaInstanceTypeM8i4xlarge:
+		return true
+	case PayloadsKafkaInstanceTypeM8iXlarge:
+		return true
+	case PayloadsKafkaInstanceTypeR8g2xlarge:
+		return true
+	case PayloadsKafkaInstanceTypeR8gLarge:
+		return true
+	case PayloadsKafkaInstanceTypeR8gXlarge:
+		return true
+	case PayloadsKafkaInstanceTypeR8i2xlarge:
+		return true
+	case PayloadsKafkaInstanceTypeR8iLarge:
+		return true
+	case PayloadsKafkaInstanceTypeR8iXlarge:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PayloadsS3MetadataColumnsColumns.
 const (
 	PayloadsS3MetadataColumnsColumnsArtieSourceETag         PayloadsS3MetadataColumnsColumns = "artieSourceETag"
@@ -799,6 +847,63 @@ func (e RouterConnectorConnectionRole) Valid() bool {
 	case RouterConnectorConnectionRoleDestination:
 		return true
 	case RouterConnectorConnectionRoleSource:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RouterKafkaClusterEstimateLineItemCategory.
+const (
+	RouterKafkaClusterEstimateLineItemCategoryBlockStorage  RouterKafkaClusterEstimateLineItemCategory = "block_storage"
+	RouterKafkaClusterEstimateLineItemCategoryDataTransfer  RouterKafkaClusterEstimateLineItemCategory = "data_transfer"
+	RouterKafkaClusterEstimateLineItemCategoryInstance      RouterKafkaClusterEstimateLineItemCategory = "instance"
+	RouterKafkaClusterEstimateLineItemCategoryNetwork       RouterKafkaClusterEstimateLineItemCategory = "network"
+	RouterKafkaClusterEstimateLineItemCategoryObjectStorage RouterKafkaClusterEstimateLineItemCategory = "object_storage"
+)
+
+// Valid indicates whether the value is a known member of the RouterKafkaClusterEstimateLineItemCategory enum.
+func (e RouterKafkaClusterEstimateLineItemCategory) Valid() bool {
+	switch e {
+	case RouterKafkaClusterEstimateLineItemCategoryBlockStorage:
+		return true
+	case RouterKafkaClusterEstimateLineItemCategoryDataTransfer:
+		return true
+	case RouterKafkaClusterEstimateLineItemCategoryInstance:
+		return true
+	case RouterKafkaClusterEstimateLineItemCategoryNetwork:
+		return true
+	case RouterKafkaClusterEstimateLineItemCategoryObjectStorage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RouterKafkaClusterEstimateLineItemUnit.
+const (
+	RouterKafkaClusterEstimateLineItemUnitGb        RouterKafkaClusterEstimateLineItemUnit = "gb"
+	RouterKafkaClusterEstimateLineItemUnitGbMonth   RouterKafkaClusterEstimateLineItemUnit = "gb_month"
+	RouterKafkaClusterEstimateLineItemUnitHour      RouterKafkaClusterEstimateLineItemUnit = "hour"
+	RouterKafkaClusterEstimateLineItemUnitIopsMonth RouterKafkaClusterEstimateLineItemUnit = "iops_month"
+	RouterKafkaClusterEstimateLineItemUnitMbpsMonth RouterKafkaClusterEstimateLineItemUnit = "mbps_month"
+	RouterKafkaClusterEstimateLineItemUnitRequest1k RouterKafkaClusterEstimateLineItemUnit = "request_1k"
+)
+
+// Valid indicates whether the value is a known member of the RouterKafkaClusterEstimateLineItemUnit enum.
+func (e RouterKafkaClusterEstimateLineItemUnit) Valid() bool {
+	switch e {
+	case RouterKafkaClusterEstimateLineItemUnitGb:
+		return true
+	case RouterKafkaClusterEstimateLineItemUnitGbMonth:
+		return true
+	case RouterKafkaClusterEstimateLineItemUnitHour:
+		return true
+	case RouterKafkaClusterEstimateLineItemUnitIopsMonth:
+		return true
+	case RouterKafkaClusterEstimateLineItemUnitMbpsMonth:
+		return true
+	case RouterKafkaClusterEstimateLineItemUnitRequest1k:
 		return true
 	default:
 		return false
@@ -1490,9 +1595,10 @@ type PayloadsKafkaClusterManaged struct {
 
 // PayloadsKafkaClusterRates defines model for PayloadsKafkaClusterRates.
 type PayloadsKafkaClusterRates struct {
-	Cluster PayloadsKafkaClusterRatesCluster    `json:"cluster"`
-	Groups  []PayloadsKafkaClusterRatesGroupLag `json:"groups"`
-	Topics  []PayloadsKafkaClusterRatesTopic    `json:"topics"`
+	Cluster           PayloadsKafkaClusterRatesCluster    `json:"cluster"`
+	Groups            []PayloadsKafkaClusterRatesGroupLag `json:"groups"`
+	SeriesStepSeconds int                                 `json:"seriesStepSeconds"`
+	Topics            []PayloadsKafkaClusterRatesTopic    `json:"topics"`
 }
 
 // PayloadsKafkaClusterRatesCluster defines model for PayloadsKafkaClusterRatesCluster.
@@ -1575,6 +1681,9 @@ type PayloadsKafkaConsumerGroupTopicPartition struct {
 	LogEndOffset              int64      `json:"logEndOffset"`
 	Partition                 int        `json:"partition"`
 }
+
+// PayloadsKafkaInstanceType defines model for PayloadsKafkaInstanceType.
+type PayloadsKafkaInstanceType string
 
 // PayloadsKafkaMessage defines model for PayloadsKafkaMessage.
 type PayloadsKafkaMessage struct {
@@ -1668,6 +1777,12 @@ type PayloadsKafkaTopicDetailManaged struct {
 
 	// ReplicationFactor How many copies of each partition the brokers keep.
 	ReplicationFactor int `json:"replicationFactor"`
+}
+
+// PayloadsKafkaTopicMessages defines model for PayloadsKafkaTopicMessages.
+type PayloadsKafkaTopicMessages struct {
+	LatestOffsets map[string]int64       `json:"latestOffsets"`
+	Messages      []PayloadsKafkaMessage `json:"messages"`
 }
 
 // PayloadsKafkaTopicPartition defines model for PayloadsKafkaTopicPartition.
@@ -3147,6 +3262,33 @@ type RouterCreateKafkaAdminUserRequest struct {
 	Username string `json:"username"`
 }
 
+// RouterCreateKafkaClusterRequest defines model for RouterCreateKafkaClusterRequest.
+type RouterCreateKafkaClusterRequest struct {
+	// AllowedCIDRs Client IP ranges allowed to reach the cluster. Empty allows any IP; clients still need the password.
+	AllowedCIDRs []string                  `json:"allowedCIDRs"`
+	Brokers      int                       `json:"brokers"`
+	InstanceType PayloadsKafkaInstanceType `json:"instanceType"`
+
+	// LocalRetentionBytes Disk cap per partition: the most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Null is no cap.
+	LocalRetentionBytes *int `json:"localRetentionBytes,omitempty"`
+
+	// LocalRetentionMS Days on disk: how long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). Every topic that doesn't set log.local.retention.ms inherits it. Left out is 3 days.
+	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
+
+	// Name The cluster's name, as customers see it. 3 to 100 characters. The cluster's ID, which its address and Kubernetes objects use, is generated.
+	Name   string `json:"name"`
+	Region string `json:"region"`
+
+	// StorageAutoscale How Artie grows the brokers' disks before they fill. Left out is on, growing at 65% to 55%, with no limit.
+	StorageAutoscale *PayloadsKafkaClusterStorageAutoscale `json:"storageAutoscale,omitempty"`
+
+	// StorageGiB Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Bigger sizes go through support.
+	StorageGiB int `json:"storageGiB"`
+
+	// TieredStorage Whether Artie turns tiered storage on for every topic that hasn't set it either way. The setup form starts it on.
+	TieredStorage bool `json:"tieredStorage"`
+}
+
 // RouterCreateKafkaTopicRequest defines model for RouterCreateKafkaTopicRequest.
 type RouterCreateKafkaTopicRequest struct {
 	ConfigEntries     *map[string]string `json:"configEntries,omitempty"`
@@ -3166,6 +3308,99 @@ type RouterCreateKafkaUserRequest struct {
 type RouterIncreaseKafkaTopicPartitionsRequest struct {
 	CurrentPartitionCount int `json:"currentPartitionCount"`
 	NewPartitionCount     int `json:"newPartitionCount"`
+}
+
+// RouterKafkaClusterAdminCredentialsResponse defines model for RouterKafkaClusterAdminCredentialsResponse.
+type RouterKafkaClusterAdminCredentialsResponse struct {
+	BootstrapServers string `json:"bootstrapServers"`
+	Password         string `json:"password"`
+	SaslMechanism    string `json:"saslMechanism"`
+	SecurityProtocol string `json:"securityProtocol"`
+	Username         string `json:"username"`
+}
+
+// RouterKafkaClusterAdminPasswordRotateResponse defines model for RouterKafkaClusterAdminPasswordRotateResponse.
+type RouterKafkaClusterAdminPasswordRotateResponse struct {
+	// Password The new admin password. Shown once, unless the response has a warning.
+	Password *string `json:"password,omitempty"`
+	Warning  *string `json:"warning,omitempty"`
+}
+
+// RouterKafkaClusterEstimate defines model for RouterKafkaClusterEstimate.
+type RouterKafkaClusterEstimate struct {
+	// EgressRates The region's outbound transfer prices, not in the total.
+	EgressRates []RouterKafkaClusterEstimateEgressRate `json:"egressRates"`
+
+	// FeeRate Artie's fee on compute, e.g. 0.25.
+	FeeRate   float64                              `json:"feeRate"`
+	FeeUSD    int                                  `json:"feeUSD"`
+	LineItems []RouterKafkaClusterEstimateLineItem `json:"lineItems"`
+
+	// PricesAsOf When the prices were last fetched from AWS; null before the first fetch.
+	PricesAsOf *time.Time `json:"pricesAsOf,omitempty"`
+	Region     string     `json:"region"`
+	TotalUSD   int        `json:"totalUSD"`
+}
+
+// RouterKafkaClusterEstimateEgress defines model for RouterKafkaClusterEstimateEgress.
+type RouterKafkaClusterEstimateEgress struct {
+	CrossAZ *float64 `json:"crossAZ,omitempty"`
+
+	// CrossRegion GiB a month to each other region, by region code.
+	CrossRegion *map[string]float64 `json:"crossRegion,omitempty"`
+
+	// Internet Also traffic to other clouds.
+	Internet *float64 `json:"internet,omitempty"`
+
+	// SameAZ Billed like cross-AZ traffic, since clients connect through the cluster's public load balancer.
+	SameAZ *float64 `json:"sameAZ,omitempty"`
+}
+
+// RouterKafkaClusterEstimateEgressRate defines model for RouterKafkaClusterEstimateEgressRate.
+type RouterKafkaClusterEstimateEgressRate struct {
+	Label       string  `json:"label"`
+	MaxUSDPerGB float64 `json:"maxUSDPerGB"`
+	MinUSDPerGB float64 `json:"minUSDPerGB"`
+}
+
+// RouterKafkaClusterEstimateLineItem defines model for RouterKafkaClusterEstimateLineItem.
+type RouterKafkaClusterEstimateLineItem struct {
+	Category RouterKafkaClusterEstimateLineItemCategory `json:"category"`
+	Label    string                                     `json:"label"`
+	Quantity float64                                    `json:"quantity"`
+	Unit     RouterKafkaClusterEstimateLineItemUnit     `json:"unit"`
+
+	// UnitUSD The first tier's price for a tiered one.
+	UnitUSD float64 `json:"unitUSD"`
+	Usd     int     `json:"usd"`
+}
+
+// RouterKafkaClusterEstimateLineItemCategory defines model for RouterKafkaClusterEstimateLineItem.Category.
+type RouterKafkaClusterEstimateLineItemCategory string
+
+// RouterKafkaClusterEstimateLineItemUnit defines model for RouterKafkaClusterEstimateLineItem.Unit.
+type RouterKafkaClusterEstimateLineItemUnit string
+
+// RouterKafkaClusterEstimateRequest defines model for RouterKafkaClusterEstimateRequest.
+type RouterKafkaClusterEstimateRequest struct {
+	Brokers      int                       `json:"brokers"`
+	InstanceType PayloadsKafkaInstanceType `json:"instanceType"`
+
+	// Region Region code; defaults to the region Managed Kafka runs in.
+	Region              *string `json:"region,omitempty"`
+	StorageGiBPerBroker int     `json:"storageGiBPerBroker"`
+
+	// TieredStorageGiB Data in tiered storage, uncompressed. Billed on that size at the S3 price.
+	TieredStorageGiB *float64                           `json:"tieredStorageGiB,omitempty"`
+	Traffic          *RouterKafkaClusterEstimateTraffic `json:"traffic,omitempty"`
+}
+
+// RouterKafkaClusterEstimateTraffic defines model for RouterKafkaClusterEstimateTraffic.
+type RouterKafkaClusterEstimateTraffic struct {
+	EgressGiBPerMonth *RouterKafkaClusterEstimateEgress `json:"egressGiBPerMonth,omitempty"`
+
+	// IngressGiBPerMonth From the internet.
+	IngressGiBPerMonth *float64 `json:"ingressGiBPerMonth,omitempty"`
 }
 
 // RouterKafkaUserCreateResponse defines model for RouterKafkaUserCreateResponse.
@@ -3356,6 +3591,12 @@ type RouterQueryResult struct {
 	Unit PayloadsAnalyticsUnit       `json:"unit"`
 }
 
+// RouterRenameKafkaClusterRequest defines model for RouterRenameKafkaClusterRequest.
+type RouterRenameKafkaClusterRequest struct {
+	// Name The cluster's new name, as customers see it. 3 to 100 characters.
+	Name string `json:"name"`
+}
+
 // RouterSSHTunnelCreateRequest defines model for RouterSSHTunnelCreateRequest.
 type RouterSSHTunnelCreateRequest struct {
 	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
@@ -3418,6 +3659,66 @@ type RouterUpdateEncryptionKeyRequest struct {
 type RouterUpdateIngestionAPIKeyRequest struct {
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 	Name      *string    `json:"name,omitempty"`
+}
+
+// RouterUpdateKafkaClusterAllowedCIDRsRequest defines model for RouterUpdateKafkaClusterAllowedCIDRsRequest.
+type RouterUpdateKafkaClusterAllowedCIDRsRequest struct {
+	// AllowedCIDRs Client IPv4 ranges allowed to reach the cluster. Replaces the current list. Empty allows any IP; clients still need the password.
+	AllowedCIDRs []string `json:"allowedCIDRs"`
+}
+
+// RouterUpdateKafkaClusterBrokersRequest defines model for RouterUpdateKafkaClusterBrokersRequest.
+type RouterUpdateKafkaClusterBrokersRequest struct {
+	// Brokers New number of brokers. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay on the brokers they're on; new topics use every broker.
+	Brokers int `json:"brokers"`
+}
+
+// RouterUpdateKafkaClusterInstanceTypeRequest defines model for RouterUpdateKafkaClusterInstanceTypeRequest.
+type RouterUpdateKafkaClusterInstanceTypeRequest struct {
+	// InstanceType EC2 instance type for every broker. The brokers restart one at a time onto the new machines. The type they already run is left as it is.
+	InstanceType PayloadsKafkaInstanceType `json:"instanceType"`
+}
+
+// RouterUpdateKafkaClusterRequest defines model for RouterUpdateKafkaClusterRequest.
+type RouterUpdateKafkaClusterRequest struct {
+	// AllowedCIDRs Client IPv4 ranges allowed to reach the cluster. Replaces the current list. Empty allows any IP; clients still need the password. No broker restarts.
+	AllowedCIDRs *[]string `json:"allowedCIDRs,omitempty"`
+
+	// Brokers New number of brokers. Brokers can only be added. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker.
+	Brokers *int `json:"brokers,omitempty"`
+
+	// InstanceType EC2 instance type for every broker. The brokers restart one at a time onto new machines. The type they already run is left as it is.
+	InstanceType *PayloadsKafkaInstanceType `json:"instanceType,omitempty"`
+
+	// Name The cluster's name, as customers see it. Also works on a cluster on the company's BYOC data plane. The bootstrap address and Kubernetes objects keep the name it was created with.
+	Name *string `json:"name,omitempty"`
+
+	// StorageAutoscale How Artie grows the brokers' disks before they fill. Takes effect on the next autoscale run; nothing is applied to the cluster.
+	StorageAutoscale *PayloadsKafkaClusterStorageAutoscale `json:"storageAutoscale,omitempty"`
+
+	// StorageGiB New disk per broker in GiB: 50 or 80, or any size from 100 to 1024 (1 TiB). A larger size grows the disks online; the size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours (429 otherwise).
+	StorageGiB *int `json:"storageGiB,omitempty"`
+
+	// TieredStorage Whether every topic is tiered, days on disk, and disk cap per partition. New days on disk or a new cap applies to the running brokers without a restart.
+	TieredStorage *RouterUpdateKafkaClusterTieredStorageRequest `json:"tieredStorage,omitempty"`
+}
+
+// RouterUpdateKafkaClusterStorageRequest defines model for RouterUpdateKafkaClusterStorageRequest.
+type RouterUpdateKafkaClusterStorageRequest struct {
+	// StorageGiB New disk per broker in GiB: 50 or 80, or any size from 100 to 1024 (1 TiB). A larger size grows the disks; the size the brokers already have is left as it is. Bigger sizes go through support.
+	StorageGiB int `json:"storageGiB"`
+}
+
+// RouterUpdateKafkaClusterTieredStorageRequest defines model for RouterUpdateKafkaClusterTieredStorageRequest.
+type RouterUpdateKafkaClusterTieredStorageRequest struct {
+	// LocalRetentionBytes Disk cap per partition: the most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Null is no cap.
+	LocalRetentionBytes *int `json:"localRetentionBytes,omitempty"`
+
+	// LocalRetentionMS Days on disk: how long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days).
+	LocalRetentionMS int64 `json:"localRetentionMS"`
+
+	// TierAllTopics Whether every topic is tiered. It wins over each topic's own choice: turning it on turns tiered storage on for every topic, and turning it off pauses every topic tiered through Artie (one tiered outside Artie, e.g. with the CLI, is left alone). A paused topic keeps new messages on broker disks while what's already in remote storage stays readable until retention expires it.
+	TierAllTopics bool `json:"tierAllTopics"`
 }
 
 // RouterUpdateKafkaTopicRetentionRequest defines model for RouterUpdateKafkaTopicRetentionRequest.
@@ -3558,6 +3859,15 @@ type KafkaTopicDetailParams struct {
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
+// KafkaTopicMessagesParams defines parameters for KafkaTopicMessages.
+type KafkaTopicMessagesParams struct {
+	// Limit How many messages to return, 20 if left out.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// After Only messages past these offsets, as partition:offset pairs separated by commas, e.g. 0:61448,7:61447. Partitions left out return their newest messages.
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+}
+
 // PipelineDetailParams defines parameters for PipelineDetail.
 type PipelineDetailParams struct {
 	IncludeRelatedObjects *bool `form:"includeRelatedObjects,omitempty" json:"includeRelatedObjects,omitempty"`
@@ -3640,8 +3950,38 @@ type IngestionApiKeyCreateJSONRequestBody = RouterCreateIngestionAPIKeyRequest
 // IngestionApiKeyUpdateJSONRequestBody defines body for IngestionApiKeyUpdate for application/json ContentType.
 type IngestionApiKeyUpdateJSONRequestBody = RouterUpdateIngestionAPIKeyRequest
 
+// KafkaClusterCreateJSONRequestBody defines body for KafkaClusterCreate for application/json ContentType.
+type KafkaClusterCreateJSONRequestBody = RouterCreateKafkaClusterRequest
+
+// KafkaClusterEstimateJSONRequestBody defines body for KafkaClusterEstimate for application/json ContentType.
+type KafkaClusterEstimateJSONRequestBody = RouterKafkaClusterEstimateRequest
+
+// KafkaClusterUpdateJSONRequestBody defines body for KafkaClusterUpdate for application/json ContentType.
+type KafkaClusterUpdateJSONRequestBody = RouterUpdateKafkaClusterRequest
+
 // KafkaAdminUserCreateJSONRequestBody defines body for KafkaAdminUserCreate for application/json ContentType.
 type KafkaAdminUserCreateJSONRequestBody = RouterCreateKafkaAdminUserRequest
+
+// KafkaClusterAllowedCidrsUpdateJSONRequestBody defines body for KafkaClusterAllowedCidrsUpdate for application/json ContentType.
+type KafkaClusterAllowedCidrsUpdateJSONRequestBody = RouterUpdateKafkaClusterAllowedCIDRsRequest
+
+// KafkaClusterBrokersUpdateJSONRequestBody defines body for KafkaClusterBrokersUpdate for application/json ContentType.
+type KafkaClusterBrokersUpdateJSONRequestBody = RouterUpdateKafkaClusterBrokersRequest
+
+// KafkaClusterInstanceTypeUpdateJSONRequestBody defines body for KafkaClusterInstanceTypeUpdate for application/json ContentType.
+type KafkaClusterInstanceTypeUpdateJSONRequestBody = RouterUpdateKafkaClusterInstanceTypeRequest
+
+// KafkaClusterRenameJSONRequestBody defines body for KafkaClusterRename for application/json ContentType.
+type KafkaClusterRenameJSONRequestBody = RouterRenameKafkaClusterRequest
+
+// KafkaClusterStorageUpdateJSONRequestBody defines body for KafkaClusterStorageUpdate for application/json ContentType.
+type KafkaClusterStorageUpdateJSONRequestBody = RouterUpdateKafkaClusterStorageRequest
+
+// KafkaClusterStorageAutoscaleUpdateJSONRequestBody defines body for KafkaClusterStorageAutoscaleUpdate for application/json ContentType.
+type KafkaClusterStorageAutoscaleUpdateJSONRequestBody = PayloadsKafkaClusterStorageAutoscale
+
+// KafkaClusterTieredStorageUpdateJSONRequestBody defines body for KafkaClusterTieredStorageUpdate for application/json ContentType.
+type KafkaClusterTieredStorageUpdateJSONRequestBody = RouterUpdateKafkaClusterTieredStorageRequest
 
 // KafkaTopicCreateJSONRequestBody defines body for KafkaTopicCreate for application/json ContentType.
 type KafkaTopicCreateJSONRequestBody = RouterCreateKafkaTopicRequest
@@ -5343,10 +5683,53 @@ type ClientInterface interface {
 
 	// KafkaClusterList List Kafka clusters
 	//
-	// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+	// Retrieves the authenticated company's Managed Kafka clusters and, for a BYOC company with Kafka access enabled, the Kafka clusters on its own data plane.
 	//
 	// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
 	KafkaClusterList(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterCreateWithBody Create a Managed Kafka cluster
+	//
+	// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+	KafkaClusterCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterCreate Create a Managed Kafka cluster
+	//
+	// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+	KafkaClusterCreate(ctx context.Context, body KafkaClusterCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterEstimateWithBody Estimate a Managed Kafka cluster's monthly cost
+	//
+	// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+	KafkaClusterEstimateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterEstimate Estimate a Managed Kafka cluster's monthly cost
+	//
+	// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+	KafkaClusterEstimate(ctx context.Context, body KafkaClusterEstimateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterDelete Delete a Managed Kafka cluster
+	//
+	// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid} (the `KafkaClusterDelete` operationId).
+	KafkaClusterDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaClusterDetail Get a Kafka cluster
 	//
@@ -5354,6 +5737,38 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
 	KafkaClusterDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterUpdateWithBody Update a Managed Kafka cluster
+	//
+	// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+	KafkaClusterUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterUpdate Update a Managed Kafka cluster
+	//
+	// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+	KafkaClusterUpdate(ctx context.Context, uuid string, body KafkaClusterUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterAdminCredentials Get a Managed Kafka cluster's admin credentials
+	//
+	// Returns the username, password and client settings for logging in to a Managed Kafka cluster with SASL/SCRAM-SHA-512 over TLS. Returns 409 if the cluster isn't active or its password isn't ready yet. Company admins only.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-credentials (the `KafkaClusterAdminCredentials` operationId).
+	KafkaClusterAdminCredentials(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterAdminPasswordRotate Generate a new Managed Kafka admin password
+	//
+	// Gives the cluster's admin user a new random password and returns it once. Clients using the old password stop connecting as soon as the new one is live. If it is not live yet, the response has a warning and no password; get it from the admin credentials later. Returns 409 if the cluster isn't active, another change of its password is running, or it was built before password login and has no admin password to change. Company admins only.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/admin-credentials/rotate (the `KafkaClusterAdminPasswordRotate` operationId).
+	KafkaClusterAdminPasswordRotate(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaAdminUserCreateWithBody Create an admin Kafka user
 	//
@@ -5387,6 +5802,42 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 	KafkaAdminUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaClusterAllowedCidrsUpdateWithBody Change a Managed Kafka cluster's allowlist
+	//
+	// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+	KafkaClusterAllowedCidrsUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterAllowedCidrsUpdate Change a Managed Kafka cluster's allowlist
+	//
+	// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+	KafkaClusterAllowedCidrsUpdate(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterBrokersUpdateWithBody Add brokers to a Managed Kafka cluster
+	//
+	// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+	KafkaClusterBrokersUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterBrokersUpdate Add brokers to a Managed Kafka cluster
+	//
+	// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+	KafkaClusterBrokersUpdate(ctx context.Context, uuid string, body KafkaClusterBrokersUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaConsumerGroupDetails Get every consumer group's detail
 	//
 	// Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
@@ -5408,6 +5859,24 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
 	KafkaConsumerGroupDetail(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaClusterInstanceTypeUpdateWithBody Change a Managed Kafka cluster's instance type
+	//
+	// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+	KafkaClusterInstanceTypeUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterInstanceTypeUpdate Change a Managed Kafka cluster's instance type
+	//
+	// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+	KafkaClusterInstanceTypeUpdate(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaClusterMetricsGraph Get Kafka metrics graphs
 	//
 	// Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
@@ -5422,6 +5891,74 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/rates (the `KafkaClusterRates` operationId).
 	KafkaClusterRates(ctx context.Context, uuid string, params *KafkaClusterRatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaClusterRenameWithBody Rename a Kafka cluster
+	//
+	// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+	KafkaClusterRenameWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterRename Rename a Kafka cluster
+	//
+	// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+	KafkaClusterRename(ctx context.Context, uuid string, body KafkaClusterRenameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterRestore Restore a deleted Managed Kafka cluster
+	//
+	// Brings back a deleted Managed Kafka cluster with its data, address and passwords, until its data is deleted for good. Company admins only.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/restore (the `KafkaClusterRestore` operationId).
+	KafkaClusterRestore(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterRetry Retry deploying a Managed Kafka cluster
+	//
+	// Deploys a Managed Kafka cluster again whose last deploy failed, or that has been deploying for over 20 minutes. Company admins only.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/retry (the `KafkaClusterRetry` operationId).
+	KafkaClusterRetry(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterStorageUpdateWithBody Grow a Managed Kafka cluster's broker storage
+	//
+	// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+	KafkaClusterStorageUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterStorageUpdate Grow a Managed Kafka cluster's broker storage
+	//
+	// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+	KafkaClusterStorageUpdate(ctx context.Context, uuid string, body KafkaClusterStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterStorageAutoscaleUpdateWithBody Change a Managed Kafka cluster's storage autoscaling
+	//
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+	KafkaClusterStorageAutoscaleUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterStorageAutoscaleUpdate Change a Managed Kafka cluster's storage autoscaling
+	//
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+	KafkaClusterStorageAutoscaleUpdate(ctx context.Context, uuid string, body KafkaClusterStorageAutoscaleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaClusterStorageGraph Get Kafka storage graph
 	//
 	// Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
@@ -5435,6 +5972,31 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
 	KafkaClusterSummary(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterTieredStorageUpdateWithBody Change a Managed Kafka cluster's tiered storage settings
+	//
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+	KafkaClusterTieredStorageUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterTieredStorageUpdate Change a Managed Kafka cluster's tiered storage settings
+	//
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+	KafkaClusterTieredStorageUpdate(ctx context.Context, uuid string, body KafkaClusterTieredStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterTieredStorageSync Sync a Managed Kafka cluster's tiered storage now
+	//
+	// Queues the sync that makes each topic of a Managed Kafka cluster match the tiered storage choice for it, which otherwise runs every 12 hours. A sync already running is left to finish. Active clusters only. Company admins only.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage/sync (the `KafkaClusterTieredStorageSync` operationId).
+	KafkaClusterTieredStorageSync(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaTopicSizes Get Kafka topic partition sizes
 	//
@@ -5506,6 +6068,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
 	KafkaTopicLatestMessage(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaTopicMessages Get newest Kafka topic messages
+	//
+	// Retrieves the newest messages across all partitions of a Managed Kafka topic, newest first, including their contents. With after, only messages past those offsets, and only the newest limit of them when more arrived. Results are not cached. Only available when the company allows reading Kafka messages.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/messages (the `KafkaTopicMessages` operationId).
+	KafkaTopicMessages(ctx context.Context, uuid string, topic string, params *KafkaTopicMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaTopicPartitionsIncreaseWithBody Increase Kafka topic partitions
 	//
@@ -7118,11 +7687,104 @@ func (c *Client) IngestionApiKeyUpdate(ctx context.Context, uuid string, body In
 
 // KafkaClusterList List Kafka clusters
 //
-// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+// Retrieves the authenticated company's Managed Kafka clusters and, for a BYOC company with Kafka access enabled, the Kafka clusters on its own data plane.
 //
 // Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
 func (c *Client) KafkaClusterList(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterListRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterCreateWithBody Create a Managed Kafka cluster
+//
+// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+func (c *Client) KafkaClusterCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterCreate Create a Managed Kafka cluster
+//
+// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+func (c *Client) KafkaClusterCreate(ctx context.Context, body KafkaClusterCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterEstimateWithBody Estimate a Managed Kafka cluster's monthly cost
+//
+// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+func (c *Client) KafkaClusterEstimateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterEstimateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterEstimate Estimate a Managed Kafka cluster's monthly cost
+//
+// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+func (c *Client) KafkaClusterEstimate(ctx context.Context, body KafkaClusterEstimateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterEstimateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterDelete Delete a Managed Kafka cluster
+//
+// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+//
+// Corresponds with DELETE /kafka-clusters/{uuid} (the `KafkaClusterDelete` operationId).
+func (c *Client) KafkaClusterDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterDeleteRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -7140,6 +7802,78 @@ func (c *Client) KafkaClusterList(ctx context.Context, params *KafkaClusterListP
 // Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
 func (c *Client) KafkaClusterDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterDetailRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterUpdateWithBody Update a Managed Kafka cluster
+//
+// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+func (c *Client) KafkaClusterUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterUpdate Update a Managed Kafka cluster
+//
+// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+func (c *Client) KafkaClusterUpdate(ctx context.Context, uuid string, body KafkaClusterUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterAdminCredentials Get a Managed Kafka cluster's admin credentials
+//
+// Returns the username, password and client settings for logging in to a Managed Kafka cluster with SASL/SCRAM-SHA-512 over TLS. Returns 409 if the cluster isn't active or its password isn't ready yet. Company admins only.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-credentials (the `KafkaClusterAdminCredentials` operationId).
+func (c *Client) KafkaClusterAdminCredentials(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterAdminCredentialsRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterAdminPasswordRotate Generate a new Managed Kafka admin password
+//
+// Gives the cluster's admin user a new random password and returns it once. Clients using the old password stop connecting as soon as the new one is live. If it is not live yet, the response has a warning and no password; get it from the admin credentials later. Returns 409 if the cluster isn't active, another change of its password is running, or it was built before password login and has no admin password to change. Company admins only.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/admin-credentials/rotate (the `KafkaClusterAdminPasswordRotate` operationId).
+func (c *Client) KafkaClusterAdminPasswordRotate(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterAdminPasswordRotateRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -7222,6 +7956,82 @@ func (c *Client) KafkaAdminUserCredentials(ctx context.Context, uuid string, use
 	return c.Client.Do(req)
 }
 
+// KafkaClusterAllowedCidrsUpdateWithBody Change a Managed Kafka cluster's allowlist
+//
+// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+func (c *Client) KafkaClusterAllowedCidrsUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterAllowedCidrsUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterAllowedCidrsUpdate Change a Managed Kafka cluster's allowlist
+//
+// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+func (c *Client) KafkaClusterAllowedCidrsUpdate(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterAllowedCidrsUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterBrokersUpdateWithBody Add brokers to a Managed Kafka cluster
+//
+// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+func (c *Client) KafkaClusterBrokersUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterBrokersUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterBrokersUpdate Add brokers to a Managed Kafka cluster
+//
+// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+func (c *Client) KafkaClusterBrokersUpdate(ctx context.Context, uuid string, body KafkaClusterBrokersUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterBrokersUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaConsumerGroupDetails Get every consumer group's detail
 //
 // Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
@@ -7273,6 +8083,44 @@ func (c *Client) KafkaConsumerGroupDetail(ctx context.Context, uuid string, grou
 	return c.Client.Do(req)
 }
 
+// KafkaClusterInstanceTypeUpdateWithBody Change a Managed Kafka cluster's instance type
+//
+// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+func (c *Client) KafkaClusterInstanceTypeUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterInstanceTypeUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterInstanceTypeUpdate Change a Managed Kafka cluster's instance type
+//
+// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+func (c *Client) KafkaClusterInstanceTypeUpdate(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterInstanceTypeUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaClusterMetricsGraph Get Kafka metrics graphs
 //
 // Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
@@ -7307,6 +8155,154 @@ func (c *Client) KafkaClusterRates(ctx context.Context, uuid string, params *Kaf
 	return c.Client.Do(req)
 }
 
+// KafkaClusterRenameWithBody Rename a Kafka cluster
+//
+// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+func (c *Client) KafkaClusterRenameWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterRenameRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterRename Rename a Kafka cluster
+//
+// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+func (c *Client) KafkaClusterRename(ctx context.Context, uuid string, body KafkaClusterRenameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterRenameRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterRestore Restore a deleted Managed Kafka cluster
+//
+// Brings back a deleted Managed Kafka cluster with its data, address and passwords, until its data is deleted for good. Company admins only.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/restore (the `KafkaClusterRestore` operationId).
+func (c *Client) KafkaClusterRestore(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterRestoreRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterRetry Retry deploying a Managed Kafka cluster
+//
+// Deploys a Managed Kafka cluster again whose last deploy failed, or that has been deploying for over 20 minutes. Company admins only.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/retry (the `KafkaClusterRetry` operationId).
+func (c *Client) KafkaClusterRetry(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterRetryRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterStorageUpdateWithBody Grow a Managed Kafka cluster's broker storage
+//
+// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+func (c *Client) KafkaClusterStorageUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterStorageUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterStorageUpdate Grow a Managed Kafka cluster's broker storage
+//
+// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+func (c *Client) KafkaClusterStorageUpdate(ctx context.Context, uuid string, body KafkaClusterStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterStorageUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterStorageAutoscaleUpdateWithBody Change a Managed Kafka cluster's storage autoscaling
+//
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+func (c *Client) KafkaClusterStorageAutoscaleUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterStorageAutoscaleUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterStorageAutoscaleUpdate Change a Managed Kafka cluster's storage autoscaling
+//
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+func (c *Client) KafkaClusterStorageAutoscaleUpdate(ctx context.Context, uuid string, body KafkaClusterStorageAutoscaleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterStorageAutoscaleUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaClusterStorageGraph Get Kafka storage graph
 //
 // Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
@@ -7331,6 +8327,61 @@ func (c *Client) KafkaClusterStorageGraph(ctx context.Context, uuid string, para
 // Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
 func (c *Client) KafkaClusterSummary(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterSummaryRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterTieredStorageUpdateWithBody Change a Managed Kafka cluster's tiered storage settings
+//
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+func (c *Client) KafkaClusterTieredStorageUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterTieredStorageUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterTieredStorageUpdate Change a Managed Kafka cluster's tiered storage settings
+//
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+func (c *Client) KafkaClusterTieredStorageUpdate(ctx context.Context, uuid string, body KafkaClusterTieredStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterTieredStorageUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterTieredStorageSync Sync a Managed Kafka cluster's tiered storage now
+//
+// Queues the sync that makes each topic of a Managed Kafka cluster match the tiered storage choice for it, which otherwise runs every 12 hours. A sync already running is left to finish. Active clusters only. Company admins only.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage/sync (the `KafkaClusterTieredStorageSync` operationId).
+func (c *Client) KafkaClusterTieredStorageSync(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterTieredStorageSyncRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -7492,6 +8543,23 @@ func (c *Client) KafkaTopicSettingsUpdate(ctx context.Context, uuid string, topi
 // Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
 func (c *Client) KafkaTopicLatestMessage(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaTopicLatestMessageRequest(c.Server, uuid, topic)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaTopicMessages Get newest Kafka topic messages
+//
+// Retrieves the newest messages across all partitions of a Managed Kafka topic, newest first, including their contents. With after, only messages past those offsets, and only the newest limit of them when more arrived. Results are not cached. Only available when the company allows reading Kafka messages.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/messages (the `KafkaTopicMessages` operationId).
+func (c *Client) KafkaTopicMessages(ctx context.Context, uuid string, topic string, params *KafkaTopicMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaTopicMessagesRequest(c.Server, uuid, topic, params)
 	if err != nil {
 		return nil, err
 	}
@@ -10469,6 +11537,120 @@ func NewKafkaClusterListRequest(server string, params *KafkaClusterListParams) (
 	return req, nil
 }
 
+// NewKafkaClusterCreateRequest calls the generic KafkaClusterCreate builder with application/json body
+func NewKafkaClusterCreateRequest(server string, body KafkaClusterCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewKafkaClusterCreateRequestWithBody constructs an http.Request for the KafkaClusterCreate method, with any body, and a specified content type
+func NewKafkaClusterCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterEstimateRequest calls the generic KafkaClusterEstimate builder with application/json body
+func NewKafkaClusterEstimateRequest(server string, body KafkaClusterEstimateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterEstimateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewKafkaClusterEstimateRequestWithBody constructs an http.Request for the KafkaClusterEstimate method, with any body, and a specified content type
+func NewKafkaClusterEstimateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/estimate")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterDeleteRequest constructs an http.Request for the KafkaClusterDelete method
+func NewKafkaClusterDeleteRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewKafkaClusterDetailRequest constructs an http.Request for the KafkaClusterDetail method
 func NewKafkaClusterDetailRequest(server string, uuid string) (*http.Request, error) {
 	var err error
@@ -10496,6 +11678,121 @@ func NewKafkaClusterDetailRequest(server string, uuid string) (*http.Request, er
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterUpdateRequest calls the generic KafkaClusterUpdate builder with application/json body
+func NewKafkaClusterUpdateRequest(server string, uuid string, body KafkaClusterUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterUpdateRequestWithBody constructs an http.Request for the KafkaClusterUpdate method, with any body, and a specified content type
+func NewKafkaClusterUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterAdminCredentialsRequest constructs an http.Request for the KafkaClusterAdminCredentials method
+func NewKafkaClusterAdminCredentialsRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-credentials", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterAdminPasswordRotateRequest constructs an http.Request for the KafkaClusterAdminPasswordRotate method
+func NewKafkaClusterAdminPasswordRotateRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-credentials/rotate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -10628,6 +11925,100 @@ func NewKafkaAdminUserCredentialsRequest(server string, uuid string, userUUID st
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewKafkaClusterAllowedCidrsUpdateRequest calls the generic KafkaClusterAllowedCidrsUpdate builder with application/json body
+func NewKafkaClusterAllowedCidrsUpdateRequest(server string, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterAllowedCidrsUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterAllowedCidrsUpdateRequestWithBody constructs an http.Request for the KafkaClusterAllowedCidrsUpdate method, with any body, and a specified content type
+func NewKafkaClusterAllowedCidrsUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/allowed-cidrs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterBrokersUpdateRequest calls the generic KafkaClusterBrokersUpdate builder with application/json body
+func NewKafkaClusterBrokersUpdateRequest(server string, uuid string, body KafkaClusterBrokersUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterBrokersUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterBrokersUpdateRequestWithBody constructs an http.Request for the KafkaClusterBrokersUpdate method, with any body, and a specified content type
+func NewKafkaClusterBrokersUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/brokers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -10822,6 +12213,53 @@ func NewKafkaConsumerGroupDetailRequest(server string, uuid string, groupID stri
 	return req, nil
 }
 
+// NewKafkaClusterInstanceTypeUpdateRequest calls the generic KafkaClusterInstanceTypeUpdate builder with application/json body
+func NewKafkaClusterInstanceTypeUpdateRequest(server string, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterInstanceTypeUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterInstanceTypeUpdateRequestWithBody constructs an http.Request for the KafkaClusterInstanceTypeUpdate method, with any body, and a specified content type
+func NewKafkaClusterInstanceTypeUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/instance-type", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewKafkaClusterMetricsGraphRequest constructs an http.Request for the KafkaClusterMetricsGraph method
 func NewKafkaClusterMetricsGraphRequest(server string, uuid string, params *KafkaClusterMetricsGraphParams) (*http.Request, error) {
 	var err error
@@ -10948,6 +12386,215 @@ func NewKafkaClusterRatesRequest(server string, uuid string, params *KafkaCluste
 	return req, nil
 }
 
+// NewKafkaClusterRenameRequest calls the generic KafkaClusterRename builder with application/json body
+func NewKafkaClusterRenameRequest(server string, uuid string, body KafkaClusterRenameJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterRenameRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterRenameRequestWithBody constructs an http.Request for the KafkaClusterRename method, with any body, and a specified content type
+func NewKafkaClusterRenameRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/rename", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterRestoreRequest constructs an http.Request for the KafkaClusterRestore method
+func NewKafkaClusterRestoreRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/restore", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterRetryRequest constructs an http.Request for the KafkaClusterRetry method
+func NewKafkaClusterRetryRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/retry", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterStorageUpdateRequest calls the generic KafkaClusterStorageUpdate builder with application/json body
+func NewKafkaClusterStorageUpdateRequest(server string, uuid string, body KafkaClusterStorageUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterStorageUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterStorageUpdateRequestWithBody constructs an http.Request for the KafkaClusterStorageUpdate method, with any body, and a specified content type
+func NewKafkaClusterStorageUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/storage", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterStorageAutoscaleUpdateRequest calls the generic KafkaClusterStorageAutoscaleUpdate builder with application/json body
+func NewKafkaClusterStorageAutoscaleUpdateRequest(server string, uuid string, body KafkaClusterStorageAutoscaleUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterStorageAutoscaleUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterStorageAutoscaleUpdateRequestWithBody constructs an http.Request for the KafkaClusterStorageAutoscaleUpdate method, with any body, and a specified content type
+func NewKafkaClusterStorageAutoscaleUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/storage-autoscale", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewKafkaClusterStorageGraphRequest constructs an http.Request for the KafkaClusterStorageGraph method
 func NewKafkaClusterStorageGraphRequest(server string, uuid string, params *KafkaClusterStorageGraphParams) (*http.Request, error) {
 	var err error
@@ -11067,6 +12714,87 @@ func NewKafkaClusterSummaryRequest(server string, uuid string, params *KafkaClus
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterTieredStorageUpdateRequest calls the generic KafkaClusterTieredStorageUpdate builder with application/json body
+func NewKafkaClusterTieredStorageUpdateRequest(server string, uuid string, body KafkaClusterTieredStorageUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterTieredStorageUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterTieredStorageUpdateRequestWithBody constructs an http.Request for the KafkaClusterTieredStorageUpdate method, with any body, and a specified content type
+func NewKafkaClusterTieredStorageUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/tiered-storage", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaClusterTieredStorageSyncRequest constructs an http.Request for the KafkaClusterTieredStorageSync method
+func NewKafkaClusterTieredStorageSyncRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/tiered-storage/sync", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11437,6 +13165,86 @@ func NewKafkaTopicLatestMessageRequest(server string, uuid string, topic string)
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaTopicMessagesRequest constructs an http.Request for the KafkaTopicMessages method
+func NewKafkaTopicMessagesRequest(server string, uuid string, topic string, params *KafkaTopicMessagesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "topic", topic, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/topics/%s/messages", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.After != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "after", *params.After, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -13687,12 +15495,57 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaClusterListWithResponse List Kafka clusters
 	//
-	// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+	// Retrieves the authenticated company's Managed Kafka clusters and, for a BYOC company with Kafka access enabled, the Kafka clusters on its own data plane.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /kafka-clusters (the `KafkaClusterList` operationId).
 	KafkaClusterListWithResponse(ctx context.Context, params *KafkaClusterListParams, reqEditors ...RequestEditorFn) (*KafkaClusterListResponse, error)
+
+	// KafkaClusterCreateWithBodyWithResponse Create a Managed Kafka cluster
+	//
+	// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+	KafkaClusterCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterCreateResponse, error)
+
+	// KafkaClusterCreateWithResponse Create a Managed Kafka cluster
+	//
+	// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+	KafkaClusterCreateWithResponse(ctx context.Context, body KafkaClusterCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterCreateResponse, error)
+
+	// KafkaClusterEstimateWithBodyWithResponse Estimate a Managed Kafka cluster's monthly cost
+	//
+	// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+	KafkaClusterEstimateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterEstimateResponse, error)
+
+	// KafkaClusterEstimateWithResponse Estimate a Managed Kafka cluster's monthly cost
+	//
+	// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+	KafkaClusterEstimateWithResponse(ctx context.Context, body KafkaClusterEstimateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterEstimateResponse, error)
+
+	// KafkaClusterDeleteWithResponse Delete a Managed Kafka cluster
+	//
+	// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid} (the `KafkaClusterDelete` operationId).
+	KafkaClusterDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterDeleteResponse, error)
 
 	// KafkaClusterDetailWithResponse Get a Kafka cluster
 	//
@@ -13702,6 +15555,42 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid} (the `KafkaClusterDetail` operationId).
 	KafkaClusterDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterDetailResponse, error)
+
+	// KafkaClusterUpdateWithBodyWithResponse Update a Managed Kafka cluster
+	//
+	// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+	KafkaClusterUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterUpdateResponse, error)
+
+	// KafkaClusterUpdateWithResponse Update a Managed Kafka cluster
+	//
+	// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+	KafkaClusterUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterUpdateResponse, error)
+
+	// KafkaClusterAdminCredentialsWithResponse Get a Managed Kafka cluster's admin credentials
+	//
+	// Returns the username, password and client settings for logging in to a Managed Kafka cluster with SASL/SCRAM-SHA-512 over TLS. Returns 409 if the cluster isn't active or its password isn't ready yet. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-credentials (the `KafkaClusterAdminCredentials` operationId).
+	KafkaClusterAdminCredentialsWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterAdminCredentialsResponse, error)
+
+	// KafkaClusterAdminPasswordRotateWithResponse Generate a new Managed Kafka admin password
+	//
+	// Gives the cluster's admin user a new random password and returns it once. Clients using the old password stop connecting as soon as the new one is live. If it is not live yet, the response has a warning and no password; get it from the admin credentials later. Returns 409 if the cluster isn't active, another change of its password is running, or it was built before password login and has no admin password to change. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/admin-credentials/rotate (the `KafkaClusterAdminPasswordRotate` operationId).
+	KafkaClusterAdminPasswordRotateWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterAdminPasswordRotateResponse, error)
 
 	// KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
 	//
@@ -13739,6 +15628,42 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID}/credentials (the `KafkaAdminUserCredentials` operationId).
 	KafkaAdminUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserCredentialsResponse, error)
 
+	// KafkaClusterAllowedCidrsUpdateWithBodyWithResponse Change a Managed Kafka cluster's allowlist
+	//
+	// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+	KafkaClusterAllowedCidrsUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterAllowedCidrsUpdateResponse, error)
+
+	// KafkaClusterAllowedCidrsUpdateWithResponse Change a Managed Kafka cluster's allowlist
+	//
+	// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+	KafkaClusterAllowedCidrsUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterAllowedCidrsUpdateResponse, error)
+
+	// KafkaClusterBrokersUpdateWithBodyWithResponse Add brokers to a Managed Kafka cluster
+	//
+	// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+	KafkaClusterBrokersUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterBrokersUpdateResponse, error)
+
+	// KafkaClusterBrokersUpdateWithResponse Add brokers to a Managed Kafka cluster
+	//
+	// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+	KafkaClusterBrokersUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterBrokersUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterBrokersUpdateResponse, error)
+
 	// KafkaConsumerGroupDetailsWithResponse Get every consumer group's detail
 	//
 	// Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
@@ -13766,6 +15691,24 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/consumer-groups/{groupID} (the `KafkaConsumerGroupDetail` operationId).
 	KafkaConsumerGroupDetailWithResponse(ctx context.Context, uuid string, groupID string, params *KafkaConsumerGroupDetailParams, reqEditors ...RequestEditorFn) (*KafkaConsumerGroupDetailResponse, error)
 
+	// KafkaClusterInstanceTypeUpdateWithBodyWithResponse Change a Managed Kafka cluster's instance type
+	//
+	// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+	KafkaClusterInstanceTypeUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterInstanceTypeUpdateResponse, error)
+
+	// KafkaClusterInstanceTypeUpdateWithResponse Change a Managed Kafka cluster's instance type
+	//
+	// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+	KafkaClusterInstanceTypeUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterInstanceTypeUpdateResponse, error)
+
 	// KafkaClusterMetricsGraphWithResponse Get Kafka metrics graphs
 	//
 	// Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
@@ -13784,6 +15727,78 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/rates (the `KafkaClusterRates` operationId).
 	KafkaClusterRatesWithResponse(ctx context.Context, uuid string, params *KafkaClusterRatesParams, reqEditors ...RequestEditorFn) (*KafkaClusterRatesResponse, error)
 
+	// KafkaClusterRenameWithBodyWithResponse Rename a Kafka cluster
+	//
+	// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+	KafkaClusterRenameWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterRenameResponse, error)
+
+	// KafkaClusterRenameWithResponse Rename a Kafka cluster
+	//
+	// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+	KafkaClusterRenameWithResponse(ctx context.Context, uuid string, body KafkaClusterRenameJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterRenameResponse, error)
+
+	// KafkaClusterRestoreWithResponse Restore a deleted Managed Kafka cluster
+	//
+	// Brings back a deleted Managed Kafka cluster with its data, address and passwords, until its data is deleted for good. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/restore (the `KafkaClusterRestore` operationId).
+	KafkaClusterRestoreWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterRestoreResponse, error)
+
+	// KafkaClusterRetryWithResponse Retry deploying a Managed Kafka cluster
+	//
+	// Deploys a Managed Kafka cluster again whose last deploy failed, or that has been deploying for over 20 minutes. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/retry (the `KafkaClusterRetry` operationId).
+	KafkaClusterRetryWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterRetryResponse, error)
+
+	// KafkaClusterStorageUpdateWithBodyWithResponse Grow a Managed Kafka cluster's broker storage
+	//
+	// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+	KafkaClusterStorageUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterStorageUpdateResponse, error)
+
+	// KafkaClusterStorageUpdateWithResponse Grow a Managed Kafka cluster's broker storage
+	//
+	// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+	KafkaClusterStorageUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterStorageUpdateResponse, error)
+
+	// KafkaClusterStorageAutoscaleUpdateWithBodyWithResponse Change a Managed Kafka cluster's storage autoscaling
+	//
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+	KafkaClusterStorageAutoscaleUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterStorageAutoscaleUpdateResponse, error)
+
+	// KafkaClusterStorageAutoscaleUpdateWithResponse Change a Managed Kafka cluster's storage autoscaling
+	//
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+	KafkaClusterStorageAutoscaleUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterStorageAutoscaleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterStorageAutoscaleUpdateResponse, error)
+
 	// KafkaClusterStorageGraphWithResponse Get Kafka storage graph
 	//
 	// Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
@@ -13801,6 +15816,33 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/summary (the `KafkaClusterSummary` operationId).
 	KafkaClusterSummaryWithResponse(ctx context.Context, uuid string, params *KafkaClusterSummaryParams, reqEditors ...RequestEditorFn) (*KafkaClusterSummaryResponse, error)
+
+	// KafkaClusterTieredStorageUpdateWithBodyWithResponse Change a Managed Kafka cluster's tiered storage settings
+	//
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+	KafkaClusterTieredStorageUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterTieredStorageUpdateResponse, error)
+
+	// KafkaClusterTieredStorageUpdateWithResponse Change a Managed Kafka cluster's tiered storage settings
+	//
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+	KafkaClusterTieredStorageUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterTieredStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterTieredStorageUpdateResponse, error)
+
+	// KafkaClusterTieredStorageSyncWithResponse Sync a Managed Kafka cluster's tiered storage now
+	//
+	// Queues the sync that makes each topic of a Managed Kafka cluster match the tiered storage choice for it, which otherwise runs every 12 hours. A sync already running is left to finish. Active clusters only. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage/sync (the `KafkaClusterTieredStorageSync` operationId).
+	KafkaClusterTieredStorageSyncWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterTieredStorageSyncResponse, error)
 
 	// KafkaTopicSizesWithResponse Get Kafka topic partition sizes
 	//
@@ -13882,6 +15924,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/latest-message (the `KafkaTopicLatestMessage` operationId).
 	KafkaTopicLatestMessageWithResponse(ctx context.Context, uuid string, topic string, reqEditors ...RequestEditorFn) (*KafkaTopicLatestMessageResponse, error)
+
+	// KafkaTopicMessagesWithResponse Get newest Kafka topic messages
+	//
+	// Retrieves the newest messages across all partitions of a Managed Kafka topic, newest first, including their contents. With after, only messages past those offsets, and only the newest limit of them when more arrived. Results are not cached. Only available when the company allows reading Kafka messages.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/messages (the `KafkaTopicMessages` operationId).
+	KafkaTopicMessagesWithResponse(ctx context.Context, uuid string, topic string, params *KafkaTopicMessagesParams, reqEditors ...RequestEditorFn) (*KafkaTopicMessagesResponse, error)
 
 	// KafkaTopicPartitionsIncreaseWithBodyWithResponse Increase Kafka topic partitions
 	//
@@ -16001,6 +18052,122 @@ func (r KafkaClusterListResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterCreateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterEstimateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaClusterEstimate
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterEstimateResponse) GetJSON200() *RouterKafkaClusterEstimate {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterEstimateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterEstimateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterEstimateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterEstimateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaClusterDetailResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -16036,6 +18203,129 @@ func (r KafkaClusterDetailResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterAdminCredentialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaClusterAdminCredentialsResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterAdminCredentialsResponse) GetJSON200() *RouterKafkaClusterAdminCredentialsResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterAdminCredentialsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterAdminCredentialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterAdminCredentialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterAdminCredentialsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterAdminPasswordRotateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterKafkaClusterAdminPasswordRotateResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterAdminPasswordRotateResponse) GetJSON200() *RouterKafkaClusterAdminPasswordRotateResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterAdminPasswordRotateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterAdminPasswordRotateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterAdminPasswordRotateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterAdminPasswordRotateResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -16165,6 +18455,88 @@ func (r KafkaAdminUserCredentialsResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterAllowedCidrsUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterAllowedCidrsUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterAllowedCidrsUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterAllowedCidrsUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterAllowedCidrsUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterAllowedCidrsUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterBrokersUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterBrokersUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterBrokersUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterBrokersUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterBrokersUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterBrokersUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaConsumerGroupDetailsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -16288,6 +18660,47 @@ func (r KafkaConsumerGroupDetailResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterInstanceTypeUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterInstanceTypeUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterInstanceTypeUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterInstanceTypeUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterInstanceTypeUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterInstanceTypeUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaClusterMetricsGraphResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -16370,6 +18783,211 @@ func (r KafkaClusterRatesResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterRenameResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterRenameResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterRenameResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterRenameResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterRenameResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterRenameResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterRestoreResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterRestoreResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterRestoreResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterRestoreResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterRestoreResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterRestoreResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterRetryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterRetryResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterRetryResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterRetryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterRetryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterRetryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterStorageUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterStorageUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterStorageUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterStorageUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterStorageUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterStorageUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterStorageAutoscaleUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterStorageAutoscaleUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterStorageAutoscaleUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterStorageAutoscaleUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterStorageAutoscaleUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterStorageAutoscaleUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaClusterStorageGraphResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -16446,6 +19064,81 @@ func (r KafkaClusterSummaryResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterSummaryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterTieredStorageUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterTieredStorageUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterTieredStorageUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterTieredStorageUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterTieredStorageUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterTieredStorageUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterTieredStorageSyncResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterTieredStorageSyncResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterTieredStorageSyncResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterTieredStorageSyncResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterTieredStorageSyncResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -16726,6 +19419,47 @@ func (r KafkaTopicLatestMessageResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaTopicLatestMessageResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaTopicMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaTopicMessages
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaTopicMessagesResponse) GetJSON200() *PayloadsKafkaTopicMessages {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaTopicMessagesResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaTopicMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaTopicMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaTopicMessagesResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -19149,7 +21883,7 @@ func (c *ClientWithResponses) IngestionApiKeyUpdateWithResponse(ctx context.Cont
 
 // KafkaClusterListWithResponse List Kafka clusters
 //
-// Retrieves the Kafka clusters owned by the authenticated company. Only available for companies with Kafka access enabled.
+// Retrieves the authenticated company's Managed Kafka clusters and, for a BYOC company with Kafka access enabled, the Kafka clusters on its own data plane.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -19160,6 +21894,81 @@ func (c *ClientWithResponses) KafkaClusterListWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseKafkaClusterListResponse(rsp)
+}
+
+// KafkaClusterCreateWithBodyWithResponse Create a Managed Kafka cluster
+//
+// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+func (c *ClientWithResponses) KafkaClusterCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterCreateResponse, error) {
+	rsp, err := c.KafkaClusterCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterCreateResponse(rsp)
+}
+
+// KafkaClusterCreateWithResponse Create a Managed Kafka cluster
+//
+// Saves a Managed Kafka cluster with status deploying and starts deploying it. An account on a public or disposable email domain, or an API key it made, gets a 403, unless an app setting allows them. A company not yet paying Artie needs a card on file first, or gets a 402. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters (the `KafkaClusterCreate` operationId).
+func (c *ClientWithResponses) KafkaClusterCreateWithResponse(ctx context.Context, body KafkaClusterCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterCreateResponse, error) {
+	rsp, err := c.KafkaClusterCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterCreateResponse(rsp)
+}
+
+// KafkaClusterEstimateWithBodyWithResponse Estimate a Managed Kafka cluster's monthly cost
+//
+// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+func (c *ClientWithResponses) KafkaClusterEstimateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterEstimateResponse, error) {
+	rsp, err := c.KafkaClusterEstimateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterEstimateResponse(rsp)
+}
+
+// KafkaClusterEstimateWithResponse Estimate a Managed Kafka cluster's monthly cost
+//
+// Prices a cluster and its usage in whole dollars from the stored AWS prices. Artie's fee is on compute only; tiered storage is billed uncompressed at the S3 price.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/estimate (the `KafkaClusterEstimate` operationId).
+func (c *ClientWithResponses) KafkaClusterEstimateWithResponse(ctx context.Context, body KafkaClusterEstimateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterEstimateResponse, error) {
+	rsp, err := c.KafkaClusterEstimate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterEstimateResponse(rsp)
+}
+
+// KafkaClusterDeleteWithResponse Delete a Managed Kafka cluster
+//
+// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /kafka-clusters/{uuid} (the `KafkaClusterDelete` operationId).
+func (c *ClientWithResponses) KafkaClusterDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterDeleteResponse, error) {
+	rsp, err := c.KafkaClusterDelete(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterDeleteResponse(rsp)
 }
 
 // KafkaClusterDetailWithResponse Get a Kafka cluster
@@ -19175,6 +21984,66 @@ func (c *ClientWithResponses) KafkaClusterDetailWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseKafkaClusterDetailResponse(rsp)
+}
+
+// KafkaClusterUpdateWithBodyWithResponse Update a Managed Kafka cluster
+//
+// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterUpdateResponse, error) {
+	rsp, err := c.KafkaClusterUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterUpdateResponse(rsp)
+}
+
+// KafkaClusterUpdateWithResponse Update a Managed Kafka cluster
+//
+// Changes a cluster's name, allowlist, broker storage, storage autoscaling, instance type, broker count, or tiered storage. Send only the fields to change. Every field is checked before anything is saved, so an invalid field leaves the cluster unchanged. A field already at the requested value is left as it is, so retrying after an earlier field was saved still applies the rest. allowedCIDRs, storageGiB, instanceType, brokers, and tieredStorage are then applied one after another, in that order; name and storageAutoscale are saved first and don't apply to the host. Name also works on a BYOC cluster. Returns 409 while a previous change is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid} (the `KafkaClusterUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterUpdateResponse, error) {
+	rsp, err := c.KafkaClusterUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterUpdateResponse(rsp)
+}
+
+// KafkaClusterAdminCredentialsWithResponse Get a Managed Kafka cluster's admin credentials
+//
+// Returns the username, password and client settings for logging in to a Managed Kafka cluster with SASL/SCRAM-SHA-512 over TLS. Returns 409 if the cluster isn't active or its password isn't ready yet. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-credentials (the `KafkaClusterAdminCredentials` operationId).
+func (c *ClientWithResponses) KafkaClusterAdminCredentialsWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterAdminCredentialsResponse, error) {
+	rsp, err := c.KafkaClusterAdminCredentials(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterAdminCredentialsResponse(rsp)
+}
+
+// KafkaClusterAdminPasswordRotateWithResponse Generate a new Managed Kafka admin password
+//
+// Gives the cluster's admin user a new random password and returns it once. Clients using the old password stop connecting as soon as the new one is live. If it is not live yet, the response has a warning and no password; get it from the admin credentials later. Returns 409 if the cluster isn't active, another change of its password is running, or it was built before password login and has no admin password to change. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/admin-credentials/rotate (the `KafkaClusterAdminPasswordRotate` operationId).
+func (c *ClientWithResponses) KafkaClusterAdminPasswordRotateWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterAdminPasswordRotateResponse, error) {
+	rsp, err := c.KafkaClusterAdminPasswordRotate(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterAdminPasswordRotateResponse(rsp)
 }
 
 // KafkaAdminUserCreateWithBodyWithResponse Create an admin Kafka user
@@ -19237,6 +22106,66 @@ func (c *ClientWithResponses) KafkaAdminUserCredentialsWithResponse(ctx context.
 	return ParseKafkaAdminUserCredentialsResponse(rsp)
 }
 
+// KafkaClusterAllowedCidrsUpdateWithBodyWithResponse Change a Managed Kafka cluster's allowlist
+//
+// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterAllowedCidrsUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterAllowedCidrsUpdateResponse, error) {
+	rsp, err := c.KafkaClusterAllowedCidrsUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterAllowedCidrsUpdateResponse(rsp)
+}
+
+// KafkaClusterAllowedCidrsUpdateWithResponse Change a Managed Kafka cluster's allowlist
+//
+// Replaces the client IP ranges allowed to reach an active Managed Kafka cluster and applies them. No broker restarts. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterAllowedCidrsUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterAllowedCidrsUpdateResponse, error) {
+	rsp, err := c.KafkaClusterAllowedCidrsUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterAllowedCidrsUpdateResponse(rsp)
+}
+
+// KafkaClusterBrokersUpdateWithBodyWithResponse Add brokers to a Managed Kafka cluster
+//
+// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterBrokersUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterBrokersUpdateResponse, error) {
+	rsp, err := c.KafkaClusterBrokersUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterBrokersUpdateResponse(rsp)
+}
+
+// KafkaClusterBrokersUpdateWithResponse Add brokers to a Managed Kafka cluster
+//
+// Adds brokers to an active Managed Kafka cluster and applies it: new machines, brokers, and one load balancer port each. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay where they are; new topics use every broker. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/brokers (the `KafkaClusterBrokersUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterBrokersUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterBrokersUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterBrokersUpdateResponse, error) {
+	rsp, err := c.KafkaClusterBrokersUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterBrokersUpdateResponse(rsp)
+}
+
 // KafkaConsumerGroupDetailsWithResponse Get every consumer group's detail
 //
 // Retrieves every consumer group's members and per-topic offset lag on a Managed Kafka cluster in one read. Results are cached for 10 seconds unless forceRefresh is true. Returns 400 for other clusters.
@@ -19282,6 +22211,36 @@ func (c *ClientWithResponses) KafkaConsumerGroupDetailWithResponse(ctx context.C
 	return ParseKafkaConsumerGroupDetailResponse(rsp)
 }
 
+// KafkaClusterInstanceTypeUpdateWithBodyWithResponse Change a Managed Kafka cluster's instance type
+//
+// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterInstanceTypeUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterInstanceTypeUpdateResponse, error) {
+	rsp, err := c.KafkaClusterInstanceTypeUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterInstanceTypeUpdateResponse(rsp)
+}
+
+// KafkaClusterInstanceTypeUpdateWithResponse Change a Managed Kafka cluster's instance type
+//
+// Moves every broker of an active Managed Kafka cluster to another EC2 instance type and applies it. The brokers restart one at a time onto new machines, so clients keep working; each broker's memory and CPU follow the new type. The type the brokers already run is left as it is. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterInstanceTypeUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterInstanceTypeUpdateResponse, error) {
+	rsp, err := c.KafkaClusterInstanceTypeUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterInstanceTypeUpdateResponse(rsp)
+}
+
 // KafkaClusterMetricsGraphWithResponse Get Kafka metrics graphs
 //
 // Retrieves broker, topic, partition, and per-broker CPU user/system metrics for a Strimzi Kafka cluster.
@@ -19312,6 +22271,126 @@ func (c *ClientWithResponses) KafkaClusterRatesWithResponse(ctx context.Context,
 	return ParseKafkaClusterRatesResponse(rsp)
 }
 
+// KafkaClusterRenameWithBodyWithResponse Rename a Kafka cluster
+//
+// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+func (c *ClientWithResponses) KafkaClusterRenameWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterRenameResponse, error) {
+	rsp, err := c.KafkaClusterRenameWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterRenameResponse(rsp)
+}
+
+// KafkaClusterRenameWithResponse Rename a Kafka cluster
+//
+// Changes the name a Managed Kafka cluster, or one on the company's BYOC data plane, shows in the dashboard. Its bootstrap address, Kubernetes objects, and MSK cluster keep the name it was created with. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/rename (the `KafkaClusterRename` operationId).
+func (c *ClientWithResponses) KafkaClusterRenameWithResponse(ctx context.Context, uuid string, body KafkaClusterRenameJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterRenameResponse, error) {
+	rsp, err := c.KafkaClusterRename(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterRenameResponse(rsp)
+}
+
+// KafkaClusterRestoreWithResponse Restore a deleted Managed Kafka cluster
+//
+// Brings back a deleted Managed Kafka cluster with its data, address and passwords, until its data is deleted for good. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/restore (the `KafkaClusterRestore` operationId).
+func (c *ClientWithResponses) KafkaClusterRestoreWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterRestoreResponse, error) {
+	rsp, err := c.KafkaClusterRestore(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterRestoreResponse(rsp)
+}
+
+// KafkaClusterRetryWithResponse Retry deploying a Managed Kafka cluster
+//
+// Deploys a Managed Kafka cluster again whose last deploy failed, or that has been deploying for over 20 minutes. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/retry (the `KafkaClusterRetry` operationId).
+func (c *ClientWithResponses) KafkaClusterRetryWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterRetryResponse, error) {
+	rsp, err := c.KafkaClusterRetry(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterRetryResponse(rsp)
+}
+
+// KafkaClusterStorageUpdateWithBodyWithResponse Grow a Managed Kafka cluster's broker storage
+//
+// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterStorageUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterStorageUpdateResponse, error) {
+	rsp, err := c.KafkaClusterStorageUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterStorageUpdateResponse(rsp)
+}
+
+// KafkaClusterStorageUpdateWithResponse Grow a Managed Kafka cluster's broker storage
+//
+// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage (the `KafkaClusterStorageUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterStorageUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterStorageUpdateResponse, error) {
+	rsp, err := c.KafkaClusterStorageUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterStorageUpdateResponse(rsp)
+}
+
+// KafkaClusterStorageAutoscaleUpdateWithBodyWithResponse Change a Managed Kafka cluster's storage autoscaling
+//
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterStorageAutoscaleUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterStorageAutoscaleUpdateResponse, error) {
+	rsp, err := c.KafkaClusterStorageAutoscaleUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterStorageAutoscaleUpdateResponse(rsp)
+}
+
+// KafkaClusterStorageAutoscaleUpdateWithResponse Change a Managed Kafka cluster's storage autoscaling
+//
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/storage-autoscale (the `KafkaClusterStorageAutoscaleUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterStorageAutoscaleUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterStorageAutoscaleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterStorageAutoscaleUpdateResponse, error) {
+	rsp, err := c.KafkaClusterStorageAutoscaleUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterStorageAutoscaleUpdateResponse(rsp)
+}
+
 // KafkaClusterStorageGraphWithResponse Get Kafka storage graph
 //
 // Retrieves persistent-volume storage utilization for a Strimzi Kafka cluster.
@@ -19340,6 +22419,51 @@ func (c *ClientWithResponses) KafkaClusterSummaryWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseKafkaClusterSummaryResponse(rsp)
+}
+
+// KafkaClusterTieredStorageUpdateWithBodyWithResponse Change a Managed Kafka cluster's tiered storage settings
+//
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterTieredStorageUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterTieredStorageUpdateResponse, error) {
+	rsp, err := c.KafkaClusterTieredStorageUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterTieredStorageUpdateResponse(rsp)
+}
+
+// KafkaClusterTieredStorageUpdateWithResponse Change a Managed Kafka cluster's tiered storage settings
+//
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage (the `KafkaClusterTieredStorageUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterTieredStorageUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterTieredStorageUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterTieredStorageUpdateResponse, error) {
+	rsp, err := c.KafkaClusterTieredStorageUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterTieredStorageUpdateResponse(rsp)
+}
+
+// KafkaClusterTieredStorageSyncWithResponse Sync a Managed Kafka cluster's tiered storage now
+//
+// Queues the sync that makes each topic of a Managed Kafka cluster match the tiered storage choice for it, which otherwise runs every 12 hours. A sync already running is left to finish. Active clusters only. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/tiered-storage/sync (the `KafkaClusterTieredStorageSync` operationId).
+func (c *ClientWithResponses) KafkaClusterTieredStorageSyncWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterTieredStorageSyncResponse, error) {
+	rsp, err := c.KafkaClusterTieredStorageSync(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterTieredStorageSyncResponse(rsp)
 }
 
 // KafkaTopicSizesWithResponse Get Kafka topic partition sizes
@@ -19475,6 +22599,21 @@ func (c *ClientWithResponses) KafkaTopicLatestMessageWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseKafkaTopicLatestMessageResponse(rsp)
+}
+
+// KafkaTopicMessagesWithResponse Get newest Kafka topic messages
+//
+// Retrieves the newest messages across all partitions of a Managed Kafka topic, newest first, including their contents. With after, only messages past those offsets, and only the newest limit of them when more arrived. Results are not cached. Only available when the company allows reading Kafka messages.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/topics/{topic}/messages (the `KafkaTopicMessages` operationId).
+func (c *ClientWithResponses) KafkaTopicMessagesWithResponse(ctx context.Context, uuid string, topic string, params *KafkaTopicMessagesParams, reqEditors ...RequestEditorFn) (*KafkaTopicMessagesResponse, error) {
+	rsp, err := c.KafkaTopicMessages(ctx, uuid, topic, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaTopicMessagesResponse(rsp)
 }
 
 // KafkaTopicPartitionsIncreaseWithBodyWithResponse Increase Kafka topic partitions
@@ -21496,12 +24635,107 @@ func ParseKafkaClusterListResponse(rsp *http.Response) (*KafkaClusterListRespons
 		}
 		response.JSON200 = &dest
 
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterCreateResponse parses an HTTP response from a KafkaClusterCreateWithResponse call
+func ParseKafkaClusterCreateResponse(rsp *http.Response) (*KafkaClusterCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 402:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 424:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterEstimateResponse parses an HTTP response from a KafkaClusterEstimateWithResponse call
+func ParseKafkaClusterEstimateResponse(rsp *http.Response) (*KafkaClusterEstimateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterEstimateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaClusterEstimate
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
 	case rsp.StatusCode == 404:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
 		break // No content-type
 
+	case rsp.StatusCode == 503:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterDeleteResponse parses an HTTP response from a KafkaClusterDeleteWithResponse call
+func ParseKafkaClusterDeleteResponse(rsp *http.Response) (*KafkaClusterDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -21529,6 +24763,126 @@ func ParseKafkaClusterDetailResponse(rsp *http.Response) (*KafkaClusterDetailRes
 		response.JSON200 = &dest
 
 	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterUpdateResponse parses an HTTP response from a KafkaClusterUpdateWithResponse call
+func ParseKafkaClusterUpdateResponse(rsp *http.Response) (*KafkaClusterUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 429:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 503:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterAdminCredentialsResponse parses an HTTP response from a KafkaClusterAdminCredentialsWithResponse call
+func ParseKafkaClusterAdminCredentialsResponse(rsp *http.Response) (*KafkaClusterAdminCredentialsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterAdminCredentialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaClusterAdminCredentialsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterAdminPasswordRotateResponse parses an HTTP response from a KafkaClusterAdminPasswordRotateWithResponse call
+func ParseKafkaClusterAdminPasswordRotateResponse(rsp *http.Response) (*KafkaClusterAdminPasswordRotateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterAdminPasswordRotateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterKafkaClusterAdminPasswordRotateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
@@ -21656,6 +25010,85 @@ func ParseKafkaAdminUserCredentialsResponse(rsp *http.Response) (*KafkaAdminUser
 	return response, nil
 }
 
+// ParseKafkaClusterAllowedCidrsUpdateResponse parses an HTTP response from a KafkaClusterAllowedCidrsUpdateWithResponse call
+func ParseKafkaClusterAllowedCidrsUpdateResponse(rsp *http.Response) (*KafkaClusterAllowedCidrsUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterAllowedCidrsUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterBrokersUpdateResponse parses an HTTP response from a KafkaClusterBrokersUpdateWithResponse call
+func ParseKafkaClusterBrokersUpdateResponse(rsp *http.Response) (*KafkaClusterBrokersUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterBrokersUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 503:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseKafkaConsumerGroupDetailsResponse parses an HTTP response from a KafkaConsumerGroupDetailsWithResponse call
 func ParseKafkaConsumerGroupDetailsResponse(rsp *http.Response) (*KafkaConsumerGroupDetailsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -21755,6 +25188,47 @@ func ParseKafkaConsumerGroupDetailResponse(rsp *http.Response) (*KafkaConsumerGr
 	return response, nil
 }
 
+// ParseKafkaClusterInstanceTypeUpdateResponse parses an HTTP response from a KafkaClusterInstanceTypeUpdateWithResponse call
+func ParseKafkaClusterInstanceTypeUpdateResponse(rsp *http.Response) (*KafkaClusterInstanceTypeUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterInstanceTypeUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 503:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseKafkaClusterMetricsGraphResponse parses an HTTP response from a KafkaClusterMetricsGraphWithResponse call
 func ParseKafkaClusterMetricsGraphResponse(rsp *http.Response) (*KafkaClusterMetricsGraphResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -21783,6 +25257,9 @@ func ParseKafkaClusterMetricsGraphResponse(rsp *http.Response) (*KafkaClusterMet
 		break // No content-type
 
 	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 502:
 		break // No content-type
 
 	}
@@ -21823,6 +25300,199 @@ func ParseKafkaClusterRatesResponse(rsp *http.Response) (*KafkaClusterRatesRespo
 	case rsp.StatusCode == 500:
 		break // No content-type
 
+	case rsp.StatusCode == 502:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterRenameResponse parses an HTTP response from a KafkaClusterRenameWithResponse call
+func ParseKafkaClusterRenameResponse(rsp *http.Response) (*KafkaClusterRenameResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterRenameResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterRestoreResponse parses an HTTP response from a KafkaClusterRestoreWithResponse call
+func ParseKafkaClusterRestoreResponse(rsp *http.Response) (*KafkaClusterRestoreResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterRestoreResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterRetryResponse parses an HTTP response from a KafkaClusterRetryWithResponse call
+func ParseKafkaClusterRetryResponse(rsp *http.Response) (*KafkaClusterRetryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterRetryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterStorageUpdateResponse parses an HTTP response from a KafkaClusterStorageUpdateWithResponse call
+func ParseKafkaClusterStorageUpdateResponse(rsp *http.Response) (*KafkaClusterStorageUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterStorageUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 429:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 503:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterStorageAutoscaleUpdateResponse parses an HTTP response from a KafkaClusterStorageAutoscaleUpdateWithResponse call
+func ParseKafkaClusterStorageAutoscaleUpdateResponse(rsp *http.Response) (*KafkaClusterStorageAutoscaleUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterStorageAutoscaleUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
 	}
 
 	return response, nil
@@ -21858,6 +25528,9 @@ func ParseKafkaClusterStorageGraphResponse(rsp *http.Response) (*KafkaClusterSto
 	case rsp.StatusCode == 500:
 		break // No content-type
 
+	case rsp.StatusCode == 502:
+		break // No content-type
+
 	}
 
 	return response, nil
@@ -21890,6 +25563,60 @@ func ParseKafkaClusterSummaryResponse(rsp *http.Response) (*KafkaClusterSummaryR
 	case rsp.StatusCode == 500:
 		break // No content-type
 
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterTieredStorageUpdateResponse parses an HTTP response from a KafkaClusterTieredStorageUpdateWithResponse call
+func ParseKafkaClusterTieredStorageUpdateResponse(rsp *http.Response) (*KafkaClusterTieredStorageUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterTieredStorageUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterTieredStorageSyncResponse parses an HTTP response from a KafkaClusterTieredStorageSyncWithResponse call
+func ParseKafkaClusterTieredStorageSyncResponse(rsp *http.Response) (*KafkaClusterTieredStorageSyncResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterTieredStorageSyncResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -22120,6 +25847,47 @@ func ParseKafkaTopicLatestMessageResponse(rsp *http.Response) (*KafkaTopicLatest
 		break // No content-type
 
 	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaTopicMessagesResponse parses an HTTP response from a KafkaTopicMessagesWithResponse call
+func ParseKafkaTopicMessagesResponse(rsp *http.Response) (*KafkaTopicMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaTopicMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaTopicMessages
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 504:
 		break // No content-type
 
 	}
@@ -22758,6 +26526,9 @@ func ParsePipelineUsageResponse(rsp *http.Response) (*PipelineUsageResponse, err
 		break // No content-type
 
 	case rsp.StatusCode == 500:
+		break // No content-type
+
+	case rsp.StatusCode == 502:
 		break // No content-type
 
 	}
