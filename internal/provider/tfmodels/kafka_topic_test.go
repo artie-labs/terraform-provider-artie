@@ -128,3 +128,29 @@ func TestKafkaTopicToAPISettingsRequest(t *testing.T) {
 		assert.Nil(t, req.LocalRetentionMS)
 	}
 }
+
+func TestKafkaTopicToAPICreateSettingsRequest(t *testing.T) {
+	created, diags := KafkaTopicFromAPIModel(testKafkaClusterUUID, testKafkaTopicPayload(), KafkaTopic{ConfigEntries: types.MapNull(types.StringType)})
+	assert.False(t, diags.HasError())
+	created.LocalRetentionMS = types.Int64Value(259200000) // the cluster's days on disk
+
+	{
+		// Retentions set in the config are sent even when they match the cluster's defaults, so the topic keeps them.
+		plan := created
+		req := plan.ToAPICreateSettingsRequest(created)
+		assert.Equal(t, 604800000, *req.RetentionMS)
+		assert.Equal(t, 259200000, *req.LocalRetentionMS)
+		assert.Nil(t, req.TieredStorage)
+	}
+	{
+		// Settings left out of the config aren't sent, and tiered storage is only sent when it changes.
+		plan := created
+		plan.RetentionMS = types.Int64Unknown()
+		plan.LocalRetentionMS = types.Int64Unknown()
+		plan.TieredStorage = types.StringValue("paused")
+		req := plan.ToAPICreateSettingsRequest(created)
+		assert.Nil(t, req.RetentionMS)
+		assert.Nil(t, req.LocalRetentionMS)
+		assert.Equal(t, openapi.RouterUpdateKafkaTopicSettingsRequestTieredStoragePaused, *req.TieredStorage)
+	}
+}

@@ -56,6 +56,20 @@ func (k KafkaTopic) ToAPISettingsRequest(current KafkaTopic) openapi.RouterUpdat
 	return req
 }
 
+// ToAPICreateSettingsRequest is ToAPISettingsRequest for a topic that was just created, but it always sends the
+// retentions set in the config. A new topic reports the cluster's defaults, and a retention that matches them would
+// otherwise never be set on the topic, so the topic would follow the cluster's defaults when they change.
+func (k KafkaTopic) ToAPICreateSettingsRequest(created KafkaTopic) openapi.RouterUpdateKafkaTopicSettingsRequest {
+	req := k.ToAPISettingsRequest(created)
+	if IsKnown(k.RetentionMS) {
+		req.RetentionMS = int64ToIntPointer(k.RetentionMS)
+	}
+	if IsKnown(k.LocalRetentionMS) {
+		req.LocalRetentionMS = int64ToIntPointer(k.LocalRetentionMS)
+	}
+	return req
+}
+
 // KafkaTopicFromAPIModel builds the topic from Get a Kafka topic. The API doesn't return the config entries a topic was
 // created with, or its replication factor outside Managed Kafka clusters, so those are kept from prior.
 func KafkaTopicFromAPIModel(clusterUUID string, apiModel openapi.PayloadsKafkaTopicDetail, prior KafkaTopic) (KafkaTopic, diag.Diagnostics) {

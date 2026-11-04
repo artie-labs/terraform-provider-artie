@@ -227,8 +227,7 @@ func (r *KafkaTopicResource) readIntoState(ctx context.Context, prior tfmodels.K
 	diagnostics.Append(state.Set(ctx, tfModel)...)
 }
 
-func (r *KafkaTopicResource) updateSettings(ctx context.Context, plan, current tfmodels.KafkaTopic, diagnostics *diag.Diagnostics) {
-	body := plan.ToAPISettingsRequest(current)
+func (r *KafkaTopicResource) updateSettings(ctx context.Context, plan tfmodels.KafkaTopic, body openapi.RouterUpdateKafkaTopicSettingsRequest, diagnostics *diag.Diagnostics) {
 	if body == (openapi.RouterUpdateKafkaTopicSettingsRequest{}) {
 		return
 	}
@@ -272,7 +271,7 @@ func (r *KafkaTopicResource) Create(ctx context.Context, req resource.CreateRequ
 		if diags.HasError() {
 			return
 		}
-		r.updateSettings(ctx, planData, created, &resp.Diagnostics)
+		r.updateSettings(ctx, planData, planData.ToAPICreateSettingsRequest(created), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -299,7 +298,7 @@ func (r *KafkaTopicResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	r.updateSettings(ctx, planData, stateData, &resp.Diagnostics)
+	r.updateSettings(ctx, planData, planData.ToAPISettingsRequest(stateData), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
