@@ -54,7 +54,7 @@ resource "artie_kafka_cluster" "example" {
 - `current_storage_gib` (Number) The disk per broker the brokers have, in GiB. Can be more than `storage_gib` once storage autoscaling grows the disks.
 - `external_bootstrap_url` (String) The bootstrap address Kafka clients connect to.
 - `kafka_version` (String) The Kafka version the brokers run.
-- `status` (String) The cluster's status: `deploying`, `active`, `failed`, `draft` or `deleted`.
+- `status` (String) The cluster's status: `deploying`, `active`, `failed` or `draft`. A deleted cluster is removed from state.
 - `tiered_storage_available` (Boolean) Whether tiered storage is available on this cluster. Artie turns it on once the brokers support it.
 - `uuid` (String) The unique identifier for this Kafka cluster.
 

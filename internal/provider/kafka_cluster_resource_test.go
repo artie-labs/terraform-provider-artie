@@ -5,8 +5,13 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -70,4 +75,35 @@ func TestKafkaTieredStoragePlanModifier(t *testing.T) {
 	assert.Equal(t, tieredStorage(true, types.Int64Unknown(), types.Int64Null()), plan(unset, unset))
 	// A block in the config is planned from its own attributes.
 	assert.True(t, plan(prior, prior).IsUnknown())
+}
+
+func TestKafkaClusterModifyPlan(t *testing.T) {
+	ctx := t.Context()
+	schemaResp := &resource.SchemaResponse{}
+	(&KafkaClusterResource{}).Schema(ctx, resource.SchemaRequest{}, schemaResp)
+	modifyPlan := func(priorRegion, plannedRegion string, priorSize, plannedSize int64) diag.Diagnostics {
+		state := tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
+		plan := tfsdk.Plan{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
+		var diags diag.Diagnostics
+		diags.Append(state.SetAttribute(ctx, path.Root("region"), priorRegion)...)
+		diags.Append(plan.SetAttribute(ctx, path.Root("region"), plannedRegion)...)
+		for _, attr := range []string{"brokers", "storage_gib"} {
+			diags.Append(state.SetAttribute(ctx, path.Root(attr), priorSize)...)
+			diags.Append(plan.SetAttribute(ctx, path.Root(attr), plannedSize)...)
+		}
+		assert.False(t, diags.HasError(), diags)
+		resp := &resource.ModifyPlanResponse{Plan: plan}
+		(&KafkaClusterResource{}).ModifyPlan(ctx, resource.ModifyPlanRequest{State: state, Plan: plan}, resp)
+		return resp.Diagnostics
+	}
+
+	shrinkDiags := modifyPlan("us-east-1", "us-east-1", 80, 50)
+	if assert.Len(t, shrinkDiags, 2) {
+		for _, d := range shrinkDiags {
+			assert.Equal(t, "Kafka cluster can't shrink", d.Summary())
+		}
+	}
+	assert.Empty(t, modifyPlan("us-east-1", "us-east-1", 50, 80))
+	// A new region replaces the cluster, so it can start smaller.
+	assert.Empty(t, modifyPlan("us-east-1", "us-west-2", 80, 50))
 }

@@ -116,7 +116,7 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"cloud":                    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The cloud the cluster runs in."},
-			"status":                   schema.StringAttribute{Computed: true, MarkdownDescription: "The cluster's status: `deploying`, `active`, `failed`, `draft` or `deleted`."},
+			"status":                   schema.StringAttribute{Computed: true, MarkdownDescription: "The cluster's status: `deploying`, `active`, `failed` or `draft`. A deleted cluster is removed from state."},
 			"external_bootstrap_url":   schema.StringAttribute{Computed: true, MarkdownDescription: "The bootstrap address Kafka clients connect to."},
 			"current_storage_gib":      schema.Int64Attribute{Computed: true, MarkdownDescription: "The disk per broker the brokers have, in GiB. Can be more than `storage_gib` once storage autoscaling grows the disks."},
 			"kafka_version":            schema.StringAttribute{Computed: true, MarkdownDescription: "The Kafka version the brokers run."},
