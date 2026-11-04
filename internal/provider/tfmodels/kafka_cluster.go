@@ -2,6 +2,7 @@ package tfmodels
 
 import (
 	"context"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,9 +21,7 @@ type KafkaCluster struct {
 	Brokers                types.Int64  `tfsdk:"brokers"`
 	StorageGiB             types.Int64  `tfsdk:"storage_gib"`
 	AllowedCIDRs           types.List   `tfsdk:"allowed_cidrs"`
-	TieredStorage          types.Bool   `tfsdk:"tiered_storage"`
-	LocalRetentionMS       types.Int64  `tfsdk:"local_retention_ms"`
-	LocalRetentionBytes    types.Int64  `tfsdk:"local_retention_bytes"`
+	TieredStorage          types.Object `tfsdk:"tiered_storage"`
 	StorageAutoscale       types.Object `tfsdk:"storage_autoscale"`
 	CurrentStorageGiB      types.Int64  `tfsdk:"current_storage_gib"`
 	Cloud                  types.String `tfsdk:"cloud"`
@@ -30,6 +29,38 @@ type KafkaCluster struct {
 	ExternalBootstrapURL   types.String `tfsdk:"external_bootstrap_url"`
 	KafkaVersion           types.String `tfsdk:"kafka_version"`
 	TieredStorageAvailable types.Bool   `tfsdk:"tiered_storage_available"`
+}
+
+type KafkaClusterTieredStorage struct {
+	Enabled             types.Bool  `tfsdk:"enabled"`
+	LocalRetentionMS    types.Int64 `tfsdk:"local_retention_ms"`
+	LocalRetentionBytes types.Int64 `tfsdk:"local_retention_bytes"`
+}
+
+var KafkaClusterTieredStorageAttrTypes = map[string]attr.Type{
+	"enabled":               types.BoolType,
+	"local_retention_ms":    types.Int64Type,
+	"local_retention_bytes": types.Int64Type,
+}
+
+// DefaultKafkaLocalRetentionMS is the days on disk (3 days) Artie gives a new cluster.
+const DefaultKafkaLocalRetentionMS = 259200000
+
+// tieredStorage reads the tiered_storage object, reading a null or unknown one as on with the API's defaults.
+func (k KafkaCluster) tieredStorage(ctx context.Context) (KafkaClusterTieredStorage, diag.Diagnostics) {
+	tieredStorage, diags := parseOptionalObject[KafkaClusterTieredStorage](ctx, &k.TieredStorage)
+	if tieredStorage == nil {
+		return KafkaClusterTieredStorage{Enabled: types.BoolValue(true), LocalRetentionMS: types.Int64Unknown(), LocalRetentionBytes: types.Int64Null()}, diags
+	}
+	return *tieredStorage, diags
+}
+
+func tieredStorageFromAPIModel(apiModel openapi.PayloadsKafkaCluster) types.Object {
+	return types.ObjectValueMust(KafkaClusterTieredStorageAttrTypes, map[string]attr.Value{
+		"enabled":               types.BoolValue(apiModel.TierAllTopics),
+		"local_retention_ms":    intPointerToInt64Value(apiModel.LocalRetentionMS),
+		"local_retention_bytes": intPointerToInt64Value(apiModel.LocalRetentionBytes),
+	})
 }
 
 type KafkaClusterStorageAutoscale struct {
@@ -68,6 +99,8 @@ func (k KafkaCluster) ToAPICreateRequest(ctx context.Context) (openapi.RouterCre
 	if allowedCIDRs == nil {
 		allowedCIDRs = []string{}
 	}
+	tieredStorage, tieredDiags := k.tieredStorage(ctx)
+	diags.Append(tieredDiags...)
 	storageAutoscale, autoscaleDiags := k.storageAutoscaleToAPI(ctx)
 	diags.Append(autoscaleDiags...)
 
@@ -78,9 +111,9 @@ func (k KafkaCluster) ToAPICreateRequest(ctx context.Context) (openapi.RouterCre
 		Brokers:             int(k.Brokers.ValueInt64()),
 		StorageGiB:          int(k.StorageGiB.ValueInt64()),
 		AllowedCIDRs:        allowedCIDRs,
-		TieredStorage:       k.TieredStorage.ValueBool(),
-		LocalRetentionMS:    int64ToIntPointer(k.LocalRetentionMS),
-		LocalRetentionBytes: int64ToIntPointer(k.LocalRetentionBytes),
+		TieredStorage:       tieredStorage.Enabled.ValueBool(),
+		LocalRetentionMS:    int64ToIntPointer(tieredStorage.LocalRetentionMS),
+		LocalRetentionBytes: int64ToIntPointer(tieredStorage.LocalRetentionBytes),
 		StorageAutoscale:    storageAutoscale,
 	}, diags
 }
@@ -111,23 +144,10 @@ func (k KafkaCluster) ToAPIUpdateRequest(ctx context.Context, state KafkaCluster
 		}
 		req.AllowedCIDRs = &allowedCIDRs
 	}
-	if !k.TieredStorage.Equal(state.TieredStorage) || !k.LocalRetentionMS.Equal(state.LocalRetentionMS) || !k.LocalRetentionBytes.Equal(state.LocalRetentionBytes) {
-		// The API replaces all three together, so a days-on-disk left out of the config keeps the one in state.
-		localRetentionMS := k.LocalRetentionMS
-		if !IsKnown(localRetentionMS) {
-			localRetentionMS = state.LocalRetentionMS
-		}
-		if !IsKnown(localRetentionMS) {
-			// The API needs a days-on-disk with every tiered storage change, and there's none to keep.
-			diags.AddAttributeError(path.Root("local_retention_ms"), "Missing local_retention_ms",
-				"Changing tiered storage on this cluster needs `local_retention_ms` set in the config, since Artie didn't return its current value.")
-			return req, diags
-		}
-		req.TieredStorage = &openapi.RouterUpdateKafkaClusterTieredStorageRequest{
-			TierAllTopics:       k.TieredStorage.ValueBool(),
-			LocalRetentionMS:    localRetentionMS.ValueInt64(),
-			LocalRetentionBytes: int64ToIntPointer(k.LocalRetentionBytes),
-		}
+	if IsKnown(k.TieredStorage) {
+		tieredStorage, tieredDiags := k.tieredStorageToAPIUpdate(ctx, state)
+		diags.Append(tieredDiags...)
+		req.TieredStorage = tieredStorage
 	}
 	if IsKnown(k.StorageAutoscale) && !k.StorageAutoscale.Equal(state.StorageAutoscale) {
 		storageAutoscale, autoscaleDiags := k.storageAutoscaleToAPI(ctx)
@@ -136,6 +156,42 @@ func (k KafkaCluster) ToAPIUpdateRequest(ctx context.Context, state KafkaCluster
 	}
 
 	return req, diags
+}
+
+// tieredStorageToAPIUpdate returns the tiered storage change, or nil if there is none. An unknown days on disk (left out
+// of the config, with none in state) isn't a change.
+func (k KafkaCluster) tieredStorageToAPIUpdate(ctx context.Context, state KafkaCluster) (*openapi.RouterUpdateKafkaClusterTieredStorageRequest, diag.Diagnostics) {
+	planned, diags := k.tieredStorage(ctx)
+	prior, priorDiags := state.tieredStorage(ctx)
+	diags.Append(priorDiags...)
+	if diags.HasError() {
+		return nil, diags
+	}
+	if planned.Enabled.Equal(prior.Enabled) && planned.LocalRetentionBytes.Equal(prior.LocalRetentionBytes) &&
+		(!IsKnown(planned.LocalRetentionMS) || planned.LocalRetentionMS.Equal(prior.LocalRetentionMS)) {
+		return nil, diags
+	}
+
+	// The API replaces all three together, so a days on disk left out of the config keeps the one in state.
+	localRetentionMS := planned.LocalRetentionMS
+	if !IsKnown(localRetentionMS) {
+		localRetentionMS = prior.LocalRetentionMS
+	}
+	if !IsKnown(localRetentionMS) {
+		// Clusters made before days on disk existed don't return one, and the API needs one with every change.
+		if planned.Enabled.ValueBool() {
+			diags.AddAttributeError(path.Root("tiered_storage").AtName("local_retention_ms"), "Missing local_retention_ms",
+				"Changing tiered storage on this cluster needs `tiered_storage.local_retention_ms` set in the config, since Artie didn't return its current value.")
+			return nil, diags
+		}
+		// Turning tiered storage off, the days on disk can't be set and don't apply, so send Artie's default.
+		localRetentionMS = types.Int64Value(DefaultKafkaLocalRetentionMS)
+	}
+	return &openapi.RouterUpdateKafkaClusterTieredStorageRequest{
+		TierAllTopics:       planned.Enabled.ValueBool(),
+		LocalRetentionMS:    localRetentionMS.ValueInt64(),
+		LocalRetentionBytes: int64ToIntPointer(planned.LocalRetentionBytes),
+	}, diags
 }
 
 // WithCreatedCluster is the state for a cluster that was created but couldn't be read back: the plan, with what the
@@ -148,8 +204,14 @@ func (k KafkaCluster) WithCreatedCluster(apiModel openapi.PayloadsKafkaCluster) 
 	k.TieredStorageAvailable = types.BoolValue(apiModel.TieredStorageAvailable)
 	k.CurrentStorageGiB = types.Int64Null()
 	k.KafkaVersion = types.StringNull()
-	if !IsKnown(k.LocalRetentionMS) {
-		k.LocalRetentionMS = intPointerToInt64Value(apiModel.LocalRetentionMS)
+	if IsKnown(k.TieredStorage) {
+		tieredStorage := maps.Clone(k.TieredStorage.Attributes())
+		if !IsKnown(tieredStorage["local_retention_ms"]) {
+			tieredStorage["local_retention_ms"] = intPointerToInt64Value(apiModel.LocalRetentionMS)
+		}
+		k.TieredStorage = types.ObjectValueMust(KafkaClusterTieredStorageAttrTypes, tieredStorage)
+	} else {
+		k.TieredStorage = tieredStorageFromAPIModel(apiModel)
 	}
 	if !IsKnown(k.StorageAutoscale) {
 		k.StorageAutoscale = types.ObjectNull(KafkaClusterStorageAutoscaleAttrTypes)
@@ -199,9 +261,7 @@ func KafkaClusterFromAPIModel(ctx context.Context, apiModel openapi.PayloadsKafk
 		Brokers:                types.Int64Value(int64(managed.Brokers)),
 		StorageGiB:             types.Int64Value(int64(managed.StorageGiB)),
 		AllowedCIDRs:           allowedCIDRs,
-		TieredStorage:          types.BoolValue(apiModel.TierAllTopics),
-		LocalRetentionMS:       intPointerToInt64Value(apiModel.LocalRetentionMS),
-		LocalRetentionBytes:    intPointerToInt64Value(apiModel.LocalRetentionBytes),
+		TieredStorage:          tieredStorageFromAPIModel(apiModel),
 		StorageAutoscale:       storageAutoscale,
 		CurrentStorageGiB:      types.Int64Value(int64(managed.StorageGiB)),
 		Cloud:                  types.StringValue(apiModel.Cloud),

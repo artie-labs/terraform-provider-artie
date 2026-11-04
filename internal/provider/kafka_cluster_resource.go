@@ -78,22 +78,30 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Artie Managed Kafka cluster resource. This represents a Kafka cluster that Artie runs for your company. Creating one starts a deploy that finishes in the background; `status` is `deploying` until the cluster is `active`. Destroying one deletes the cluster, and its data can be restored from the Artie UI until it is deleted for good.",
 		Attributes: map[string]schema.Attribute{
-			"uuid":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The unique identifier for this Kafka cluster."},
-			"name":           schema.StringAttribute{Required: true, Validators: []validator.String{stringvalidator.LengthBetween(3, 100)}, MarkdownDescription: "The cluster's name, as shown in the Artie UI. 3 to 100 characters. Renaming doesn't change the bootstrap address."},
-			"region":         schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}, MarkdownDescription: "The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster."},
-			"instance_type":  schema.StringAttribute{Required: true, Validators: []validator.String{stringvalidator.OneOf(kafkaInstanceTypes...)}, MarkdownDescription: "The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines."},
-			"brokers":        schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.AtLeast(3)}, MarkdownDescription: "The number of brokers, at least 3. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker."},
-			"storage_gib":    schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.Any(int64validator.OneOf(20, 50, 80), int64validator.Between(100, 1024))}, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours. Storage autoscaling can grow the disks past this size without a diff; `current_storage_gib` has the size they have."},
-			"allowed_cidrs":  schema.ListAttribute{ElementType: types.StringType, Optional: true, Computed: true, Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), MarkdownDescription: "Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password."},
-			"tiered_storage": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`."},
-			"local_retention_ms": schema.Int64Attribute{
+			"uuid":          schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The unique identifier for this Kafka cluster."},
+			"name":          schema.StringAttribute{Required: true, Validators: []validator.String{stringvalidator.LengthBetween(3, 100)}, MarkdownDescription: "The cluster's name, as shown in the Artie UI. 3 to 100 characters. Renaming doesn't change the bootstrap address."},
+			"region":        schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}, MarkdownDescription: "The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster."},
+			"instance_type": schema.StringAttribute{Required: true, Validators: []validator.String{stringvalidator.OneOf(kafkaInstanceTypes...)}, MarkdownDescription: "The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines."},
+			"brokers":       schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.AtLeast(3)}, MarkdownDescription: "The number of brokers, at least 3. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker."},
+			"storage_gib":   schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.Any(int64validator.OneOf(20, 50, 80), int64validator.Between(100, 1024))}, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours. Storage autoscaling can grow the disks past this size without a diff; `current_storage_gib` has the size they have."},
+			"allowed_cidrs": schema.ListAttribute{ElementType: types.StringType, Optional: true, Computed: true, Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), MarkdownDescription: "Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password."},
+			"tiered_storage": schema.SingleNestedAttribute{
 				Optional:            true,
 				Computed:            true,
-				PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
-				Validators:          []validator.Int64{int64validator.Between(86400000, 1209600000)},
-				MarkdownDescription: "How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). If not set, Artie uses 3 days.",
+				PlanModifiers:       []planmodifier.Object{kafkaTieredStoragePlanModifier{}},
+				MarkdownDescription: "How the cluster's topics tier data to remote storage. If not set, Artie turns it on for every topic, with no disk cap per partition.",
+				Attributes: map[string]schema.Attribute{
+					"enabled": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`."},
+					"local_retention_ms": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+						Validators:          []validator.Int64{int64validator.Between(86400000, 1209600000)},
+						MarkdownDescription: "How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.",
+					},
+					"local_retention_bytes": schema.Int64Attribute{Optional: true, Validators: []validator.Int64{int64validator.AtLeast(1073741824)}, MarkdownDescription: "The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Can only be set while `enabled` is `true`. If not set, there is no cap."},
+				},
 			},
-			"local_retention_bytes": schema.Int64Attribute{Optional: true, Validators: []validator.Int64{int64validator.AtLeast(1073741824)}, MarkdownDescription: "The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). If not set, there is no cap."},
 			"storage_autoscale": schema.SingleNestedAttribute{
 				Optional: true,
 				Computed: true,
@@ -142,20 +150,74 @@ func (r *KafkaClusterResource) Configure(ctx context.Context, req resource.Confi
 	r.client = client
 }
 
-// ValidateConfig checks that a grow ends below the fullness that starts it, filling in the defaults for unset values.
+// ValidateConfig checks that the days on disk and disk cap are only set with tiered storage on, and that a grow ends
+// below the fullness that starts it, filling in the defaults for unset values.
 func (r *KafkaClusterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var autoscale types.Object
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("storage_autoscale"), &autoscale)...)
-	if resp.Diagnostics.HasError() || !tfmodels.IsKnown(autoscale) {
-		return
+	var tieredStorage tfmodels.KafkaClusterTieredStorage
+	if getKnownObject(ctx, req.Config, path.Root("tiered_storage"), &tieredStorage, &resp.Diagnostics) {
+		resp.Diagnostics.Append(validateKafkaTieredStorage(tieredStorage)...)
 	}
 
-	var settings tfmodels.KafkaClusterStorageAutoscale
-	resp.Diagnostics.Append(autoscale.As(ctx, &settings, basetypes.ObjectAsOptions{})...)
-	if resp.Diagnostics.HasError() {
+	var autoscale tfmodels.KafkaClusterStorageAutoscale
+	if getKnownObject(ctx, req.Config, path.Root("storage_autoscale"), &autoscale, &resp.Diagnostics) {
+		resp.Diagnostics.Append(validateKafkaStorageAutoscale(autoscale)...)
+	}
+}
+
+// getKnownObject reads the object at path into target, returning false if it's null or unknown or can't be read.
+func getKnownObject(ctx context.Context, config tfsdk.Config, attrPath path.Path, target any, diagnostics *diag.Diagnostics) bool {
+	var object types.Object
+	diags := config.GetAttribute(ctx, attrPath, &object)
+	if !diags.HasError() && tfmodels.IsKnown(object) {
+		diags.Append(object.As(ctx, target, basetypes.ObjectAsOptions{})...)
+	}
+	diagnostics.Append(diags...)
+	return !diags.HasError() && tfmodels.IsKnown(object)
+}
+
+// validateKafkaTieredStorage rejects a days on disk or disk cap with tiered storage off, since they only apply to
+// tiered topics.
+func validateKafkaTieredStorage(settings tfmodels.KafkaClusterTieredStorage) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if !tfmodels.IsExplicitlyFalse(settings.Enabled) {
+		return diags
+	}
+	for name, value := range map[string]types.Int64{"local_retention_ms": settings.LocalRetentionMS, "local_retention_bytes": settings.LocalRetentionBytes} {
+		if !value.IsNull() {
+			diags.AddAttributeError(path.Root("tiered_storage").AtName(name), "Invalid tiered storage settings",
+				fmt.Sprintf("`%s` only applies to tiered topics, so it can only be set while `enabled` is `true`.", name))
+		}
+	}
+	return diags
+}
+
+// kafkaTieredStoragePlanModifier plans a tiered_storage left out of the config the same as `tiered_storage = {}`: on,
+// with no disk cap, keeping the days on disk from state. So removing the block turns tiered storage back on.
+type kafkaTieredStoragePlanModifier struct{}
+
+func (kafkaTieredStoragePlanModifier) Description(context.Context) string {
+	return "Plans an unset tiered_storage as on, with no disk cap, keeping the prior days on disk."
+}
+
+func (m kafkaTieredStoragePlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (kafkaTieredStoragePlanModifier) PlanModifyObject(ctx context.Context, req planmodifier.ObjectRequest, resp *planmodifier.ObjectResponse) {
+	if !req.ConfigValue.IsNull() {
 		return
 	}
-	resp.Diagnostics.Append(validateKafkaStorageAutoscale(settings)...)
+	var localRetentionMS attr.Value = types.Int64Unknown()
+	if tfmodels.IsKnown(req.StateValue) {
+		if prior := req.StateValue.Attributes()["local_retention_ms"]; tfmodels.IsKnown(prior) {
+			localRetentionMS = prior
+		}
+	}
+	resp.PlanValue = types.ObjectValueMust(tfmodels.KafkaClusterTieredStorageAttrTypes, map[string]attr.Value{
+		"enabled":               types.BoolValue(true),
+		"local_retention_ms":    localRetentionMS,
+		"local_retention_bytes": types.Int64Null(),
+	})
 }
 
 func validateKafkaStorageAutoscale(settings tfmodels.KafkaClusterStorageAutoscale) diag.Diagnostics {

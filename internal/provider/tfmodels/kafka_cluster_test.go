@@ -13,6 +13,14 @@ import (
 	"terraform-provider-artie/internal/openapi"
 )
 
+func testTieredStorage(enabled bool, localRetentionMS, localRetentionBytes types.Int64) types.Object {
+	return types.ObjectValueMust(KafkaClusterTieredStorageAttrTypes, map[string]attr.Value{
+		"enabled":               types.BoolValue(enabled),
+		"local_retention_ms":    localRetentionMS,
+		"local_retention_bytes": localRetentionBytes,
+	})
+}
+
 func testKafkaClusterPayload() openapi.PayloadsKafkaCluster {
 	return openapi.PayloadsKafkaCluster{
 		Uuid:                 uuid.New(),
@@ -46,8 +54,7 @@ func TestKafkaClusterFromAPIModel(t *testing.T) {
 	assert.Equal(t, int64(3), cluster.Brokers.ValueInt64())
 	assert.Equal(t, int64(100), cluster.StorageGiB.ValueInt64())
 	assert.Equal(t, int64(100), cluster.CurrentStorageGiB.ValueInt64())
-	assert.Equal(t, int64(259200000), cluster.LocalRetentionMS.ValueInt64())
-	assert.True(t, cluster.LocalRetentionBytes.IsNull())
+	assert.Equal(t, testTieredStorage(true, types.Int64Value(259200000), types.Int64Null()), cluster.TieredStorage)
 	assert.Equal(t, "active", cluster.Status.ValueString())
 
 	var autoscale KafkaClusterStorageAutoscale
@@ -66,21 +73,20 @@ func TestKafkaClusterFromAPIModel_NotManaged(t *testing.T) {
 
 func TestKafkaClusterToAPICreateRequest_Defaults(t *testing.T) {
 	cluster := KafkaCluster{
-		Name:                types.StringValue("my-cluster"),
-		Region:              types.StringValue("us-east-1"),
-		InstanceType:        types.StringValue("m8g.xlarge"),
-		Brokers:             types.Int64Value(3),
-		StorageGiB:          types.Int64Value(100),
-		AllowedCIDRs:        types.ListValueMust(types.StringType, []attr.Value{}),
-		TieredStorage:       types.BoolValue(true),
-		LocalRetentionMS:    types.Int64Unknown(),
-		LocalRetentionBytes: types.Int64Null(),
-		StorageAutoscale:    types.ObjectUnknown(KafkaClusterStorageAutoscaleAttrTypes),
+		Name:             types.StringValue("my-cluster"),
+		Region:           types.StringValue("us-east-1"),
+		InstanceType:     types.StringValue("m8g.xlarge"),
+		Brokers:          types.Int64Value(3),
+		StorageGiB:       types.Int64Value(100),
+		AllowedCIDRs:     types.ListValueMust(types.StringType, []attr.Value{}),
+		TieredStorage:    testTieredStorage(true, types.Int64Unknown(), types.Int64Null()),
+		StorageAutoscale: types.ObjectUnknown(KafkaClusterStorageAutoscaleAttrTypes),
 	}
 
 	req, diags := cluster.ToAPICreateRequest(t.Context())
 	assert.False(t, diags.HasError())
 	// Left out of the config, these are omitted so the API applies its defaults.
+	assert.True(t, req.TieredStorage)
 	assert.Nil(t, req.LocalRetentionMS)
 	assert.Nil(t, req.LocalRetentionBytes)
 	assert.Nil(t, req.StorageAutoscale)
@@ -117,13 +123,21 @@ func TestKafkaClusterToAPIUpdateRequest(t *testing.T) {
 	{
 		// Changing tiered storage keeps the days on disk from state when it's left out of the config.
 		plan := state
-		plan.TieredStorage = types.BoolValue(false)
-		plan.LocalRetentionMS = types.Int64Unknown()
+		plan.TieredStorage = testTieredStorage(false, types.Int64Unknown(), types.Int64Null())
 		req, diags := plan.ToAPIUpdateRequest(t.Context(), state)
 		assert.False(t, diags.HasError())
 		assert.False(t, req.TieredStorage.TierAllTopics)
 		assert.Equal(t, int64(259200000), req.TieredStorage.LocalRetentionMS)
 		assert.Nil(t, req.TieredStorage.LocalRetentionBytes)
+	}
+	{
+		// Setting a disk cap sends it with the other two.
+		plan := state
+		plan.TieredStorage = testTieredStorage(true, types.Int64Value(259200000), types.Int64Value(1073741824))
+		req, diags := plan.ToAPIUpdateRequest(t.Context(), state)
+		assert.False(t, diags.HasError())
+		assert.True(t, req.TieredStorage.TierAllTopics)
+		assert.Equal(t, 1073741824, *req.TieredStorage.LocalRetentionBytes)
 	}
 	{
 		// Clearing the CIDRs sends an empty list, which allows any IP.
@@ -134,14 +148,25 @@ func TestKafkaClusterToAPIUpdateRequest(t *testing.T) {
 		assert.Equal(t, []string{}, *req.AllowedCIDRs)
 	}
 	{
-		// Changing tiered storage with no days on disk in the config or state errors instead of sending 0.
+		// With no days on disk in state, leaving it out of the config isn't a change.
 		noRetention := state
-		noRetention.LocalRetentionMS = types.Int64Null()
+		noRetention.TieredStorage = testTieredStorage(true, types.Int64Null(), types.Int64Null())
 		plan := noRetention
-		plan.TieredStorage = types.BoolValue(false)
-		plan.LocalRetentionMS = types.Int64Unknown()
-		_, diags := plan.ToAPIUpdateRequest(t.Context(), noRetention)
+		plan.TieredStorage = testTieredStorage(true, types.Int64Unknown(), types.Int64Null())
+		req, diags := plan.ToAPIUpdateRequest(t.Context(), noRetention)
+		assert.False(t, diags.HasError())
+		assert.Nil(t, req.TieredStorage)
+
+		// Changing tiered storage with no days on disk in the config or state errors instead of sending 0.
+		plan.TieredStorage = testTieredStorage(true, types.Int64Unknown(), types.Int64Value(1073741824))
+		_, diags = plan.ToAPIUpdateRequest(t.Context(), noRetention)
 		assert.True(t, diags.HasError())
+
+		// Turning it off, where the days on disk can't be set, sends Artie's default.
+		plan.TieredStorage = testTieredStorage(false, types.Int64Unknown(), types.Int64Null())
+		req, diags = plan.ToAPIUpdateRequest(t.Context(), noRetention)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, int64(DefaultKafkaLocalRetentionMS), req.TieredStorage.LocalRetentionMS)
 	}
 }
 
@@ -150,7 +175,7 @@ func TestKafkaClusterWithCreatedCluster(t *testing.T) {
 	plan := KafkaCluster{
 		UUID:                   types.StringUnknown(),
 		Name:                   types.StringValue("my-cluster"),
-		LocalRetentionMS:       types.Int64Unknown(),
+		TieredStorage:          testTieredStorage(true, types.Int64Unknown(), types.Int64Null()),
 		StorageAutoscale:       types.ObjectUnknown(KafkaClusterStorageAutoscaleAttrTypes),
 		Cloud:                  types.StringUnknown(),
 		Status:                 types.StringUnknown(),
@@ -163,7 +188,7 @@ func TestKafkaClusterWithCreatedCluster(t *testing.T) {
 	assert.Equal(t, payload.Uuid.String(), cluster.UUID.ValueString())
 	assert.Equal(t, "my-cluster", cluster.Name.ValueString())
 	assert.Equal(t, "active", cluster.Status.ValueString())
-	assert.Equal(t, int64(259200000), cluster.LocalRetentionMS.ValueInt64())
+	assert.Equal(t, testTieredStorage(true, types.Int64Value(259200000), types.Int64Null()), cluster.TieredStorage)
 	assert.True(t, cluster.StorageAutoscale.IsNull())
 	assert.True(t, cluster.CurrentStorageGiB.IsNull())
 	assert.True(t, cluster.KafkaVersion.IsNull())
