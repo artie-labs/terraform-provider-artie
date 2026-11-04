@@ -45,6 +45,7 @@ func TestKafkaClusterFromAPIModel(t *testing.T) {
 	assert.Equal(t, "m8g.xlarge", cluster.InstanceType.ValueString())
 	assert.Equal(t, int64(3), cluster.Brokers.ValueInt64())
 	assert.Equal(t, int64(100), cluster.StorageGiB.ValueInt64())
+	assert.Equal(t, int64(100), cluster.CurrentStorageGiB.ValueInt64())
 	assert.Equal(t, int64(259200000), cluster.LocalRetentionMS.ValueInt64())
 	assert.True(t, cluster.LocalRetentionBytes.IsNull())
 	assert.Equal(t, "active", cluster.Status.ValueString())
@@ -154,6 +155,7 @@ func TestKafkaClusterWithCreatedCluster(t *testing.T) {
 		Cloud:                  types.StringUnknown(),
 		Status:                 types.StringUnknown(),
 		ExternalBootstrapURL:   types.StringUnknown(),
+		CurrentStorageGiB:      types.Int64Unknown(),
 		KafkaVersion:           types.StringUnknown(),
 		TieredStorageAvailable: types.BoolUnknown(),
 	}
@@ -163,5 +165,29 @@ func TestKafkaClusterWithCreatedCluster(t *testing.T) {
 	assert.Equal(t, "active", cluster.Status.ValueString())
 	assert.Equal(t, int64(259200000), cluster.LocalRetentionMS.ValueInt64())
 	assert.True(t, cluster.StorageAutoscale.IsNull())
+	assert.True(t, cluster.CurrentStorageGiB.IsNull())
 	assert.True(t, cluster.KafkaVersion.IsNull())
+}
+
+func TestKafkaClusterWithRequestedStorage(t *testing.T) {
+	// Autoscaling grew the disks from 100 to 150 GiB.
+	payload := testKafkaClusterPayload()
+	payload.Managed.StorageGiB = 150
+	cluster, diags := KafkaClusterFromAPIModel(t.Context(), payload)
+	assert.False(t, diags.HasError())
+
+	{
+		// The config asked for less than the brokers have, so it's kept.
+		kept := cluster.WithRequestedStorage(types.Int64Value(100))
+		assert.Equal(t, int64(100), kept.StorageGiB.ValueInt64())
+		assert.Equal(t, int64(150), kept.CurrentStorageGiB.ValueInt64())
+	}
+	{
+		// The config asked for more than the brokers have (the grow hasn't finished), so the API's size shows the drift.
+		assert.Equal(t, int64(150), cluster.WithRequestedStorage(types.Int64Value(200)).StorageGiB.ValueInt64())
+	}
+	{
+		// Import has nothing requested yet.
+		assert.Equal(t, int64(150), cluster.WithRequestedStorage(types.Int64Null()).StorageGiB.ValueInt64())
+	}
 }

@@ -36,7 +36,7 @@ resource "artie_kafka_cluster" "example" {
 - `instance_type` (String) The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines.
 - `name` (String) The cluster's name, as shown in the Artie UI. 3 to 100 characters. Renaming doesn't change the bootstrap address.
 - `region` (String) The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster.
-- `storage_gib` (Number) Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours.
+- `storage_gib` (Number) Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours. Storage autoscaling can grow the disks past this size without a diff; `current_storage_gib` has the size they have.
 
 ### Optional
 
@@ -49,6 +49,7 @@ resource "artie_kafka_cluster" "example" {
 ### Read-Only
 
 - `cloud` (String) The cloud the cluster runs in.
+- `current_storage_gib` (Number) The disk per broker the brokers have, in GiB. Can be more than `storage_gib` once storage autoscaling grows the disks.
 - `external_bootstrap_url` (String) The bootstrap address Kafka clients connect to.
 - `kafka_version` (String) The Kafka version the brokers run.
 - `status` (String) The cluster's status: `deploying`, `active`, `failed`, `draft` or `deleted`.

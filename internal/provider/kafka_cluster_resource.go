@@ -83,7 +83,7 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 			"region":         schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}, MarkdownDescription: "The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster."},
 			"instance_type":  schema.StringAttribute{Required: true, Validators: []validator.String{stringvalidator.OneOf(kafkaInstanceTypes...)}, MarkdownDescription: "The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines."},
 			"brokers":        schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.AtLeast(3)}, MarkdownDescription: "The number of brokers, at least 3. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker."},
-			"storage_gib":    schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.Any(int64validator.OneOf(20, 50, 80), int64validator.Between(100, 1024))}, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours."},
+			"storage_gib":    schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.Any(int64validator.OneOf(20, 50, 80), int64validator.Between(100, 1024))}, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours. Storage autoscaling can grow the disks past this size without a diff; `current_storage_gib` has the size they have."},
 			"allowed_cidrs":  schema.ListAttribute{ElementType: types.StringType, Optional: true, Computed: true, Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), MarkdownDescription: "Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password."},
 			"tiered_storage": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`."},
 			"local_retention_ms": schema.Int64Attribute{
@@ -110,6 +110,7 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 			"cloud":                    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The cloud the cluster runs in."},
 			"status":                   schema.StringAttribute{Computed: true, MarkdownDescription: "The cluster's status: `deploying`, `active`, `failed`, `draft` or `deleted`."},
 			"external_bootstrap_url":   schema.StringAttribute{Computed: true, MarkdownDescription: "The bootstrap address Kafka clients connect to."},
+			"current_storage_gib":      schema.Int64Attribute{Computed: true, MarkdownDescription: "The disk per broker the brokers have, in GiB. Can be more than `storage_gib` once storage autoscaling grows the disks."},
 			"kafka_version":            schema.StringAttribute{Computed: true, MarkdownDescription: "The Kafka version the brokers run."},
 			"tiered_storage_available": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether tiered storage is available on this cluster. Artie turns it on once the brokers support it."},
 		},
@@ -214,17 +215,18 @@ func (r *KafkaClusterResource) GetPlanData(ctx context.Context, plan tfsdk.Plan,
 	return planData, diagnostics.HasError()
 }
 
-func (r *KafkaClusterResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, cluster openapi.PayloadsKafkaCluster) {
+func (r *KafkaClusterResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, cluster openapi.PayloadsKafkaCluster, requestedStorageGiB types.Int64) {
 	tfModel, diags := tfmodels.KafkaClusterFromAPIModel(ctx, cluster)
 	diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
-	diagnostics.Append(state.Set(ctx, tfModel)...)
+	diagnostics.Append(state.Set(ctx, tfModel.WithRequestedStorage(requestedStorageGiB))...)
 }
 
 // readIntoState fetches the cluster with Get a Kafka cluster, the only endpoint that returns its managed configuration.
-func (r *KafkaClusterResource) readIntoState(ctx context.Context, uuid string, state *tfsdk.State, diagnostics *diag.Diagnostics) {
+// requestedStorageGiB is the storage_gib from the config or prior state, null on import.
+func (r *KafkaClusterResource) readIntoState(ctx context.Context, uuid string, requestedStorageGiB types.Int64, state *tfsdk.State, diagnostics *diag.Diagnostics) {
 	cluster, err := artieclient.JSON200(r.client.KafkaClusterDetailWithResponse(ctx, uuid))
 	if errors.Is(err, artieclient.ErrNotFound) {
 		state.RemoveResource(ctx) // deleted for good
@@ -239,7 +241,7 @@ func (r *KafkaClusterResource) readIntoState(ctx context.Context, uuid string, s
 		return
 	}
 
-	r.SetStateData(ctx, state, diagnostics, *cluster)
+	r.SetStateData(ctx, state, diagnostics, *cluster, requestedStorageGiB)
 }
 
 func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -263,7 +265,7 @@ func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRe
 	// If the follow-up read fails or doesn't find the cluster yet, still record the cluster so a later apply doesn't
 	// create a second one.
 	var readDiags diag.Diagnostics
-	r.readIntoState(ctx, cluster.Uuid.String(), &resp.State, &readDiags)
+	r.readIntoState(ctx, cluster.Uuid.String(), planData.StorageGiB, &resp.State, &readDiags)
 	if !readDiags.HasError() && !resp.State.Raw.IsNull() {
 		resp.Diagnostics.Append(readDiags...)
 		return
@@ -281,12 +283,13 @@ func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *KafkaClusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	uuid, hasError := r.GetUUIDFromState(ctx, req.State, &resp.Diagnostics)
-	if hasError {
+	var stateData tfmodels.KafkaCluster
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	r.readIntoState(ctx, uuid, &resp.State, &resp.Diagnostics)
+	r.readIntoState(ctx, stateData.UUID.ValueString(), stateData.StorageGiB, &resp.State, &resp.Diagnostics)
 }
 
 func (r *KafkaClusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -315,7 +318,7 @@ func (r *KafkaClusterResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 
-	r.readIntoState(ctx, uuid, &resp.State, &resp.Diagnostics)
+	r.readIntoState(ctx, uuid, planData.StorageGiB, &resp.State, &resp.Diagnostics)
 }
 
 func (r *KafkaClusterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

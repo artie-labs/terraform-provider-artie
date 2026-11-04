@@ -24,6 +24,7 @@ type KafkaCluster struct {
 	LocalRetentionMS       types.Int64  `tfsdk:"local_retention_ms"`
 	LocalRetentionBytes    types.Int64  `tfsdk:"local_retention_bytes"`
 	StorageAutoscale       types.Object `tfsdk:"storage_autoscale"`
+	CurrentStorageGiB      types.Int64  `tfsdk:"current_storage_gib"`
 	Cloud                  types.String `tfsdk:"cloud"`
 	Status                 types.String `tfsdk:"status"`
 	ExternalBootstrapURL   types.String `tfsdk:"external_bootstrap_url"`
@@ -145,12 +146,23 @@ func (k KafkaCluster) WithCreatedCluster(apiModel openapi.PayloadsKafkaCluster) 
 	k.Status = types.StringValue(string(apiModel.Status))
 	k.ExternalBootstrapURL = types.StringValue(apiModel.ExternalBootstrapURL)
 	k.TieredStorageAvailable = types.BoolValue(apiModel.TieredStorageAvailable)
+	k.CurrentStorageGiB = types.Int64Null()
 	k.KafkaVersion = types.StringNull()
 	if !IsKnown(k.LocalRetentionMS) {
 		k.LocalRetentionMS = intPointerToInt64Value(apiModel.LocalRetentionMS)
 	}
 	if !IsKnown(k.StorageAutoscale) {
 		k.StorageAutoscale = types.ObjectNull(KafkaClusterStorageAutoscaleAttrTypes)
+	}
+	return k
+}
+
+// WithRequestedStorage keeps the storage_gib that was asked for while the brokers have at least that much, so a disk
+// that storage autoscaling grew doesn't show up as a diff (and a plan to shrink it). current_storage_gib has the size
+// the brokers have.
+func (k KafkaCluster) WithRequestedStorage(requested types.Int64) KafkaCluster {
+	if IsKnown(requested) && IsKnown(k.StorageGiB) && requested.ValueInt64() < k.StorageGiB.ValueInt64() {
+		k.StorageGiB = requested
 	}
 	return k
 }
@@ -191,6 +203,7 @@ func KafkaClusterFromAPIModel(ctx context.Context, apiModel openapi.PayloadsKafk
 		LocalRetentionMS:       intPointerToInt64Value(apiModel.LocalRetentionMS),
 		LocalRetentionBytes:    intPointerToInt64Value(apiModel.LocalRetentionBytes),
 		StorageAutoscale:       storageAutoscale,
+		CurrentStorageGiB:      types.Int64Value(int64(managed.StorageGiB)),
 		Cloud:                  types.StringValue(apiModel.Cloud),
 		Status:                 types.StringValue(string(apiModel.Status)),
 		ExternalBootstrapURL:   types.StringValue(apiModel.ExternalBootstrapURL),
