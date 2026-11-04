@@ -260,15 +260,20 @@ func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	// If the follow-up read fails, still record the cluster so a later apply doesn't create a second one.
+	// If the follow-up read fails or doesn't find the cluster yet, still record the cluster so a later apply doesn't
+	// create a second one.
 	var readDiags diag.Diagnostics
 	r.readIntoState(ctx, cluster.Uuid.String(), &resp.State, &readDiags)
-	if !readDiags.HasError() {
+	if !readDiags.HasError() && !resp.State.Raw.IsNull() {
 		resp.Diagnostics.Append(readDiags...)
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, planData.WithCreatedCluster(*cluster))...)
+	if !readDiags.HasError() {
+		resp.Diagnostics.AddWarning("Kafka cluster created, but reading it back failed",
+			"Artie didn't return the new cluster yet. The next refresh fills in the rest of its attributes.")
+	}
 	for _, d := range readDiags.Errors() {
 		resp.Diagnostics.AddWarning("Kafka cluster created, but reading it back failed",
 			fmt.Sprintf("%s: %s. The next refresh fills in the rest of its attributes.", d.Summary(), d.Detail()))
