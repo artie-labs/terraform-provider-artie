@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-artie/internal/lib"
@@ -115,6 +116,12 @@ func (k KafkaCluster) ToAPIUpdateRequest(ctx context.Context, state KafkaCluster
 		if !IsKnown(localRetentionMS) {
 			localRetentionMS = state.LocalRetentionMS
 		}
+		if !IsKnown(localRetentionMS) {
+			// The API needs a days-on-disk with every tiered storage change, and there's none to keep.
+			diags.AddAttributeError(path.Root("local_retention_ms"), "Missing local_retention_ms",
+				"Changing tiered storage on this cluster needs `local_retention_ms` set in the config, since Artie didn't return its current value.")
+			return req, diags
+		}
 		req.TieredStorage = &openapi.RouterUpdateKafkaClusterTieredStorageRequest{
 			TierAllTopics:       k.TieredStorage.ValueBool(),
 			LocalRetentionMS:    localRetentionMS.ValueInt64(),
@@ -128,6 +135,24 @@ func (k KafkaCluster) ToAPIUpdateRequest(ctx context.Context, state KafkaCluster
 	}
 
 	return req, diags
+}
+
+// WithCreatedCluster is the state for a cluster that was created but couldn't be read back: the plan, with what the
+// create response returns filled in and every other computed attribute null until the next refresh.
+func (k KafkaCluster) WithCreatedCluster(apiModel openapi.PayloadsKafkaCluster) KafkaCluster {
+	k.UUID = types.StringValue(apiModel.Uuid.String())
+	k.Cloud = types.StringValue(apiModel.Cloud)
+	k.Status = types.StringValue(string(apiModel.Status))
+	k.ExternalBootstrapURL = types.StringValue(apiModel.ExternalBootstrapURL)
+	k.TieredStorageAvailable = types.BoolValue(apiModel.TieredStorageAvailable)
+	k.KafkaVersion = types.StringNull()
+	if !IsKnown(k.LocalRetentionMS) {
+		k.LocalRetentionMS = intPointerToInt64Value(apiModel.LocalRetentionMS)
+	}
+	if !IsKnown(k.StorageAutoscale) {
+		k.StorageAutoscale = types.ObjectNull(KafkaClusterStorageAutoscaleAttrTypes)
+	}
+	return k
 }
 
 func KafkaClusterFromAPIModel(ctx context.Context, apiModel openapi.PayloadsKafkaCluster) (KafkaCluster, diag.Diagnostics) {

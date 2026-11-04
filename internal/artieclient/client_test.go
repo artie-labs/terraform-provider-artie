@@ -36,6 +36,12 @@ func TestJSON200(t *testing.T) {
 	}
 }
 
+func TestErrNotFound(t *testing.T) {
+	_, err := JSON200(&openapi.SshTunnelDetailResponse{HTTPResponse: &http.Response{StatusCode: http.StatusNotFound}, Body: []byte("gone")}, nil)
+	assert.ErrorIs(t, err, ErrNotFound)
+	assert.EqualError(t, err, `artie-client: not found (HTTP 404), response: "gone"`)
+}
+
 func TestCheckResponse(t *testing.T) {
 	{
 		// 204 succeeds

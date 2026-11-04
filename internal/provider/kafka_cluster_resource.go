@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/openapi"
@@ -18,12 +19,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -31,6 +33,7 @@ var _ resource.Resource = &KafkaClusterResource{}
 var _ resource.ResourceWithConfigure = &KafkaClusterResource{}
 var _ resource.ResourceWithImportState = &KafkaClusterResource{}
 var _ resource.ResourceWithModifyPlan = &KafkaClusterResource{}
+var _ resource.ResourceWithValidateConfig = &KafkaClusterResource{}
 
 var kafkaInstanceTypes = []string{
 	string(openapi.PayloadsKafkaInstanceTypeM8gXlarge),
@@ -46,6 +49,18 @@ var kafkaInstanceTypes = []string{
 	string(openapi.PayloadsKafkaInstanceTypeR8iXlarge),
 	string(openapi.PayloadsKafkaInstanceTypeR8i2xlarge),
 }
+
+const (
+	defaultKafkaBumpAtPercent = 65
+	defaultKafkaTargetPercent = 55
+)
+
+var defaultKafkaStorageAutoscale = types.ObjectValueMust(tfmodels.KafkaClusterStorageAutoscaleAttrTypes, map[string]attr.Value{
+	"enabled":         types.BoolValue(true),
+	"bump_at_percent": types.Int64Value(defaultKafkaBumpAtPercent),
+	"target_percent":  types.Int64Value(defaultKafkaTargetPercent),
+	"max_gib":         types.Int64Null(),
+})
 
 func NewKafkaClusterResource() resource.Resource {
 	return &KafkaClusterResource{}
@@ -68,8 +83,7 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 			"region":         schema.StringAttribute{Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}, MarkdownDescription: "The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster."},
 			"instance_type":  schema.StringAttribute{Required: true, Validators: []validator.String{stringvalidator.OneOf(kafkaInstanceTypes...)}, MarkdownDescription: "The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines."},
 			"brokers":        schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.AtLeast(3)}, MarkdownDescription: "The number of brokers, at least 3. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker."},
-			"storage_gib":    schema.Int64Attribute{Required: true, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours."},
-			"allowed_cidrs":  schema.ListAttribute{ElementType: types.StringType, Optional: true, Computed: true, Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), MarkdownDescription: "Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password."},
+			"storage_gib":    schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.Any(int64validator.OneOf(20, 50, 80), int64validator.Between(100, 1024))}, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours."},			"allowed_cidrs":  schema.ListAttribute{ElementType: types.StringType, Optional: true, Computed: true, Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), MarkdownDescription: "Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password."},
 			"tiered_storage": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`."},
 			"local_retention_ms": schema.Int64Attribute{
 				Optional:            true,
@@ -80,15 +94,16 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"local_retention_bytes": schema.Int64Attribute{Optional: true, Validators: []validator.Int64{int64validator.AtLeast(1073741824)}, MarkdownDescription: "The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). If not set, there is no cap."},
 			"storage_autoscale": schema.SingleNestedAttribute{
-				Optional:            true,
-				Computed:            true,
-				PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
+				Optional: true,
+				Computed: true,
+				// A default rather than UseStateForUnknown, so removing the block resets the cluster to these settings.
+				Default:             objectdefault.StaticValue(defaultKafkaStorageAutoscale),
 				MarkdownDescription: "How Artie grows the brokers' disks before they fill. If not set, Artie turns it on, growing at 65% full to 55% full, with no limit.",
 				Attributes: map[string]schema.Attribute{
 					"enabled":         schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether Artie grows the brokers' disks before they fill. Defaults to `true`."},
-					"bump_at_percent": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(65), Validators: []validator.Int64{int64validator.Between(1, 99)}, MarkdownDescription: "How full, in %, a broker's disk gets before every broker's disk grows. At most 99. Defaults to 65."},
-					"target_percent":  schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(55), Validators: []validator.Int64{int64validator.Between(1, 98)}, MarkdownDescription: "How full, in %, the fullest broker's disk is after a grow. Must be less than `bump_at_percent`. Defaults to 55."},
-					"max_gib":         schema.Int64Attribute{Optional: true, MarkdownDescription: "The most disk per broker, in GiB, a grow goes to. If not set, there is no limit."},
+					"bump_at_percent": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(defaultKafkaBumpAtPercent), Validators: []validator.Int64{int64validator.Between(1, 99)}, MarkdownDescription: "How full, in %, a broker's disk gets before every broker's disk grows. At most 99. Defaults to 65."},
+					"target_percent":  schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(defaultKafkaTargetPercent), Validators: []validator.Int64{int64validator.Between(1, 98)}, MarkdownDescription: "How full, in %, the fullest broker's disk is after a grow. Must be less than `bump_at_percent`. Defaults to 55."},
+					"max_gib":         schema.Int64Attribute{Optional: true, Validators: []validator.Int64{int64validator.AtLeast(1)}, MarkdownDescription: "The most disk per broker, in GiB, a grow goes to. If not set, there is no limit."},
 				},
 			},
 			"cloud":                    schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The cloud the cluster runs in."},
@@ -125,10 +140,51 @@ func (r *KafkaClusterResource) Configure(ctx context.Context, req resource.Confi
 	r.client = client
 }
 
+// ValidateConfig checks that a grow ends below the fullness that starts it, filling in the defaults for unset values.
+func (r *KafkaClusterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var autoscale types.Object
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("storage_autoscale"), &autoscale)...)
+	if resp.Diagnostics.HasError() || !tfmodels.IsKnown(autoscale) {
+		return
+	}
+
+	var settings tfmodels.KafkaClusterStorageAutoscale
+	resp.Diagnostics.Append(autoscale.As(ctx, &settings, basetypes.ObjectAsOptions{})...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(validateKafkaStorageAutoscale(settings)...)
+}
+
+func validateKafkaStorageAutoscale(settings tfmodels.KafkaClusterStorageAutoscale) diag.Diagnostics {
+	var diags diag.Diagnostics
+	bumpAt, target := settings.BumpAtPercent, settings.TargetPercent
+	if bumpAt.IsNull() {
+		bumpAt = types.Int64Value(defaultKafkaBumpAtPercent)
+	}
+	if target.IsNull() {
+		target = types.Int64Value(defaultKafkaTargetPercent)
+	}
+	if bumpAt.IsUnknown() || target.IsUnknown() {
+		return diags
+	}
+	if target.ValueInt64() >= bumpAt.ValueInt64() {
+		diags.AddAttributeError(path.Root("storage_autoscale").AtName("target_percent"), "Invalid storage autoscale settings",
+			fmt.Sprintf("`target_percent` (%d) must be less than `bump_at_percent` (%d).", target.ValueInt64(), bumpAt.ValueInt64()))
+	}
+	return diags
+}
+
 // ModifyPlan rejects removing brokers or shrinking storage at plan time, since the API can only grow either.
 func (r *KafkaClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
 		return // creating or destroying
+	}
+	var plannedRegion, priorRegion types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("region"), &plannedRegion)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("region"), &priorRegion)...)
+	if !plannedRegion.Equal(priorRegion) {
+		return // a new region replaces the cluster, and a new cluster can start at any size
 	}
 	for _, attr := range []string{"brokers", "storage_gib"} {
 		var planned, prior types.Int64
@@ -169,7 +225,10 @@ func (r *KafkaClusterResource) SetStateData(ctx context.Context, state *tfsdk.St
 // readIntoState fetches the cluster with Get a Kafka cluster, the only endpoint that returns its managed configuration.
 func (r *KafkaClusterResource) readIntoState(ctx context.Context, uuid string, state *tfsdk.State, diagnostics *diag.Diagnostics) {
 	cluster, err := artieclient.JSON200(r.client.KafkaClusterDetailWithResponse(ctx, uuid))
-	if err != nil {
+	if errors.Is(err, artieclient.ErrNotFound) {
+		state.RemoveResource(ctx) // deleted for good
+		return
+	} else if err != nil {
 		diagnostics.AddError("Unable to read Kafka cluster", err.Error())
 		return
 	}
@@ -200,7 +259,19 @@ func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	r.readIntoState(ctx, cluster.Uuid.String(), &resp.State, &resp.Diagnostics)
+	// If the follow-up read fails, still record the cluster so a later apply doesn't create a second one.
+	var readDiags diag.Diagnostics
+	r.readIntoState(ctx, cluster.Uuid.String(), &resp.State, &readDiags)
+	if !readDiags.HasError() {
+		resp.Diagnostics.Append(readDiags...)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, planData.WithCreatedCluster(*cluster))...)
+	for _, d := range readDiags.Errors() {
+		resp.Diagnostics.AddWarning("Kafka cluster created, but reading it back failed",
+			fmt.Sprintf("%s: %s. The next refresh fills in the rest of its attributes.", d.Summary(), d.Detail()))
+	}
 }
 
 func (r *KafkaClusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -247,7 +318,7 @@ func (r *KafkaClusterResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	if err := artieclient.CheckResponse(r.client.KafkaClusterDeleteWithResponse(ctx, uuid)); err != nil {
+	if err := artieclient.CheckResponse(r.client.KafkaClusterDeleteWithResponse(ctx, uuid)); err != nil && !errors.Is(err, artieclient.ErrNotFound) {
 		resp.Diagnostics.AddError("Unable to delete Kafka cluster", err.Error())
 		return
 	}
