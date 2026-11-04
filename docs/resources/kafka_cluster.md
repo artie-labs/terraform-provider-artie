@@ -32,7 +32,7 @@ resource "artie_kafka_cluster" "example" {
 
 ### Required
 
-- `brokers` (Number) The number of brokers. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker.
+- `brokers` (Number) The number of brokers, at least 3. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker.
 - `instance_type` (String) The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines.
 - `name` (String) The cluster's name, as shown in the Artie UI. 3 to 100 characters. Renaming doesn't change the bootstrap address.
 - `region` (String) The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster.
