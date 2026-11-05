@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -12,7 +13,7 @@ import (
 func TestWaitForCredentials(t *testing.T) {
 	calls := 0
 	password := "secret"
-	creds, err := waitForCredentials(t.Context(), time.Second, time.Millisecond, func() (*string, int, error) {
+	creds, err := waitForCredentials(t.Context(), time.Second, time.Millisecond, func(context.Context) (*string, int, error) {
 		calls++
 		if calls < 3 {
 			return nil, http.StatusConflict, errors.New("password isn't ready yet")
@@ -26,7 +27,7 @@ func TestWaitForCredentials(t *testing.T) {
 
 func TestWaitForCredentials_OtherErrorStops(t *testing.T) {
 	calls := 0
-	_, err := waitForCredentials(t.Context(), time.Second, time.Millisecond, func() (*string, int, error) {
+	_, err := waitForCredentials(t.Context(), time.Second, time.Millisecond, func(context.Context) (*string, int, error) {
 		calls++
 		return nil, http.StatusNotFound, errors.New("not found")
 	})
@@ -35,10 +36,19 @@ func TestWaitForCredentials_OtherErrorStops(t *testing.T) {
 }
 
 func TestWaitForCredentials_Timeout(t *testing.T) {
-	_, err := waitForCredentials(t.Context(), 20*time.Millisecond, time.Millisecond, func() (*string, int, error) {
+	_, err := waitForCredentials(t.Context(), 20*time.Millisecond, time.Millisecond, func(context.Context) (*string, int, error) {
 		return nil, http.StatusConflict, errors.New("password isn't ready yet")
 	})
 	assert.ErrorContains(t, err, "timed out")
+}
+
+func TestWaitForCredentials_TimeoutCancelsBlockedFetch(t *testing.T) {
+	_, err := waitForCredentials(t.Context(), 20*time.Millisecond, time.Millisecond, func(ctx context.Context) (*string, int, error) {
+		<-ctx.Done()
+		return nil, 0, ctx.Err()
+	})
+	assert.ErrorContains(t, err, "timed out")
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 type fakeResponse struct{ code int }

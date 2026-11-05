@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -121,11 +122,14 @@ func statusCode[R interface{ StatusCode() int }](resp *R) int {
 }
 
 // waitForCredentials polls the credentials endpoint until the user's password is ready (it answers 409 until then).
-func waitForCredentials[T any](ctx context.Context, timeout, interval time.Duration, fetch func() (*T, int, error)) (*T, error) {
+func waitForCredentials[T any](ctx context.Context, timeout, interval time.Duration, fetch func(context.Context) (*T, int, error)) (*T, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	for {
-		creds, code, err := fetch()
+		creds, code, err := fetch(ctx)
+		if err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return nil, fmt.Errorf("timed out after %s waiting for the Kafka user's password: %w", timeout, err)
+		}
 		if err == nil || code != http.StatusConflict {
 			return creds, err
 		}
@@ -189,7 +193,7 @@ func (r *KafkaUserResource) Create(ctx context.Context, req resource.CreateReque
 		user.Password = types.StringNull()
 		resp.Diagnostics.Append(resp.State.Set(ctx, user)...)
 
-		creds, err := waitForCredentials(ctx, kafkaUserPasswordTimeout, kafkaUserPasswordInterval, func() (*openapi.RouterKafkaUserCredentialsResponse, int, error) {
+		creds, err := waitForCredentials(ctx, kafkaUserPasswordTimeout, kafkaUserPasswordInterval, func(ctx context.Context) (*openapi.RouterKafkaUserCredentialsResponse, int, error) {
 			return r.credentials(ctx, user)
 		})
 		if err != nil {
