@@ -73,9 +73,12 @@ func (he httpError) Error() string {
 	return fmt.Sprintf("%s (HTTP %d)", message, he.StatusCode)
 }
 
+// ErrNotFound is wrapped by the error returned for an HTTP 404, so callers can check for it with errors.Is.
+var ErrNotFound = errors.New("artie-client: not found")
+
 func buildResponseError(statusCode int, body []byte) error {
 	if statusCode == http.StatusNotFound {
-		return fmt.Errorf("artie-client: not found (HTTP %d), response: %q", statusCode, string(body))
+		return fmt.Errorf("%w (HTTP %d), response: %q", ErrNotFound, statusCode, string(body))
 	} else if statusCode >= 400 && statusCode < 500 {
 		type errorBody struct {
 			ErrorMsg string `json:"error"`

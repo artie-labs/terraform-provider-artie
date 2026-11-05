@@ -21,6 +21,10 @@ resource "artie_kafka_cluster" "example" {
   storage_gib   = 100
   allowed_cidrs = ["10.0.0.0/16"]
 
+  tiered_storage = {
+    local_retention_ms = 604800000 # 7 days
+  }
+
   storage_autoscale = {
     max_gib = 500
   }
@@ -36,22 +40,21 @@ resource "artie_kafka_cluster" "example" {
 - `instance_type` (String) The EC2 instance type for every broker. Changing it restarts the brokers one at a time onto the new machines.
 - `name` (String) The cluster's name, as shown in the Artie UI. 3 to 100 characters. Renaming doesn't change the bootstrap address.
 - `region` (String) The AWS region to run the cluster in (e.g. `us-east-1`). Changing this forces a new cluster.
-- `storage_gib` (Number) Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours.
+- `storage_gib` (Number) Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours. Storage autoscaling can grow the disks past this size without a diff; `current_storage_gib` has the size they have.
 
 ### Optional
 
 - `allowed_cidrs` (List of String) Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password.
-- `local_retention_bytes` (Number) The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). If not set, there is no cap.
-- `local_retention_ms` (Number) How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). If not set, Artie uses 3 days.
 - `storage_autoscale` (Attributes) How Artie grows the brokers' disks before they fill. If not set, Artie turns it on, growing at 65% full to 55% full, with no limit. (see [below for nested schema](#nestedatt--storage_autoscale))
-- `tiered_storage` (Boolean) Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`.
+- `tiered_storage` (Attributes) How the cluster's topics tier data to remote storage. If not set, Artie turns it on for every topic, with no disk cap per partition. (see [below for nested schema](#nestedatt--tiered_storage))
 
 ### Read-Only
 
 - `cloud` (String) The cloud the cluster runs in.
+- `current_storage_gib` (Number) The disk per broker the brokers have, in GiB. Can be more than `storage_gib` once storage autoscaling grows the disks.
 - `external_bootstrap_url` (String) The bootstrap address Kafka clients connect to.
 - `kafka_version` (String) The Kafka version the brokers run.
-- `status` (String) The cluster's status: `deploying`, `active`, `failed`, `draft` or `deleted`.
+- `status` (String) The cluster's status: `deploying`, `active`, `failed` or `draft`. A deleted cluster is removed from state.
 - `tiered_storage_available` (Boolean) Whether tiered storage is available on this cluster. Artie turns it on once the brokers support it.
 - `uuid` (String) The unique identifier for this Kafka cluster.
 
@@ -64,6 +67,16 @@ Optional:
 - `enabled` (Boolean) Whether Artie grows the brokers' disks before they fill. Defaults to `true`.
 - `max_gib` (Number) The most disk per broker, in GiB, a grow goes to. If not set, there is no limit.
 - `target_percent` (Number) How full, in %, the fullest broker's disk is after a grow. Must be less than `bump_at_percent`. Defaults to 55.
+
+
+<a id="nestedatt--tiered_storage"></a>
+### Nested Schema for `tiered_storage`
+
+Optional:
+
+- `enabled` (Boolean) Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`.
+- `local_retention_bytes` (Number) The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Can only be set while `enabled` is `true`. If not set, there is no cap.
+- `local_retention_ms` (Number) How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.
 
 ## Import
 
