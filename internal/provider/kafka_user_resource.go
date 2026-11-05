@@ -137,23 +137,23 @@ func waitForCredentials[T any](ctx context.Context, timeout, interval time.Durat
 	}
 }
 
-// findUser returns the user from the cluster's user list, or nil if it no longer exists.
+// findUser returns the user, or nil if it no longer exists.
 func (r *KafkaUserResource) findUser(ctx context.Context, user tfmodels.KafkaUser) (*openapi.PayloadsKafkaUser, error) {
-	users, err := artieclient.JSON200(r.client.KafkaUserListWithResponse(ctx, user.ClusterUUID.ValueString()))
-	if err != nil {
-		return nil, err
-	}
-	for _, apiUser := range users.Items {
-		if apiUser.Uuid.String() == user.UUID.ValueString() {
-			return &apiUser, nil
+	// An imported user has no access_profile yet, so it could be either.
+	if !user.IsAdmin() {
+		resp, err := r.client.KafkaUserDetailWithResponse(ctx, user.ClusterUUID.ValueString(), user.UUID.ValueString())
+		apiUser, err := artieclient.JSON200(resp, err)
+		switch {
+		case err == nil:
+			return apiUser, nil
+		case statusCode(resp) != http.StatusNotFound:
+			return nil, err
+		case tfmodels.IsKnown(user.AccessProfile):
+			return nil, nil
 		}
 	}
-	if tfmodels.IsKnown(user.AccessProfile) && !user.IsAdmin() {
-		return nil, nil
-	}
 
-	// Admin users are managed under /admin-users, which has no list; fall back to their credentials endpoint. An
-	// imported user has no access_profile yet, so it could be either.
+	// Admin users are managed under /admin-users, which has no detail endpoint; use their credentials endpoint.
 	admin := user
 	admin.AccessProfile = types.StringValue(tfmodels.KafkaUserAccessProfileAdmin)
 	creds, code, err := r.credentials(ctx, admin)
