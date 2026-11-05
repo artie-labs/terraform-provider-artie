@@ -139,9 +139,10 @@ func waitForCredentials[T any](ctx context.Context, timeout, interval time.Durat
 
 // findUser returns the user, or nil if it no longer exists.
 func (r *KafkaUserResource) findUser(ctx context.Context, user tfmodels.KafkaUser) (*openapi.PayloadsKafkaUser, error) {
+	clusterUUID, userUUID := user.ClusterUUID.ValueString(), user.UUID.ValueString()
 	// An imported user has no access_profile yet, so it could be either.
 	if !user.IsAdmin() {
-		resp, err := r.client.KafkaUserDetailWithResponse(ctx, user.ClusterUUID.ValueString(), user.UUID.ValueString())
+		resp, err := r.client.KafkaUserDetailWithResponse(ctx, clusterUUID, userUUID)
 		apiUser, err := artieclient.JSON200(resp, err)
 		switch {
 		case err == nil:
@@ -153,19 +154,13 @@ func (r *KafkaUserResource) findUser(ctx context.Context, user tfmodels.KafkaUse
 		}
 	}
 
-	// Admin users are managed under /admin-users, which has no detail endpoint; use their credentials endpoint.
-	admin := user
-	admin.AccessProfile = types.StringValue(tfmodels.KafkaUserAccessProfileAdmin)
-	creds, code, err := r.credentials(ctx, admin)
-	switch {
-	case code == http.StatusNotFound:
+	// Admin users are managed under /admin-users.
+	resp, err := r.client.KafkaAdminUserDetailWithResponse(ctx, clusterUUID, userUUID)
+	apiUser, err := artieclient.JSON200(resp, err)
+	if statusCode(resp) == http.StatusNotFound {
 		return nil, nil
-	case code == http.StatusConflict:
-		return nil, fmt.Errorf("the admin Kafka user is still being created or is being deleted: %w", err)
-	case err != nil:
-		return nil, err
 	}
-	return &creds.KafkaUser, nil
+	return apiUser, err
 }
 
 func (r *KafkaUserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
