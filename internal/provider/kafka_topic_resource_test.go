@@ -1,12 +1,19 @@
 package provider
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
+	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 )
 
@@ -29,6 +36,64 @@ func TestTieredRetentionError(t *testing.T) {
 	assert.Empty(t, tieredRetentionError(topic(fifteenDays, types.StringValue("off"))))
 	assert.Empty(t, tieredRetentionError(topic(types.Int64Value(kafkaTopicMaxTieredRetention), types.StringValue("on"))))
 	assert.Empty(t, tieredRetentionError(topic(fifteenDays, types.StringUnknown())))
+}
+
+func TestLocalRetentionError(t *testing.T) {
+	topic := func(retentionMS, localRetentionMS types.Int64, tieredStorage types.String) tfmodels.KafkaTopic {
+		return tfmodels.KafkaTopic{RetentionMS: retentionMS, LocalRetentionMS: localRetentionMS, TieredStorage: tieredStorage}
+	}
+	oneDay, twoDays := types.Int64Value(86400000), types.Int64Value(2*86400000)
+	assert.NotEmpty(t, localRetentionError(topic(oneDay, twoDays, types.StringValue("on"))))
+	// Left out of the config, a new topic follows the cluster's tiered storage, which can be on.
+	assert.NotEmpty(t, localRetentionError(topic(oneDay, twoDays, types.StringUnknown())))
+	assert.Empty(t, localRetentionError(topic(oneDay, twoDays, types.StringValue("off"))))
+	assert.Empty(t, localRetentionError(topic(twoDays, twoDays, types.StringValue("on"))))
+	assert.Empty(t, localRetentionError(topic(oneDay, types.Int64Value(-2), types.StringValue("on"))))
+	assert.Empty(t, localRetentionError(topic(types.Int64Unknown(), twoDays, types.StringValue("on"))))
+}
+
+func TestCreateTopicWaitsForDeployingCluster(t *testing.T) {
+	kafkaClusterDeployPollInterval = time.Millisecond
+	t.Cleanup(func() { kafkaClusterDeployPollInterval = 30 * time.Second })
+
+	newResource := func(t *testing.T, clusterStatuses ...string) (*KafkaTopicResource, *int) {
+		creates := 0
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			switch {
+			case req.Method == http.MethodPost && strings.HasSuffix(req.URL.Path, "/topics"):
+				creates++
+				if creates <= len(clusterStatuses) {
+					w.WriteHeader(http.StatusConflict)
+					_, _ = w.Write([]byte(`{"error": "cluster isn't active"}`))
+					return
+				}
+				_, _ = w.Write([]byte(`{}`))
+			case req.Method == http.MethodGet:
+				_, _ = fmt.Fprintf(w, `{"status": %q}`, clusterStatuses[creates-1])
+			default:
+				w.WriteHeader(http.StatusNotFound)
+			}
+		}))
+		t.Cleanup(server.Close)
+		client, err := openapi.NewClientWithResponses(server.URL)
+		assert.NoError(t, err)
+		return &KafkaTopicResource{client: client}, &creates
+	}
+	body := openapi.RouterCreateKafkaTopicRequest{Topic: "orders", PartitionCount: 1, ReplicationFactor: 3}
+	clusterUUID := "5b5d8d1e-7a39-4ef0-9a3b-5c1f8f1d2a10"
+	{
+		r, creates := newResource(t, "deploying", "deploying")
+		assert.NoError(t, r.createTopic(context.Background(), clusterUUID, body))
+		assert.Equal(t, 3, *creates)
+	}
+	{
+		// A conflict on an active cluster isn't retried.
+		r, creates := newResource(t, "active")
+		err := r.createTopic(context.Background(), clusterUUID, body)
+		assert.ErrorContains(t, err, "cluster isn't active (HTTP 409)")
+		assert.Equal(t, 1, *creates)
+	}
 }
 
 func TestConfigEntriesChangeReplaces(t *testing.T) {

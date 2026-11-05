@@ -10,6 +10,7 @@ import (
 	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
@@ -25,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -36,7 +38,12 @@ var _ resource.ResourceWithModifyPlan = &KafkaTopicResource{}
 const (
 	kafkaTopicMinRetentionMS     = 86400000   // one day
 	kafkaTopicMaxTieredRetention = 1209600000 // 14 days
+
+	kafkaClusterDeployTimeout = time.Hour
 )
+
+// kafkaClusterDeployPollInterval is how often Create retries while the topic's cluster is deploying (a var for tests).
+var kafkaClusterDeployPollInterval = 30 * time.Second
 
 var kafkaTopicTieredStorageStates = []string{
 	string(openapi.EnumsKafkaTopicTieredStorageStateOff),
@@ -67,15 +74,15 @@ func (r *KafkaTopicResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"topic": schema.StringAttribute{
 				Required:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-				Validators:          []validator.String{stringvalidator.LengthBetween(1, 249), stringvalidator.RegexMatches(regexp.MustCompile(`^[a-zA-Z0-9._-]+$`), "must contain only letters, digits, `.`, `_` and `-`")},
-				MarkdownDescription: "The topic's name: letters, digits, `.`, `_` and `-`, at most 249 characters. Changing this forces a new topic.",
+				Validators:          []validator.String{stringvalidator.LengthBetween(1, 249), stringvalidator.RegexMatches(regexp.MustCompile(`^[a-zA-Z0-9._-]+$`), "must contain only letters, digits, `.`, `_` and `-`"), stringvalidator.NoneOf(".", "..")},
+				MarkdownDescription: "The topic's name: letters, digits, `.`, `_` and `-`, at most 249 characters, and not `.` or `..`. Changing this forces a new topic.",
 			},
 			"partition_count": schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.AtLeast(1)}, MarkdownDescription: "The number of partitions. Partitions can only be added. Adding them changes which partition each key goes to."},
 			"replication_factor": schema.Int64Attribute{
 				Required:            true,
 				PlanModifiers:       []planmodifier.Int64{int64planmodifier.RequiresReplaceIf(priorIsSetInt64, "Changing the replication factor forces a new topic.", "Changing the replication factor forces a new topic.")},
 				Validators:          []validator.Int64{int64validator.AtLeast(1)},
-				MarkdownDescription: "How many copies of each partition the brokers keep. At most the cluster's number of brokers. Changing this forces a new topic.",
+				MarkdownDescription: "How many copies of each partition the brokers keep. At most the cluster's number of brokers. Changing this forces a new topic. Only Managed Kafka clusters return it, so a topic that's imported from another cluster keeps the replication factor it has, and the first value in the config is taken as is.",
 			},
 			"config_entries": schema.MapAttribute{
 				ElementType:         types.StringType,
@@ -89,21 +96,21 @@ func (r *KafkaTopicResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Computed:            true,
 				PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 				Validators:          []validator.Int64{int64validator.AtLeast(kafkaTopicMinRetentionMS)},
-				MarkdownDescription: "How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), and at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set, the topic keeps the cluster's default.",
+				MarkdownDescription: "How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), and at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set when the topic is created, the topic keeps the cluster's default. Removing it from the config later keeps the topic's current retention.",
 			},
 			"local_retention_ms": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 				Validators:          []validator.Int64{int64validator.AtLeast(kafkaTopicMinRetentionMS)},
-				MarkdownDescription: "How long a tiered topic keeps data on broker disks (`local.retention.ms`), from 86400000 (one day) up to `retention_ms`. If not set, the topic uses the cluster's days on disk. `-2`, which can only be read back, means the same as `retention_ms`.",
+				MarkdownDescription: "How long a tiered topic keeps data on broker disks (`local.retention.ms`), from 86400000 (one day) up to `retention_ms`. If not set when the topic is created, the topic uses the cluster's days on disk. Removing it from the config later keeps the topic's current value. `-2`, which can only be read back, means the same as `retention_ms`.",
 			},
 			"tiered_storage": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 				Validators:          []validator.String{stringvalidator.OneOf(kafkaTopicTieredStorageStates...)},
-				MarkdownDescription: "Whether the topic keeps older data in remote storage: `off`, `on` or `paused`. A topic that's `on` can only be paused, and only a `paused` topic can be turned `off`, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it. If not set, the topic follows the cluster's `tiered_storage`.",
+				MarkdownDescription: "Whether the topic keeps older data in remote storage: `off`, `on` or `paused`. A topic that's `on` can only be paused, and only a `paused` topic can be turned `off`, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it. If not set when the topic is created, the topic follows the cluster's `tiered_storage`. Removing it from the config later keeps the topic's current state.",
 			},
 		},
 	}
@@ -178,6 +185,9 @@ func (r *KafkaTopicResource) ModifyPlan(ctx context.Context, req resource.Modify
 	if msg := tieredRetentionError(plan); msg != "" {
 		resp.Diagnostics.AddAttributeError(path.Root("retention_ms"), "Kafka topic retention too long for tiered storage", msg)
 	}
+	if msg := localRetentionError(plan); msg != "" {
+		resp.Diagnostics.AddAttributeError(path.Root("local_retention_ms"), "Kafka topic local retention longer than retention", msg)
+	}
 
 	if req.State.Raw.IsNull() {
 		return // creating
@@ -216,6 +226,19 @@ func tieredRetentionError(plan tfmodels.KafkaTopic) string {
 		return ""
 	}
 	return fmt.Sprintf("`retention_ms` can be at most %d (14 days) while `tiered_storage` is `%s` (%d was planned).", kafkaTopicMaxTieredRetention, plan.TieredStorage.ValueString(), plan.RetentionMS.ValueInt64())
+}
+
+// localRetentionError rejects keeping data on broker disks longer than the topic keeps it at all. A negative value is
+// one read back from the API (`-2` for local retention), which isn't checked.
+func localRetentionError(plan tfmodels.KafkaTopic) string {
+	if !tfmodels.IsKnown(plan.RetentionMS) || !tfmodels.IsKnown(plan.LocalRetentionMS) || plan.TieredStorage.ValueString() == string(openapi.EnumsKafkaTopicTieredStorageStateOff) {
+		return ""
+	}
+	retentionMS, localRetentionMS := plan.RetentionMS.ValueInt64(), plan.LocalRetentionMS.ValueInt64()
+	if retentionMS < 0 || localRetentionMS < 0 || localRetentionMS <= retentionMS {
+		return ""
+	}
+	return fmt.Sprintf("`local_retention_ms` can be at most `retention_ms` (%d was planned, with a retention of %d).", localRetentionMS, retentionMS)
 }
 
 func tieredStorageTransitionError(prior, planned types.String) string {
@@ -281,7 +304,7 @@ func (r *KafkaTopicResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	clusterUUID := planData.ClusterUUID.ValueString()
-	if _, err := artieclient.JSON200(r.client.KafkaTopicCreateWithResponse(ctx, clusterUUID, body)); err != nil {
+	if err := r.createTopic(ctx, clusterUUID, body); err != nil {
 		resp.Diagnostics.AddError("Unable to create Kafka topic", err.Error())
 		return
 	}
@@ -291,6 +314,9 @@ func (r *KafkaTopicResource) Create(ctx context.Context, req resource.CreateRequ
 	r.setCreatedTopicSettings(ctx, planData, &resp.Diagnostics)
 	r.readIntoState(ctx, planData, &resp.State, &resp.Diagnostics)
 	if resp.State.Raw.IsNull() {
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError("Unable to read Kafka topic", fmt.Sprintf("topic %q not found after creating it", planData.Topic.ValueString()))
+		}
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_uuid"), planData.ClusterUUID)...)
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("topic"), planData.Topic)...)
 	}
@@ -317,7 +343,44 @@ func (r *KafkaTopicResource) setCreatedTopicSettings(ctx context.Context, planDa
 	if diags.HasError() {
 		return
 	}
+	// A topic that's `on` (from the cluster's default) has to be paused before it can be turned off. Paused, the 14-day
+	// retention cap still applies, so the retentions are sent with `off`.
+	paused := string(openapi.EnumsKafkaTopicTieredStorageStatePaused)
+	if tieredStorageTransitionError(created.TieredStorage, planData.TieredStorage) != "" {
+		r.updateSettings(ctx, planData, openapi.RouterUpdateKafkaTopicSettingsRequest{
+			TieredStorage: lib.ToPtr(openapi.RouterUpdateKafkaTopicSettingsRequestTieredStorage(paused)),
+		}, diagnostics)
+		if diagnostics.HasError() {
+			return
+		}
+		created.TieredStorage = types.StringValue(paused)
+	}
 	r.updateSettings(ctx, planData, planData.ToAPICreateSettingsRequest(created), diagnostics)
+}
+
+// createTopic creates the topic, first waiting for a new Managed Kafka cluster to finish deploying, since the API refuses
+// (409) to create topics on a cluster that isn't active yet.
+func (r *KafkaTopicResource) createTopic(ctx context.Context, clusterUUID string, body openapi.RouterCreateKafkaTopicRequest) error {
+	deadline := time.Now().Add(kafkaClusterDeployTimeout)
+	for {
+		resp, err := r.client.KafkaTopicCreateWithResponse(ctx, clusterUUID, body)
+		if err != nil || resp.StatusCode() != http.StatusConflict || time.Now().After(deadline) {
+			_, err = artieclient.JSON200(resp, err)
+			return err
+		}
+		cluster, clusterErr := artieclient.JSON200(r.client.KafkaClusterDetailWithResponse(ctx, clusterUUID))
+		if clusterErr != nil || cluster.Status != openapi.EnumsKafkaStatusDeploying {
+			_, err = artieclient.JSON200(resp, err) // the conflict isn't the cluster deploying
+			return err
+		}
+
+		tflog.Info(ctx, fmt.Sprintf("Kafka cluster %s is still deploying, retrying the topic create in %s", clusterUUID, kafkaClusterDeployPollInterval))
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(kafkaClusterDeployPollInterval):
+		}
+	}
 }
 
 func (r *KafkaTopicResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

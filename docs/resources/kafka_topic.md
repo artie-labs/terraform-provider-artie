@@ -34,15 +34,15 @@ resource "artie_kafka_topic" "example" {
 
 - `cluster_uuid` (String) The UUID of the Kafka cluster the topic is on. Changing this forces a new topic.
 - `partition_count` (Number) The number of partitions. Partitions can only be added. Adding them changes which partition each key goes to.
-- `replication_factor` (Number) How many copies of each partition the brokers keep. At most the cluster's number of brokers. Changing this forces a new topic.
-- `topic` (String) The topic's name: letters, digits, `.`, `_` and `-`, at most 249 characters. Changing this forces a new topic.
+- `replication_factor` (Number) How many copies of each partition the brokers keep. At most the cluster's number of brokers. Changing this forces a new topic. Only Managed Kafka clusters return it, so a topic that's imported from another cluster keeps the replication factor it has, and the first value in the config is taken as is.
+- `topic` (String) The topic's name: letters, digits, `.`, `_` and `-`, at most 249 characters, and not `.` or `..`. Changing this forces a new topic.
 
 ### Optional
 
 - `config_entries` (Map of String) Kafka topic configs to create the topic with (e.g. `cleanup.policy`). The API can't change them afterwards, so changing this forces a new topic. Use `retention_ms`, `local_retention_ms` and `tiered_storage` instead of `retention.ms`, `local.retention.ms`, `remote.storage.enable` and `remote.log.copy.disable`. Not read back from the API, so a topic that's imported keeps the config entries it has.
-- `local_retention_ms` (Number) How long a tiered topic keeps data on broker disks (`local.retention.ms`), from 86400000 (one day) up to `retention_ms`. If not set, the topic uses the cluster's days on disk. `-2`, which can only be read back, means the same as `retention_ms`.
-- `retention_ms` (Number) How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), and at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set, the topic keeps the cluster's default.
-- `tiered_storage` (String) Whether the topic keeps older data in remote storage: `off`, `on` or `paused`. A topic that's `on` can only be paused, and only a `paused` topic can be turned `off`, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it. If not set, the topic follows the cluster's `tiered_storage`.
+- `local_retention_ms` (Number) How long a tiered topic keeps data on broker disks (`local.retention.ms`), from 86400000 (one day) up to `retention_ms`. If not set when the topic is created, the topic uses the cluster's days on disk. Removing it from the config later keeps the topic's current value. `-2`, which can only be read back, means the same as `retention_ms`.
+- `retention_ms` (Number) How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), and at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set when the topic is created, the topic keeps the cluster's default. Removing it from the config later keeps the topic's current retention.
+- `tiered_storage` (String) Whether the topic keeps older data in remote storage: `off`, `on` or `paused`. A topic that's `on` can only be paused, and only a `paused` topic can be turned `off`, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it. If not set when the topic is created, the topic follows the cluster's `tiered_storage`. Removing it from the config later keeps the topic's current state.
 
 ## Import
 
@@ -54,9 +54,10 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 # Import a Kafka topic by using its cluster's UUID and its name, separated by a slash. You can find the cluster's UUID by:
 # 1. Go to the Kafka clusters page in the Artie UI (https://app.artie.com)
 # 2. Click on the Kafka cluster the topic is on and copy the UUID
-terraform import artie_kafka_topic.example <kafka_cluster_uuid>/<topic>
+terraform import artie_kafka_topic.example "<kafka_cluster_uuid>/<topic>"
 
 # Then print the state and copy it into your terraform config file. `config_entries` isn't read back from the API, so add
-# the ones you want Terraform to track; they aren't applied to the existing topic.
+# the ones you want Terraform to track; they aren't applied to the existing topic. Leave out `local_retention_ms` if the
+# state shows `-2`, which can only be read back.
 terraform state show artie_kafka_topic.example
 ```
