@@ -3,6 +3,7 @@ package provider
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
@@ -28,6 +29,51 @@ func TestTieredRetentionError(t *testing.T) {
 	assert.Empty(t, tieredRetentionError(topic(fifteenDays, types.StringValue("off"))))
 	assert.Empty(t, tieredRetentionError(topic(types.Int64Value(kafkaTopicMaxTieredRetention), types.StringValue("on"))))
 	assert.Empty(t, tieredRetentionError(topic(fifteenDays, types.StringUnknown())))
+}
+
+func TestConfigEntriesChangeReplaces(t *testing.T) {
+	null := types.MapNull(types.StringType)
+	compact := types.MapValueMust(types.StringType, map[string]attr.Value{"cleanup.policy": types.StringValue("compact")})
+	del := types.MapValueMust(types.StringType, map[string]attr.Value{"cleanup.policy": types.StringValue("delete")})
+
+	assert.False(t, configEntriesChangeReplaces(compact, compact, false))
+	assert.True(t, configEntriesChangeReplaces(compact, del, false))
+	assert.True(t, configEntriesChangeReplaces(compact, null, false))
+	// A topic created without config entries can't be given them in place.
+	assert.True(t, configEntriesChangeReplaces(null, compact, false))
+	// An imported topic adopts its first config entries, and changes after that replace it.
+	assert.False(t, configEntriesChangeReplaces(null, compact, true))
+	assert.True(t, configEntriesChangeReplaces(compact, del, true))
+}
+
+func TestReplacesTopic(t *testing.T) {
+	state := tfmodels.KafkaTopic{
+		ClusterUUID:       types.StringValue("5b5d8d1e-7a39-4ef0-9a3b-5c1f8f1d2a10"),
+		Topic:             types.StringValue("orders"),
+		ReplicationFactor: types.Int64Value(3),
+		ConfigEntries:     types.MapNull(types.StringType),
+	}
+	assert.False(t, replacesTopic(state, state, false))
+	{
+		plan := state
+		plan.Topic = types.StringValue("orders.v2")
+		assert.True(t, replacesTopic(state, plan, false))
+	}
+	{
+		plan := state
+		plan.ReplicationFactor = types.Int64Value(2)
+		assert.True(t, replacesTopic(state, plan, false))
+		// An imported topic's replication factor can be null, and is adopted.
+		imported := state
+		imported.ReplicationFactor = types.Int64Null()
+		assert.False(t, replacesTopic(imported, plan, true))
+	}
+	{
+		plan := state
+		plan.ConfigEntries = types.MapValueMust(types.StringType, map[string]attr.Value{"cleanup.policy": types.StringValue("compact")})
+		assert.True(t, replacesTopic(state, plan, false))
+		assert.False(t, replacesTopic(state, plan, true))
+	}
 }
 
 func TestParseKafkaTopicImportID(t *testing.T) {

@@ -80,7 +80,7 @@ func (r *KafkaTopicResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"config_entries": schema.MapAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				PlanModifiers:       []planmodifier.Map{mapplanmodifier.RequiresReplaceIf(priorIsSetMap, "Changing the config entries forces a new topic.", "Changing the config entries forces a new topic.")},
+				PlanModifiers:       []planmodifier.Map{mapplanmodifier.RequiresReplaceIf(configEntriesRequireReplace, "Changing the config entries forces a new topic.", "Changing the config entries forces a new topic.")},
 				Validators:          []validator.Map{mapvalidator.KeysAre(stringvalidator.NoneOf(kafkaTopicReservedConfigKeys...))},
 				MarkdownDescription: "Kafka topic configs to create the topic with (e.g. `cleanup.policy`). The API can't change them afterwards, so changing this forces a new topic. Use `retention_ms`, `local_retention_ms` and `tiered_storage` instead of `retention.ms`, `local.retention.ms`, `remote.storage.enable` and `remote.log.copy.disable`. Not read back from the API, so a topic that's imported keeps the config entries it has.",
 			},
@@ -109,14 +109,33 @@ func (r *KafkaTopicResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 }
 
-// priorIsSetInt64 and priorIsSetMap don't replace a topic whose prior value is null, which is how an imported topic
-// starts out for the settings the API doesn't return.
+// kafkaTopicImportedKey marks a topic in private state as imported, so its null config entries are the ones the API
+// doesn't return, not ones it was created without.
+const kafkaTopicImportedKey = "imported"
+
+// priorIsSetInt64 doesn't replace a topic whose prior replication factor is null, which is how an imported topic
+// starts out outside Managed Kafka clusters.
 func priorIsSetInt64(ctx context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
 	resp.RequiresReplace = !req.StateValue.IsNull()
 }
 
-func priorIsSetMap(ctx context.Context, req planmodifier.MapRequest, resp *mapplanmodifier.RequiresReplaceIfFuncResponse) {
-	resp.RequiresReplace = !req.StateValue.IsNull()
+func configEntriesRequireReplace(ctx context.Context, req planmodifier.MapRequest, resp *mapplanmodifier.RequiresReplaceIfFuncResponse) {
+	imported, diags := isImportedTopic(ctx, req.Private)
+	resp.Diagnostics.Append(diags...)
+	resp.RequiresReplace = configEntriesChangeReplaces(req.StateValue, req.PlanValue, imported)
+}
+
+// configEntriesChangeReplaces reports whether changing the config entries replaces the topic. An imported topic's
+// first config entries are adopted in place, since the API doesn't return the ones it has.
+func configEntriesChangeReplaces(prior, planned types.Map, imported bool) bool {
+	return !prior.Equal(planned) && !(prior.IsNull() && imported)
+}
+
+func isImportedTopic(ctx context.Context, private interface {
+	GetKey(context.Context, string) ([]byte, diag.Diagnostics)
+}) (bool, diag.Diagnostics) {
+	value, diags := private.GetKey(ctx, kafkaTopicImportedKey)
+	return value != nil, diags
 }
 
 func (r *KafkaTopicResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -165,8 +184,13 @@ func (r *KafkaTopicResource) ModifyPlan(ctx context.Context, req resource.Modify
 	}
 	var state tfmodels.KafkaTopic
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	imported, diags := isImportedTopic(ctx, req.Private)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	if replacesTopic(state, plan, imported) {
+		return // a new topic can start with any partitions and tiered storage
 	}
 	if shrinks(state.PartitionCount, plan.PartitionCount) {
 		resp.Diagnostics.AddAttributeError(path.Root("partition_count"), "Kafka topic partitions can't be removed",
@@ -175,6 +199,13 @@ func (r *KafkaTopicResource) ModifyPlan(ctx context.Context, req resource.Modify
 	if msg := tieredStorageTransitionError(state.TieredStorage, plan.TieredStorage); msg != "" {
 		resp.Diagnostics.AddAttributeError(path.Root("tiered_storage"), "Invalid Kafka topic tiered storage change", msg)
 	}
+}
+
+// replacesTopic mirrors the attributes' RequiresReplace plan modifiers, which ModifyPlan can't see.
+func replacesTopic(state, plan tfmodels.KafkaTopic, imported bool) bool {
+	return !plan.ClusterUUID.Equal(state.ClusterUUID) || !plan.Topic.Equal(state.Topic) ||
+		(!state.ReplicationFactor.IsNull() && !plan.ReplicationFactor.Equal(state.ReplicationFactor)) ||
+		configEntriesChangeReplaces(state.ConfigEntries, plan.ConfigEntries, imported)
 }
 
 func tieredRetentionError(plan tfmodels.KafkaTopic) string {
@@ -351,6 +382,7 @@ func (r *KafkaTopicResource) ImportState(ctx context.Context, req resource.Impor
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_uuid"), clusterUUID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("topic"), topic)...)
+	resp.Diagnostics.Append(resp.Private.SetKey(ctx, kafkaTopicImportedKey, []byte("true"))...)
 }
 
 func parseKafkaTopicImportID(id string) (string, string, error) {
