@@ -255,29 +255,38 @@ func (r *KafkaTopicResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	// The create request only takes config entries, so retention and tiered storage are set afterwards, through the same
-	// endpoint (and validation) as updates.
-	if tfmodels.IsKnown(planData.RetentionMS) || tfmodels.IsKnown(planData.LocalRetentionMS) || tfmodels.IsKnown(planData.TieredStorage) {
-		detail, err := r.fetchTopic(ctx, clusterUUID, planData.Topic.ValueString())
-		if err == nil && detail == nil {
-			err = fmt.Errorf("topic %q not found after creating it", planData.Topic.ValueString())
-		}
-		if err != nil {
-			resp.Diagnostics.AddError("Unable to read Kafka topic", err.Error())
-			return
-		}
-		created, diags := tfmodels.KafkaTopicFromAPIModel(clusterUUID, *detail, planData)
-		resp.Diagnostics.Append(diags...)
-		if diags.HasError() {
-			return
-		}
-		r.updateSettings(ctx, planData, planData.ToAPICreateSettingsRequest(created), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// The topic exists from here on, so it's kept in state even if a later step fails: Terraform then marks it tainted
+	// and replaces it, instead of trying to create it again.
+	r.setCreatedTopicSettings(ctx, planData, &resp.Diagnostics)
+	r.readIntoState(ctx, planData, &resp.State, &resp.Diagnostics)
+	if resp.State.Raw.IsNull() {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_uuid"), planData.ClusterUUID)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("topic"), planData.Topic)...)
+	}
+}
+
+// setCreatedTopicSettings sets retention and tiered storage on a new topic. The create request only takes config
+// entries, so they're set afterwards, through the same endpoint (and validation) as updates.
+func (r *KafkaTopicResource) setCreatedTopicSettings(ctx context.Context, planData tfmodels.KafkaTopic, diagnostics *diag.Diagnostics) {
+	if !tfmodels.IsKnown(planData.RetentionMS) && !tfmodels.IsKnown(planData.LocalRetentionMS) && !tfmodels.IsKnown(planData.TieredStorage) {
+		return
 	}
 
-	r.readIntoState(ctx, planData, &resp.State, &resp.Diagnostics)
+	clusterUUID := planData.ClusterUUID.ValueString()
+	detail, err := r.fetchTopic(ctx, clusterUUID, planData.Topic.ValueString())
+	if err == nil && detail == nil {
+		err = fmt.Errorf("topic %q not found after creating it", planData.Topic.ValueString())
+	}
+	if err != nil {
+		diagnostics.AddError("Unable to read Kafka topic", err.Error())
+		return
+	}
+	created, diags := tfmodels.KafkaTopicFromAPIModel(clusterUUID, *detail, planData)
+	diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+	r.updateSettings(ctx, planData, planData.ToAPICreateSettingsRequest(created), diagnostics)
 }
 
 func (r *KafkaTopicResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
