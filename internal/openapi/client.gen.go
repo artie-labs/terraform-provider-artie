@@ -157,6 +157,90 @@ func (e EnumsConnectorSlug) Valid() bool {
 	}
 }
 
+// Defines values for EnumsKafkaACLOperation.
+const (
+	EnumsKafkaACLOperationAll             EnumsKafkaACLOperation = "All"
+	EnumsKafkaACLOperationAlter           EnumsKafkaACLOperation = "Alter"
+	EnumsKafkaACLOperationAlterConfigs    EnumsKafkaACLOperation = "AlterConfigs"
+	EnumsKafkaACLOperationCreate          EnumsKafkaACLOperation = "Create"
+	EnumsKafkaACLOperationDelete          EnumsKafkaACLOperation = "Delete"
+	EnumsKafkaACLOperationDescribe        EnumsKafkaACLOperation = "Describe"
+	EnumsKafkaACLOperationDescribeConfigs EnumsKafkaACLOperation = "DescribeConfigs"
+	EnumsKafkaACLOperationIdempotentWrite EnumsKafkaACLOperation = "IdempotentWrite"
+	EnumsKafkaACLOperationRead            EnumsKafkaACLOperation = "Read"
+	EnumsKafkaACLOperationWrite           EnumsKafkaACLOperation = "Write"
+)
+
+// Valid indicates whether the value is a known member of the EnumsKafkaACLOperation enum.
+func (e EnumsKafkaACLOperation) Valid() bool {
+	switch e {
+	case EnumsKafkaACLOperationAll:
+		return true
+	case EnumsKafkaACLOperationAlter:
+		return true
+	case EnumsKafkaACLOperationAlterConfigs:
+		return true
+	case EnumsKafkaACLOperationCreate:
+		return true
+	case EnumsKafkaACLOperationDelete:
+		return true
+	case EnumsKafkaACLOperationDescribe:
+		return true
+	case EnumsKafkaACLOperationDescribeConfigs:
+		return true
+	case EnumsKafkaACLOperationIdempotentWrite:
+		return true
+	case EnumsKafkaACLOperationRead:
+		return true
+	case EnumsKafkaACLOperationWrite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EnumsKafkaACLPatternType.
+const (
+	EnumsKafkaACLPatternTypeLiteral EnumsKafkaACLPatternType = "literal"
+	EnumsKafkaACLPatternTypePrefix  EnumsKafkaACLPatternType = "prefix"
+)
+
+// Valid indicates whether the value is a known member of the EnumsKafkaACLPatternType enum.
+func (e EnumsKafkaACLPatternType) Valid() bool {
+	switch e {
+	case EnumsKafkaACLPatternTypeLiteral:
+		return true
+	case EnumsKafkaACLPatternTypePrefix:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EnumsKafkaACLResourceType.
+const (
+	EnumsKafkaACLResourceTypeCluster         EnumsKafkaACLResourceType = "cluster"
+	EnumsKafkaACLResourceTypeGroup           EnumsKafkaACLResourceType = "group"
+	EnumsKafkaACLResourceTypeTopic           EnumsKafkaACLResourceType = "topic"
+	EnumsKafkaACLResourceTypeTransactionalId EnumsKafkaACLResourceType = "transactionalId"
+)
+
+// Valid indicates whether the value is a known member of the EnumsKafkaACLResourceType enum.
+func (e EnumsKafkaACLResourceType) Valid() bool {
+	switch e {
+	case EnumsKafkaACLResourceTypeCluster:
+		return true
+	case EnumsKafkaACLResourceTypeGroup:
+		return true
+	case EnumsKafkaACLResourceTypeTopic:
+		return true
+	case EnumsKafkaACLResourceTypeTransactionalId:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EnumsKafkaDeployStage.
 const (
 	EnumsKafkaDeployStageApplyingCustomResources EnumsKafkaDeployStage = "applying_custom_resources"
@@ -538,6 +622,24 @@ func (e PayloadsSourceReaderSettingsPayloadMessageCompression) Valid() bool {
 	case PayloadsSourceReaderSettingsPayloadMessageCompressionGzip:
 		return true
 	case PayloadsSourceReaderSettingsPayloadMessageCompressionLessThannil:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsSpecificConfigIcebergFormatVersion.
+const (
+	PayloadsSpecificConfigIcebergFormatVersionV2 PayloadsSpecificConfigIcebergFormatVersion = "v2"
+	PayloadsSpecificConfigIcebergFormatVersionV3 PayloadsSpecificConfigIcebergFormatVersion = "v3"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsSpecificConfigIcebergFormatVersion enum.
+func (e PayloadsSpecificConfigIcebergFormatVersion) Valid() bool {
+	switch e {
+	case PayloadsSpecificConfigIcebergFormatVersionV2:
+		return true
+	case PayloadsSpecificConfigIcebergFormatVersionV3:
 		return true
 	default:
 		return false
@@ -985,6 +1087,15 @@ type EnumsCloudProvider string
 // EnumsConnectorSlug defines model for EnumsConnectorSlug.
 type EnumsConnectorSlug string
 
+// EnumsKafkaACLOperation defines model for EnumsKafkaACLOperation.
+type EnumsKafkaACLOperation string
+
+// EnumsKafkaACLPatternType defines model for EnumsKafkaACLPatternType.
+type EnumsKafkaACLPatternType string
+
+// EnumsKafkaACLResourceType defines model for EnumsKafkaACLResourceType.
+type EnumsKafkaACLResourceType string
+
 // EnumsKafkaDeployStage defines model for EnumsKafkaDeployStage.
 type EnumsKafkaDeployStage string
 
@@ -1068,6 +1179,11 @@ type ListResponseBodyLightPipeline struct {
 	Items []PayloadsLightPipeline `json:"items"`
 }
 
+// ListResponseBodyManagedKafkaUser defines model for ListResponseBodyManagedKafkaUser.
+type ListResponseBodyManagedKafkaUser struct {
+	Items []PayloadsManagedKafkaUser `json:"items"`
+}
+
 // ListResponseBodyPipelineErrorLog defines model for ListResponseBodyPipelineErrorLog.
 type ListResponseBodyPipelineErrorLog struct {
 	Items []PayloadsPipelineErrorLog `json:"items"`
@@ -1118,6 +1234,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
 	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
 	JsonAsVarchar                                *bool                           `json:"jsonAsVarchar,omitempty"`
+	JsonParseTruncateStrings                     *bool                           `json:"jsonParseTruncateStrings,omitempty"`
 	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
 	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
 	SnowpipeStreamingMaxChannels                 *int                            `json:"snowpipeStreamingMaxChannels,omitempty"`
@@ -1450,6 +1567,7 @@ type PayloadsFullPipeline struct {
 	HasBackfillingTables     *bool                            `json:"hasBackfillingTables,omitempty"`
 	HasUndeployedChanges     bool                             `json:"hasUndeployedChanges"`
 	HistoryBackfillStages    *[]PayloadsBackfillStageEvent    `json:"historyBackfillStages,omitempty"`
+	IcebergNativeEngine      *bool                            `json:"icebergNativeEngine,omitempty"`
 	IsDeploying              bool                             `json:"isDeploying"`
 	LastDeployError          *string                          `json:"lastDeployError,omitempty"`
 	LastDeployFailedAt       *time.Time                       `json:"lastDeployFailedAt,omitempty"`
@@ -1764,7 +1882,7 @@ type PayloadsKafkaTopicCreateResponse struct {
 
 // PayloadsKafkaTopicDetail defines model for PayloadsKafkaTopicDetail.
 type PayloadsKafkaTopicDetail struct {
-	// Managed The topic's replication and per-partition leader and offsets. Only set when the cluster isManaged: on shared clusters broker details are Artie infra.
+	// Managed The topic's replication and per-partition leader and offsets.
 	Managed        *PayloadsKafkaTopicDetailManaged   `json:"managed,omitempty"`
 	PartitionSizes *[]PayloadsKafkaTopicPartitionSize `json:"partitionSizes"`
 	Pipelines      *[]PayloadsKafkaTopicPipeline      `json:"pipelines"`
@@ -1821,7 +1939,7 @@ type PayloadsKafkaTopicSize struct {
 
 // PayloadsKafkaTopicTieredStorage defines model for PayloadsKafkaTopicTieredStorage.
 type PayloadsKafkaTopicTieredStorage struct {
-	// CanTier Whether tiered storage can be on for this topic. Kafka refuses it on compacted topics, and Artie keeps it off Kafka's and Cruise Control's own topics and topics keeping more than 14 days.
+	// CanTier Whether tiered storage can be on for this topic. Kafka refuses it on compacted topics, and Artie keeps it off Kafka's and Cruise Control's own topics and topics whose retention can't be read.
 	CanTier bool `json:"canTier"`
 
 	// State off, on or paused, from the topic's remote.storage.enable and remote.log.copy.disable configs.
@@ -1839,6 +1957,17 @@ type PayloadsKafkaUser struct {
 	Status              string             `json:"status"`
 	Username            string             `json:"username"`
 	Uuid                openapi_types.UUID `json:"uuid"`
+}
+
+// PayloadsKafkaUserACL defines model for PayloadsKafkaUserACL.
+type PayloadsKafkaUserACL struct {
+	// Name Empty for the cluster, which is one resource.
+	Name      string                 `json:"name"`
+	Operation EnumsKafkaACLOperation `json:"operation"`
+
+	// PatternType literal matches name exactly, and "*" is every name; prefix matches names starting with it.
+	PatternType  EnumsKafkaACLPatternType  `json:"patternType"`
+	ResourceType EnumsKafkaACLResourceType `json:"resourceType"`
 }
 
 // PayloadsLightConnector defines model for PayloadsLightConnector.
@@ -1885,6 +2014,14 @@ type PayloadsLightPipeline struct {
 	SourceType               EnumsConnectorSlug            `json:"sourceType"`
 	Status                   *EnumsPipelineStatus          `json:"status,omitempty"`
 	Uuid                     openapi_types.UUID            `json:"uuid"`
+}
+
+// PayloadsManagedKafkaUser defines model for PayloadsManagedKafkaUser.
+type PayloadsManagedKafkaUser struct {
+	Acls      []PayloadsKafkaUserACL `json:"acls"`
+	CreatedAt time.Time              `json:"createdAt"`
+	Username  string                 `json:"username"`
+	Uuid      openapi_types.UUID     `json:"uuid"`
 }
 
 // PayloadsMergePredicates defines model for PayloadsMergePredicates.
@@ -1936,6 +2073,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
 	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
 	JsonAsVarchar                                *bool                           `json:"jsonAsVarchar,omitempty"`
+	JsonParseTruncateStrings                     *bool                           `json:"jsonParseTruncateStrings,omitempty"`
 	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
 	NullOutInvalidValues                         *bool                           `json:"nullOutInvalidValues,omitempty"`
 	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
@@ -2221,21 +2359,25 @@ type PayloadsSourceReaderTablesConfig map[string]PayloadsSourceReaderTable
 
 // PayloadsSpecificConfig defines model for PayloadsSpecificConfig.
 type PayloadsSpecificConfig struct {
-	BucketName                  *string                   `json:"bucketName,omitempty"`
-	CheckpointInterval          *int                      `json:"checkpointInterval,omitempty"`
-	Compaction                  *PayloadsCompactionConfig `json:"compaction,omitempty"`
-	ContainerName               *string                   `json:"containerName,omitempty"`
-	Database                    *string                   `json:"database,omitempty"`
-	DynamicallyCreateNamespaces *bool                     `json:"dynamicallyCreateNamespaces,omitempty"`
-	ExternalStageName           *string                   `json:"externalStageName,omitempty"`
-	ExternalStageS3Bucket       *string                   `json:"externalStageS3Bucket,omitempty"`
-	ExternalStageS3Prefix       *string                   `json:"externalStageS3Prefix,omitempty"`
-	FolderName                  *string                   `json:"folderName,omitempty"`
-	Schema                      *string                   `json:"schema,omitempty"`
-	SchemaNamePrefix            *string                   `json:"schemaNamePrefix,omitempty"`
-	TableNameSeparator          *string                   `json:"tableNameSeparator,omitempty"`
-	UseSameSchemaAsSource       *bool                     `json:"useSameSchemaAsSource,omitempty"`
+	BucketName                  *string                                     `json:"bucketName,omitempty"`
+	CheckpointInterval          *int                                        `json:"checkpointInterval,omitempty"`
+	Compaction                  *PayloadsCompactionConfig                   `json:"compaction,omitempty"`
+	ContainerName               *string                                     `json:"containerName,omitempty"`
+	Database                    *string                                     `json:"database,omitempty"`
+	DynamicallyCreateNamespaces *bool                                       `json:"dynamicallyCreateNamespaces,omitempty"`
+	ExternalStageName           *string                                     `json:"externalStageName,omitempty"`
+	ExternalStageS3Bucket       *string                                     `json:"externalStageS3Bucket,omitempty"`
+	ExternalStageS3Prefix       *string                                     `json:"externalStageS3Prefix,omitempty"`
+	FolderName                  *string                                     `json:"folderName,omitempty"`
+	IcebergFormatVersion        *PayloadsSpecificConfigIcebergFormatVersion `json:"icebergFormatVersion,omitempty"`
+	Schema                      *string                                     `json:"schema,omitempty"`
+	SchemaNamePrefix            *string                                     `json:"schemaNamePrefix,omitempty"`
+	TableNameSeparator          *string                                     `json:"tableNameSeparator,omitempty"`
+	UseSameSchemaAsSource       *bool                                       `json:"useSameSchemaAsSource,omitempty"`
 }
+
+// PayloadsSpecificConfigIcebergFormatVersion defines model for PayloadsSpecificConfig.IcebergFormatVersion.
+type PayloadsSpecificConfigIcebergFormatVersion string
 
 // PayloadsStaticColumn defines model for PayloadsStaticColumn.
 type PayloadsStaticColumn struct {
@@ -3424,6 +3566,29 @@ type RouterKafkaUserDeleteResponse struct {
 	Warning   *string           `json:"warning,omitempty"`
 }
 
+// RouterManagedKafkaUserACLsRequest defines model for RouterManagedKafkaUserACLsRequest.
+type RouterManagedKafkaUserACLsRequest struct {
+	// Acls What the user can do. Kafka refuses it everything else.
+	Acls *[]PayloadsKafkaUserACL `json:"acls"`
+}
+
+// RouterManagedKafkaUserRequest defines model for RouterManagedKafkaUserRequest.
+type RouterManagedKafkaUserRequest struct {
+	// Acls What the user can do. Kafka refuses it everything else.
+	Acls *[]PayloadsKafkaUserACL `json:"acls"`
+
+	// Username Lowercase letters, digits, '.' and '-', at most 64 characters. admin and artie are the built-in logins.
+	Username string `json:"username"`
+}
+
+// RouterManagedKafkaUserWithPasswordResponse defines model for RouterManagedKafkaUserWithPasswordResponse.
+type RouterManagedKafkaUserWithPasswordResponse struct {
+	// Password Left out while Strimzi hasn't made it live yet; get it from the credentials endpoint.
+	Password *string                  `json:"password,omitempty"`
+	User     PayloadsManagedKafkaUser `json:"user"`
+	Warning  *string                  `json:"warning,omitempty"`
+}
+
 // RouterPipelineBackfillRequest defines model for RouterPipelineBackfillRequest.
 type RouterPipelineBackfillRequest struct {
 	// BackfillBatchSize Optional rows per batch. Saved as the pipeline's backfill batch size before the backfill starts, so later backfills use it too.
@@ -3506,7 +3671,7 @@ type RouterPipelineUpdateRequest struct {
 
 // RouterPipelineUpdateStatusRequest defines model for RouterPipelineUpdateStatusRequest.
 type RouterPipelineUpdateStatusRequest struct {
-	// Status running resumes the pipeline and its source reader. transfer paused stops writing to the destination while the source reader keeps reading. paused stops writing and pauses the source reader, unless the source reader is shared and another pipeline still reads from it.
+	// Status running (Active in the dashboard) resumes source reading and delivery. transfer paused (Delivery paused) stops writing to the destination while the source reader keeps reading. Changes are kept for the Kafka topic's retention, 14 days by default. paused (Paused) pauses source reading and delivery, unless the source reader is shared and another pipeline still reads from it.
 	Status EnumsPipelineStatus `json:"status"`
 }
 
@@ -3732,7 +3897,7 @@ type RouterUpdateKafkaTopicSettingsRequest struct {
 	// LocalRetentionMS How long the tiered topic keeps data on broker disks: from 86400000 (one day) up to retention. Turning tiered storage on without it uses 7 days, capped at retention; on a Managed Kafka cluster it uses the cluster's days on disk.
 	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
 
-	// RetentionMS New retention.ms: at least 86400000 (one day); -1 (keep forever) isn't supported. At most 1209600000 (14 days) while tiered storage is on or paused.
+	// RetentionMS New retention.ms: at least 86400000 (one day); or -1 to keep messages forever.
 	RetentionMS *int `json:"retentionMS,omitempty"`
 
 	// TieredStorage off, on or paused. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
@@ -3970,6 +4135,12 @@ type KafkaClusterBrokersUpdateJSONRequestBody = RouterUpdateKafkaClusterBrokersR
 
 // KafkaClusterInstanceTypeUpdateJSONRequestBody defines body for KafkaClusterInstanceTypeUpdate for application/json ContentType.
 type KafkaClusterInstanceTypeUpdateJSONRequestBody = RouterUpdateKafkaClusterInstanceTypeRequest
+
+// KafkaManagedUserCreateJSONRequestBody defines body for KafkaManagedUserCreate for application/json ContentType.
+type KafkaManagedUserCreateJSONRequestBody = RouterManagedKafkaUserRequest
+
+// KafkaManagedUserUpdateJSONRequestBody defines body for KafkaManagedUserUpdate for application/json ContentType.
+type KafkaManagedUserUpdateJSONRequestBody = RouterManagedKafkaUserACLsRequest
 
 // KafkaClusterRenameJSONRequestBody defines body for KafkaClusterRename for application/json ContentType.
 type KafkaClusterRenameJSONRequestBody = RouterRenameKafkaClusterRequest
@@ -5259,7 +5430,7 @@ type ClientInterface interface {
 	// Corresponds with POST /column-hashing-salts/{uuid}/preview (the `ColumnHashingSaltPreview` operationId).
 	ColumnHashingSaltPreview(ctx context.Context, uuid string, body ColumnHashingSaltPreviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CompanyTriggerAutomaticSchemaChanges Trigger automatic schema changes
+	// CompanyTriggerAutomaticSchemaChanges Trigger automatic schema changes for all pipelines
 	//
 	// Enqueues automatic schema changes for all eligible running pipelines in the authenticated company. The request is accepted before reconciliation completes.
 	//
@@ -5795,6 +5966,13 @@ type ClientInterface interface {
 	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 	KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaAdminUserDetail Get an admin Kafka user
+	//
+	// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+	KafkaAdminUserDetail(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaAdminUserCredentials Get admin Kafka user credentials
 	//
 	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -5876,6 +6054,63 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
 	KafkaClusterInstanceTypeUpdate(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserList List a Managed Kafka cluster's users
+	//
+	// Lists the extra Kafka logins on a Managed Kafka cluster, with their ACLs. Passwords are never included.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserList` operationId).
+	KafkaManagedUserList(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserCreateWithBody Create a Managed Kafka cluster's user
+	//
+	// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+	KafkaManagedUserCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserCreate Create a Managed Kafka cluster's user
+	//
+	// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+	KafkaManagedUserCreate(ctx context.Context, uuid string, body KafkaManagedUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserDelete Delete a Managed Kafka cluster's user
+	//
+	// Deletes the user. Kafka refuses its password within seconds. Safe to retry. Company admins only.
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserDelete` operationId).
+	KafkaManagedUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserUpdateWithBody Change a Managed Kafka cluster's user's ACLs
+	//
+	// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+	KafkaManagedUserUpdateWithBody(ctx context.Context, uuid string, userUUID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserUpdate Change a Managed Kafka cluster's user's ACLs
+	//
+	// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+	KafkaManagedUserUpdate(ctx context.Context, uuid string, userUUID string, body KafkaManagedUserUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaManagedUserCredentials Get a Managed Kafka cluster's user's password
+	//
+	// Returns the user's password, which lets the caller act as that user. Returns 409 while Strimzi hasn't made it live yet or the user is being deleted. Company admins only.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/managed-users/{userUUID}/credentials (the `KafkaManagedUserCredentials` operationId).
+	KafkaManagedUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaClusterMetricsGraph Get Kafka metrics graphs
 	//
@@ -6096,7 +6331,7 @@ type ClientInterface interface {
 
 	// KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6105,7 +6340,7 @@ type ClientInterface interface {
 
 	// KafkaTopicRetentionUpdate Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6143,6 +6378,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 	KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaUserDetail Get a Kafka user
+	//
+	// Retrieves a Kafka user. Its password is never included; get it from the credentials endpoint. Admin-profile users are not found here.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDetail` operationId).
+	KafkaUserDetail(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaUserCredentials Get Kafka user credentials
 	//
@@ -6262,7 +6504,7 @@ type ClientInterface interface {
 	// Corresponds with POST /pipelines/{uuid} (the `PipelineUpdate` operationId).
 	PipelineUpdate(ctx context.Context, uuid string, body PipelineUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PipelineTriggerAutomaticSchemaChanges Trigger automatic schema changes
+	// PipelineTriggerAutomaticSchemaChanges Trigger automatic schema changes for a pipeline
 	//
 	// Enqueues automatic schema changes for one eligible pipeline. Set forceRefresh to bypass the two-hour cooldown for this execution. The request is accepted before reconciliation completes.
 	//
@@ -6763,7 +7005,7 @@ func (c *Client) ColumnHashingSaltPreview(ctx context.Context, uuid string, body
 	return c.Client.Do(req)
 }
 
-// CompanyTriggerAutomaticSchemaChanges Trigger automatic schema changes
+// CompanyTriggerAutomaticSchemaChanges Trigger automatic schema changes for all pipelines
 //
 // Enqueues automatic schema changes for all eligible running pipelines in the authenticated company. The request is accepted before reconciliation completes.
 //
@@ -7939,6 +8181,23 @@ func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID
 	return c.Client.Do(req)
 }
 
+// KafkaAdminUserDetail Get an admin Kafka user
+//
+// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+func (c *Client) KafkaAdminUserDetail(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaAdminUserDetailRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaAdminUserCredentials Get admin Kafka user credentials
 //
 // Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -8111,6 +8370,133 @@ func (c *Client) KafkaClusterInstanceTypeUpdateWithBody(ctx context.Context, uui
 // Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
 func (c *Client) KafkaClusterInstanceTypeUpdate(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterInstanceTypeUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserList List a Managed Kafka cluster's users
+//
+// Lists the extra Kafka logins on a Managed Kafka cluster, with their ACLs. Passwords are never included.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserList` operationId).
+func (c *Client) KafkaManagedUserList(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserListRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserCreateWithBody Create a Managed Kafka cluster's user
+//
+// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+func (c *Client) KafkaManagedUserCreateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserCreateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserCreate Create a Managed Kafka cluster's user
+//
+// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+func (c *Client) KafkaManagedUserCreate(ctx context.Context, uuid string, body KafkaManagedUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserCreateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserDelete Delete a Managed Kafka cluster's user
+//
+// Deletes the user. Kafka refuses its password within seconds. Safe to retry. Company admins only.
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserDelete` operationId).
+func (c *Client) KafkaManagedUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserDeleteRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserUpdateWithBody Change a Managed Kafka cluster's user's ACLs
+//
+// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+func (c *Client) KafkaManagedUserUpdateWithBody(ctx context.Context, uuid string, userUUID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserUpdateRequestWithBody(c.Server, uuid, userUUID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserUpdate Change a Managed Kafka cluster's user's ACLs
+//
+// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+func (c *Client) KafkaManagedUserUpdate(ctx context.Context, uuid string, userUUID string, body KafkaManagedUserUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserUpdateRequest(c.Server, uuid, userUUID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaManagedUserCredentials Get a Managed Kafka cluster's user's password
+//
+// Returns the user's password, which lets the caller act as that user. Returns 409 while Strimzi hasn't made it live yet or the user is being deleted. Company admins only.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/managed-users/{userUUID}/credentials (the `KafkaManagedUserCredentials` operationId).
+func (c *Client) KafkaManagedUserCredentials(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaManagedUserCredentialsRequest(c.Server, uuid, userUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -8610,7 +8996,7 @@ func (c *Client) KafkaTopicPartitionsIncrease(ctx context.Context, uuid string, 
 
 // KafkaTopicRetentionUpdateWithBody Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type.
 //
@@ -8629,7 +9015,7 @@ func (c *Client) KafkaTopicRetentionUpdateWithBody(ctx context.Context, uuid str
 
 // KafkaTopicRetentionUpdate Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8708,6 +9094,23 @@ func (c *Client) KafkaUserCreate(ctx context.Context, uuid string, body KafkaUse
 // Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 func (c *Client) KafkaUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaUserDeleteRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaUserDetail Get a Kafka user
+//
+// Retrieves a Kafka user. Its password is never included; get it from the credentials endpoint. Admin-profile users are not found here.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDetail` operationId).
+func (c *Client) KafkaUserDetail(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaUserDetailRequest(c.Server, uuid, userUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -8976,7 +9379,7 @@ func (c *Client) PipelineUpdate(ctx context.Context, uuid string, body PipelineU
 	return c.Client.Do(req)
 }
 
-// PipelineTriggerAutomaticSchemaChanges Trigger automatic schema changes
+// PipelineTriggerAutomaticSchemaChanges Trigger automatic schema changes for a pipeline
 //
 // Enqueues automatic schema changes for one eligible pipeline. Set forceRefresh to bypass the two-hour cooldown for this execution. The request is accepted before reconciliation completes.
 //
@@ -11888,6 +12291,47 @@ func NewKafkaAdminUserDeleteRequest(server string, uuid string, userUUID string)
 	return req, nil
 }
 
+// NewKafkaAdminUserDetailRequest constructs an http.Request for the KafkaAdminUserDetail method
+func NewKafkaAdminUserDetailRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewKafkaAdminUserCredentialsRequest constructs an http.Request for the KafkaAdminUserCredentials method
 func NewKafkaAdminUserCredentialsRequest(server string, uuid string, userUUID string) (*http.Request, error) {
 	var err error
@@ -12256,6 +12700,223 @@ func NewKafkaClusterInstanceTypeUpdateRequestWithBody(server string, uuid string
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaManagedUserListRequest constructs an http.Request for the KafkaManagedUserList method
+func NewKafkaManagedUserListRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/managed-users", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaManagedUserCreateRequest calls the generic KafkaManagedUserCreate builder with application/json body
+func NewKafkaManagedUserCreateRequest(server string, uuid string, body KafkaManagedUserCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaManagedUserCreateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaManagedUserCreateRequestWithBody constructs an http.Request for the KafkaManagedUserCreate method, with any body, and a specified content type
+func NewKafkaManagedUserCreateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/managed-users", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaManagedUserDeleteRequest constructs an http.Request for the KafkaManagedUserDelete method
+func NewKafkaManagedUserDeleteRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/managed-users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaManagedUserUpdateRequest calls the generic KafkaManagedUserUpdate builder with application/json body
+func NewKafkaManagedUserUpdateRequest(server string, uuid string, userUUID string, body KafkaManagedUserUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaManagedUserUpdateRequestWithBody(server, uuid, userUUID, "application/json", bodyReader)
+}
+
+// NewKafkaManagedUserUpdateRequestWithBody constructs an http.Request for the KafkaManagedUserUpdate method, with any body, and a specified content type
+func NewKafkaManagedUserUpdateRequestWithBody(server string, uuid string, userUUID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/managed-users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewKafkaManagedUserCredentialsRequest constructs an http.Request for the KafkaManagedUserCredentials method
+func NewKafkaManagedUserCredentialsRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/managed-users/%s/credentials", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -13478,6 +14139,47 @@ func NewKafkaUserDeleteRequest(server string, uuid string, userUUID string) (*ht
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaUserDetailRequest constructs an http.Request for the KafkaUserDetail method
+func NewKafkaUserDetailRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -15043,7 +15745,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /column-hashing-salts/{uuid}/preview (the `ColumnHashingSaltPreview` operationId).
 	ColumnHashingSaltPreviewWithResponse(ctx context.Context, uuid string, body ColumnHashingSaltPreviewJSONRequestBody, reqEditors ...RequestEditorFn) (*ColumnHashingSaltPreviewResponse, error)
 
-	// CompanyTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes
+	// CompanyTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes for all pipelines
 	//
 	// Enqueues automatic schema changes for all eligible running pipelines in the authenticated company. The request is accepted before reconciliation completes.
 	//
@@ -15619,6 +16321,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 	KafkaAdminUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDeleteResponse, error)
 
+	// KafkaAdminUserDetailWithResponse Get an admin Kafka user
+	//
+	// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+	KafkaAdminUserDetailWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDetailResponse, error)
+
 	// KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 	//
 	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -15708,6 +16419,69 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /kafka-clusters/{uuid}/instance-type (the `KafkaClusterInstanceTypeUpdate` operationId).
 	KafkaClusterInstanceTypeUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterInstanceTypeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterInstanceTypeUpdateResponse, error)
+
+	// KafkaManagedUserListWithResponse List a Managed Kafka cluster's users
+	//
+	// Lists the extra Kafka logins on a Managed Kafka cluster, with their ACLs. Passwords are never included.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserList` operationId).
+	KafkaManagedUserListWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaManagedUserListResponse, error)
+
+	// KafkaManagedUserCreateWithBodyWithResponse Create a Managed Kafka cluster's user
+	//
+	// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+	KafkaManagedUserCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaManagedUserCreateResponse, error)
+
+	// KafkaManagedUserCreateWithResponse Create a Managed Kafka cluster's user
+	//
+	// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+	KafkaManagedUserCreateWithResponse(ctx context.Context, uuid string, body KafkaManagedUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaManagedUserCreateResponse, error)
+
+	// KafkaManagedUserDeleteWithResponse Delete a Managed Kafka cluster's user
+	//
+	// Deletes the user. Kafka refuses its password within seconds. Safe to retry. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserDelete` operationId).
+	KafkaManagedUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaManagedUserDeleteResponse, error)
+
+	// KafkaManagedUserUpdateWithBodyWithResponse Change a Managed Kafka cluster's user's ACLs
+	//
+	// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+	KafkaManagedUserUpdateWithBodyWithResponse(ctx context.Context, uuid string, userUUID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaManagedUserUpdateResponse, error)
+
+	// KafkaManagedUserUpdateWithResponse Change a Managed Kafka cluster's user's ACLs
+	//
+	// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+	KafkaManagedUserUpdateWithResponse(ctx context.Context, uuid string, userUUID string, body KafkaManagedUserUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaManagedUserUpdateResponse, error)
+
+	// KafkaManagedUserCredentialsWithResponse Get a Managed Kafka cluster's user's password
+	//
+	// Returns the user's password, which lets the caller act as that user. Returns 409 while Strimzi hasn't made it live yet or the user is being deleted. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/managed-users/{userUUID}/credentials (the `KafkaManagedUserCredentials` operationId).
+	KafkaManagedUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaManagedUserCredentialsResponse, error)
 
 	// KafkaClusterMetricsGraphWithResponse Get Kafka metrics graphs
 	//
@@ -15954,7 +16728,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -15963,7 +16737,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
 	//
-	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+	// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16005,6 +16779,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDelete` operationId).
 	KafkaUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserDeleteResponse, error)
+
+	// KafkaUserDetailWithResponse Get a Kafka user
+	//
+	// Retrieves a Kafka user. Its password is never included; get it from the credentials endpoint. Admin-profile users are not found here.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDetail` operationId).
+	KafkaUserDetailWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserDetailResponse, error)
 
 	// KafkaUserCredentialsWithResponse Get Kafka user credentials
 	//
@@ -16132,7 +16915,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /pipelines/{uuid} (the `PipelineUpdate` operationId).
 	PipelineUpdateWithResponse(ctx context.Context, uuid string, body PipelineUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*PipelineUpdateResponse, error)
 
-	// PipelineTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes
+	// PipelineTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes for a pipeline
 	//
 	// Enqueues automatic schema changes for one eligible pipeline. Set forceRefresh to bypass the two-hour cooldown for this execution. The request is accepted before reconciliation completes.
 	//
@@ -18414,6 +19197,47 @@ func (r KafkaAdminUserDeleteResponse) ContentType() string {
 	return ""
 }
 
+type KafkaAdminUserDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaUser
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaAdminUserDetailResponse) GetJSON200() *PayloadsKafkaUser {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaAdminUserDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaAdminUserDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaAdminUserDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaAdminUserDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaAdminUserCredentialsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -18695,6 +19519,204 @@ func (r KafkaClusterInstanceTypeUpdateResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterInstanceTypeUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaManagedUserListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodyManagedKafkaUser
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaManagedUserListResponse) GetJSON200() *ListResponseBodyManagedKafkaUser {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaManagedUserListResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaManagedUserListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaManagedUserListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaManagedUserListResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaManagedUserCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterManagedKafkaUserWithPasswordResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaManagedUserCreateResponse) GetJSON200() *RouterManagedKafkaUserWithPasswordResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaManagedUserCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaManagedUserCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaManagedUserCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaManagedUserCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaManagedUserDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaManagedUserDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaManagedUserDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaManagedUserDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaManagedUserDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaManagedUserUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsManagedKafkaUser
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaManagedUserUpdateResponse) GetJSON200() *PayloadsManagedKafkaUser {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaManagedUserUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaManagedUserUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaManagedUserUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaManagedUserUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaManagedUserCredentialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RouterManagedKafkaUserWithPasswordResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaManagedUserCredentialsResponse) GetJSON200() *RouterManagedKafkaUserWithPasswordResponse {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaManagedUserCredentialsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaManagedUserCredentialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaManagedUserCredentialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaManagedUserCredentialsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -19651,6 +20673,47 @@ func (r KafkaUserDeleteResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaUserDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaUserDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaUser
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaUserDetailResponse) GetJSON200() *PayloadsKafkaUser {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaUserDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaUserDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaUserDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaUserDetailResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -21131,7 +22194,7 @@ func (c *ClientWithResponses) ColumnHashingSaltPreviewWithResponse(ctx context.C
 	return ParseColumnHashingSaltPreviewResponse(rsp)
 }
 
-// CompanyTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes
+// CompanyTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes for all pipelines
 //
 // Enqueues automatic schema changes for all eligible running pipelines in the authenticated company. The request is accepted before reconciliation completes.
 //
@@ -22091,6 +23154,21 @@ func (c *ClientWithResponses) KafkaAdminUserDeleteWithResponse(ctx context.Conte
 	return ParseKafkaAdminUserDeleteResponse(rsp)
 }
 
+// KafkaAdminUserDetailWithResponse Get an admin Kafka user
+//
+// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+func (c *ClientWithResponses) KafkaAdminUserDetailWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDetailResponse, error) {
+	rsp, err := c.KafkaAdminUserDetail(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaAdminUserDetailResponse(rsp)
+}
+
 // KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 //
 // Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -22239,6 +23317,111 @@ func (c *ClientWithResponses) KafkaClusterInstanceTypeUpdateWithResponse(ctx con
 		return nil, err
 	}
 	return ParseKafkaClusterInstanceTypeUpdateResponse(rsp)
+}
+
+// KafkaManagedUserListWithResponse List a Managed Kafka cluster's users
+//
+// Lists the extra Kafka logins on a Managed Kafka cluster, with their ACLs. Passwords are never included.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserList` operationId).
+func (c *ClientWithResponses) KafkaManagedUserListWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaManagedUserListResponse, error) {
+	rsp, err := c.KafkaManagedUserList(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserListResponse(rsp)
+}
+
+// KafkaManagedUserCreateWithBodyWithResponse Create a Managed Kafka cluster's user
+//
+// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+func (c *ClientWithResponses) KafkaManagedUserCreateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaManagedUserCreateResponse, error) {
+	rsp, err := c.KafkaManagedUserCreateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserCreateResponse(rsp)
+}
+
+// KafkaManagedUserCreateWithResponse Create a Managed Kafka cluster's user
+//
+// Creates an extra Kafka login with the chosen ACLs and returns its password once Strimzi makes it live, normally within seconds. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/managed-users (the `KafkaManagedUserCreate` operationId).
+func (c *ClientWithResponses) KafkaManagedUserCreateWithResponse(ctx context.Context, uuid string, body KafkaManagedUserCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaManagedUserCreateResponse, error) {
+	rsp, err := c.KafkaManagedUserCreate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserCreateResponse(rsp)
+}
+
+// KafkaManagedUserDeleteWithResponse Delete a Managed Kafka cluster's user
+//
+// Deletes the user. Kafka refuses its password within seconds. Safe to retry. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserDelete` operationId).
+func (c *ClientWithResponses) KafkaManagedUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaManagedUserDeleteResponse, error) {
+	rsp, err := c.KafkaManagedUserDelete(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserDeleteResponse(rsp)
+}
+
+// KafkaManagedUserUpdateWithBodyWithResponse Change a Managed Kafka cluster's user's ACLs
+//
+// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+func (c *ClientWithResponses) KafkaManagedUserUpdateWithBodyWithResponse(ctx context.Context, uuid string, userUUID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaManagedUserUpdateResponse, error) {
+	rsp, err := c.KafkaManagedUserUpdateWithBody(ctx, uuid, userUUID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserUpdateResponse(rsp)
+}
+
+// KafkaManagedUserUpdateWithResponse Change a Managed Kafka cluster's user's ACLs
+//
+// Replaces the user's ACLs. Its password stays the same, so clients using it keep working with the new ACLs. Returns 409 while the user is being deleted. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /kafka-clusters/{uuid}/managed-users/{userUUID} (the `KafkaManagedUserUpdate` operationId).
+func (c *ClientWithResponses) KafkaManagedUserUpdateWithResponse(ctx context.Context, uuid string, userUUID string, body KafkaManagedUserUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaManagedUserUpdateResponse, error) {
+	rsp, err := c.KafkaManagedUserUpdate(ctx, uuid, userUUID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserUpdateResponse(rsp)
+}
+
+// KafkaManagedUserCredentialsWithResponse Get a Managed Kafka cluster's user's password
+//
+// Returns the user's password, which lets the caller act as that user. Returns 409 while Strimzi hasn't made it live yet or the user is being deleted. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/managed-users/{userUUID}/credentials (the `KafkaManagedUserCredentials` operationId).
+func (c *ClientWithResponses) KafkaManagedUserCredentialsWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaManagedUserCredentialsResponse, error) {
+	rsp, err := c.KafkaManagedUserCredentials(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaManagedUserCredentialsResponse(rsp)
 }
 
 // KafkaClusterMetricsGraphWithResponse Get Kafka metrics graphs
@@ -22648,7 +23831,7 @@ func (c *ClientWithResponses) KafkaTopicPartitionsIncreaseWithResponse(ctx conte
 
 // KafkaTopicRetentionUpdateWithBodyWithResponse Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -22663,7 +23846,7 @@ func (c *ClientWithResponses) KafkaTopicRetentionUpdateWithBodyWithResponse(ctx 
 
 // KafkaTopicRetentionUpdateWithResponse Change Kafka topic retention
 //
-// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. A topic with tiered storage on or paused keeps at most 14 days, and Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
+// Sets a topic's `retention.ms`. Potentially destructive: Kafka deletes messages older than the new retention, and on Artie-managed topics that can drop change events before Artie pipelines read them. Kafka-internal (`__`) topics can't change. On a Managed Kafka cluster Cruise Control's (`strimzi.cruisecontrol.*`) can't either, and the cluster must be active (409 otherwise).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -22734,6 +23917,21 @@ func (c *ClientWithResponses) KafkaUserDeleteWithResponse(ctx context.Context, u
 		return nil, err
 	}
 	return ParseKafkaUserDeleteResponse(rsp)
+}
+
+// KafkaUserDetailWithResponse Get a Kafka user
+//
+// Retrieves a Kafka user. Its password is never included; get it from the credentials endpoint. Admin-profile users are not found here.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/users/{userUUID} (the `KafkaUserDetail` operationId).
+func (c *ClientWithResponses) KafkaUserDetailWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaUserDetailResponse, error) {
+	rsp, err := c.KafkaUserDetail(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaUserDetailResponse(rsp)
 }
 
 // KafkaUserCredentialsWithResponse Get Kafka user credentials
@@ -22946,7 +24144,7 @@ func (c *ClientWithResponses) PipelineUpdateWithResponse(ctx context.Context, uu
 	return ParsePipelineUpdateResponse(rsp)
 }
 
-// PipelineTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes
+// PipelineTriggerAutomaticSchemaChangesWithResponse Trigger automatic schema changes for a pipeline
 //
 // Enqueues automatic schema changes for one eligible pipeline. Set forceRefresh to bypass the two-hour cooldown for this execution. The request is accepted before reconciliation completes.
 //
@@ -24972,6 +26170,38 @@ func ParseKafkaAdminUserDeleteResponse(rsp *http.Response) (*KafkaAdminUserDelet
 	return response, nil
 }
 
+// ParseKafkaAdminUserDetailResponse parses an HTTP response from a KafkaAdminUserDetailWithResponse call
+func ParseKafkaAdminUserDetailResponse(rsp *http.Response) (*KafkaAdminUserDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaAdminUserDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseKafkaAdminUserCredentialsResponse parses an HTTP response from a KafkaAdminUserCredentialsWithResponse call
 func ParseKafkaAdminUserCredentialsResponse(rsp *http.Response) (*KafkaAdminUserCredentialsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -25222,6 +26452,171 @@ func ParseKafkaClusterInstanceTypeUpdateResponse(rsp *http.Response) (*KafkaClus
 		break // No content-type
 
 	case rsp.StatusCode == 503:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaManagedUserListResponse parses an HTTP response from a KafkaManagedUserListWithResponse call
+func ParseKafkaManagedUserListResponse(rsp *http.Response) (*KafkaManagedUserListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaManagedUserListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodyManagedKafkaUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaManagedUserCreateResponse parses an HTTP response from a KafkaManagedUserCreateWithResponse call
+func ParseKafkaManagedUserCreateResponse(rsp *http.Response) (*KafkaManagedUserCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaManagedUserCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterManagedKafkaUserWithPasswordResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaManagedUserDeleteResponse parses an HTTP response from a KafkaManagedUserDeleteWithResponse call
+func ParseKafkaManagedUserDeleteResponse(rsp *http.Response) (*KafkaManagedUserDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaManagedUserDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseKafkaManagedUserUpdateResponse parses an HTTP response from a KafkaManagedUserUpdateWithResponse call
+func ParseKafkaManagedUserUpdateResponse(rsp *http.Response) (*KafkaManagedUserUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaManagedUserUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsManagedKafkaUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaManagedUserCredentialsResponse parses an HTTP response from a KafkaManagedUserCredentialsWithResponse call
+func ParseKafkaManagedUserCredentialsResponse(rsp *http.Response) (*KafkaManagedUserCredentialsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaManagedUserCredentialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouterManagedKafkaUserWithPasswordResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
 		break // No content-type
 
 	}
@@ -26028,6 +27423,38 @@ func ParseKafkaUserDeleteResponse(rsp *http.Response) (*KafkaUserDeleteResponse,
 		break // No content-type
 
 	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaUserDetailResponse parses an HTTP response from a KafkaUserDetailWithResponse call
+func ParseKafkaUserDetailResponse(rsp *http.Response) (*KafkaUserDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaUserDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
