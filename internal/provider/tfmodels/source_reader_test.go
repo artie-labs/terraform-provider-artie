@@ -87,3 +87,34 @@ func TestSourceReaderMongoDBDeploymentScopedMode(t *testing.T) {
 		assert.False(t, fromAPI.MongoDBDeploymentScopedMode.ValueBool())
 	}
 }
+
+func TestSourceReaderArchiveConnectorRoundTrip(t *testing.T) {
+	archiveConnectorUUID := uuid.New()
+	model := SourceReader{
+		UUID:                   types.StringValue(uuid.NewString()),
+		ConnectorUUID:          types.StringValue(uuid.NewString()),
+		MSSQLReplicationMethod: types.StringValue("trn_log_backup"),
+		ArchiveConnectorUUID:   types.StringValue(archiveConnectorUUID.String()),
+	}
+
+	payload, diags := model.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError())
+	assert.Equal(t, archiveConnectorUUID, *payload.ArchiveConnectorUUID)
+	// The API only keeps the archive connector with this location type
+	assert.Equal(t, openapi.EnumsMSSQLArchiveLocationTypeSmbShare, *payload.Settings.ArchiveLocationType)
+	assert.Equal(t, archiveConnectorUUID, *SourceReaderCreateRequestFromAPIModel(payload).ArchiveConnectorUUID)
+
+	fromAPI, diags := SourceReaderFromAPIModel(t.Context(), payload)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, archiveConnectorUUID.String(), fromAPI.ArchiveConnectorUUID.ValueString())
+
+	// Without one, neither is sent
+	model.ArchiveConnectorUUID = types.StringNull()
+	payload, diags = model.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError())
+	assert.Nil(t, payload.ArchiveConnectorUUID)
+	assert.Nil(t, payload.Settings.ArchiveLocationType)
+	fromAPI, diags = SourceReaderFromAPIModel(t.Context(), payload)
+	assert.False(t, diags.HasError())
+	assert.Equal(t, "", fromAPI.ArchiveConnectorUUID.ValueString())
+}

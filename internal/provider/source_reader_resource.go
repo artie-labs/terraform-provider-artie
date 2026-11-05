@@ -74,6 +74,7 @@ func (r *SourceReaderResource) Schema(ctx context.Context, req resource.SchemaRe
 			"enable_unify_across_schemas":        schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify tables that should be generalized to all schemas, meaning we will sync all tables with the same name into the same destination table. This is useful if you have multiple identical schemas and want to fan-in the data. This is only applicable if the source type is PostgreSQL."},
 			"unify_across_schemas_regex":         schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If unify across schemas is enabled, this is an additional regex pattern that you can use to filter which schemas should be unified. This is only applicable if the source type is PostgreSQL."},
 			"mssql_replication_method":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If unset, we will use the default replication method (Capture Instances). Other values: `change_tracking`, `trn_log_backup`. This is only applicable if the source type is Microsoft SQL Server."},
+			"archive_connector_uuid":             schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{archiveConnectorPlanModifier{}}, MarkdownDescription: "This can point to an `artie_connector` resource of type `smb_share` that holds the transaction log backup files we should read from. This is only applicable if the source type is Microsoft SQL Server and `mssql_replication_method` is set to `trn_log_backup`. Removing it from your config keeps the current share; switching to another `mssql_replication_method` unlinks it."},
 			"enable_unify_across_databases":      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, you can specify multiple databases within your Microsoft SQL Server that we should sync data from, and we will unify tables with the same name and schema into a single destination table. This is useful if you have multiple identical databases and want to fan-in the data. This is only applicable if the source type is Microsoft SQL Server and `mssql_replication_method` is set to `change_tracking` or `trn_log_backup`."},
 			"databases_to_unify":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If `enable_unify_across_databases` is set to true, this should be a list of databases within your Microsoft SQL Server that we should sync data from. All tables that you opt into being unified should exist in each of these databases. This is only applicable if the source type is Microsoft SQL Server."},
 			"status_override": schema.StringAttribute{
@@ -185,6 +186,10 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 		}
 	}
 
+	if configData.ArchiveConnectorUUID.ValueString() != "" && !configData.MSSQLReplicationMethod.IsUnknown() && configData.MSSQLReplicationMethod.ValueString() != "trn_log_backup" {
+		diags.AddError("Invalid configuration", "`archive_connector_uuid` is only applicable if `mssql_replication_method` is set to `trn_log_backup`.")
+	}
+
 	if configData.EnableUnifyAcrossDatabases.ValueBool() {
 		if !supportsUnifyAcrossDatabases(configData.MSSQLReplicationMethod) {
 			diags.AddError("Invalid configuration", "`enable_unify_across_databases` is only applicable if `mssql_replication_method` is set to `change_tracking` or `trn_log_backup`.")
@@ -209,6 +214,35 @@ func supportsUnifyAcrossDatabases(method types.String) bool {
 		return true
 	}
 	return slices.Contains([]string{"change_tracking", "trn_log_backup"}, method.ValueString())
+}
+
+// archiveConnectorPlanModifier keeps the archive connector from state when it's left out of the config, except that the API
+// unlinks it from a source reader that stops using `trn_log_backup`.
+type archiveConnectorPlanModifier struct{}
+
+func (archiveConnectorPlanModifier) Description(context.Context) string {
+	return "Keeps the archive connector unless mssql_replication_method moves off trn_log_backup."
+}
+
+func (m archiveConnectorPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (archiveConnectorPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.PlanValue.IsUnknown() || req.StateValue.IsNull() {
+		return
+	}
+
+	var method types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("mssql_replication_method"), &method)...)
+	if method.IsUnknown() {
+		return
+	}
+	if method.ValueString() == "trn_log_backup" {
+		resp.PlanValue = req.StateValue
+	} else {
+		resp.PlanValue = types.StringValue("")
+	}
 }
 
 func (r *SourceReaderResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {

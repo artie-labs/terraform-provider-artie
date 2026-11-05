@@ -110,6 +110,7 @@ type SourceReader struct {
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
 	MSSQLReplicationMethod          types.String `tfsdk:"mssql_replication_method"`
+	ArchiveConnectorUUID            types.String `tfsdk:"archive_connector_uuid"`
 	EnableUnifyAcrossDatabases      types.Bool   `tfsdk:"enable_unify_across_databases"`
 	DatabasesToUnify                types.List   `tfsdk:"databases_to_unify"`
 	DisableAutoFetchTables          types.Bool   `tfsdk:"disable_auto_fetch_tables"`
@@ -180,14 +181,15 @@ func (s SourceReader) toAPITablesConfig(ctx context.Context) (*openapi.PayloadsS
 
 func SourceReaderCreateRequestFromAPIModel(model openapi.PayloadsSourceReader) openapi.RouterSourceReaderCreateRequest {
 	return openapi.RouterSourceReaderCreateRequest{
-		ConnectorUUID: model.ConnectorUUID,
-		Name:          &model.Name,
-		DataPlaneName: &model.DataPlaneName,
-		Database:      &model.Database,
-		ContainerName: &model.ContainerName,
-		IsShared:      model.IsShared,
-		Settings:      &model.Settings,
-		TablesConfig:  model.TablesConfig,
+		ConnectorUUID:        model.ConnectorUUID,
+		Name:                 &model.Name,
+		DataPlaneName:        &model.DataPlaneName,
+		Database:             &model.Database,
+		ContainerName:        &model.ContainerName,
+		IsShared:             model.IsShared,
+		Settings:             &model.Settings,
+		TablesConfig:         model.TablesConfig,
+		ArchiveConnectorUUID: model.ArchiveConnectorUUID,
 	}
 }
 
@@ -206,18 +208,29 @@ func (s SourceReader) ToAPIPayload(ctx context.Context) (openapi.PayloadsSourceR
 		return openapi.PayloadsSourceReader{}, diags
 	}
 
+	archiveConnectorUUID, archiveDiags := parseOptionalUUID(s.ArchiveConnectorUUID)
+	diags.Append(archiveDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsSourceReader{}, diags
+	}
+	if archiveConnectorUUID != nil {
+		// The API only keeps an archive connector alongside this location type.
+		settings.ArchiveLocationType = lib.ToPtr(openapi.EnumsMSSQLArchiveLocationTypeSmbShare)
+	}
+
 	tablesConfig, tablesDiags := s.toAPITablesConfig(ctx)
 	diags.Append(tablesDiags...)
 
 	return openapi.PayloadsSourceReader{
-		ConnectorUUID: connectorUUID,
-		Name:          s.Name.ValueString(),
-		DataPlaneName: s.DataPlaneName.ValueString(),
-		Database:      s.DatabaseName.ValueString(),
-		ContainerName: s.OracleContainerName.ValueString(),
-		IsShared:      boolPointer(s.IsShared),
-		Settings:      settings,
-		TablesConfig:  tablesConfig,
+		ConnectorUUID:        connectorUUID,
+		Name:                 s.Name.ValueString(),
+		DataPlaneName:        s.DataPlaneName.ValueString(),
+		Database:             s.DatabaseName.ValueString(),
+		ContainerName:        s.OracleContainerName.ValueString(),
+		IsShared:             boolPointer(s.IsShared),
+		Settings:             settings,
+		TablesConfig:         tablesConfig,
+		ArchiveConnectorUUID: archiveConnectorUUID,
 	}, diags
 }
 
@@ -271,6 +284,7 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
 		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
 		MSSQLReplicationMethod:          types.StringValue(lib.RemovePtr(apiModel.Settings.MssqlReplicationMethod)),
+		ArchiveConnectorUUID:            optionalUUIDToStringValue(apiModel.ArchiveConnectorUUID),
 		EnableUnifyAcrossDatabases:      types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossDatabases)),
 		DatabasesToUnify:                databasesToUnify,
 		DisableAutoFetchTables:          types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),

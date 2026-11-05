@@ -5,7 +5,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 
 	"terraform-provider-artie/internal/provider/tfmodels"
@@ -240,4 +245,57 @@ func TestSourceReaderResource_ValidateConfig(t *testing.T) {
 		diags := validateSourceReaderConfig(t.Context(), config)
 		assert.False(t, diags.HasError())
 	}
+}
+
+func TestSourceReaderResource_ValidateArchiveConnector(t *testing.T) {
+	config := func(method types.String) tfmodels.SourceReader {
+		return tfmodels.SourceReader{
+			ConnectorUUID:          types.StringValue(uuid.NewString()),
+			MSSQLReplicationMethod: method,
+			ArchiveConnectorUUID:   types.StringValue(uuid.NewString()),
+		}
+	}
+
+	// Transaction log backups read from the archive connector, and a method that isn't known yet is checked later
+	assert.False(t, validateSourceReaderConfig(t.Context(), config(types.StringValue("trn_log_backup"))).HasError())
+	assert.False(t, validateSourceReaderConfig(t.Context(), config(types.StringUnknown())).HasError())
+
+	for _, method := range []types.String{types.StringNull(), types.StringValue("change_tracking")} {
+		diags := validateSourceReaderConfig(t.Context(), config(method))
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags.Errors()[0].Detail(), "`archive_connector_uuid` is only applicable if `mssql_replication_method` is set to `trn_log_backup`.")
+	}
+}
+
+func TestArchiveConnectorPlanModifier(t *testing.T) {
+	ctx := t.Context()
+	var schemaResp resource.SchemaResponse
+	(&SourceReaderResource{}).Schema(ctx, resource.SchemaRequest{}, &schemaResp)
+
+	plan := func(config, state, method types.String) types.String {
+		p := tfsdk.Plan{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
+		assert.False(t, p.SetAttribute(ctx, path.Root("mssql_replication_method"), method).HasError())
+		planValue := config
+		if config.IsNull() {
+			// Unset optional+computed attributes start out unknown on update.
+			planValue = types.StringUnknown()
+		}
+		req := planmodifier.StringRequest{ConfigValue: config, StateValue: state, PlanValue: planValue, Plan: p}
+		resp := &planmodifier.StringResponse{PlanValue: planValue}
+		archiveConnectorPlanModifier{}.PlanModifyString(ctx, req, resp)
+		assert.False(t, resp.Diagnostics.HasError())
+		return resp.PlanValue
+	}
+	archive := types.StringValue(uuid.NewString())
+	trn := types.StringValue("trn_log_backup")
+
+	// Left out of the config, a TRN source reader keeps its share
+	assert.Equal(t, archive, plan(types.StringNull(), archive, trn))
+	// Moving off TRN unlinks it, as the API does
+	assert.Equal(t, types.StringValue(""), plan(types.StringNull(), archive, types.StringValue("change_tracking")))
+	// Not known until the method is, or until the source reader is created
+	assert.True(t, plan(types.StringNull(), archive, types.StringUnknown()).IsUnknown())
+	assert.True(t, plan(types.StringNull(), types.StringNull(), trn).IsUnknown())
+	// Set in the config
+	assert.Equal(t, archive, plan(archive, types.StringValue(""), trn))
 }

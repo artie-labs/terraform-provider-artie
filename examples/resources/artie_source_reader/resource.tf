@@ -26,3 +26,12 @@ resource "artie_source_reader" "postgres_dev_reader" {
     }
   }
 }
+
+# A Microsoft SQL Server source reader that reads transaction log backups from an SMB share connector:
+resource "artie_source_reader" "mssql_trn_reader" {
+  name                     = "MSSQL Orders Reader"
+  connector_uuid           = artie_connector.mssql_prod.uuid
+  database_name            = "orders"
+  mssql_replication_method = "trn_log_backup"
+  archive_connector_uuid   = artie_connector.fsx_log_backups.uuid
+}

@@ -92,3 +92,46 @@ func TestConnectorFromAPIModelKeepsMaskedSecrets(t *testing.T) {
 	assert.Equal(t, "real-key", connector.SnowflakeConfig.PrivateKey.ValueString())
 	assert.Equal(t, "https://acme.snowflakecomputing.com", connector.SnowflakeConfig.AccountURL.ValueString())
 }
+
+func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "smb_share",
+		"label": "log backups",
+		"privateLinkUUID": "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d",
+		"sharedConfig": {"path": "\\\\fs-0123.corp.example.com\\share\\backups", "username": "CORP\\svc-artie", "password": "********"}
+	}`), &apiConnector))
+	prior := Connector{
+		Type:           types.StringValue("smb_share"),
+		SMBShareConfig: &SMBShareConfig{Password: types.StringValue("real-password")},
+	}
+
+	connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+	require.False(t, diags.HasError(), diags)
+	require.NotNil(t, connector.SMBShareConfig)
+	assert.Equal(t, `\\fs-0123.corp.example.com\share\backups`, connector.SMBShareConfig.Path.ValueString())
+	assert.Equal(t, `CORP\svc-artie`, connector.SMBShareConfig.Username.ValueString())
+	assert.Equal(t, "real-password", connector.SMBShareConfig.Password.ValueString())
+	assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.SMBShareConfig.PrivateLinkUUID.ValueString())
+
+	{
+		// The PrivateLink goes on the connector, not in sharedConfig
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "smb_share", *body.Type)
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", body.PrivateLinkUUID.String())
+		require.NotNil(t, body.SharedConfig)
+		config := *body.SharedConfig
+		assert.Equal(t, `\\fs-0123.corp.example.com\share\backups`, config["path"])
+		assert.Equal(t, `CORP\svc-artie`, config["username"])
+		assert.Equal(t, "real-password", config["password"])
+	}
+	{
+		// No PrivateLink
+		connector.SMBShareConfig.PrivateLinkUUID = types.StringValue("")
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Nil(t, body.PrivateLinkUUID)
+	}
+}

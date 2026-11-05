@@ -101,3 +101,19 @@ resource "artie_connector" "iceberg_rest_catalog_oauth2" {
     scope      = "catalog"
   }
 }
+
+variable "smb_share_password" {
+  type      = string
+  sensitive = true
+}
+
+# The folder that a Microsoft SQL Server source reader using `trn_log_backup` reads its log backup files from:
+resource "artie_connector" "fsx_log_backups" {
+  name = "FSx Log Backups"
+  type = "smb_share"
+  smb_share_config = {
+    path     = "\\\\fs-0123.corp.example.com\\share\\backups"
+    username = "CORP\\svc-artie"
+    password = var.smb_share_password
+  }
+}
