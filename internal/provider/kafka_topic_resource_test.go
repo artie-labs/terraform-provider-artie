@@ -88,11 +88,17 @@ func TestCreateTopicWaitsForDeployingCluster(t *testing.T) {
 		assert.Equal(t, 3, *creates)
 	}
 	{
-		// A conflict on an active cluster isn't retried.
-		r, creates := newResource(t, "active")
+		// The deploy finished between the create and the cluster read: the create is retried once.
+		r, creates := newResource(t, "deploying", "active")
+		assert.NoError(t, r.createTopic(context.Background(), clusterUUID, body))
+		assert.Equal(t, 3, *creates)
+	}
+	{
+		// A second conflict on an active cluster is a real conflict.
+		r, creates := newResource(t, "active", "active")
 		err := r.createTopic(context.Background(), clusterUUID, body)
 		assert.ErrorContains(t, err, "cluster isn't active (HTTP 409)")
-		assert.Equal(t, 1, *creates)
+		assert.Equal(t, 2, *creates)
 	}
 }
 

@@ -135,7 +135,7 @@ func configEntriesRequireReplace(ctx context.Context, req planmodifier.MapReques
 // configEntriesChangeReplaces reports whether changing the config entries replaces the topic. An imported topic's
 // first config entries are adopted in place, since the API doesn't return the ones it has.
 func configEntriesChangeReplaces(prior, planned types.Map, imported bool) bool {
-	return !prior.Equal(planned) && !(prior.IsNull() && imported)
+	return !prior.Equal(planned) && (!prior.IsNull() || !imported)
 }
 
 func isImportedTopic(ctx context.Context, private interface {
@@ -362,6 +362,7 @@ func (r *KafkaTopicResource) setCreatedTopicSettings(ctx context.Context, planDa
 // (409) to create topics on a cluster that isn't active yet.
 func (r *KafkaTopicResource) createTopic(ctx context.Context, clusterUUID string, body openapi.RouterCreateKafkaTopicRequest) error {
 	deadline := time.Now().Add(kafkaClusterDeployTimeout)
+	retriedActive := false
 	for {
 		resp, err := r.client.KafkaTopicCreateWithResponse(ctx, clusterUUID, body)
 		if err != nil || resp.StatusCode() != http.StatusConflict || time.Now().After(deadline) {
@@ -369,6 +370,11 @@ func (r *KafkaTopicResource) createTopic(ctx context.Context, clusterUUID string
 			return err
 		}
 		cluster, clusterErr := artieclient.JSON200(r.client.KafkaClusterDetailWithResponse(ctx, clusterUUID))
+		if clusterErr == nil && cluster.Status == openapi.EnumsKafkaStatusActive && !retriedActive {
+			// The deploy may have finished between the create and this read, so retry once before calling it a real conflict.
+			retriedActive = true
+			continue
+		}
 		if clusterErr != nil || cluster.Status != openapi.EnumsKafkaStatusDeploying {
 			_, err = artieclient.JSON200(resp, err) // the conflict isn't the cluster deploying
 			return err
