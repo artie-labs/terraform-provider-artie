@@ -5966,6 +5966,13 @@ type ClientInterface interface {
 	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 	KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaAdminUserDetail Get an admin Kafka user
+	//
+	// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+	KafkaAdminUserDetail(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaAdminUserCredentials Get admin Kafka user credentials
 	//
 	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -8164,6 +8171,23 @@ func (c *Client) KafkaAdminUserCreate(ctx context.Context, uuid string, body Kaf
 // Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 func (c *Client) KafkaAdminUserDelete(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaAdminUserDeleteRequest(c.Server, uuid, userUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaAdminUserDetail Get an admin Kafka user
+//
+// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+func (c *Client) KafkaAdminUserDetail(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaAdminUserDetailRequest(c.Server, uuid, userUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -12267,6 +12291,47 @@ func NewKafkaAdminUserDeleteRequest(server string, uuid string, userUUID string)
 	return req, nil
 }
 
+// NewKafkaAdminUserDetailRequest constructs an http.Request for the KafkaAdminUserDetail method
+func NewKafkaAdminUserDetailRequest(server string, uuid string, userUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "userUUID", userUUID, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/admin-users/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewKafkaAdminUserCredentialsRequest constructs an http.Request for the KafkaAdminUserCredentials method
 func NewKafkaAdminUserCredentialsRequest(server string, uuid string, userUUID string) (*http.Request, error) {
 	var err error
@@ -16256,6 +16321,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDelete` operationId).
 	KafkaAdminUserDeleteWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDeleteResponse, error)
 
+	// KafkaAdminUserDetailWithResponse Get an admin Kafka user
+	//
+	// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+	KafkaAdminUserDetailWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDetailResponse, error)
+
 	// KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 	//
 	// Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -19117,6 +19191,47 @@ func (r KafkaAdminUserDeleteResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaAdminUserDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaAdminUserDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaUser
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaAdminUserDetailResponse) GetJSON200() *PayloadsKafkaUser {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaAdminUserDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaAdminUserDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaAdminUserDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaAdminUserDetailResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -23039,6 +23154,21 @@ func (c *ClientWithResponses) KafkaAdminUserDeleteWithResponse(ctx context.Conte
 	return ParseKafkaAdminUserDeleteResponse(rsp)
 }
 
+// KafkaAdminUserDetailWithResponse Get an admin Kafka user
+//
+// Retrieves an admin-profile Kafka user. Its password is never included; get it from the credentials endpoint. Producer/consumer users are not found here.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/admin-users/{userUUID} (the `KafkaAdminUserDetail` operationId).
+func (c *ClientWithResponses) KafkaAdminUserDetailWithResponse(ctx context.Context, uuid string, userUUID string, reqEditors ...RequestEditorFn) (*KafkaAdminUserDetailResponse, error) {
+	rsp, err := c.KafkaAdminUserDetail(ctx, uuid, userUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaAdminUserDetailResponse(rsp)
+}
+
 // KafkaAdminUserCredentialsWithResponse Get admin Kafka user credentials
 //
 // Returns the admin-profile Kafka user's password, which lets the caller act as that user. Returns 409 while its password isn't ready yet or the user is being deleted; a pending user becomes active once its password is ready. Admin-profile users have cluster-wide Kafka ACLs, including every replicated topic. Company admins only.
@@ -26030,6 +26160,38 @@ func ParseKafkaAdminUserDeleteResponse(rsp *http.Response) (*KafkaAdminUserDelet
 		break // No content-type
 
 	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaAdminUserDetailResponse parses an HTTP response from a KafkaAdminUserDetailWithResponse call
+func ParseKafkaAdminUserDetailResponse(rsp *http.Response) (*KafkaAdminUserDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaAdminUserDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
