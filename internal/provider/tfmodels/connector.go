@@ -95,7 +95,8 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 	}
 
 	var privateLinkUUID *uuid.UUID
-	if c.SMBShareConfig != nil {
+	// Only an SMB share takes a PrivateLink here; a stray smb_share_config block on another type is ignored like its sharedConfig.
+	if c.SMBShareConfig != nil && openapi.EnumsConnectorSlug(c.Type.ValueString()) == openapi.EnumsConnectorSlugSmbShare {
 		privateLinkUUID, diags = parseOptionalUUID(c.SMBShareConfig.PrivateLinkUUID)
 		if diags.HasError() {
 			return openapi.PayloadsConnectorPayload{}, diags

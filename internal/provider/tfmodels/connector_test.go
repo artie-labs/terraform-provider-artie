@@ -134,4 +134,14 @@ func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
 		require.False(t, diags.HasError(), diags)
 		assert.Nil(t, body.PrivateLinkUUID)
 	}
+	{
+		// A stray smb_share_config block on another connector type doesn't send its PrivateLink
+		other := connector
+		other.Type = types.StringValue("postgresql")
+		other.PostgresConfig = &PostgresSharedConfig{}
+		other.SMBShareConfig = &SMBShareConfig{PrivateLinkUUID: types.StringValue("5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d")}
+		body, diags := other.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Nil(t, body.PrivateLinkUUID)
+	}
 }
