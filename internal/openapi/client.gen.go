@@ -462,17 +462,20 @@ func (e PayloadsBackfillDefaultsPayloadReadMode) Valid() bool {
 
 // Defines values for PayloadsKafkaClusterChangeField.
 const (
-	PayloadsKafkaClusterChangeFieldAllowedCIDRs  PayloadsKafkaClusterChangeField = "allowedCIDRs"
-	PayloadsKafkaClusterChangeFieldBrokers       PayloadsKafkaClusterChangeField = "brokers"
-	PayloadsKafkaClusterChangeFieldInstanceType  PayloadsKafkaClusterChangeField = "instanceType"
-	PayloadsKafkaClusterChangeFieldStorageGiB    PayloadsKafkaClusterChangeField = "storageGiB"
-	PayloadsKafkaClusterChangeFieldTieredStorage PayloadsKafkaClusterChangeField = "tieredStorage"
+	PayloadsKafkaClusterChangeFieldAllowedCIDRs   PayloadsKafkaClusterChangeField = "allowedCIDRs"
+	PayloadsKafkaClusterChangeFieldBrokerSettings PayloadsKafkaClusterChangeField = "brokerSettings"
+	PayloadsKafkaClusterChangeFieldBrokers        PayloadsKafkaClusterChangeField = "brokers"
+	PayloadsKafkaClusterChangeFieldInstanceType   PayloadsKafkaClusterChangeField = "instanceType"
+	PayloadsKafkaClusterChangeFieldStorageGiB     PayloadsKafkaClusterChangeField = "storageGiB"
+	PayloadsKafkaClusterChangeFieldTieredStorage  PayloadsKafkaClusterChangeField = "tieredStorage"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsKafkaClusterChangeField enum.
 func (e PayloadsKafkaClusterChangeField) Valid() bool {
 	switch e {
 	case PayloadsKafkaClusterChangeFieldAllowedCIDRs:
+		return true
+	case PayloadsKafkaClusterChangeFieldBrokerSettings:
 		return true
 	case PayloadsKafkaClusterChangeFieldBrokers:
 		return true
@@ -1204,6 +1207,22 @@ type ListResponseBodySchemaResponse struct {
 	Items []PayloadsSchemaResponse `json:"items"`
 }
 
+// ListResponseBodySnowflakeEcoSchedule defines model for ListResponseBodySnowflakeEcoSchedule.
+type ListResponseBodySnowflakeEcoSchedule struct {
+	Items []PayloadsSnowflakeEcoSchedule `json:"items"`
+}
+
+// OrmSnowflakeEcoScheduleSettings defines model for OrmSnowflakeEcoScheduleSettings.
+type OrmSnowflakeEcoScheduleSettings struct {
+	Days                        []string `json:"days"`
+	EndTimeOfDay                string   `json:"endTimeOfDay"`
+	OffPeakBufferRows           int      `json:"offPeakBufferRows"`
+	OffPeakFlushIntervalSeconds int      `json:"offPeakFlushIntervalSeconds"`
+	OffPeakFlushSizeKb          int      `json:"offPeakFlushSizeKb"`
+	StartTimeOfDay              string   `json:"startTimeOfDay"`
+	Timezone                    string   `json:"timezone"`
+}
+
 // PayloadsAdvancedPipelineSettingsPayload defines model for PayloadsAdvancedPipelineSettingsPayload.
 type PayloadsAdvancedPipelineSettingsPayload struct {
 	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
@@ -1325,6 +1344,24 @@ type PayloadsAnalyticsTimeseriesPoint struct {
 
 // PayloadsAnalyticsUnit defines model for PayloadsAnalyticsUnit.
 type PayloadsAnalyticsUnit string
+
+// PayloadsBYOCKafkaClusterSettings defines model for PayloadsBYOCKafkaClusterSettings.
+type PayloadsBYOCKafkaClusterSettings struct {
+	// Brokers How many brokers the cluster runs: the replicas of its node pools with the broker role, added up.
+	Brokers *int `json:"brokers,omitempty"`
+
+	// KafkaVersion The Kafka version the Kafka resource asks for, such as 4.2.0, else the one Strimzi reports running. Left out when neither is set.
+	KafkaVersion *string `json:"kafkaVersion,omitempty"`
+
+	// StorageClass The Kubernetes storage class of the brokers' disks. Left out when the disks name none and the Kubernetes cluster's default class is used.
+	StorageClass *string `json:"storageClass,omitempty"`
+
+	// StorageGiB Disk per broker in GiB, all its volumes added up. Left out when the brokers have no persistent disks.
+	StorageGiB *int `json:"storageGiB,omitempty"`
+
+	// Supported Whether these settings can be read for the cluster. Only BYOC Strimzi clusters linked to their Kubernetes cluster have them; Managed Kafka clusters show theirs in the cluster's managed field, and MSK clusters have none.
+	Supported bool `json:"supported"`
+}
 
 // PayloadsBackfillDefaultsPayload defines model for PayloadsBackfillDefaultsPayload.
 type PayloadsBackfillDefaultsPayload struct {
@@ -1623,6 +1660,12 @@ type PayloadsJsonValueObject map[string]interface{}
 // PayloadsJsonValueString defines model for PayloadsJsonValueString.
 type PayloadsJsonValueString = string
 
+// PayloadsKafkaBrokerConfig defines model for PayloadsKafkaBrokerConfig.
+type PayloadsKafkaBrokerConfig struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
 // PayloadsKafkaCluster defines model for PayloadsKafkaCluster.
 type PayloadsKafkaCluster struct {
 	Cloud     string    `json:"cloud"`
@@ -1675,6 +1718,12 @@ type PayloadsKafkaCluster struct {
 	Uuid      openapi_types.UUID `json:"uuid"`
 }
 
+// PayloadsKafkaClusterBrokerSettings defines model for PayloadsKafkaClusterBrokerSettings.
+type PayloadsKafkaClusterBrokerSettings struct {
+	// RetentionMS How long topics keep messages unless they set their own retention.ms, in ms (the brokers' log.retention.ms). -1 keeps them forever.
+	RetentionMS int64 `json:"retentionMS"`
+}
+
 // PayloadsKafkaClusterChange defines model for PayloadsKafkaClusterChange.
 type PayloadsKafkaClusterChange struct {
 	// Field The setting the change is to. The other fields already show its new value.
@@ -1700,9 +1749,15 @@ type PayloadsKafkaClusterChangeState string
 type PayloadsKafkaClusterManaged struct {
 	// AllowedCIDRs Client IP ranges allowed to reach the cluster. Empty when any IP can connect.
 	AllowedCIDRs []string `json:"allowedCIDRs"`
-	Brokers      int      `json:"brokers"`
-	InstanceType string   `json:"instanceType"`
-	KafkaVersion string   `json:"kafkaVersion"`
+
+	// BrokerConfigs The broker config Artie sets on top of Kafka's defaults, sorted by name.
+	BrokerConfigs []PayloadsKafkaBrokerConfig `json:"brokerConfigs"`
+
+	// BrokerSettings The broker settings customers can change.
+	BrokerSettings PayloadsKafkaClusterBrokerSettings `json:"brokerSettings"`
+	Brokers        int                                `json:"brokers"`
+	InstanceType   string                             `json:"instanceType"`
+	KafkaVersion   string                             `json:"kafkaVersion"`
 
 	// PendingChange The cluster's latest change that isn't applied yet. Missing once every change is applied, and while the cluster isn't active.
 	PendingChange *PayloadsKafkaClusterChange `json:"pendingChange,omitempty"`
@@ -1751,7 +1806,7 @@ type PayloadsKafkaClusterStorageAutoscale struct {
 	// Enabled Whether Artie grows the brokers' disks before they fill.
 	Enabled bool `json:"enabled"`
 
-	// MaxGiB The most disk per broker, in GiB, a grow goes to. Missing is no limit.
+	// MaxGiB The most disk per broker, in GiB, a grow goes to. Null is no limit.
 	MaxGiB *int `json:"maxGiB,omitempty"`
 
 	// TargetPercent How full, in %, the fullest broker's disk is after a grow. Less than bumpAtPercent. Defaults to 55.
@@ -2264,6 +2319,17 @@ type PayloadsSeenTableColumnMetadata struct {
 	DefaultValue *string `json:"defaultValue,omitempty"`
 	IsPrimaryKey *bool   `json:"isPrimaryKey,omitempty"`
 	NotNull      bool    `json:"notNull"`
+}
+
+// PayloadsSnowflakeEcoSchedule defines model for PayloadsSnowflakeEcoSchedule.
+type PayloadsSnowflakeEcoSchedule struct {
+	Company         openapi_types.UUID              `json:"company"`
+	CreatedAt       time.Time                       `json:"createdAt"`
+	EnvironmentUUID openapi_types.UUID              `json:"environmentUUID"`
+	Name            string                          `json:"name"`
+	Settings        OrmSnowflakeEcoScheduleSettings `json:"settings"`
+	UpdatedAt       time.Time                       `json:"updatedAt"`
+	Uuid            openapi_types.UUID              `json:"uuid"`
 }
 
 // PayloadsSoftPartitioning defines model for PayloadsSoftPartitioning.
@@ -3414,12 +3480,15 @@ type RouterCreateKafkaClusterRequest struct {
 	// LocalRetentionBytes Disk cap per partition: the most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Null is no cap.
 	LocalRetentionBytes *int `json:"localRetentionBytes,omitempty"`
 
-	// LocalRetentionMS Days on disk: how long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). Every topic that doesn't set log.local.retention.ms inherits it. Left out is 3 days.
+	// LocalRetentionMS Days on disk: how long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days), and no longer than retentionMS. Every topic that doesn't set log.local.retention.ms inherits it. Left out is 3 days.
 	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
 
 	// Name The cluster's name, as customers see it. 3 to 100 characters. The cluster's ID, which its address and Kubernetes objects use, is generated.
 	Name   string `json:"name"`
 	Region string `json:"region"`
+
+	// RetentionMS How long topics keep messages unless they set their own retention.ms, in ms (the brokers' log.retention.ms): at least 86400000 (one day), and at least the days on disk, or -1 to keep them forever. Left out is 14 days.
+	RetentionMS *int `json:"retentionMS,omitempty"`
 
 	// StorageAutoscale How Artie grows the brokers' disks before they fill. Left out is on, growing at 65% to 55%, with no limit.
 	StorageAutoscale *PayloadsKafkaClusterStorageAutoscale `json:"storageAutoscale,omitempty"`
@@ -3779,6 +3848,19 @@ type RouterSSHTunnelUpdateRequest struct {
 	Username string `json:"username"`
 }
 
+// RouterSnowflakeEcoScheduleCreateRequest defines model for RouterSnowflakeEcoScheduleCreateRequest.
+type RouterSnowflakeEcoScheduleCreateRequest struct {
+	EnvironmentUUID *openapi_types.UUID             `json:"environmentUUID,omitempty"`
+	Name            string                          `json:"name"`
+	Settings        OrmSnowflakeEcoScheduleSettings `json:"settings"`
+}
+
+// RouterSnowflakeEcoScheduleUpdateRequest defines model for RouterSnowflakeEcoScheduleUpdateRequest.
+type RouterSnowflakeEcoScheduleUpdateRequest struct {
+	Name     string                          `json:"name"`
+	Settings OrmSnowflakeEcoScheduleSettings `json:"settings"`
+}
+
 // RouterSourceReaderCreateRequest defines model for RouterSourceReaderCreateRequest.
 type RouterSourceReaderCreateRequest struct {
 	ArchiveConnectorUUID *openapi_types.UUID                  `json:"archiveConnectorUUID,omitempty"`
@@ -3832,6 +3914,12 @@ type RouterUpdateKafkaClusterAllowedCIDRsRequest struct {
 	AllowedCIDRs []string `json:"allowedCIDRs"`
 }
 
+// RouterUpdateKafkaClusterBrokerSettingsRequest defines model for RouterUpdateKafkaClusterBrokerSettingsRequest.
+type RouterUpdateKafkaClusterBrokerSettingsRequest struct {
+	// RetentionMS How long topics keep messages unless they set their own retention.ms, in ms (log.retention.ms): at least 86400000 (one day), or -1 to keep messages forever. It can't be shorter than days on disk. Consumer offsets retention follows it, which restarts the brokers one at a time.
+	RetentionMS *int `json:"retentionMS,omitempty"`
+}
+
 // RouterUpdateKafkaClusterBrokersRequest defines model for RouterUpdateKafkaClusterBrokersRequest.
 type RouterUpdateKafkaClusterBrokersRequest struct {
 	// Brokers New number of brokers. Brokers can only be added for now. The count the cluster already has is left as it is. Existing partitions stay on the brokers they're on; new topics use every broker.
@@ -3858,13 +3946,13 @@ type RouterUpdateKafkaClusterRequest struct {
 	// Name The cluster's name, as customers see it. Also works on a cluster on the company's BYOC data plane. The bootstrap address and Kubernetes objects keep the name it was created with.
 	Name *string `json:"name,omitempty"`
 
-	// StorageAutoscale How Artie grows the brokers' disks before they fill. Takes effect on the next autoscale run; nothing is applied to the cluster.
+	// StorageAutoscale How Artie grows the brokers' disks before they fill. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster.
 	StorageAutoscale *PayloadsKafkaClusterStorageAutoscale `json:"storageAutoscale,omitempty"`
 
 	// StorageGiB New disk per broker in GiB: 50 or 80, or any size from 100 to 1024 (1 TiB). A larger size grows the disks online; the size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours (429 otherwise).
 	StorageGiB *int `json:"storageGiB,omitempty"`
 
-	// TieredStorage Whether every topic is tiered, days on disk, and disk cap per partition. New days on disk or a new cap applies to the running brokers without a restart.
+	// TieredStorage Whether every topic is tiered, days on disk, and disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers without a restart.
 	TieredStorage *RouterUpdateKafkaClusterTieredStorageRequest `json:"tieredStorage,omitempty"`
 }
 
@@ -3879,7 +3967,7 @@ type RouterUpdateKafkaClusterTieredStorageRequest struct {
 	// LocalRetentionBytes Disk cap per partition: the most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Null is no cap.
 	LocalRetentionBytes *int `json:"localRetentionBytes,omitempty"`
 
-	// LocalRetentionMS Days on disk: how long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days).
+	// LocalRetentionMS Days on disk: how long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days), and no longer than the cluster's retention.
 	LocalRetentionMS int64 `json:"localRetentionMS"`
 
 	// TierAllTopics Whether every topic is tiered. It wins over each topic's own choice: turning it on turns tiered storage on for every topic, and turning it off pauses every topic tiered through Artie (one tiered outside Artie, e.g. with the CLI, is left alone). A paused topic keeps new messages on broker disks while what's already in remote storage stays readable until retention expires it.
@@ -3997,6 +4085,11 @@ type KafkaClusterRatesParams struct {
 
 // KafkaClusterRatesParamsRange defines parameters for KafkaClusterRates.
 type KafkaClusterRatesParamsRange string
+
+// KafkaClusterSettingsParams defines parameters for KafkaClusterSettings.
+type KafkaClusterSettingsParams struct {
+	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
+}
 
 // KafkaClusterStorageGraphParams defines parameters for KafkaClusterStorageGraph.
 type KafkaClusterStorageGraphParams struct {
@@ -4130,6 +4223,9 @@ type KafkaAdminUserCreateJSONRequestBody = RouterCreateKafkaAdminUserRequest
 // KafkaClusterAllowedCidrsUpdateJSONRequestBody defines body for KafkaClusterAllowedCidrsUpdate for application/json ContentType.
 type KafkaClusterAllowedCidrsUpdateJSONRequestBody = RouterUpdateKafkaClusterAllowedCIDRsRequest
 
+// KafkaClusterBrokerSettingsUpdateJSONRequestBody defines body for KafkaClusterBrokerSettingsUpdate for application/json ContentType.
+type KafkaClusterBrokerSettingsUpdateJSONRequestBody = RouterUpdateKafkaClusterBrokerSettingsRequest
+
 // KafkaClusterBrokersUpdateJSONRequestBody defines body for KafkaClusterBrokersUpdate for application/json ContentType.
 type KafkaClusterBrokersUpdateJSONRequestBody = RouterUpdateKafkaClusterBrokersRequest
 
@@ -4204,6 +4300,12 @@ type PrivateLinkConnectionCreateJSONRequestBody = RouterPrivateLinkConnectionCre
 
 // PrivateLinkConnectionUpdateJSONRequestBody defines body for PrivateLinkConnectionUpdate for application/json ContentType.
 type PrivateLinkConnectionUpdateJSONRequestBody = RouterPrivateLinkConnectionUpdateRequest
+
+// SnowflakeEcoScheduleCreateJSONRequestBody defines body for SnowflakeEcoScheduleCreate for application/json ContentType.
+type SnowflakeEcoScheduleCreateJSONRequestBody = RouterSnowflakeEcoScheduleCreateRequest
+
+// SnowflakeEcoScheduleUpdateJSONRequestBody defines body for SnowflakeEcoScheduleUpdate for application/json ContentType.
+type SnowflakeEcoScheduleUpdateJSONRequestBody = RouterSnowflakeEcoScheduleUpdateRequest
 
 // SourceReaderCreateJSONRequestBody defines body for SourceReaderCreate for application/json ContentType.
 type SourceReaderCreateJSONRequestBody = RouterSourceReaderCreateRequest
@@ -5897,7 +5999,7 @@ type ClientInterface interface {
 
 	// KafkaClusterDelete Delete a Managed Kafka cluster
 	//
-	// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+	// Deletes an active or failed Managed Kafka cluster. Its brokers stop now and its data is kept 7 days, so it can be restored; permanent-delete deletes it now. Returns 409 while the cluster is deploying. Company admins only.
 	//
 	// Corresponds with DELETE /kafka-clusters/{uuid} (the `KafkaClusterDelete` operationId).
 	KafkaClusterDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5997,6 +6099,24 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
 	KafkaClusterAllowedCidrsUpdate(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterBrokerSettingsUpdateWithBody Change a Managed Kafka cluster's broker settings
+	//
+	// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+	KafkaClusterBrokerSettingsUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// KafkaClusterBrokerSettingsUpdate Change a Managed Kafka cluster's broker settings
+	//
+	// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+	KafkaClusterBrokerSettingsUpdate(ctx context.Context, uuid string, body KafkaClusterBrokerSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// KafkaClusterBrokersUpdateWithBody Add brokers to a Managed Kafka cluster
 	//
@@ -6119,6 +6239,13 @@ type ClientInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
 	KafkaClusterMetricsGraph(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaClusterPermanentDelete Permanently delete a Managed Kafka cluster
+	//
+	// Deletes a Managed Kafka cluster's messages, disks and tiered storage now, with no 7 days to restore it. A running cluster is stopped first; a deleted one's data goes at once. Returns 409 while the cluster is deploying or still shutting down. Company admins only.
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/permanent-delete (the `KafkaClusterPermanentDelete` operationId).
+	KafkaClusterPermanentDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaClusterRates Get Managed Kafka cluster rates
 	//
 	// Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
@@ -6158,6 +6285,13 @@ type ClientInterface interface {
 	// Corresponds with POST /kafka-clusters/{uuid}/retry (the `KafkaClusterRetry` operationId).
 	KafkaClusterRetry(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaClusterSettings Get a BYOC Kafka cluster's settings
+	//
+	// Retrieves a BYOC Strimzi cluster's Kafka version, broker count, and disk size and storage class per broker, read from its Kafka and KafkaNodePool resources. Cached for 5 minutes unless forceRefresh is true. Managed Kafka and MSK clusters get supported false.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/settings (the `KafkaClusterSettings` operationId).
+	KafkaClusterSettings(ctx context.Context, uuid string, params *KafkaClusterSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaClusterStorageUpdateWithBody Grow a Managed Kafka cluster's broker storage
 	//
 	// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -6178,7 +6312,7 @@ type ClientInterface interface {
 
 	// KafkaClusterStorageAutoscaleUpdateWithBody Change a Managed Kafka cluster's storage autoscaling
 	//
-	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6187,7 +6321,7 @@ type ClientInterface interface {
 
 	// KafkaClusterStorageAutoscaleUpdate Change a Managed Kafka cluster's storage autoscaling
 	//
-	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6210,7 +6344,7 @@ type ClientInterface interface {
 
 	// KafkaClusterTieredStorageUpdateWithBody Change a Managed Kafka cluster's tiered storage settings
 	//
-	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6219,7 +6353,7 @@ type ClientInterface interface {
 
 	// KafkaClusterTieredStorageUpdate Change a Managed Kafka cluster's tiered storage settings
 	//
-	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6671,6 +6805,63 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /privatelink-connections/{uuid} (the `PrivateLinkConnectionUpdate` operationId).
 	PrivateLinkConnectionUpdate(ctx context.Context, uuid string, body PrivateLinkConnectionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleList List Snowflake eco schedules
+	//
+	// Retrieves all Snowflake eco schedules for the authenticated user's company.
+	//
+	// Corresponds with GET /snowflake-eco-schedules (the `SnowflakeEcoScheduleList` operationId).
+	SnowflakeEcoScheduleList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleCreateWithBody Create a Snowflake eco schedule
+	//
+	// Creates a new Snowflake eco schedule for the authenticated user's company.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+	SnowflakeEcoScheduleCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleCreate Create a Snowflake eco schedule
+	//
+	// Creates a new Snowflake eco schedule for the authenticated user's company.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+	SnowflakeEcoScheduleCreate(ctx context.Context, body SnowflakeEcoScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleDelete Delete a Snowflake eco schedule
+	//
+	// Deletes a Snowflake eco schedule by UUID. No pipeline can be using the schedule.
+	//
+	// Corresponds with DELETE /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDelete` operationId).
+	SnowflakeEcoScheduleDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleDetail Get a Snowflake eco schedule
+	//
+	// Retrieves a Snowflake eco schedule by UUID.
+	//
+	// Corresponds with GET /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDetail` operationId).
+	SnowflakeEcoScheduleDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleUpdateWithBody Update a Snowflake eco schedule
+	//
+	// Updates an existing Snowflake eco schedule by UUID.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+	SnowflakeEcoScheduleUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SnowflakeEcoScheduleUpdate Update a Snowflake eco schedule
+	//
+	// Updates an existing Snowflake eco schedule by UUID.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+	SnowflakeEcoScheduleUpdate(ctx context.Context, uuid string, body SnowflakeEcoScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SourceReaderList List source readers
 	//
@@ -8022,7 +8213,7 @@ func (c *Client) KafkaClusterEstimate(ctx context.Context, body KafkaClusterEsti
 
 // KafkaClusterDelete Delete a Managed Kafka cluster
 //
-// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+// Deletes an active or failed Managed Kafka cluster. Its brokers stop now and its data is kept 7 days, so it can be restored; permanent-delete deletes it now. Returns 409 while the cluster is deploying. Company admins only.
 //
 // Corresponds with DELETE /kafka-clusters/{uuid} (the `KafkaClusterDelete` operationId).
 func (c *Client) KafkaClusterDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -8243,6 +8434,44 @@ func (c *Client) KafkaClusterAllowedCidrsUpdateWithBody(ctx context.Context, uui
 // Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
 func (c *Client) KafkaClusterAllowedCidrsUpdate(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterAllowedCidrsUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterBrokerSettingsUpdateWithBody Change a Managed Kafka cluster's broker settings
+//
+// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+func (c *Client) KafkaClusterBrokerSettingsUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterBrokerSettingsUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterBrokerSettingsUpdate Change a Managed Kafka cluster's broker settings
+//
+// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+func (c *Client) KafkaClusterBrokerSettingsUpdate(ctx context.Context, uuid string, body KafkaClusterBrokerSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterBrokerSettingsUpdateRequest(c.Server, uuid, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8524,6 +8753,23 @@ func (c *Client) KafkaClusterMetricsGraph(ctx context.Context, uuid string, para
 	return c.Client.Do(req)
 }
 
+// KafkaClusterPermanentDelete Permanently delete a Managed Kafka cluster
+//
+// Deletes a Managed Kafka cluster's messages, disks and tiered storage now, with no 7 days to restore it. A running cluster is stopped first; a deleted one's data goes at once. Returns 409 while the cluster is deploying or still shutting down. Company admins only.
+//
+// Corresponds with POST /kafka-clusters/{uuid}/permanent-delete (the `KafkaClusterPermanentDelete` operationId).
+func (c *Client) KafkaClusterPermanentDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterPermanentDeleteRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaClusterRates Get Managed Kafka cluster rates
 //
 // Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
@@ -8613,6 +8859,23 @@ func (c *Client) KafkaClusterRetry(ctx context.Context, uuid string, reqEditors 
 	return c.Client.Do(req)
 }
 
+// KafkaClusterSettings Get a BYOC Kafka cluster's settings
+//
+// Retrieves a BYOC Strimzi cluster's Kafka version, broker count, and disk size and storage class per broker, read from its Kafka and KafkaNodePool resources. Cached for 5 minutes unless forceRefresh is true. Managed Kafka and MSK clusters get supported false.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/settings (the `KafkaClusterSettings` operationId).
+func (c *Client) KafkaClusterSettings(ctx context.Context, uuid string, params *KafkaClusterSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterSettingsRequest(c.Server, uuid, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // KafkaClusterStorageUpdateWithBody Grow a Managed Kafka cluster's broker storage
 //
 // Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -8653,7 +8916,7 @@ func (c *Client) KafkaClusterStorageUpdate(ctx context.Context, uuid string, bod
 
 // KafkaClusterStorageAutoscaleUpdateWithBody Change a Managed Kafka cluster's storage autoscaling
 //
-// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8672,7 +8935,7 @@ func (c *Client) KafkaClusterStorageAutoscaleUpdateWithBody(ctx context.Context,
 
 // KafkaClusterStorageAutoscaleUpdate Change a Managed Kafka cluster's storage autoscaling
 //
-// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8725,7 +8988,7 @@ func (c *Client) KafkaClusterSummary(ctx context.Context, uuid string, params *K
 
 // KafkaClusterTieredStorageUpdateWithBody Change a Managed Kafka cluster's tiered storage settings
 //
-// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8744,7 +9007,7 @@ func (c *Client) KafkaClusterTieredStorageUpdateWithBody(ctx context.Context, uu
 
 // KafkaClusterTieredStorageUpdate Change a Managed Kafka cluster's tiered storage settings
 //
-// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9737,6 +10000,133 @@ func (c *Client) PrivateLinkConnectionUpdateWithBody(ctx context.Context, uuid s
 // Corresponds with POST /privatelink-connections/{uuid} (the `PrivateLinkConnectionUpdate` operationId).
 func (c *Client) PrivateLinkConnectionUpdate(ctx context.Context, uuid string, body PrivateLinkConnectionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPrivateLinkConnectionUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleList List Snowflake eco schedules
+//
+// Retrieves all Snowflake eco schedules for the authenticated user's company.
+//
+// Corresponds with GET /snowflake-eco-schedules (the `SnowflakeEcoScheduleList` operationId).
+func (c *Client) SnowflakeEcoScheduleList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleListRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleCreateWithBody Create a Snowflake eco schedule
+//
+// Creates a new Snowflake eco schedule for the authenticated user's company.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+func (c *Client) SnowflakeEcoScheduleCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleCreate Create a Snowflake eco schedule
+//
+// Creates a new Snowflake eco schedule for the authenticated user's company.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+func (c *Client) SnowflakeEcoScheduleCreate(ctx context.Context, body SnowflakeEcoScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleDelete Delete a Snowflake eco schedule
+//
+// Deletes a Snowflake eco schedule by UUID. No pipeline can be using the schedule.
+//
+// Corresponds with DELETE /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDelete` operationId).
+func (c *Client) SnowflakeEcoScheduleDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleDeleteRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleDetail Get a Snowflake eco schedule
+//
+// Retrieves a Snowflake eco schedule by UUID.
+//
+// Corresponds with GET /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDetail` operationId).
+func (c *Client) SnowflakeEcoScheduleDetail(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleDetailRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleUpdateWithBody Update a Snowflake eco schedule
+//
+// Updates an existing Snowflake eco schedule by UUID.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+func (c *Client) SnowflakeEcoScheduleUpdateWithBody(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleUpdateRequestWithBody(c.Server, uuid, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SnowflakeEcoScheduleUpdate Update a Snowflake eco schedule
+//
+// Updates an existing Snowflake eco schedule by UUID.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+func (c *Client) SnowflakeEcoScheduleUpdate(ctx context.Context, uuid string, body SnowflakeEcoScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSnowflakeEcoScheduleUpdateRequest(c.Server, uuid, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12420,6 +12810,53 @@ func NewKafkaClusterAllowedCidrsUpdateRequestWithBody(server string, uuid string
 	return req, nil
 }
 
+// NewKafkaClusterBrokerSettingsUpdateRequest calls the generic KafkaClusterBrokerSettingsUpdate builder with application/json body
+func NewKafkaClusterBrokerSettingsUpdateRequest(server string, uuid string, body KafkaClusterBrokerSettingsUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewKafkaClusterBrokerSettingsUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewKafkaClusterBrokerSettingsUpdateRequestWithBody constructs an http.Request for the KafkaClusterBrokerSettingsUpdate method, with any body, and a specified content type
+func NewKafkaClusterBrokerSettingsUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/broker-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewKafkaClusterBrokersUpdateRequest calls the generic KafkaClusterBrokersUpdate builder with application/json body
 func NewKafkaClusterBrokersUpdateRequest(server string, uuid string, body KafkaClusterBrokersUpdateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -12986,6 +13423,40 @@ func NewKafkaClusterMetricsGraphRequest(server string, uuid string, params *Kafk
 	return req, nil
 }
 
+// NewKafkaClusterPermanentDeleteRequest constructs an http.Request for the KafkaClusterPermanentDelete method
+func NewKafkaClusterPermanentDeleteRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/permanent-delete", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewKafkaClusterRatesRequest constructs an http.Request for the KafkaClusterRates method
 func NewKafkaClusterRatesRequest(server string, uuid string, params *KafkaClusterRatesParams) (*http.Request, error) {
 	var err error
@@ -13155,6 +13626,67 @@ func NewKafkaClusterRetryRequest(server string, uuid string) (*http.Request, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewKafkaClusterSettingsRequest constructs an http.Request for the KafkaClusterSettings method
+func NewKafkaClusterSettingsRequest(server string, uuid string, params *KafkaClusterSettingsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.ForceRefresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "forceRefresh", *params.ForceRefresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -15153,6 +15685,188 @@ func NewPrivateLinkConnectionUpdateRequestWithBody(server string, uuid string, c
 	return req, nil
 }
 
+// NewSnowflakeEcoScheduleListRequest constructs an http.Request for the SnowflakeEcoScheduleList method
+func NewSnowflakeEcoScheduleListRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/snowflake-eco-schedules")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSnowflakeEcoScheduleCreateRequest calls the generic SnowflakeEcoScheduleCreate builder with application/json body
+func NewSnowflakeEcoScheduleCreateRequest(server string, body SnowflakeEcoScheduleCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSnowflakeEcoScheduleCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSnowflakeEcoScheduleCreateRequestWithBody constructs an http.Request for the SnowflakeEcoScheduleCreate method, with any body, and a specified content type
+func NewSnowflakeEcoScheduleCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/snowflake-eco-schedules")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSnowflakeEcoScheduleDeleteRequest constructs an http.Request for the SnowflakeEcoScheduleDelete method
+func NewSnowflakeEcoScheduleDeleteRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/snowflake-eco-schedules/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSnowflakeEcoScheduleDetailRequest constructs an http.Request for the SnowflakeEcoScheduleDetail method
+func NewSnowflakeEcoScheduleDetailRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/snowflake-eco-schedules/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSnowflakeEcoScheduleUpdateRequest calls the generic SnowflakeEcoScheduleUpdate builder with application/json body
+func NewSnowflakeEcoScheduleUpdateRequest(server string, uuid string, body SnowflakeEcoScheduleUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSnowflakeEcoScheduleUpdateRequestWithBody(server, uuid, "application/json", bodyReader)
+}
+
+// NewSnowflakeEcoScheduleUpdateRequestWithBody constructs an http.Request for the SnowflakeEcoScheduleUpdate method, with any body, and a specified content type
+func NewSnowflakeEcoScheduleUpdateRequestWithBody(server string, uuid string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/snowflake-eco-schedules/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSourceReaderListRequest constructs an http.Request for the SourceReaderList method
 func NewSourceReaderListRequest(server string) (*http.Request, error) {
 	var err error
@@ -16242,7 +16956,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaClusterDeleteWithResponse Delete a Managed Kafka cluster
 	//
-	// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+	// Deletes an active or failed Managed Kafka cluster. Its brokers stop now and its data is kept 7 days, so it can be restored; permanent-delete deletes it now. Returns 409 while the cluster is deploying. Company admins only.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16356,6 +17070,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
 	KafkaClusterAllowedCidrsUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterAllowedCidrsUpdateResponse, error)
+
+	// KafkaClusterBrokerSettingsUpdateWithBodyWithResponse Change a Managed Kafka cluster's broker settings
+	//
+	// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+	KafkaClusterBrokerSettingsUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterBrokerSettingsUpdateResponse, error)
+
+	// KafkaClusterBrokerSettingsUpdateWithResponse Change a Managed Kafka cluster's broker settings
+	//
+	// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+	KafkaClusterBrokerSettingsUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterBrokerSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterBrokerSettingsUpdateResponse, error)
 
 	// KafkaClusterBrokersUpdateWithBodyWithResponse Add brokers to a Managed Kafka cluster
 	//
@@ -16492,6 +17224,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /kafka-clusters/{uuid}/metrics-graph (the `KafkaClusterMetricsGraph` operationId).
 	KafkaClusterMetricsGraphWithResponse(ctx context.Context, uuid string, params *KafkaClusterMetricsGraphParams, reqEditors ...RequestEditorFn) (*KafkaClusterMetricsGraphResponse, error)
 
+	// KafkaClusterPermanentDeleteWithResponse Permanently delete a Managed Kafka cluster
+	//
+	// Deletes a Managed Kafka cluster's messages, disks and tiered storage now, with no 7 days to restore it. A running cluster is stopped first; a deleted one's data goes at once. Returns 409 while the cluster is deploying or still shutting down. Company admins only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /kafka-clusters/{uuid}/permanent-delete (the `KafkaClusterPermanentDelete` operationId).
+	KafkaClusterPermanentDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterPermanentDeleteResponse, error)
+
 	// KafkaClusterRatesWithResponse Get Managed Kafka cluster rates
 	//
 	// Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
@@ -16537,6 +17278,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /kafka-clusters/{uuid}/retry (the `KafkaClusterRetry` operationId).
 	KafkaClusterRetryWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterRetryResponse, error)
 
+	// KafkaClusterSettingsWithResponse Get a BYOC Kafka cluster's settings
+	//
+	// Retrieves a BYOC Strimzi cluster's Kafka version, broker count, and disk size and storage class per broker, read from its Kafka and KafkaNodePool resources. Cached for 5 minutes unless forceRefresh is true. Managed Kafka and MSK clusters get supported false.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/settings (the `KafkaClusterSettings` operationId).
+	KafkaClusterSettingsWithResponse(ctx context.Context, uuid string, params *KafkaClusterSettingsParams, reqEditors ...RequestEditorFn) (*KafkaClusterSettingsResponse, error)
+
 	// KafkaClusterStorageUpdateWithBodyWithResponse Grow a Managed Kafka cluster's broker storage
 	//
 	// Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -16557,7 +17307,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaClusterStorageAutoscaleUpdateWithBodyWithResponse Change a Managed Kafka cluster's storage autoscaling
 	//
-	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16566,7 +17316,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaClusterStorageAutoscaleUpdateWithResponse Change a Managed Kafka cluster's storage autoscaling
 	//
-	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+	// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16593,7 +17343,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaClusterTieredStorageUpdateWithBodyWithResponse Change a Managed Kafka cluster's tiered storage settings
 	//
-	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16602,7 +17352,7 @@ type ClientWithResponsesInterface interface {
 
 	// KafkaClusterTieredStorageUpdateWithResponse Change a Managed Kafka cluster's tiered storage settings
 	//
-	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+	// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -17094,6 +17844,69 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /privatelink-connections/{uuid} (the `PrivateLinkConnectionUpdate` operationId).
 	PrivateLinkConnectionUpdateWithResponse(ctx context.Context, uuid string, body PrivateLinkConnectionUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*PrivateLinkConnectionUpdateResponse, error)
+
+	// SnowflakeEcoScheduleListWithResponse List Snowflake eco schedules
+	//
+	// Retrieves all Snowflake eco schedules for the authenticated user's company.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /snowflake-eco-schedules (the `SnowflakeEcoScheduleList` operationId).
+	SnowflakeEcoScheduleListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleListResponse, error)
+
+	// SnowflakeEcoScheduleCreateWithBodyWithResponse Create a Snowflake eco schedule
+	//
+	// Creates a new Snowflake eco schedule for the authenticated user's company.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+	SnowflakeEcoScheduleCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleCreateResponse, error)
+
+	// SnowflakeEcoScheduleCreateWithResponse Create a Snowflake eco schedule
+	//
+	// Creates a new Snowflake eco schedule for the authenticated user's company.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+	SnowflakeEcoScheduleCreateWithResponse(ctx context.Context, body SnowflakeEcoScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleCreateResponse, error)
+
+	// SnowflakeEcoScheduleDeleteWithResponse Delete a Snowflake eco schedule
+	//
+	// Deletes a Snowflake eco schedule by UUID. No pipeline can be using the schedule.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDelete` operationId).
+	SnowflakeEcoScheduleDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleDeleteResponse, error)
+
+	// SnowflakeEcoScheduleDetailWithResponse Get a Snowflake eco schedule
+	//
+	// Retrieves a Snowflake eco schedule by UUID.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDetail` operationId).
+	SnowflakeEcoScheduleDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleDetailResponse, error)
+
+	// SnowflakeEcoScheduleUpdateWithBodyWithResponse Update a Snowflake eco schedule
+	//
+	// Updates an existing Snowflake eco schedule by UUID.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+	SnowflakeEcoScheduleUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleUpdateResponse, error)
+
+	// SnowflakeEcoScheduleUpdateWithResponse Update a Snowflake eco schedule
+	//
+	// Updates an existing Snowflake eco schedule by UUID.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+	SnowflakeEcoScheduleUpdateWithResponse(ctx context.Context, uuid string, body SnowflakeEcoScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleUpdateResponse, error)
 
 	// SourceReaderListWithResponse List source readers
 	//
@@ -19320,6 +20133,47 @@ func (r KafkaClusterAllowedCidrsUpdateResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterBrokerSettingsUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaCluster
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterBrokerSettingsUpdateResponse) GetJSON200() *PayloadsKafkaCluster {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterBrokerSettingsUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterBrokerSettingsUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterBrokerSettingsUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterBrokerSettingsUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaClusterBrokersUpdateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -19764,6 +20618,40 @@ func (r KafkaClusterMetricsGraphResponse) ContentType() string {
 	return ""
 }
 
+type KafkaClusterPermanentDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterPermanentDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterPermanentDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterPermanentDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterPermanentDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type KafkaClusterRatesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -19922,6 +20810,47 @@ func (r KafkaClusterRetryResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterRetryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsBYOCKafkaClusterSettings
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterSettingsResponse) GetJSON200() *PayloadsBYOCKafkaClusterSettings {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterSettingsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -21573,6 +22502,204 @@ func (r PrivateLinkConnectionUpdateResponse) ContentType() string {
 	return ""
 }
 
+type SnowflakeEcoScheduleListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListResponseBodySnowflakeEcoSchedule
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SnowflakeEcoScheduleListResponse) GetJSON200() *ListResponseBodySnowflakeEcoSchedule {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SnowflakeEcoScheduleListResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SnowflakeEcoScheduleListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SnowflakeEcoScheduleListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SnowflakeEcoScheduleListResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SnowflakeEcoScheduleCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsSnowflakeEcoSchedule
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SnowflakeEcoScheduleCreateResponse) GetJSON200() *PayloadsSnowflakeEcoSchedule {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SnowflakeEcoScheduleCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SnowflakeEcoScheduleCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SnowflakeEcoScheduleCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SnowflakeEcoScheduleCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SnowflakeEcoScheduleDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r SnowflakeEcoScheduleDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SnowflakeEcoScheduleDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SnowflakeEcoScheduleDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SnowflakeEcoScheduleDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SnowflakeEcoScheduleDetailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsSnowflakeEcoSchedule
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SnowflakeEcoScheduleDetailResponse) GetJSON200() *PayloadsSnowflakeEcoSchedule {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SnowflakeEcoScheduleDetailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SnowflakeEcoScheduleDetailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SnowflakeEcoScheduleDetailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SnowflakeEcoScheduleDetailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SnowflakeEcoScheduleUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsSnowflakeEcoSchedule
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SnowflakeEcoScheduleUpdateResponse) GetJSON200() *PayloadsSnowflakeEcoSchedule {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SnowflakeEcoScheduleUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SnowflakeEcoScheduleUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SnowflakeEcoScheduleUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SnowflakeEcoScheduleUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SourceReaderListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -23021,7 +24148,7 @@ func (c *ClientWithResponses) KafkaClusterEstimateWithResponse(ctx context.Conte
 
 // KafkaClusterDeleteWithResponse Delete a Managed Kafka cluster
 //
-// Deletes an active or failed Managed Kafka cluster, with its data. It leaves the list at once and is removed from AWS in the background. Returns 409 while the cluster is deploying. Company admins only.
+// Deletes an active or failed Managed Kafka cluster. Its brokers stop now and its data is kept 7 days, so it can be restored; permanent-delete deletes it now. Returns 409 while the cluster is deploying. Company admins only.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -23212,6 +24339,36 @@ func (c *ClientWithResponses) KafkaClusterAllowedCidrsUpdateWithResponse(ctx con
 		return nil, err
 	}
 	return ParseKafkaClusterAllowedCidrsUpdateResponse(rsp)
+}
+
+// KafkaClusterBrokerSettingsUpdateWithBodyWithResponse Change a Managed Kafka cluster's broker settings
+//
+// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterBrokerSettingsUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*KafkaClusterBrokerSettingsUpdateResponse, error) {
+	rsp, err := c.KafkaClusterBrokerSettingsUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterBrokerSettingsUpdateResponse(rsp)
+}
+
+// KafkaClusterBrokerSettingsUpdateWithResponse Change a Managed Kafka cluster's broker settings
+//
+// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /kafka-clusters/{uuid}/broker-settings (the `KafkaClusterBrokerSettingsUpdate` operationId).
+func (c *ClientWithResponses) KafkaClusterBrokerSettingsUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterBrokerSettingsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterBrokerSettingsUpdateResponse, error) {
+	rsp, err := c.KafkaClusterBrokerSettingsUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterBrokerSettingsUpdateResponse(rsp)
 }
 
 // KafkaClusterBrokersUpdateWithBodyWithResponse Add brokers to a Managed Kafka cluster
@@ -23439,6 +24596,21 @@ func (c *ClientWithResponses) KafkaClusterMetricsGraphWithResponse(ctx context.C
 	return ParseKafkaClusterMetricsGraphResponse(rsp)
 }
 
+// KafkaClusterPermanentDeleteWithResponse Permanently delete a Managed Kafka cluster
+//
+// Deletes a Managed Kafka cluster's messages, disks and tiered storage now, with no 7 days to restore it. A running cluster is stopped first; a deleted one's data goes at once. Returns 409 while the cluster is deploying or still shutting down. Company admins only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /kafka-clusters/{uuid}/permanent-delete (the `KafkaClusterPermanentDelete` operationId).
+func (c *ClientWithResponses) KafkaClusterPermanentDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterPermanentDeleteResponse, error) {
+	rsp, err := c.KafkaClusterPermanentDelete(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterPermanentDeleteResponse(rsp)
+}
+
 // KafkaClusterRatesWithResponse Get Managed Kafka cluster rates
 //
 // Retrieves a Managed Kafka cluster's messages in and bytes out per second over the last 5 minutes, each topic's messages in per second now and over the last hour, and each consumer group's lag per topic over the range with its derived read rate. Cached for 30 seconds. Returns 400 for other clusters and 409 if the cluster isn't active.
@@ -23514,6 +24686,21 @@ func (c *ClientWithResponses) KafkaClusterRetryWithResponse(ctx context.Context,
 	return ParseKafkaClusterRetryResponse(rsp)
 }
 
+// KafkaClusterSettingsWithResponse Get a BYOC Kafka cluster's settings
+//
+// Retrieves a BYOC Strimzi cluster's Kafka version, broker count, and disk size and storage class per broker, read from its Kafka and KafkaNodePool resources. Cached for 5 minutes unless forceRefresh is true. Managed Kafka and MSK clusters get supported false.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/settings (the `KafkaClusterSettings` operationId).
+func (c *ClientWithResponses) KafkaClusterSettingsWithResponse(ctx context.Context, uuid string, params *KafkaClusterSettingsParams, reqEditors ...RequestEditorFn) (*KafkaClusterSettingsResponse, error) {
+	rsp, err := c.KafkaClusterSettings(ctx, uuid, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterSettingsResponse(rsp)
+}
+
 // KafkaClusterStorageUpdateWithBodyWithResponse Grow a Managed Kafka cluster's broker storage
 //
 // Grows the disk of every broker in an active Managed Kafka cluster and applies it. The disks grow online. The size the brokers already have is left as it is. AWS limits how often a disk can change, so storage grows at most 3 times in 24 hours, an hour apart, once the last change has finished; otherwise 429. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -23546,7 +24733,7 @@ func (c *ClientWithResponses) KafkaClusterStorageUpdateWithResponse(ctx context.
 
 // KafkaClusterStorageAutoscaleUpdateWithBodyWithResponse Change a Managed Kafka cluster's storage autoscaling
 //
-// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -23561,7 +24748,7 @@ func (c *ClientWithResponses) KafkaClusterStorageAutoscaleUpdateWithBodyWithResp
 
 // KafkaClusterStorageAutoscaleUpdateWithResponse Change a Managed Kafka cluster's storage autoscaling
 //
-// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
+// Sets whether Artie grows the brokers' disks before they fill, at what % full, how full they are after, and the most disk per broker. Replaces the current settings. Takes effect on the next autoscale run; nothing is applied to the cluster. Company admins only.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -23606,7 +24793,7 @@ func (c *ClientWithResponses) KafkaClusterSummaryWithResponse(ctx context.Contex
 
 // KafkaClusterTieredStorageUpdateWithBodyWithResponse Change a Managed Kafka cluster's tiered storage settings
 //
-// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -23621,7 +24808,7 @@ func (c *ClientWithResponses) KafkaClusterTieredStorageUpdateWithBodyWithRespons
 
 // KafkaClusterTieredStorageUpdateWithResponse Change a Managed Kafka cluster's tiered storage settings
 //
-// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
+// Changes whether every topic of an active Managed Kafka cluster is tiered, its days on disk and its disk cap per partition. Replaces the current settings. New days on disk or a new cap applies to the running brokers within minutes, without a restart. It changes the brokers' defaults, so a topic with its own local.retention.ms or local.retention.bytes keeps them. Turning tiering of every topic on or off wins over each topic's own choice; the tiered storage sync carries it out. Returns 409 while any change to the cluster is still being applied. Company admins only.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -24442,6 +25629,111 @@ func (c *ClientWithResponses) PrivateLinkConnectionUpdateWithResponse(ctx contex
 		return nil, err
 	}
 	return ParsePrivateLinkConnectionUpdateResponse(rsp)
+}
+
+// SnowflakeEcoScheduleListWithResponse List Snowflake eco schedules
+//
+// Retrieves all Snowflake eco schedules for the authenticated user's company.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /snowflake-eco-schedules (the `SnowflakeEcoScheduleList` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleListResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleList(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleListResponse(rsp)
+}
+
+// SnowflakeEcoScheduleCreateWithBodyWithResponse Create a Snowflake eco schedule
+//
+// Creates a new Snowflake eco schedule for the authenticated user's company.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleCreateResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleCreateResponse(rsp)
+}
+
+// SnowflakeEcoScheduleCreateWithResponse Create a Snowflake eco schedule
+//
+// Creates a new Snowflake eco schedule for the authenticated user's company.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /snowflake-eco-schedules (the `SnowflakeEcoScheduleCreate` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleCreateWithResponse(ctx context.Context, body SnowflakeEcoScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleCreateResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleCreateResponse(rsp)
+}
+
+// SnowflakeEcoScheduleDeleteWithResponse Delete a Snowflake eco schedule
+//
+// Deletes a Snowflake eco schedule by UUID. No pipeline can be using the schedule.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDelete` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleDeleteWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleDeleteResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleDelete(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleDeleteResponse(rsp)
+}
+
+// SnowflakeEcoScheduleDetailWithResponse Get a Snowflake eco schedule
+//
+// Retrieves a Snowflake eco schedule by UUID.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleDetail` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleDetailWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleDetailResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleDetail(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleDetailResponse(rsp)
+}
+
+// SnowflakeEcoScheduleUpdateWithBodyWithResponse Update a Snowflake eco schedule
+//
+// Updates an existing Snowflake eco schedule by UUID.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleUpdateWithBodyWithResponse(ctx context.Context, uuid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleUpdateResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleUpdateWithBody(ctx, uuid, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleUpdateResponse(rsp)
+}
+
+// SnowflakeEcoScheduleUpdateWithResponse Update a Snowflake eco schedule
+//
+// Updates an existing Snowflake eco schedule by UUID.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /snowflake-eco-schedules/{uuid} (the `SnowflakeEcoScheduleUpdate` operationId).
+func (c *ClientWithResponses) SnowflakeEcoScheduleUpdateWithResponse(ctx context.Context, uuid string, body SnowflakeEcoScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*SnowflakeEcoScheduleUpdateResponse, error) {
+	rsp, err := c.SnowflakeEcoScheduleUpdate(ctx, uuid, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSnowflakeEcoScheduleUpdateResponse(rsp)
 }
 
 // SourceReaderListWithResponse List source readers
@@ -26278,6 +27570,44 @@ func ParseKafkaClusterAllowedCidrsUpdateResponse(rsp *http.Response) (*KafkaClus
 	return response, nil
 }
 
+// ParseKafkaClusterBrokerSettingsUpdateResponse parses an HTTP response from a KafkaClusterBrokerSettingsUpdateWithResponse call
+func ParseKafkaClusterBrokerSettingsUpdateResponse(rsp *http.Response) (*KafkaClusterBrokerSettingsUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterBrokerSettingsUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseKafkaClusterBrokersUpdateResponse parses an HTTP response from a KafkaClusterBrokersUpdateWithResponse call
 func ParseKafkaClusterBrokersUpdateResponse(rsp *http.Response) (*KafkaClusterBrokersUpdateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -26662,6 +27992,22 @@ func ParseKafkaClusterMetricsGraphResponse(rsp *http.Response) (*KafkaClusterMet
 	return response, nil
 }
 
+// ParseKafkaClusterPermanentDeleteResponse parses an HTTP response from a KafkaClusterPermanentDeleteWithResponse call
+func ParseKafkaClusterPermanentDeleteResponse(rsp *http.Response) (*KafkaClusterPermanentDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterPermanentDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseKafkaClusterRatesResponse parses an HTTP response from a KafkaClusterRatesWithResponse call
 func ParseKafkaClusterRatesResponse(rsp *http.Response) (*KafkaClusterRatesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -26804,6 +28150,38 @@ func ParseKafkaClusterRetryResponse(rsp *http.Response) (*KafkaClusterRetryRespo
 		break // No content-type
 
 	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterSettingsResponse parses an HTTP response from a KafkaClusterSettingsWithResponse call
+func ParseKafkaClusterSettingsResponse(rsp *http.Response) (*KafkaClusterSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsBYOCKafkaClusterSettings
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
@@ -28065,6 +29443,150 @@ func ParsePrivateLinkConnectionUpdateResponse(rsp *http.Response) (*PrivateLinkC
 		response.JSON200 = &dest
 
 	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseSnowflakeEcoScheduleListResponse parses an HTTP response from a SnowflakeEcoScheduleListWithResponse call
+func ParseSnowflakeEcoScheduleListResponse(rsp *http.Response) (*SnowflakeEcoScheduleListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SnowflakeEcoScheduleListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListResponseBodySnowflakeEcoSchedule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseSnowflakeEcoScheduleCreateResponse parses an HTTP response from a SnowflakeEcoScheduleCreateWithResponse call
+func ParseSnowflakeEcoScheduleCreateResponse(rsp *http.Response) (*SnowflakeEcoScheduleCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SnowflakeEcoScheduleCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsSnowflakeEcoSchedule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseSnowflakeEcoScheduleDeleteResponse parses an HTTP response from a SnowflakeEcoScheduleDeleteWithResponse call
+func ParseSnowflakeEcoScheduleDeleteResponse(rsp *http.Response) (*SnowflakeEcoScheduleDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SnowflakeEcoScheduleDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseSnowflakeEcoScheduleDetailResponse parses an HTTP response from a SnowflakeEcoScheduleDetailWithResponse call
+func ParseSnowflakeEcoScheduleDetailResponse(rsp *http.Response) (*SnowflakeEcoScheduleDetailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SnowflakeEcoScheduleDetailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsSnowflakeEcoSchedule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseSnowflakeEcoScheduleUpdateResponse parses an HTTP response from a SnowflakeEcoScheduleUpdateWithResponse call
+func ParseSnowflakeEcoScheduleUpdateResponse(rsp *http.Response) (*SnowflakeEcoScheduleUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SnowflakeEcoScheduleUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsSnowflakeEcoSchedule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
 		break // No content-type
 
 	case rsp.StatusCode == 500:
