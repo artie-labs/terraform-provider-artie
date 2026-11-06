@@ -296,6 +296,7 @@ func TestArchiveConnectorPlanModifier(t *testing.T) {
 	// Not known until the method is, or until the source reader is created
 	assert.True(t, plan(types.StringNull(), archive, types.StringUnknown()).IsUnknown())
 	assert.True(t, plan(types.StringNull(), types.StringNull(), trn).IsUnknown())
-	// Set in the config
+	// Set in the config, including to a share created in the same apply
 	assert.Equal(t, archive, plan(archive, types.StringValue(""), trn))
+	assert.True(t, plan(types.StringUnknown(), archive, trn).IsUnknown())
 }

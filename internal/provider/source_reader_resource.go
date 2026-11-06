@@ -229,7 +229,7 @@ func (m archiveConnectorPlanModifier) MarkdownDescription(ctx context.Context) s
 }
 
 func (archiveConnectorPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
-	if !req.PlanValue.IsUnknown() || req.StateValue.IsNull() {
+	if !req.ConfigValue.IsNull() || !req.PlanValue.IsUnknown() || req.StateValue.IsNull() {
 		return
 	}
 
