@@ -3,12 +3,12 @@
 page_title: "artie_snowflake_eco_schedule Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
-  Artie Snowflake Eco Mode schedule resource. A schedule sets a pipeline's peak hours; outside them (including all of any day not in peak_days), pipelines attached with snowflake_eco_schedule_uuid on artie_pipeline use the off-peak flush rules to save Snowflake credits. Changes reach running pipelines within 30 minutes.
+  Artie Snowflake Eco Mode schedule resource. A schedule sets a pipeline's peak hours; outside them (including all of any day not in peak_days), pipelines attached with snowflake_eco_schedule_uuid on artie_pipeline use the off-peak flush rules to save Snowflake credits.
 ---
 
 # artie_snowflake_eco_schedule (Resource)
 
-Artie Snowflake Eco Mode schedule resource. A schedule sets a pipeline's peak hours; outside them (including all of any day not in `peak_days`), pipelines attached with `snowflake_eco_schedule_uuid` on `artie_pipeline` use the off-peak flush rules to save Snowflake credits. Changes reach running pipelines within 30 minutes.
+Artie Snowflake Eco Mode schedule resource. A schedule sets a pipeline's peak hours; outside them (including all of any day not in `peak_days`), pipelines attached with `snowflake_eco_schedule_uuid` on `artie_pipeline` use the off-peak flush rules to save Snowflake credits.
 
 ## Example Usage
 

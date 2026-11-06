@@ -37,7 +37,7 @@ func (r *SnowflakeEcoScheduleResource) Metadata(ctx context.Context, req resourc
 
 func (r *SnowflakeEcoScheduleResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie Snowflake Eco Mode schedule resource. A schedule sets a pipeline's peak hours; outside them (including all of any day not in `peak_days`), pipelines attached with `snowflake_eco_schedule_uuid` on `artie_pipeline` use the off-peak flush rules to save Snowflake credits. Changes reach running pipelines within 30 minutes.",
+		MarkdownDescription: "Artie Snowflake Eco Mode schedule resource. A schedule sets a pipeline's peak hours; outside them (including all of any day not in `peak_days`), pipelines attached with `snowflake_eco_schedule_uuid` on `artie_pipeline` use the off-peak flush rules to save Snowflake credits.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":     schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Required: true, MarkdownDescription: "A human-readable label for this schedule."},
