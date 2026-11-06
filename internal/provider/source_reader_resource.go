@@ -187,7 +187,7 @@ func validateSourceReaderConfig(ctx context.Context, configData tfmodels.SourceR
 	}
 
 	// The API keeps the current share when it isn't given one, so an explicit "" would never match what's read back.
-	if archive := configData.ArchiveConnectorUUID; !archive.IsNull() && !archive.IsUnknown() && archive.ValueString() == "" {
+	if archive := configData.ArchiveConnectorUUID; tfmodels.IsKnown(archive) && archive.ValueString() == "" {
 		diags.AddError("Invalid configuration", "`archive_connector_uuid` can't be empty. Leave it out instead.")
 	}
 
