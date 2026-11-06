@@ -265,6 +265,15 @@ func TestSourceReaderResource_ValidateArchiveConnector(t *testing.T) {
 		assert.True(t, diags.HasError())
 		assert.Contains(t, diags.Errors()[0].Detail(), "`archive_connector_uuid` is only applicable if `mssql_replication_method` is set to `trn_log_backup`.")
 	}
+
+	// An explicit "" is rejected; an unknown value (a share created in the same apply) is checked later
+	empty := config(types.StringValue("trn_log_backup"))
+	empty.ArchiveConnectorUUID = types.StringValue("")
+	diags := validateSourceReaderConfig(t.Context(), empty)
+	assert.True(t, diags.HasError())
+	assert.Contains(t, diags.Errors()[0].Detail(), "`archive_connector_uuid` can't be empty.")
+	empty.ArchiveConnectorUUID = types.StringUnknown()
+	assert.False(t, validateSourceReaderConfig(t.Context(), empty).HasError())
 }
 
 func TestArchiveConnectorPlanModifier(t *testing.T) {

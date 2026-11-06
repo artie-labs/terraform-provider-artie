@@ -117,6 +117,22 @@ resource "artie_connector" "iceberg_rest_catalog_oauth2" {
   }
 }
 
+variable "mssql_password" {
+  type      = string
+  sensitive = true
+}
+
+resource "artie_connector" "mssql_prod" {
+  name = "MSSQL Prod"
+  type = "mssql"
+  mssql_config = {
+    host     = "sqlserver.example.com"
+    port     = 1433
+    username = "artie"
+    password = var.mssql_password
+  }
+}
+
 variable "smb_share_password" {
   type      = string
   sensitive = true
