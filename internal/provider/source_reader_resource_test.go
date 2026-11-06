@@ -272,15 +272,23 @@ func TestArchiveConnectorPlanModifier(t *testing.T) {
 	var schemaResp resource.SchemaResponse
 	(&SourceReaderResource{}).Schema(ctx, resource.SchemaRequest{}, &schemaResp)
 
-	plan := func(config, state, method types.String) types.String {
-		p := tfsdk.Plan{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
-		assert.False(t, p.SetAttribute(ctx, path.Root("mssql_replication_method"), method).HasError())
+	plan := func(config, state, configMethod, stateMethod types.String) types.String {
+		newObj := func() tftypes.Value { return tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil) }
+		// tfsdk.Config has no setter, so build its value as a State.
+		cs := tfsdk.State{Schema: schemaResp.Schema, Raw: newObj()}
+		assert.False(t, cs.SetAttribute(ctx, path.Root("mssql_replication_method"), configMethod).HasError())
+		c := tfsdk.Config{Schema: schemaResp.Schema, Raw: cs.Raw}
+		s := tfsdk.State{Schema: schemaResp.Schema, Raw: newObj()}
+		assert.False(t, s.SetAttribute(ctx, path.Root("mssql_replication_method"), stateMethod).HasError())
+		// The method's own plan value is left unknown, as it can be before UseStateForUnknown runs.
+		p := tfsdk.Plan{Schema: schemaResp.Schema, Raw: newObj()}
+		assert.False(t, p.SetAttribute(ctx, path.Root("mssql_replication_method"), types.StringUnknown()).HasError())
 		planValue := config
 		if config.IsNull() {
 			// Unset optional+computed attributes start out unknown on update.
 			planValue = types.StringUnknown()
 		}
-		req := planmodifier.StringRequest{ConfigValue: config, StateValue: state, PlanValue: planValue, Plan: p}
+		req := planmodifier.StringRequest{ConfigValue: config, StateValue: state, PlanValue: planValue, Config: c, State: s, Plan: p}
 		resp := &planmodifier.StringResponse{PlanValue: planValue}
 		archiveConnectorPlanModifier{}.PlanModifyString(ctx, req, resp)
 		assert.False(t, resp.Diagnostics.HasError())
@@ -289,14 +297,17 @@ func TestArchiveConnectorPlanModifier(t *testing.T) {
 	archive := types.StringValue(uuid.NewString())
 	trn := types.StringValue("trn_log_backup")
 
-	// Left out of the config, a TRN source reader keeps its share
-	assert.Equal(t, archive, plan(types.StringNull(), archive, trn))
+	// Left out of the config, a TRN source reader keeps its share, whether the method is set or left to state
+	assert.Equal(t, archive, plan(types.StringNull(), archive, trn, trn))
+	assert.Equal(t, archive, plan(types.StringNull(), archive, types.StringNull(), trn))
 	// Moving off TRN unlinks it, as the API does
-	assert.Equal(t, types.StringValue(""), plan(types.StringNull(), archive, types.StringValue("change_tracking")))
+	assert.Equal(t, types.StringValue(""), plan(types.StringNull(), archive, types.StringValue("change_tracking"), trn))
+	// A non-TRN reader with no method in config or state keeps "" instead of showing a diff
+	assert.Equal(t, types.StringValue(""), plan(types.StringNull(), types.StringValue(""), types.StringNull(), types.StringNull()))
 	// Not known until the method is, or until the source reader is created
-	assert.True(t, plan(types.StringNull(), archive, types.StringUnknown()).IsUnknown())
-	assert.True(t, plan(types.StringNull(), types.StringNull(), trn).IsUnknown())
+	assert.True(t, plan(types.StringNull(), archive, types.StringUnknown(), trn).IsUnknown())
+	assert.True(t, plan(types.StringNull(), types.StringNull(), trn, types.StringNull()).IsUnknown())
 	// Set in the config, including to a share created in the same apply
-	assert.Equal(t, archive, plan(archive, types.StringValue(""), trn))
-	assert.True(t, plan(types.StringUnknown(), archive, trn).IsUnknown())
+	assert.Equal(t, archive, plan(archive, types.StringValue(""), trn, trn))
+	assert.True(t, plan(types.StringUnknown(), archive, trn, trn).IsUnknown())
 }

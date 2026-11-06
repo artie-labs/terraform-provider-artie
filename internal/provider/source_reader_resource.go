@@ -233,8 +233,13 @@ func (archiveConnectorPlanModifier) PlanModifyString(ctx context.Context, req pl
 		return
 	}
 
+	// Read the method from config, not the plan: when it's left out of the config it can still be unknown in the plan here,
+	// since attribute plan modifiers don't run in a set order. Left out, it keeps its state value (UseStateForUnknown).
 	var method types.String
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("mssql_replication_method"), &method)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("mssql_replication_method"), &method)...)
+	if method.IsNull() {
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("mssql_replication_method"), &method)...)
+	}
 	if method.IsUnknown() {
 		return
 	}
