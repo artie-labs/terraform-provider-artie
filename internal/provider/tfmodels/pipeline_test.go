@@ -374,6 +374,39 @@ func TestPipelineToAPIModel_MaxConcurrentSnapshots(t *testing.T) {
 	assert.Equal(t, 6, *apiModel.AdvancedSettings.MaxConcurrentSnapshots)
 }
 
+func TestPipelineToAPIModel_SnowflakeEcoScheduleUUID(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	scheduleUUID := uuid.New()
+	pipeline := Pipeline{
+		Name:                     types.StringValue("test"),
+		Tables:                   tablesMap,
+		DestinationConfig:        &PipelineDestinationConfig{},
+		SnowflakeEcoScheduleUUID: types.StringValue(scheduleUUID.String()),
+	}
+
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.NotNil(t, apiModel.SnowflakeEcoScheduleUUID)
+	assert.Equal(t, scheduleUUID, *apiModel.SnowflakeEcoScheduleUUID)
+}
+
+func TestPipelineToAPIModel_OmittedSnowflakeEcoScheduleUUID(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+
+	pipeline := Pipeline{
+		Name:              types.StringValue("test"),
+		Tables:            tablesMap,
+		DestinationConfig: &PipelineDestinationConfig{},
+	}
+
+	apiModel, diags := pipeline.ToAPIModel(t.Context())
+	assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+	assert.Nil(t, apiModel.SnowflakeEcoScheduleUUID)
+}
+
 func TestPipelineToAPIModel_OmittedMaxConcurrentSnapshots(t *testing.T) {
 	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
 	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
