@@ -1212,17 +1212,6 @@ type ListResponseBodySnowflakeEcoSchedule struct {
 	Items []PayloadsSnowflakeEcoSchedule `json:"items"`
 }
 
-// OrmSnowflakeEcoScheduleSettings defines model for OrmSnowflakeEcoScheduleSettings.
-type OrmSnowflakeEcoScheduleSettings struct {
-	Days                        []string `json:"days"`
-	EndTimeOfDay                string   `json:"endTimeOfDay"`
-	OffPeakBufferRows           int      `json:"offPeakBufferRows"`
-	OffPeakFlushIntervalSeconds int      `json:"offPeakFlushIntervalSeconds"`
-	OffPeakFlushSizeKb          int      `json:"offPeakFlushSizeKb"`
-	StartTimeOfDay              string   `json:"startTimeOfDay"`
-	Timezone                    string   `json:"timezone"`
-}
-
 // PayloadsAdvancedPipelineSettingsPayload defines model for PayloadsAdvancedPipelineSettingsPayload.
 type PayloadsAdvancedPipelineSettingsPayload struct {
 	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
@@ -2323,13 +2312,24 @@ type PayloadsSeenTableColumnMetadata struct {
 
 // PayloadsSnowflakeEcoSchedule defines model for PayloadsSnowflakeEcoSchedule.
 type PayloadsSnowflakeEcoSchedule struct {
-	Company         openapi_types.UUID              `json:"company"`
-	CreatedAt       time.Time                       `json:"createdAt"`
-	EnvironmentUUID openapi_types.UUID              `json:"environmentUUID"`
-	Name            string                          `json:"name"`
-	Settings        OrmSnowflakeEcoScheduleSettings `json:"settings"`
-	UpdatedAt       time.Time                       `json:"updatedAt"`
-	Uuid            openapi_types.UUID              `json:"uuid"`
+	Company         openapi_types.UUID                   `json:"company"`
+	CreatedAt       time.Time                            `json:"createdAt"`
+	EnvironmentUUID openapi_types.UUID                   `json:"environmentUUID"`
+	Name            string                               `json:"name"`
+	Settings        PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
+	UpdatedAt       time.Time                            `json:"updatedAt"`
+	Uuid            openapi_types.UUID                   `json:"uuid"`
+}
+
+// PayloadsSnowflakeEcoScheduleSettings defines model for PayloadsSnowflakeEcoScheduleSettings.
+type PayloadsSnowflakeEcoScheduleSettings struct {
+	Days                        []string `json:"days"`
+	EndTimeOfDay                string   `json:"endTimeOfDay"`
+	OffPeakBufferRows           int      `json:"offPeakBufferRows"`
+	OffPeakFlushIntervalSeconds int      `json:"offPeakFlushIntervalSeconds"`
+	OffPeakFlushSizeKb          int      `json:"offPeakFlushSizeKb"`
+	StartTimeOfDay              string   `json:"startTimeOfDay"`
+	Timezone                    string   `json:"timezone"`
 }
 
 // PayloadsSoftPartitioning defines model for PayloadsSoftPartitioning.
@@ -3850,15 +3850,15 @@ type RouterSSHTunnelUpdateRequest struct {
 
 // RouterSnowflakeEcoScheduleCreateRequest defines model for RouterSnowflakeEcoScheduleCreateRequest.
 type RouterSnowflakeEcoScheduleCreateRequest struct {
-	EnvironmentUUID *openapi_types.UUID             `json:"environmentUUID,omitempty"`
-	Name            string                          `json:"name"`
-	Settings        OrmSnowflakeEcoScheduleSettings `json:"settings"`
+	EnvironmentUUID *openapi_types.UUID                  `json:"environmentUUID,omitempty"`
+	Name            string                               `json:"name"`
+	Settings        PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
 }
 
 // RouterSnowflakeEcoScheduleUpdateRequest defines model for RouterSnowflakeEcoScheduleUpdateRequest.
 type RouterSnowflakeEcoScheduleUpdateRequest struct {
-	Name     string                          `json:"name"`
-	Settings OrmSnowflakeEcoScheduleSettings `json:"settings"`
+	Name     string                               `json:"name"`
+	Settings PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
 }
 
 // RouterSourceReaderCreateRequest defines model for RouterSourceReaderCreateRequest.

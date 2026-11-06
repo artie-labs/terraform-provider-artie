@@ -13,7 +13,7 @@ func TestSnowflakeEcoScheduleRoundTrip(t *testing.T) {
 	apiModel := openapi.PayloadsSnowflakeEcoSchedule{
 		Uuid: uuid.New(),
 		Name: "Business hours",
-		Settings: openapi.OrmSnowflakeEcoScheduleSettings{
+		Settings: openapi.PayloadsSnowflakeEcoScheduleSettings{
 			Timezone:                    "America/New_York",
 			StartTimeOfDay:              "09:00",
 			EndTimeOfDay:                "18:00",

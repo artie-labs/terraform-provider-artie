@@ -8,12 +8,15 @@ import (
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -41,15 +44,19 @@ func (r *SnowflakeEcoScheduleResource) Schema(ctx context.Context, req resource.
 		Attributes: map[string]schema.Attribute{
 			"uuid":     schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Required: true, MarkdownDescription: "A human-readable label for this schedule."},
-			"timezone": schema.StringAttribute{Required: true, MarkdownDescription: "The IANA time zone of the peak hours, like `America/New_York`."},
+			"timezone": schema.StringAttribute{Required: true, MarkdownDescription: "The time zone of the peak hours, like `America/New_York`. Must be one of the time zones the Artie dashboard offers for Eco Mode schedules."},
 			"peak_days": schema.SetAttribute{
 				Required:            true,
 				ElementType:         types.StringType,
 				MarkdownDescription: "The days that have peak hours: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday` or `Saturday`. Any other day is off-peak all day.",
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+					setvalidator.ValueStringsAre(stringvalidator.OneOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")),
+				},
 			},
 			"peak_start_time":                 schema.StringAttribute{Required: true, MarkdownDescription: "When peak hours start on each of `peak_days`, as 24-hour `HH:MM`, like `09:00`."},
-			"peak_end_time":                   schema.StringAttribute{Required: true, MarkdownDescription: "When peak hours end on each of `peak_days`, as 24-hour `HH:MM`, like `18:00`. Must be later than `peak_start_time`; peak hours can't cross midnight."},
-			"off_peak_flush_interval_seconds": schema.Int64Attribute{Required: true, MarkdownDescription: "How often, in seconds, pipelines flush outside peak hours (at least 10)."},
+			"peak_end_time":                   schema.StringAttribute{Required: true, MarkdownDescription: "When peak hours end on each of `peak_days`, as 24-hour `HH:MM`, like `18:00`. Can't be before `peak_start_time`, so peak hours can't cross midnight."},
+			"off_peak_flush_interval_seconds": schema.Int64Attribute{Required: true, MarkdownDescription: "How often, in seconds, pipelines flush outside peak hours."},
 			"off_peak_buffer_rows":            schema.Int64Attribute{Required: true, MarkdownDescription: "How many rows pipelines buffer before flushing outside peak hours."},
 			"off_peak_flush_size_kb":          schema.Int64Attribute{Required: true, MarkdownDescription: "How much data, in KB, pipelines buffer before flushing outside peak hours."},
 		},
@@ -153,7 +160,11 @@ func (r *SnowflakeEcoScheduleResource) Delete(ctx context.Context, req resource.
 		return
 	}
 
-	if err := artieclient.CheckResponse(r.client.SnowflakeEcoScheduleDeleteWithResponse(ctx, scheduleUUID)); err != nil {
+	err := artieclient.CheckResponse(r.client.SnowflakeEcoScheduleDeleteWithResponse(ctx, scheduleUUID))
+	if errors.Is(err, artieclient.ErrNotFound) {
+		return // already deleted outside Terraform
+	}
+	if err != nil {
 		resp.Diagnostics.AddError("Unable to Delete Snowflake Eco Schedule", err.Error())
 	}
 }

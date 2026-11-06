@@ -18,12 +18,12 @@ type SnowflakeEcoSchedule struct {
 	OffPeakFlushSizeKb          types.Int64    `tfsdk:"off_peak_flush_size_kb"`
 }
 
-func (s SnowflakeEcoSchedule) settings() openapi.OrmSnowflakeEcoScheduleSettings {
+func (s SnowflakeEcoSchedule) settings() openapi.PayloadsSnowflakeEcoScheduleSettings {
 	days := make([]string, len(s.PeakDays))
 	for i, day := range s.PeakDays {
 		days[i] = day.ValueString()
 	}
-	return openapi.OrmSnowflakeEcoScheduleSettings{
+	return openapi.PayloadsSnowflakeEcoScheduleSettings{
 		Timezone:                    s.Timezone.ValueString(),
 		StartTimeOfDay:              s.PeakStartTime.ValueString(),
 		EndTimeOfDay:                s.PeakEndTime.ValueString(),

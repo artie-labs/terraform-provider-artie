@@ -39,12 +39,12 @@ resource "artie_pipeline" "my_pipeline" {
 
 - `name` (String) A human-readable label for this schedule.
 - `off_peak_buffer_rows` (Number) How many rows pipelines buffer before flushing outside peak hours.
-- `off_peak_flush_interval_seconds` (Number) How often, in seconds, pipelines flush outside peak hours (at least 10).
+- `off_peak_flush_interval_seconds` (Number) How often, in seconds, pipelines flush outside peak hours.
 - `off_peak_flush_size_kb` (Number) How much data, in KB, pipelines buffer before flushing outside peak hours.
 - `peak_days` (Set of String) The days that have peak hours: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday` or `Saturday`. Any other day is off-peak all day.
-- `peak_end_time` (String) When peak hours end on each of `peak_days`, as 24-hour `HH:MM`, like `18:00`. Must be later than `peak_start_time`; peak hours can't cross midnight.
+- `peak_end_time` (String) When peak hours end on each of `peak_days`, as 24-hour `HH:MM`, like `18:00`. Can't be before `peak_start_time`, so peak hours can't cross midnight.
 - `peak_start_time` (String) When peak hours start on each of `peak_days`, as 24-hour `HH:MM`, like `09:00`.
-- `timezone` (String) The IANA time zone of the peak hours, like `America/New_York`.
+- `timezone` (String) The time zone of the peak hours, like `America/New_York`. Must be one of the time zones the Artie dashboard offers for Eco Mode schedules.
 
 ### Read-Only
 
