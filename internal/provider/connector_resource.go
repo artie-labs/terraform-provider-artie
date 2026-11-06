@@ -46,6 +46,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugPostgresql),
 	string(openapi.EnumsConnectorSlugRedshift),
 	string(openapi.EnumsConnectorSlugS3),
+	string(openapi.EnumsConnectorSlugSmbShare),
 	string(openapi.EnumsConnectorSlugSnowflake),
 }
 
@@ -278,6 +279,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
 				},
 			},
+			"smb_share_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `smb_share`. An SMB share connector is a folder of an SMB share (such as one on Amazon FSx for Windows File Server) that a Microsoft SQL Server source reader using `trn_log_backup` reads its transaction log backup files from. Link it to the source reader with `archive_connector_uuid`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"path":              schema.StringAttribute{Required: true, MarkdownDescription: "The UNC path of the folder that holds the log backup files, for example `\\\\fs-0123.corp.example.com\\share\\backups`."},
+					"username":          schema.StringAttribute{Required: true, MarkdownDescription: "The login for the share, as `DOMAIN\\user` or `user@domain`."},
+					"password":          schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the share login. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"private_link_uuid": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the share through AWS PrivateLink. Its DNS entry is dialed in place of the path's host."},
+				},
+			},
 			"snowflake_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `snowflake`.",
 				Optional:            true,
@@ -475,6 +486,11 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.S3Config.SecretAccessKey) {
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `s3_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
+		}
+	case string(openapi.EnumsConnectorSlugSmbShare):
+		if configData.SMBShareConfig == nil {
+			resp.Diagnostics.AddError("smb_share_config is required", "Please provide `smb_share_config` inside `connector`.")
+			return
 		}
 	case string(openapi.EnumsConnectorSlugSnowflake):
 		if configData.SnowflakeConfig == nil {
