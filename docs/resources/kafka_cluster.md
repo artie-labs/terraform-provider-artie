@@ -76,7 +76,7 @@ Optional:
 
 - `enabled` (Boolean) Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`.
 - `local_retention_bytes` (Number) The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Can only be set while `enabled` is `true`. If not set, there is no cap.
-- `local_retention_ms` (Number) How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 1209600000 (14 days). Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.
+- `local_retention_ms` (Number) How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days). Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.
 
 ## Import
 
