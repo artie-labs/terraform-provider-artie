@@ -77,6 +77,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `include_full_source_table_name_column_as_primary_key` (Boolean) If set to true, includes the full source table name column as part of the primary key in destination tables. Requires `include_full_source_table_name_column` to be true.
 - `include_source_metadata_column` (Boolean) If set to true, Artie will add a new column called `__artie_source_metadata` to the destination table which will contain a JSON blob of metadata about the source event.
 - `max_concurrent_snapshots` (Number) The maximum number of tables Artie should backfill concurrently for this pipeline.
+- `snowflake_eco_schedule_uuid` (String) If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. Schedules are created in our UI; if this is not set, any schedule already attached to the pipeline is left unchanged.
 - `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
 - `staging_schema` (String) If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces.
@@ -90,7 +91,6 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 ### Read-Only
 
-- `snowflake_eco_schedule_uuid` (String) If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. This can currently only be configured via our UI.
 - `uuid` (String)
 
 <a id="nestedatt--destination_config"></a>
