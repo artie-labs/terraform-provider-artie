@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -28,6 +29,7 @@ type Connector struct {
 	PostgresConfig    *PostgresSharedConfig    `tfsdk:"postgresql_config"`
 	RedshiftConfig    *RedshiftSharedConfig    `tfsdk:"redshift_config"`
 	S3Config          *S3SharedConfig          `tfsdk:"s3_config"`
+	SMBShareConfig    *SMBShareConfig          `tfsdk:"smb_share_config"`
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
@@ -62,6 +64,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.RedshiftConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugS3:
 		sharedConfig = c.S3Config.ToAPIModel()
+	case openapi.EnumsConnectorSlugSmbShare:
+		sharedConfig = c.SMBShareConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugSnowflake:
 		sharedConfig = c.SnowflakeConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugDatabricks:
@@ -90,14 +94,24 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 		return openapi.PayloadsConnectorPayload{}, diags
 	}
 
+	var privateLinkUUID *uuid.UUID
+	// Only an SMB share takes a PrivateLink here; a stray smb_share_config block on another type is ignored like its sharedConfig.
+	if c.SMBShareConfig != nil && openapi.EnumsConnectorSlug(c.Type.ValueString()) == openapi.EnumsConnectorSlugSmbShare {
+		privateLinkUUID, diags = parseOptionalUUID(c.SMBShareConfig.PrivateLinkUUID)
+		if diags.HasError() {
+			return openapi.PayloadsConnectorPayload{}, diags
+		}
+	}
+
 	return openapi.PayloadsConnectorPayload{
 		// UUID is unknown on create; on update the API uses it to resolve masked sensitive values.
-		Uuid:          nonEmptyStringPointer(c.UUID),
-		Type:          stringPointer(c.Type),
-		DataPlaneName: nonEmptyStringPointer(c.DataPlaneName),
-		Label:         stringPointer(c.Name),
-		SharedConfig:  apiSharedConfig,
-		SshTunnelUUID: sshTunnelUUID,
+		Uuid:            nonEmptyStringPointer(c.UUID),
+		Type:            stringPointer(c.Type),
+		DataPlaneName:   nonEmptyStringPointer(c.DataPlaneName),
+		Label:           stringPointer(c.Name),
+		SharedConfig:    apiSharedConfig,
+		SshTunnelUUID:   sshTunnelUUID,
+		PrivateLinkUUID: privateLinkUUID,
 	}, diags
 }
 
@@ -148,6 +162,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.RedshiftConfig = RedshiftSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugS3:
 		connector.S3Config = S3SharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugSmbShare:
+		connector.SMBShareConfig = SMBShareConfigFromAPIModel(config, apiModel.PrivateLinkUUID)
 	case openapi.EnumsConnectorSlugSnowflake:
 		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugDatabricks:
@@ -431,6 +447,31 @@ func S3SharedConfigFromAPIModel(apiModel ConnectorConfig) *S3SharedConfig {
 		Region:          types.StringValue(apiModel.AWSRegion),
 		RoleARN:         types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:      types.StringValue(apiModel.AWSExternalID),
+	}
+}
+
+type SMBShareConfig struct {
+	Path            types.String `tfsdk:"path"`
+	Username        types.String `tfsdk:"username"`
+	Password        types.String `tfsdk:"password"`
+	PrivateLinkUUID types.String `tfsdk:"private_link_uuid"`
+}
+
+// ToAPIModel leaves out PrivateLinkUUID, which the API takes on the connector rather than in its sharedConfig.
+func (s SMBShareConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		SMBPath:  s.Path.ValueString(),
+		Username: s.Username.ValueString(),
+		Password: s.Password.ValueString(),
+	}
+}
+
+func SMBShareConfigFromAPIModel(apiModel ConnectorConfig, privateLinkUUID *uuid.UUID) *SMBShareConfig {
+	return &SMBShareConfig{
+		Path:            types.StringValue(apiModel.SMBPath),
+		Username:        types.StringValue(apiModel.Username),
+		Password:        types.StringValue(apiModel.Password),
+		PrivateLinkUUID: optionalUUIDToStringValue(privateLinkUUID),
 	}
 }
 

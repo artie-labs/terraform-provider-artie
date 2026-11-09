@@ -51,6 +51,9 @@ type ConnectorConfig struct {
 	// S3, Keyspaces:
 	AWSRegion string `json:"awsRegion"`
 
+	// SMB share:
+	SMBPath string `json:"path,omitempty"`
+
 	// Iceberg:
 	IcebergProvider  string `json:"provider"`
 	IcebergBucketARN string `json:"bucketARN"`
