@@ -600,6 +600,58 @@ func TestPipelineFromAPIModel_ParityAdvancedSettings(t *testing.T) {
 		assert.Equal(t, "projects/p/locations/us/reservations/r", pipeline.BigQueryReservation.ValueString())
 		assert.Equal(t, types.BoolValue(false), pipeline.UseNewStringMethod)
 	}
+	{
+		// Every field set, with look-alike pairs set to opposite values so a swapped mapping fails
+		settings := openapi.PayloadsPipelineAdvancedSettings{
+			BackfillMySQLFloatsAsShortestDecimal: ptr(true),
+			BigQueryReservation:                  ptr("reservation"),
+			CastAllColumnsToString:               ptr(false),
+			JsonAsVarchar:                        ptr(true),
+			JsonParseTruncateStrings:             ptr(false),
+			PostgresPartitionMirroring:           ptr(true),
+			SnowpipeStreamingMaxChannels:         ptr(3),
+			TruncateExceededValues:               ptr(false),
+			UseBQBatchPriority:                   ptr(true),
+			UseBigNumericForVariableNumeric:      ptr(false),
+			UseDoubleForVariableNumeric:          ptr(true),
+			UseNewStringMethod:                   ptr(true),
+			UseSnowpipeStreaming:                 ptr(false),
+		}
+		pipeline, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{Uuid: uuid.New(), Name: "test", Tables: []openapi.PayloadsTable{}, AdvancedSettings: settings})
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.BoolValue(true), pipeline.BackfillMySQLFloatsAsShortestDecimal)
+		assert.Equal(t, types.StringValue("reservation"), pipeline.BigQueryReservation)
+		assert.Equal(t, types.BoolValue(false), pipeline.CastAllColumnsToString)
+		assert.Equal(t, types.BoolValue(true), pipeline.JSONAsVarchar)
+		assert.Equal(t, types.BoolValue(false), pipeline.JSONParseTruncateStrings)
+		assert.Equal(t, types.BoolValue(true), pipeline.PostgresPartitionMirroring)
+		assert.Equal(t, types.Int64Value(3), pipeline.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, types.BoolValue(false), pipeline.TruncateExceededValues)
+		assert.Equal(t, types.BoolValue(true), pipeline.UseBQBatchPriority)
+		assert.Equal(t, types.BoolValue(false), pipeline.UseBigNumericForVariableNumeric)
+		assert.Equal(t, types.BoolValue(true), pipeline.UseDoubleForVariableNumeric)
+		assert.Equal(t, types.BoolValue(true), pipeline.UseNewStringMethod)
+		assert.Equal(t, types.BoolValue(false), pipeline.UseSnowpipeStreaming)
+
+		// and back: the payload carries the same values
+		pipeline.DestinationConfig = &PipelineDestinationConfig{}
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		got := apiModel.AdvancedSettings
+		assert.Equal(t, settings.BackfillMySQLFloatsAsShortestDecimal, got.BackfillMySQLFloatsAsShortestDecimal)
+		assert.Equal(t, settings.BigQueryReservation, got.BigQueryReservation)
+		assert.Equal(t, settings.CastAllColumnsToString, got.CastAllColumnsToString)
+		assert.Equal(t, settings.JsonAsVarchar, got.JsonAsVarchar)
+		assert.Equal(t, settings.JsonParseTruncateStrings, got.JsonParseTruncateStrings)
+		assert.Equal(t, settings.PostgresPartitionMirroring, got.PostgresPartitionMirroring)
+		assert.Equal(t, settings.SnowpipeStreamingMaxChannels, got.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, settings.TruncateExceededValues, got.TruncateExceededValues)
+		assert.Equal(t, settings.UseBQBatchPriority, got.UseBQBatchPriority)
+		assert.Equal(t, settings.UseBigNumericForVariableNumeric, got.UseBigNumericForVariableNumeric)
+		assert.Equal(t, settings.UseDoubleForVariableNumeric, got.UseDoubleForVariableNumeric)
+		assert.Equal(t, settings.UseNewStringMethod, got.UseNewStringMethod)
+		assert.Equal(t, settings.UseSnowpipeStreaming, got.UseSnowpipeStreaming)
+	}
 }
 
 func TestPipelineToAPIModel_ParityAdvancedSettings(t *testing.T) {
