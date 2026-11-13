@@ -192,6 +192,14 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "us-west-2", config["awsRegion"])
 	}
 	{
+		// MotherDuck
+		prior := Connector{Type: types.StringValue("motherduck"), MotherDuckConfig: &MotherDuckSharedConfig{Token: types.StringValue("real-token")}}
+		connector, config := roundTripSharedConfig(t, "motherduck", `{"token": "********"}`, prior)
+		require.NotNil(t, connector.MotherDuckConfig)
+		assert.Equal(t, "real-token", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, "real-token", config["token"])
+	}
+	{
 		// PlanetScale: the API forces tlsMode, so it's neither read nor sent
 		connector, config := roundTripSharedConfig(t, "planetscale", `{"host": "aws.connect.psdb.cloud", "port": 3306, "user": "artie", "password": "secret", "tlsMode": "true"}`, Connector{})
 		require.NotNil(t, connector.PlanetScaleConfig)
