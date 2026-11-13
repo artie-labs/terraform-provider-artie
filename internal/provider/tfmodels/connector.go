@@ -33,6 +33,7 @@ type Connector struct {
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
+	PlanetScaleConfig *PlanetScaleSharedConfig `tfsdk:"planetscale_config"`
 }
 
 func (c Connector) sharedConfig() (ConnectorConfig, error) {
@@ -72,6 +73,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugPlanetscale:
+		sharedConfig = c.PlanetScaleConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -170,6 +173,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugKeyspaces:
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugPlanetscale:
+		connector.PlanetScaleConfig = PlanetScaleSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -640,5 +645,31 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
 		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:         types.StringValue(apiModel.AWSExternalID),
+	}
+}
+
+// PlanetScaleSharedConfig leaves out the TLS mode, which the API always sets to required for PlanetScale.
+type PlanetScaleSharedConfig struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int32  `tfsdk:"port"`
+	Username types.String `tfsdk:"username"`
+	Password types.String `tfsdk:"password"`
+}
+
+func (p PlanetScaleSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:     p.Host.ValueString(),
+		Port:     p.Port.ValueInt32(),
+		User:     p.Username.ValueString(),
+		Password: p.Password.ValueString(),
+	}
+}
+
+func PlanetScaleSharedConfigFromAPIModel(apiModel ConnectorConfig) *PlanetScaleSharedConfig {
+	return &PlanetScaleSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		Username: types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
 	}
 }
