@@ -377,7 +377,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 		}
 
 		// Null while the table has no partition settings, so ToAPIModel doesn't send (and save) a disabled object for
-		// every table that never set one.
+		// every table that never set one. The schema uses UseStateForUnknown so that null carries into later plans.
 		partitionBackfill := types.BoolNull()
 		partitionRangeBackfill := types.BoolValue(false)
 		partitionRangeChunkSize := types.Int64Value(0)
