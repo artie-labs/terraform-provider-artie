@@ -43,6 +43,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugKafka),
 	string(openapi.EnumsConnectorSlugKeyspaces),
 	string(openapi.EnumsConnectorSlugMongodb),
+	string(openapi.EnumsConnectorSlugMotherduck),
 	string(openapi.EnumsConnectorSlugMssql),
 	string(openapi.EnumsConnectorSlugMysql),
 	string(openapi.EnumsConnectorSlugOracle),
@@ -327,6 +328,13 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
 				},
 			},
+			"motherduck_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `motherduck`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
 			"kafka_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `kafka` (your own Kafka cluster, which we publish change events to). Kafka destinations must be enabled for your account.",
 				Optional:            true,
@@ -577,6 +585,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.SecretAccessKey) {
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
+		}
+	case string(openapi.EnumsConnectorSlugMotherduck):
+		if configData.MotherDuckConfig == nil {
+			resp.Diagnostics.AddError("motherduck_config is required", "Please provide `motherduck_config` inside `connector`.")
 		}
 	case string(openapi.EnumsConnectorSlugKafka):
 		if configData.KafkaConfig == nil {

@@ -59,9 +59,11 @@ type ConnectorConfig struct {
 	IcebergBucketARN string `json:"bucketARN"`
 	IcebergRegion    string `json:"region,omitempty"`
 
+	// Iceberg REST Catalog, MotherDuck:
+	Token string `json:"token,omitempty"`
+
 	// Iceberg REST Catalog:
 	IcebergURI        string `json:"uri,omitempty"`
-	Token             string `json:"token,omitempty"`
 	IcebergCredential string `json:"credential,omitempty"`
 	IcebergAuthURI    string `json:"authURI,omitempty"`
 	IcebergScope      string `json:"scope,omitempty"`

@@ -192,6 +192,14 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "us-west-2", config["awsRegion"])
 	}
 	{
+		// MotherDuck
+		prior := Connector{Type: types.StringValue("motherduck"), MotherDuckConfig: &MotherDuckSharedConfig{Token: types.StringValue("real-token")}}
+		connector, config := roundTripSharedConfig(t, "motherduck", `{"token": "********"}`, prior)
+		require.NotNil(t, connector.MotherDuckConfig)
+		assert.Equal(t, "real-token", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, "real-token", config["token"])
+	}
+	{
 		// Kafka: masked password and client key are kept from prior
 		prior := Connector{Type: types.StringValue("kafka"), KafkaConfig: &KafkaSharedConfig{Password: types.StringValue("real-password"), ClientKey: types.StringValue("real-key")}}
 		connector, config := roundTripSharedConfig(t, "kafka", `{"bootstrapServers": "b1:9092,b2:9092", "topicPrefix": "artie", "saslMechanism": "SCRAM-SHA-512", "username": "artie", "password": "********", "caCert": "ca", "clientCert": "cert", "clientKey": "********", "createTopics": true}`, prior)
