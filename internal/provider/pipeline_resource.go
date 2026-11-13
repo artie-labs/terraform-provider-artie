@@ -578,10 +578,18 @@ func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPl
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if !tfmodels.IsKnown(configTables) {
+		return
+	}
 	turnsOn := tfmodels.IsExplicitlyTrue(planned)
-	// Only existing tables: the API keeps the payload's skip_backfill on tables this apply adds.
+	// Only existing tables still in the config: the API keeps the payload's skip_backfill on tables this apply adds,
+	// and a table removed from the config must stay out of the plan.
 	for key := range priorTables.Elements() {
-		configured := configuredSkipBackfill(configTables, key)
+		configTable, ok := configTables.Elements()[key].(types.Object)
+		if !ok {
+			continue
+		}
+		configured, _ := configTable.Attributes()["skip_backfill"].(types.Bool)
 		if configured.IsNull() {
 			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("tables").AtMapKey(key).AtName("skip_backfill"), types.BoolUnknown())...)
 			continue
@@ -594,20 +602,6 @@ func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPl
 				fmt.Sprintf("Turning on `dynamodb_backfill_config` clears `skip_backfill` on every existing table, so %q table can't set it to true in the same apply. Remove it (or set it to false), apply, then set it again.", key))
 		}
 	}
-}
-
-// configuredSkipBackfill returns the table's skip_backfill from the config: null when it's left out or the table isn't
-// in the config.
-func configuredSkipBackfill(configTables types.Map, key string) types.Bool {
-	configTable, ok := configTables.Elements()[key].(types.Object)
-	if !ok {
-		return types.BoolNull()
-	}
-	configured, ok := configTable.Attributes()["skip_backfill"].(types.Bool)
-	if !ok {
-		return types.BoolNull()
-	}
-	return configured
 }
 
 // backfillMaySwitch reports whether the DynamoDB backfill may go from off (or never set) to on, or back, in this plan.

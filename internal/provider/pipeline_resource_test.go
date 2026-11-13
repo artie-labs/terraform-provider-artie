@@ -122,24 +122,6 @@ func TestBackfillMaySwitch(t *testing.T) {
 	}
 }
 
-func TestConfiguredSkipBackfill(t *testing.T) {
-	attrTypes := map[string]attr.Type{"skip_backfill": types.BoolType}
-	tables := types.MapValueMust(types.ObjectType{AttrTypes: attrTypes}, map[string]attr.Value{
-		"set":   types.ObjectValueMust(attrTypes, map[string]attr.Value{"skip_backfill": types.BoolValue(true)}),
-		"unset": types.ObjectValueMust(attrTypes, map[string]attr.Value{"skip_backfill": types.BoolNull()}),
-	})
-	{
-		// Set in the config
-		assert.Equal(t, types.BoolValue(true), configuredSkipBackfill(tables, "set"))
-	}
-	{
-		// Left out, a table only in state, or no tables in the config
-		assert.True(t, configuredSkipBackfill(tables, "unset").IsNull())
-		assert.True(t, configuredSkipBackfill(tables, "missing").IsNull())
-		assert.True(t, configuredSkipBackfill(types.MapNull(types.ObjectType{AttrTypes: attrTypes}), "set").IsNull())
-	}
-}
-
 func TestPipelineModifyPlanBackfillSwitch(t *testing.T) {
 	ctx := t.Context()
 	schemaResp := &resource.SchemaResponse{}
@@ -203,6 +185,28 @@ func TestPipelineModifyPlanBackfillSwitch(t *testing.T) {
 		a, _, diags := modifyPlan(true, false, types.BoolValue(true))
 		assert.False(t, diags.HasError(), diags)
 		assert.True(t, a.IsUnknown())
+	}
+	{
+		// Turning the backfill on while removing table "b" from the config: "b" stays out of the plan
+		config := tfsdk.State{Schema: schemaResp.Schema, Raw: pipelineValue(true)}
+		var tables types.Map
+		assert.False(t, config.GetAttribute(ctx, path.Root("tables"), &tables).HasError())
+		remaining := map[string]attr.Value{"a": tables.Elements()["a"]}
+		assert.False(t, config.SetAttribute(ctx, path.Root("tables"), types.MapValueMust(tables.ElementType(ctx), remaining)).HasError())
+		assert.False(t, config.SetAttribute(ctx, path.Root("tables").AtMapKey("a").AtName("skip_backfill"), types.BoolNull()).HasError())
+		req := resource.ModifyPlanRequest{
+			Config: tfsdk.Config{Schema: schemaResp.Schema, Raw: config.Raw},
+			State:  tfsdk.State{Schema: schemaResp.Schema, Raw: pipelineValue(false)},
+			Plan:   tfsdk.Plan{Schema: schemaResp.Schema, Raw: config.Raw},
+		}
+		resp := &resource.ModifyPlanResponse{Plan: req.Plan}
+		(&PipelineResource{}).ModifyPlan(ctx, req, resp)
+		assert.False(t, resp.Diagnostics.HasError(), resp.Diagnostics)
+		var planned types.Map
+		assert.False(t, resp.Plan.GetAttribute(ctx, path.Root("tables"), &planned).HasError())
+		assert.Len(t, planned.Elements(), 1)
+		_, hasB := planned.Elements()["b"]
+		assert.False(t, hasB)
 	}
 	{
 		// Backfill already on: the plan is left alone
