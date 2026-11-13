@@ -99,7 +99,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `use_bignumeric_for_variable_numeric` (Boolean) If set to true, numeric columns without a fixed precision and scale are created as `BIGNUMERIC` instead of `NUMERIC`. This is only applicable if the destination is BigQuery.
 - `use_bq_batch_priority` (Boolean) If set to true, Artie runs BigQuery queries with batch priority instead of interactive priority. This is only applicable if the destination is BigQuery.
 - `use_double_for_variable_numeric` (Boolean) If set to true, numeric columns without a fixed precision and scale are created as `DOUBLE`. This is only applicable if the destination is MotherDuck.
-- `use_new_string_method` (Boolean) Overrides the account's setting for how Artie writes string values. If not set, the pipeline follows the account's setting. This is only applicable if the destination is Databricks.
+- `use_new_string_method` (Boolean) Overrides the account's setting for how Artie writes string values. If never set, the pipeline follows the account's setting. Once set, removing it keeps the current override, and Terraform can't restore the account default. This is only applicable if the destination is Databricks.
 - `use_snowpipe_streaming` (Boolean) If set to true, Artie loads data with Snowpipe Streaming. This is only applicable if the destination is Snowflake.
 - `write_raw_binary_values` (Boolean) If set to true, binary columns (e.g. BINARY type) are created in the destination table for raw binary data instead of creating string columns that store Base64-encoded values. It only applies when the destination is Databricks.
 
@@ -115,7 +115,7 @@ Optional:
 - `bucket` (String) The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg with provider `s3tables` (for Iceberg S3 Tables, this bucket is where delta files will be stored). Not used for Iceberg REST catalog.
 - `checkpoint_interval` (Number) How often, in commits, Artie should write a Delta Lake checkpoint. Set to 0 to use Artie's default (10) or -1 to turn checkpoints off. This is only applicable if the destination is Delta Lake.
 - `compaction` (Attributes) Delta Lake compaction settings. Settings left out keep their current value. This is only applicable if the destination is Delta Lake. (see [below for nested schema](#nestedatt--destination_config--compaction))
-- `container_name` (String) The name of the container (PDB) that data should be synced to. This is only applicable if the destination is Oracle.
+- `container_name` (String) The Oracle container (PDB) name stored with this pipeline's destination settings. Artie doesn't use it for Oracle destinations today; it's exposed so applies keep a value set in the dashboard.
 - `create_iceberg_namespaces` (Boolean) If set to true, Artie will automatically create namespaces if they don't exist. This is only applicable if the destination is Iceberg.
 - `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.
 - `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.

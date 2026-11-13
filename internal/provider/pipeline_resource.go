@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -245,7 +246,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 					},
 					"checkpoint_interval":      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(-1)}, MarkdownDescription: "How often, in commits, Artie should write a Delta Lake checkpoint. Set to 0 to use Artie's default (10) or -1 to turn checkpoints off. This is only applicable if the destination is Delta Lake."},
-					"container_name":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the container (PDB) that data should be synced to. This is only applicable if the destination is Oracle."},
+					"container_name":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The Oracle container (PDB) name stored with this pipeline's destination settings. Artie doesn't use it for Oracle destinations today; it's exposed so applies keep a value set in the dashboard."},
 					"external_stage_name":      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the Snowflake external stage Artie should load data through. This is only applicable if the destination is Snowflake."},
 					"external_stage_s3_bucket": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 bucket behind `external_stage_name`. This is only applicable if the destination is Snowflake."},
 					"external_stage_s3_prefix": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 prefix behind `external_stage_name`. This is only applicable if the destination is Snowflake."},
@@ -313,7 +314,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"use_bq_batch_priority":                                schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie runs BigQuery queries with batch priority instead of interactive priority. This is only applicable if the destination is BigQuery."},
 			"use_bignumeric_for_variable_numeric":                  schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, numeric columns without a fixed precision and scale are created as `BIGNUMERIC` instead of `NUMERIC`. This is only applicable if the destination is BigQuery."},
 			"use_double_for_variable_numeric":                      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, numeric columns without a fixed precision and scale are created as `DOUBLE`. This is only applicable if the destination is MotherDuck."},
-			"use_new_string_method":                                schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "Overrides the account's setting for how Artie writes string values. If not set, the pipeline follows the account's setting. This is only applicable if the destination is Databricks."},
+			"use_new_string_method":                                schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "Overrides the account's setting for how Artie writes string values. If never set, the pipeline follows the account's setting. Once set, removing it keeps the current override, and Terraform can't restore the account default. This is only applicable if the destination is Databricks."},
 			"use_snowpipe_streaming":                               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie loads data with Snowpipe Streaming. This is only applicable if the destination is Snowflake."},
 			"dynamodb_backfill_config": schema.SingleNestedAttribute{
 				Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
@@ -467,6 +468,18 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 					resp.Diagnostics.AddError("Range batch size is required", "range_batch_size is required when range_backfill is enabled.")
 				}
 			}
+			// The partition range settings are only sent along with partition_backfill.
+			if table.PartitionBackfill.IsNull() {
+				for name, value := range map[string]attr.Value{
+					"partition_range_backfill":        table.PartitionRangeBackfill,
+					"partition_range_chunk_size":      table.PartitionRangeChunkSize,
+					"partition_range_max_parallelism": table.PartitionRangeMaxParallelism,
+				} {
+					if !value.IsNull() {
+						resp.Diagnostics.AddError("partition_backfill is required", fmt.Sprintf("%q table: `%s` requires `partition_backfill` to be set.", tableKey, name))
+					}
+				}
+			}
 			if tfmodels.IsKnown(table.MergePredicates) {
 				var preds []tfmodels.MergePredicate
 				resp.Diagnostics.Append(table.MergePredicates.ElementsAs(ctx, &preds, false)...)
@@ -495,7 +508,8 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 }
 
 // ModifyPlan clears a regex left out of the config while the other of its pair is set, so switching from an ignore
-// regex to an include regex (or back) doesn't send the old one from state alongside the new one.
+// regex to an include regex (or back) doesn't send the old one from state alongside the new one. It also plans the
+// tables' skip_backfill as unknown when the DynamoDB backfill is turned on.
 func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroying
@@ -510,6 +524,60 @@ func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 			}
 		}
 	}
+	if req.State.Raw.IsNull() {
+		return // creating
+	}
+	planSkipBackfillOnBackfillSwitch(ctx, req, resp)
+}
+
+// planSkipBackfillOnBackfillSwitch marks each table's skip_backfill as unknown when the DynamoDB backfill is turned on,
+// unless the config sets it: while the backfill is off the API saves new tables with skipBackfill = true, and turning
+// it on clears that on every table.
+func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	enabledPath := path.Root("dynamodb_backfill_config").AtName("enabled")
+	var prior, planned types.Bool
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, enabledPath, &prior)...)
+	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, enabledPath, &planned)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !backfillTurnsOn(prior, planned) {
+		return
+	}
+
+	var plannedTables, configTables types.Map
+	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, path.Root("tables"), &plannedTables)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("tables"), &configTables)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	for key := range plannedTables.Elements() {
+		if skipBackfillConfigured(configTables, key) {
+			continue
+		}
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("tables").AtMapKey(key).AtName("skip_backfill"), types.BoolUnknown())...)
+	}
+}
+
+// skipBackfillConfigured reports whether the config sets skip_backfill on the table with this key.
+func skipBackfillConfigured(configTables types.Map, key string) bool {
+	configTable, ok := configTables.Elements()[key].(types.Object)
+	if !ok {
+		return false
+	}
+	configured, ok := configTable.Attributes()["skip_backfill"]
+	if !ok {
+		return false
+	}
+	return !configured.IsNull()
+}
+
+// backfillTurnsOn reports whether the DynamoDB backfill goes from off (or never set) to on in this plan.
+func backfillTurnsOn(prior, planned types.Bool) bool {
+	if !tfmodels.IsExplicitlyTrue(planned) {
+		return false
+	}
+	return !tfmodels.IsExplicitlyTrue(prior)
 }
 
 // partitionByPlanModifier keeps a merge predicate's `partition_by` from state when it's left out of the config, so a

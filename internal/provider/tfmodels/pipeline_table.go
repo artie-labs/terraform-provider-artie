@@ -376,7 +376,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			rangeBatchSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.BatchSize)))
 		}
 
-		partitionBackfill := types.BoolValue(false)
+		// Null while the table has no partition settings, so ToAPIModel doesn't send (and save) a disabled object for
+		// every table that never set one.
+		partitionBackfill := types.BoolNull()
 		partitionRangeBackfill := types.BoolValue(false)
 		partitionRangeChunkSize := types.Int64Value(0)
 		partitionRangeMaxParallelism := types.Int64Value(0)

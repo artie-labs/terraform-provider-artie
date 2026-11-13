@@ -246,7 +246,8 @@ func TestTableParityAdvancedSettingsRoundTrip(t *testing.T) {
 		assert.Equal(t, types.Int64Value(0), table.BufferRows)
 		assert.Equal(t, types.Int64Value(0), table.K8sRequestCPU)
 		assert.Equal(t, types.BoolValue(false), table.FlattenDocuments)
-		assert.Equal(t, types.BoolValue(false), table.PartitionBackfill)
+		// No partition settings: null, so ToAPIModel doesn't send a disabled object for the table
+		assert.True(t, table.PartitionBackfill.IsNull())
 		assert.Equal(t, types.Int64Value(0), table.PartitionRangeChunkSize)
 		assert.Equal(t, types.StringValue(""), table.StreamARN)
 		assert.Empty(t, table.ColumnsToTrim.Elements())
