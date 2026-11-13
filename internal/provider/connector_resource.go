@@ -40,6 +40,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugIceberg),
 	string(openapi.EnumsConnectorSlugKeyspaces),
 	string(openapi.EnumsConnectorSlugMongodb),
+	string(openapi.EnumsConnectorSlugMotherduck),
 	string(openapi.EnumsConnectorSlugMssql),
 	string(openapi.EnumsConnectorSlugMysql),
 	string(openapi.EnumsConnectorSlugOracle),
@@ -313,6 +314,13 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
 				},
 			},
+			"motherduck_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `motherduck`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
 		},
 	}
 }
@@ -525,6 +533,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 		if clientIDSet != clientSecretSet {
 			resp.Diagnostics.AddError("Incomplete OAuth M2M configuration", "Both `client_id` and `client_secret` must be provided together inside `databricks_config`.")
+		}
+	case string(openapi.EnumsConnectorSlugMotherduck):
+		if configData.MotherDuckConfig == nil {
+			resp.Diagnostics.AddError("motherduck_config is required", "Please provide `motherduck_config` inside `connector`.")
 		}
 	}
 }

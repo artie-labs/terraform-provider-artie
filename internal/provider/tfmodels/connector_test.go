@@ -176,3 +176,14 @@ func TestIcebergRESTTokenAPIModelRoundTrip(t *testing.T) {
 	assert.Equal(t, "real-token", connector.IcebergConfig.Token.ValueString())
 	assert.Equal(t, "real-token", config["token"])
 }
+
+func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
+	{
+		// MotherDuck
+		prior := Connector{Type: types.StringValue("motherduck"), MotherDuckConfig: &MotherDuckSharedConfig{Token: types.StringValue("real-token")}}
+		connector, config := roundTripSharedConfig(t, "motherduck", `{"token": "********"}`, prior)
+		require.NotNil(t, connector.MotherDuckConfig)
+		assert.Equal(t, "real-token", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, "real-token", config["token"])
+	}
+}
