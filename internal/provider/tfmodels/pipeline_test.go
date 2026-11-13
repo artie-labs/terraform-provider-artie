@@ -557,3 +557,76 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
 	}
 }
+
+func TestPipelineFromAPIModel_ParityAdvancedSettings(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+	}
+	{
+		// Omitted -> false, "" and 0, so an explicit false, "" or 0 round-trips.
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		for name, value := range map[string]types.Bool{
+			"backfill_mysql_floats_as_shortest_decimal": pipeline.BackfillMySQLFloatsAsShortestDecimal,
+			"cast_all_columns_to_string":                pipeline.CastAllColumnsToString,
+			"json_as_varchar":                           pipeline.JSONAsVarchar,
+			"json_parse_truncate_strings":               pipeline.JSONParseTruncateStrings,
+			"postgres_partition_mirroring":              pipeline.PostgresPartitionMirroring,
+			"truncate_exceeded_values":                  pipeline.TruncateExceededValues,
+			"use_bq_batch_priority":                     pipeline.UseBQBatchPriority,
+			"use_bignumeric_for_variable_numeric":       pipeline.UseBigNumericForVariableNumeric,
+			"use_double_for_variable_numeric":           pipeline.UseDoubleForVariableNumeric,
+			"use_snowpipe_streaming":                    pipeline.UseSnowpipeStreaming,
+		} {
+			assert.Equal(t, types.BoolValue(false), value, name)
+		}
+		assert.Equal(t, types.StringValue(""), pipeline.BigQueryReservation)
+		assert.Equal(t, types.Int64Value(0), pipeline.SnowpipeStreamingMaxChannels)
+		// Unset follows the company default, so it stays null rather than reading back as false.
+		assert.True(t, pipeline.UseNewStringMethod.IsNull())
+	}
+	{
+		base.AdvancedSettings.UseSnowpipeStreaming = ptr(true)
+		base.AdvancedSettings.SnowpipeStreamingMaxChannels = ptr(8)
+		base.AdvancedSettings.BigQueryReservation = ptr("projects/p/locations/us/reservations/r")
+		base.AdvancedSettings.UseNewStringMethod = ptr(false)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.UseSnowpipeStreaming.ValueBool())
+		assert.Equal(t, int64(8), pipeline.SnowpipeStreamingMaxChannels.ValueInt64())
+		assert.Equal(t, "projects/p/locations/us/reservations/r", pipeline.BigQueryReservation.ValueString())
+		assert.Equal(t, types.BoolValue(false), pipeline.UseNewStringMethod)
+	}
+}
+
+func TestPipelineToAPIModel_ParityAdvancedSettings(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	pipeline := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}}
+	{
+		// Left out of the config on create: send nothing, so the API keeps its default.
+		pipeline.UseSnowpipeStreaming = types.BoolUnknown()
+		pipeline.SnowpipeStreamingMaxChannels = types.Int64Unknown()
+		pipeline.BigQueryReservation = types.StringUnknown()
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.UseSnowpipeStreaming)
+		assert.Nil(t, apiModel.AdvancedSettings.SnowpipeStreamingMaxChannels)
+		assert.Nil(t, apiModel.AdvancedSettings.BigQueryReservation)
+	}
+	{
+		pipeline.UseSnowpipeStreaming = types.BoolValue(false)
+		pipeline.SnowpipeStreamingMaxChannels = types.Int64Value(4)
+		pipeline.BigQueryReservation = types.StringValue("")
+		pipeline.UseBQBatchPriority = types.BoolValue(true)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, false, *apiModel.AdvancedSettings.UseSnowpipeStreaming)
+		assert.Equal(t, 4, *apiModel.AdvancedSettings.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, "", *apiModel.AdvancedSettings.BigQueryReservation)
+		assert.Equal(t, true, *apiModel.AdvancedSettings.UseBQBatchPriority)
+	}
+}

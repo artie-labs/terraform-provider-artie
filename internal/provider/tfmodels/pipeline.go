@@ -176,6 +176,19 @@ type Pipeline struct {
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
+	BackfillMySQLFloatsAsShortestDecimal         types.Bool   `tfsdk:"backfill_mysql_floats_as_shortest_decimal"`
+	BigQueryReservation                          types.String `tfsdk:"bigquery_reservation"`
+	CastAllColumnsToString                       types.Bool   `tfsdk:"cast_all_columns_to_string"`
+	JSONAsVarchar                                types.Bool   `tfsdk:"json_as_varchar"`
+	JSONParseTruncateStrings                     types.Bool   `tfsdk:"json_parse_truncate_strings"`
+	PostgresPartitionMirroring                   types.Bool   `tfsdk:"postgres_partition_mirroring"`
+	SnowpipeStreamingMaxChannels                 types.Int64  `tfsdk:"snowpipe_streaming_max_channels"`
+	TruncateExceededValues                       types.Bool   `tfsdk:"truncate_exceeded_values"`
+	UseBQBatchPriority                           types.Bool   `tfsdk:"use_bq_batch_priority"`
+	UseBigNumericForVariableNumeric              types.Bool   `tfsdk:"use_bignumeric_for_variable_numeric"`
+	UseDoubleForVariableNumeric                  types.Bool   `tfsdk:"use_double_for_variable_numeric"`
+	UseNewStringMethod                           types.Bool   `tfsdk:"use_new_string_method"`
+	UseSnowpipeStreaming                         types.Bool   `tfsdk:"use_snowpipe_streaming"`
 }
 
 func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePayload, diag.Diagnostics) {
@@ -267,6 +280,19 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		TurboWarehouse:                               stringPointer(p.TurboWarehouse),
 		TurboRowThreshold:                            int64ToIntPointer(p.TurboRowThreshold),
 		TurboLatencyThresholdMinutes:                 int64ToIntPointer(p.TurboLatencyThresholdMinutes),
+		BackfillMySQLFloatsAsShortestDecimal:         boolPointer(p.BackfillMySQLFloatsAsShortestDecimal),
+		BigQueryReservation:                          stringPointer(p.BigQueryReservation),
+		CastAllColumnsToString:                       boolPointer(p.CastAllColumnsToString),
+		JsonAsVarchar:                                boolPointer(p.JSONAsVarchar),
+		JsonParseTruncateStrings:                     boolPointer(p.JSONParseTruncateStrings),
+		PostgresPartitionMirroring:                   boolPointer(p.PostgresPartitionMirroring),
+		SnowpipeStreamingMaxChannels:                 int64ToIntPointer(p.SnowpipeStreamingMaxChannels),
+		TruncateExceededValues:                       boolPointer(p.TruncateExceededValues),
+		UseBQBatchPriority:                           boolPointer(p.UseBQBatchPriority),
+		UseBigNumericForVariableNumeric:              boolPointer(p.UseBigNumericForVariableNumeric),
+		UseDoubleForVariableNumeric:                  boolPointer(p.UseDoubleForVariableNumeric),
+		UseNewStringMethod:                           boolPointer(p.UseNewStringMethod),
+		UseSnowpipeStreaming:                         boolPointer(p.UseSnowpipeStreaming),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = int64ToIntPointer(flushConfig.FlushIntervalSeconds)
@@ -461,5 +487,20 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		TurboLatencyThresholdMinutes:      turboLatencyThresholdMinutes,
 		// The API omits structAsVariant when it's false, so it reads back as false (not null) to match a config that sets false.
 		StructAsVariant: boolPointerValueOrFalse(settings.StructAsVariant),
+		// The API omits these when false, empty or zero, so they read back as false/""/0 (not null) for the same reason.
+		BackfillMySQLFloatsAsShortestDecimal: boolPointerValueOrFalse(settings.BackfillMySQLFloatsAsShortestDecimal),
+		BigQueryReservation:                  types.StringValue(lib.RemovePtr(settings.BigQueryReservation)),
+		CastAllColumnsToString:               boolPointerValueOrFalse(settings.CastAllColumnsToString),
+		JSONAsVarchar:                        boolPointerValueOrFalse(settings.JsonAsVarchar),
+		JSONParseTruncateStrings:             boolPointerValueOrFalse(settings.JsonParseTruncateStrings),
+		PostgresPartitionMirroring:           boolPointerValueOrFalse(settings.PostgresPartitionMirroring),
+		SnowpipeStreamingMaxChannels:         types.Int64Value(int64(lib.RemovePtr(settings.SnowpipeStreamingMaxChannels))),
+		TruncateExceededValues:               boolPointerValueOrFalse(settings.TruncateExceededValues),
+		UseBQBatchPriority:                   boolPointerValueOrFalse(settings.UseBQBatchPriority),
+		UseBigNumericForVariableNumeric:      boolPointerValueOrFalse(settings.UseBigNumericForVariableNumeric),
+		UseDoubleForVariableNumeric:          boolPointerValueOrFalse(settings.UseDoubleForVariableNumeric),
+		// Unset means the pipeline follows the company default, so it reads back as null rather than false.
+		UseNewStringMethod:   types.BoolPointerValue(settings.UseNewStringMethod),
+		UseSnowpipeStreaming: boolPointerValueOrFalse(settings.UseSnowpipeStreaming),
 	}, diags
 }
