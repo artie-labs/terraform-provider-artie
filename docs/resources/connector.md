@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `kafka`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -167,6 +167,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
+- `kafka_config` (Attributes) This should be filled out if the connector type is `kafka` (your own Kafka cluster, which we publish change events to). Kafka destinations must be enabled for your account. (see [below for nested schema](#nestedatt--kafka_config))
 - `keyspaces_config` (Attributes) This should be filled out if the connector type is `keyspaces`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--keyspaces_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
 - `motherduck_config` (Attributes) This should be filled out if the connector type is `motherduck`. (see [below for nested schema](#nestedatt--motherduck_config))
@@ -287,6 +288,28 @@ Optional:
 - `token` (String, Sensitive) A bearer token for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`.
 - `uri` (String) The REST catalog endpoint URL. Required if `provider` is `rest`.
 - `warehouse` (String) The warehouse identifier for the REST catalog. Required if `provider` is `rest`.
+
+
+<a id="nestedatt--kafka_config"></a>
+### Nested Schema for `kafka_config`
+
+Required:
+
+- `bootstrap_servers` (String) A comma-separated list of `host:port` brokers.
+- `topic_prefix` (String) The prefix of every topic name, which is `<prefix>.<schema>.<table>`. This can only contain letters, digits, `.`, `_` and `-`.
+
+Optional:
+
+- `ca_cert` (String) A PEM bundle used instead of the system roots to verify the brokers.
+- `client_cert` (String) A PEM client certificate presented to the brokers for mutual TLS. Requires `client_key`.
+- `client_key` (String, Sensitive) The PEM private key for `client_cert`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `create_topics` (Boolean) Set to `true` to have us create a missing topic, with the cluster's default settings, for clusters that don't create topics automatically. This needs the CREATE permission.
+- `disable_tls` (Boolean) Set to `true` to connect without TLS. `AWS-MSK-IAM` requires TLS.
+- `external_id` (String) The external ID to use when assuming `role_arn`.
+- `password` (String, Sensitive) The SASL password. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `role_arn` (String) The ARN of the IAM role to assume for `AWS-MSK-IAM`, which requires it.
+- `sasl_mechanism` (String) The SASL mechanism: `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `AWS-MSK-IAM`, or `""` (empty string) for no SASL.
+- `username` (String) The SASL username. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise.
 
 
 <a id="nestedatt--keyspaces_config"></a>

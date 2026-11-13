@@ -36,6 +36,7 @@ type Connector struct {
 	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
 	MotherDuckConfig  *MotherDuckSharedConfig  `tfsdk:"motherduck_config"`
 	PlanetScaleConfig *PlanetScaleSharedConfig `tfsdk:"planetscale_config"`
+	KafkaConfig       *KafkaSharedConfig       `tfsdk:"kafka_config"`
 }
 
 func (c Connector) sharedConfig() (ConnectorConfig, error) {
@@ -81,6 +82,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.MotherDuckConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugPlanetscale:
 		sharedConfig = c.PlanetScaleConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugKafka:
+		sharedConfig = c.KafkaConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -185,6 +188,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.MotherDuckConfig = MotherDuckSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugPlanetscale:
 		connector.PlanetScaleConfig = PlanetScaleSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugKafka:
+		connector.KafkaConfig = KafkaSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -693,5 +698,54 @@ func PlanetScaleSharedConfigFromAPIModel(apiModel ConnectorConfig) *PlanetScaleS
 		Port:     types.Int32Value(apiModel.Port),
 		Username: types.StringValue(apiModel.User),
 		Password: types.StringValue(apiModel.Password),
+	}
+}
+
+type KafkaSharedConfig struct {
+	BootstrapServers types.String `tfsdk:"bootstrap_servers"`
+	TopicPrefix      types.String `tfsdk:"topic_prefix"`
+	SASLMechanism    types.String `tfsdk:"sasl_mechanism"`
+	Username         types.String `tfsdk:"username"`
+	Password         types.String `tfsdk:"password"`
+	RoleARN          types.String `tfsdk:"role_arn"`
+	ExternalID       types.String `tfsdk:"external_id"`
+	DisableTLS       types.Bool   `tfsdk:"disable_tls"`
+	CACert           types.String `tfsdk:"ca_cert"`
+	ClientCert       types.String `tfsdk:"client_cert"`
+	ClientKey        types.String `tfsdk:"client_key"`
+	CreateTopics     types.Bool   `tfsdk:"create_topics"`
+}
+
+func (k KafkaSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		KafkaBootstrapServers: k.BootstrapServers.ValueString(),
+		KafkaTopicPrefix:      k.TopicPrefix.ValueString(),
+		KafkaSASLMechanism:    k.SASLMechanism.ValueString(),
+		Username:              k.Username.ValueString(),
+		Password:              k.Password.ValueString(),
+		AWSRoleARN:            k.RoleARN.ValueString(),
+		AWSExternalID:         k.ExternalID.ValueString(),
+		KafkaDisableTLS:       k.DisableTLS.ValueBool(),
+		CACert:                k.CACert.ValueString(),
+		ClientCert:            k.ClientCert.ValueString(),
+		ClientKey:             k.ClientKey.ValueString(),
+		KafkaCreateTopics:     k.CreateTopics.ValueBool(),
+	}
+}
+
+func KafkaSharedConfigFromAPIModel(apiModel ConnectorConfig) *KafkaSharedConfig {
+	return &KafkaSharedConfig{
+		BootstrapServers: types.StringValue(apiModel.KafkaBootstrapServers),
+		TopicPrefix:      types.StringValue(apiModel.KafkaTopicPrefix),
+		SASLMechanism:    types.StringValue(apiModel.KafkaSASLMechanism),
+		Username:         types.StringValue(apiModel.Username),
+		Password:         types.StringValue(apiModel.Password),
+		RoleARN:          types.StringValue(apiModel.AWSRoleARN),
+		ExternalID:       types.StringValue(apiModel.AWSExternalID),
+		DisableTLS:       types.BoolValue(apiModel.KafkaDisableTLS),
+		CACert:           types.StringValue(apiModel.CACert),
+		ClientCert:       types.StringValue(apiModel.ClientCert),
+		ClientKey:        types.StringValue(apiModel.ClientKey),
+		CreateTopics:     types.BoolValue(apiModel.KafkaCreateTopics),
 	}
 }

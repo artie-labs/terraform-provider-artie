@@ -214,4 +214,43 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "secret", config["password"])
 		assert.NotContains(t, config, "tlsMode")
 	}
+	{
+		// Kafka: masked password and client key are kept from prior
+		prior := Connector{Type: types.StringValue("kafka"), KafkaConfig: &KafkaSharedConfig{Password: types.StringValue("real-password"), ClientKey: types.StringValue("real-key")}}
+		connector, config := roundTripSharedConfig(t, "kafka", `{"bootstrapServers": "b1:9092,b2:9092", "topicPrefix": "artie", "saslMechanism": "SCRAM-SHA-512", "username": "artie", "password": "********", "caCert": "ca", "clientCert": "cert", "clientKey": "********", "createTopics": true}`, prior)
+		require.NotNil(t, connector.KafkaConfig)
+		assert.Equal(t, "b1:9092,b2:9092", connector.KafkaConfig.BootstrapServers.ValueString())
+		assert.Equal(t, "artie", connector.KafkaConfig.TopicPrefix.ValueString())
+		assert.Equal(t, "SCRAM-SHA-512", connector.KafkaConfig.SASLMechanism.ValueString())
+		assert.Equal(t, "artie", connector.KafkaConfig.Username.ValueString())
+		assert.Equal(t, "real-password", connector.KafkaConfig.Password.ValueString())
+		assert.Equal(t, "", connector.KafkaConfig.RoleARN.ValueString())
+		assert.False(t, connector.KafkaConfig.DisableTLS.ValueBool())
+		assert.Equal(t, "ca", connector.KafkaConfig.CACert.ValueString())
+		assert.Equal(t, "cert", connector.KafkaConfig.ClientCert.ValueString())
+		assert.Equal(t, "real-key", connector.KafkaConfig.ClientKey.ValueString())
+		assert.True(t, connector.KafkaConfig.CreateTopics.ValueBool())
+
+		assert.Equal(t, "b1:9092,b2:9092", config["bootstrapServers"])
+		assert.Equal(t, "artie", config["topicPrefix"])
+		assert.Equal(t, "SCRAM-SHA-512", config["saslMechanism"])
+		assert.Equal(t, "artie", config["username"])
+		assert.Equal(t, "real-password", config["password"])
+		assert.Equal(t, "ca", config["caCert"])
+		assert.Equal(t, "cert", config["clientCert"])
+		assert.Equal(t, "real-key", config["clientKey"])
+		assert.Equal(t, true, config["createTopics"])
+		assert.NotContains(t, config, "disableTLS")
+	}
+	{
+		// Kafka with AWS-MSK-IAM
+		connector, config := roundTripSharedConfig(t, "kafka", `{"bootstrapServers": "b1:9098", "topicPrefix": "artie", "saslMechanism": "AWS-MSK-IAM", "awsRoleARN": "arn:aws:iam::123:role/artie", "awsExternalID": "ext"}`, Connector{})
+		require.NotNil(t, connector.KafkaConfig)
+		assert.Equal(t, "arn:aws:iam::123:role/artie", connector.KafkaConfig.RoleARN.ValueString())
+		assert.Equal(t, "ext", connector.KafkaConfig.ExternalID.ValueString())
+		assert.Equal(t, "", connector.KafkaConfig.Username.ValueString())
+
+		assert.Equal(t, "arn:aws:iam::123:role/artie", config["awsRoleARN"])
+		assert.Equal(t, "ext", config["awsExternalID"])
+	}
 }
