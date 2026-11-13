@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -175,6 +175,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `mysql_config` (Attributes) This should be filled out if the connector type is `mysql`. (see [below for nested schema](#nestedatt--mysql_config))
 - `name` (String) An optional human-readable label for this connector.
 - `oracle_config` (Attributes) This should be filled out if the connector type is `oracle`. (see [below for nested schema](#nestedatt--oracle_config))
+- `planetscale_config` (Attributes) This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS. (see [below for nested schema](#nestedatt--planetscale_config))
 - `postgresql_config` (Attributes) This should be filled out if the connector type is `postgresql`. (see [below for nested schema](#nestedatt--postgresql_config))
 - `private_link_uuid` (String) This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `mongodb` is rejected at plan time, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `""` to detach the connector before destroying its `artie_private_link`.
 - `redshift_config` (Attributes) This should be filled out if the connector type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
@@ -371,6 +372,17 @@ Required:
 Optional:
 
 - `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
+
+
+<a id="nestedatt--planetscale_config"></a>
+### Nested Schema for `planetscale_config`
+
+Required:
+
+- `host` (String) The hostname of the PlanetScale database.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for PlanetScale is 3306.
+- `username` (String) The username of the service account we will use to connect to PlanetScale.
 
 
 <a id="nestedatt--postgresql_config"></a>

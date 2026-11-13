@@ -46,6 +46,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugMssql),
 	string(openapi.EnumsConnectorSlugMysql),
 	string(openapi.EnumsConnectorSlugOracle),
+	string(openapi.EnumsConnectorSlugPlanetscale),
 	string(openapi.EnumsConnectorSlugPostgresql),
 	string(openapi.EnumsConnectorSlugRedshift),
 	string(openapi.EnumsConnectorSlugS3),
@@ -352,6 +353,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
+			"planetscale_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":     schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PlanetScale database."},
+					"port":     schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for PlanetScale is 3306."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to PlanetScale."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
 		},
 	}
 }
@@ -600,6 +611,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	case string(openapi.EnumsConnectorSlugMotherduck):
 		if configData.MotherDuckConfig == nil {
 			resp.Diagnostics.AddError("motherduck_config is required", "Please provide `motherduck_config` inside `connector`.")
+		}
+	case string(openapi.EnumsConnectorSlugPlanetscale):
+		if configData.PlanetScaleConfig == nil {
+			resp.Diagnostics.AddError("planetscale_config is required", "Please provide `planetscale_config` inside `connector`.")
 		}
 	}
 }
