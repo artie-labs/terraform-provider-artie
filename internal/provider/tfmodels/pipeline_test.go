@@ -557,3 +557,128 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
 	}
 }
+
+func TestPipelineFromAPIModel_ParityAdvancedSettings(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+	}
+	{
+		// Omitted -> false, "" and 0, so an explicit false, "" or 0 round-trips.
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		for name, value := range map[string]types.Bool{
+			"backfill_mysql_floats_as_shortest_decimal": pipeline.BackfillMySQLFloatsAsShortestDecimal,
+			"cast_all_columns_to_string":                pipeline.CastAllColumnsToString,
+			"json_as_varchar":                           pipeline.JSONAsVarchar,
+			"json_parse_truncate_strings":               pipeline.JSONParseTruncateStrings,
+			"postgres_partition_mirroring":              pipeline.PostgresPartitionMirroring,
+			"truncate_exceeded_values":                  pipeline.TruncateExceededValues,
+			"use_bq_batch_priority":                     pipeline.UseBQBatchPriority,
+			"use_bignumeric_for_variable_numeric":       pipeline.UseBigNumericForVariableNumeric,
+			"use_double_for_variable_numeric":           pipeline.UseDoubleForVariableNumeric,
+			"use_snowpipe_streaming":                    pipeline.UseSnowpipeStreaming,
+		} {
+			assert.Equal(t, types.BoolValue(false), value, name)
+		}
+		assert.Equal(t, types.StringValue(""), pipeline.BigQueryReservation)
+		assert.Equal(t, types.Int64Value(0), pipeline.SnowpipeStreamingMaxChannels)
+		// Unset follows the company default, so it stays null rather than reading back as false.
+		assert.True(t, pipeline.UseNewStringMethod.IsNull())
+	}
+	{
+		base.AdvancedSettings.UseSnowpipeStreaming = ptr(true)
+		base.AdvancedSettings.SnowpipeStreamingMaxChannels = ptr(8)
+		base.AdvancedSettings.BigQueryReservation = ptr("projects/p/locations/us/reservations/r")
+		base.AdvancedSettings.UseNewStringMethod = ptr(false)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.UseSnowpipeStreaming.ValueBool())
+		assert.Equal(t, int64(8), pipeline.SnowpipeStreamingMaxChannels.ValueInt64())
+		assert.Equal(t, "projects/p/locations/us/reservations/r", pipeline.BigQueryReservation.ValueString())
+		assert.Equal(t, types.BoolValue(false), pipeline.UseNewStringMethod)
+	}
+	{
+		// Every field set, with look-alike pairs set to opposite values so a swapped mapping fails
+		settings := openapi.PayloadsPipelineAdvancedSettings{
+			BackfillMySQLFloatsAsShortestDecimal: ptr(true),
+			BigQueryReservation:                  ptr("reservation"),
+			CastAllColumnsToString:               ptr(false),
+			JsonAsVarchar:                        ptr(true),
+			JsonParseTruncateStrings:             ptr(false),
+			PostgresPartitionMirroring:           ptr(true),
+			SnowpipeStreamingMaxChannels:         ptr(3),
+			TruncateExceededValues:               ptr(false),
+			UseBQBatchPriority:                   ptr(true),
+			UseBigNumericForVariableNumeric:      ptr(false),
+			UseDoubleForVariableNumeric:          ptr(true),
+			UseNewStringMethod:                   ptr(true),
+			UseSnowpipeStreaming:                 ptr(false),
+		}
+		pipeline, diags := PipelineFromAPIModel(t.Context(), openapi.PayloadsFullPipeline{Uuid: uuid.New(), Name: "test", Tables: []openapi.PayloadsTable{}, AdvancedSettings: settings})
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.BoolValue(true), pipeline.BackfillMySQLFloatsAsShortestDecimal)
+		assert.Equal(t, types.StringValue("reservation"), pipeline.BigQueryReservation)
+		assert.Equal(t, types.BoolValue(false), pipeline.CastAllColumnsToString)
+		assert.Equal(t, types.BoolValue(true), pipeline.JSONAsVarchar)
+		assert.Equal(t, types.BoolValue(false), pipeline.JSONParseTruncateStrings)
+		assert.Equal(t, types.BoolValue(true), pipeline.PostgresPartitionMirroring)
+		assert.Equal(t, types.Int64Value(3), pipeline.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, types.BoolValue(false), pipeline.TruncateExceededValues)
+		assert.Equal(t, types.BoolValue(true), pipeline.UseBQBatchPriority)
+		assert.Equal(t, types.BoolValue(false), pipeline.UseBigNumericForVariableNumeric)
+		assert.Equal(t, types.BoolValue(true), pipeline.UseDoubleForVariableNumeric)
+		assert.Equal(t, types.BoolValue(true), pipeline.UseNewStringMethod)
+		assert.Equal(t, types.BoolValue(false), pipeline.UseSnowpipeStreaming)
+
+		// and back: the payload carries the same values
+		pipeline.DestinationConfig = &PipelineDestinationConfig{}
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		got := apiModel.AdvancedSettings
+		assert.Equal(t, settings.BackfillMySQLFloatsAsShortestDecimal, got.BackfillMySQLFloatsAsShortestDecimal)
+		assert.Equal(t, settings.BigQueryReservation, got.BigQueryReservation)
+		assert.Equal(t, settings.CastAllColumnsToString, got.CastAllColumnsToString)
+		assert.Equal(t, settings.JsonAsVarchar, got.JsonAsVarchar)
+		assert.Equal(t, settings.JsonParseTruncateStrings, got.JsonParseTruncateStrings)
+		assert.Equal(t, settings.PostgresPartitionMirroring, got.PostgresPartitionMirroring)
+		assert.Equal(t, settings.SnowpipeStreamingMaxChannels, got.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, settings.TruncateExceededValues, got.TruncateExceededValues)
+		assert.Equal(t, settings.UseBQBatchPriority, got.UseBQBatchPriority)
+		assert.Equal(t, settings.UseBigNumericForVariableNumeric, got.UseBigNumericForVariableNumeric)
+		assert.Equal(t, settings.UseDoubleForVariableNumeric, got.UseDoubleForVariableNumeric)
+		assert.Equal(t, settings.UseNewStringMethod, got.UseNewStringMethod)
+		assert.Equal(t, settings.UseSnowpipeStreaming, got.UseSnowpipeStreaming)
+	}
+}
+
+func TestPipelineToAPIModel_ParityAdvancedSettings(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	pipeline := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}}
+	{
+		// Left out of the config on create: send nothing, so the API keeps its default.
+		pipeline.UseSnowpipeStreaming = types.BoolUnknown()
+		pipeline.SnowpipeStreamingMaxChannels = types.Int64Unknown()
+		pipeline.BigQueryReservation = types.StringUnknown()
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.UseSnowpipeStreaming)
+		assert.Nil(t, apiModel.AdvancedSettings.SnowpipeStreamingMaxChannels)
+		assert.Nil(t, apiModel.AdvancedSettings.BigQueryReservation)
+	}
+	{
+		pipeline.UseSnowpipeStreaming = types.BoolValue(false)
+		pipeline.SnowpipeStreamingMaxChannels = types.Int64Value(4)
+		pipeline.BigQueryReservation = types.StringValue("")
+		pipeline.UseBQBatchPriority = types.BoolValue(true)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, false, *apiModel.AdvancedSettings.UseSnowpipeStreaming)
+		assert.Equal(t, 4, *apiModel.AdvancedSettings.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, "", *apiModel.AdvancedSettings.BigQueryReservation)
+		assert.Equal(t, true, *apiModel.AdvancedSettings.UseBQBatchPriority)
+	}
+}
