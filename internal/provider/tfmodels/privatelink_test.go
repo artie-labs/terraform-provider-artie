@@ -48,6 +48,20 @@ func TestPrivateLinkFromAPIModelTargets(t *testing.T) {
 		assert.True(t, tfModel.PrivateLinkServiceAlias.IsNull())
 	}
 	{
+		// Legacy AWS link with no AZ IDs: keeps reading back as [] so `az_ids = []` doesn't drift.
+		apiModel := openapi.PayloadsPrivateLinkConnection{
+			Uuid:                uuid.New(),
+			VpcServiceName:      "com.amazonaws.vpce.us-east-1.vpce-svc-1234567890abcdef0",
+			AvailabilityZoneIds: []string{},
+			Provider:            openapi.EnumsCloudProviderAws,
+		}
+
+		tfModel, diags := PrivateLinkFromAPIModel(t.Context(), apiModel)
+		require.False(t, diags.HasError())
+		assert.False(t, tfModel.AzIDs.IsNull())
+		assert.Empty(t, tfModel.AzIDs.Elements())
+	}
+	{
 		// Azure: the empty AWS target reads back as null.
 		apiModel := openapi.PayloadsPrivateLinkConnection{
 			Uuid:                    uuid.New(),

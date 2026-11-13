@@ -31,7 +31,7 @@ func (p PrivateLink) ToAPICreateRequest(ctx context.Context) (openapi.RouterPriv
 		Name:                    stringPointer(p.Name),
 		VpcServiceName:          p.VpcServiceName.ValueStringPointer(),
 		AvailabilityZoneIds:     azIDs,
-		PrivateLinkServiceAlias: stringPointer(p.PrivateLinkServiceAlias),
+		PrivateLinkServiceAlias: nonEmptyStringPointer(p.PrivateLinkServiceAlias),
 		DataPlaneName:           nonEmptyStringPointer(p.DataPlaneName),
 	}, diags
 }
@@ -42,16 +42,17 @@ func (p PrivateLink) ToAPIUpdateRequest(ctx context.Context) (openapi.RouterPriv
 		Name:                    p.Name.ValueString(),
 		VpcServiceName:          p.VpcServiceName.ValueStringPointer(),
 		AvailabilityZoneIds:     azIDs,
-		PrivateLinkServiceAlias: stringPointer(p.PrivateLinkServiceAlias),
+		PrivateLinkServiceAlias: nonEmptyStringPointer(p.PrivateLinkServiceAlias),
 		DataPlaneName:           nonEmptyStringPointer(p.DataPlaneName),
 	}, diags
 }
 
 func PrivateLinkFromAPIModel(ctx context.Context, apiModel openapi.PayloadsPrivateLinkConnection) (PrivateLink, diag.Diagnostics) {
-	// An Azure connection has no AWS target, and an AWS one no Azure target; read those back as null to match an unset config.
+	// An Azure connection has no AWS target, and an AWS one no Azure target; read those back as null to match an unset
+	// config. A legacy AWS connection can have no AZ IDs, so it keeps reading back as [].
 	azIDs := types.ListNull(types.StringType)
 	var diags diag.Diagnostics
-	if len(apiModel.AvailabilityZoneIds) > 0 {
+	if apiModel.Provider != openapi.EnumsCloudProviderAzure {
 		azIDs, diags = types.ListValueFrom(ctx, types.StringType, apiModel.AvailabilityZoneIds)
 		if diags.HasError() {
 			return PrivateLink{}, diags
