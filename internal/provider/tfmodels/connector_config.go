@@ -70,6 +70,16 @@ type ConnectorConfig struct {
 	IcebergWarehouse  string `json:"warehouse,omitempty"`
 	IcebergPrefix     string `json:"prefix,omitempty"`
 
+	// Kafka:
+	KafkaBootstrapServers string `json:"bootstrapServers,omitempty"`
+	KafkaSASLMechanism    string `json:"saslMechanism,omitempty"`
+	KafkaDisableTLS       bool   `json:"disableTLS,omitempty"`
+	KafkaTopicPrefix      string `json:"topicPrefix,omitempty"`
+	KafkaCreateTopics     bool   `json:"createTopics,omitempty"`
+	CACert                string `json:"caCert,omitempty"`
+	ClientCert            string `json:"clientCert,omitempty"`
+	ClientKey             string `json:"clientKey,omitempty"`
+
 	// ClickHouse:
 	ClickHouseAddresses  []string `json:"addresses,omitempty"`
 	ClickHouseIsInsecure bool     `json:"isInsecure,omitempty"`
@@ -92,6 +102,7 @@ func (c *ConnectorConfig) keepMaskedSecrets(prior ConnectorConfig) {
 		{&c.AWSSecretAccessKey, prior.AWSSecretAccessKey},
 		{&c.Token, prior.Token},
 		{&c.IcebergCredential, prior.IcebergCredential},
+		{&c.ClientKey, prior.ClientKey},
 	}
 	for _, secret := range secrets {
 		if *secret.value == maskedSecret {

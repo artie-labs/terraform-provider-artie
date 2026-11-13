@@ -43,6 +43,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugDynamodb),
 	string(openapi.EnumsConnectorSlugGcs),
 	string(openapi.EnumsConnectorSlugIceberg),
+	string(openapi.EnumsConnectorSlugKafka),
 	string(openapi.EnumsConnectorSlugKeyspaces),
 	string(openapi.EnumsConnectorSlugMongodb),
 	string(openapi.EnumsConnectorSlugMotherduck),
@@ -348,6 +349,30 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 				},
 			},
+			"kafka_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `kafka` (your own Kafka cluster, which we publish change events to). Kafka destinations must be enabled for your account.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"bootstrap_servers": schema.StringAttribute{Required: true, MarkdownDescription: "A comma-separated list of `host:port` brokers."},
+					"topic_prefix":      schema.StringAttribute{Required: true, MarkdownDescription: "The prefix of every topic name, which is `<prefix>.<schema>.<table>`. This can only contain letters, digits, `.`, `_` and `-`."},
+					"sasl_mechanism": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						MarkdownDescription: "The SASL mechanism: `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `AWS-MSK-IAM`, or `\"\"` (empty string) for no SASL.",
+						Validators:          []validator.String{stringvalidator.OneOf("", "PLAIN", "SCRAM-SHA-256", "SCRAM-SHA-512", "AWS-MSK-IAM")},
+					},
+					"username":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The SASL username. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise."},
+					"password":      schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The SASL password. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"role_arn":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for `AWS-MSK-IAM`, which requires it."},
+					"external_id":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming `role_arn`."},
+					"disable_tls":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without TLS. `AWS-MSK-IAM` requires TLS."},
+					"ca_cert":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "A PEM bundle used instead of the system roots to verify the brokers."},
+					"client_cert":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "A PEM client certificate presented to the brokers for mutual TLS. Requires `client_key`."},
+					"client_key":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The PEM private key for `client_cert`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"create_topics": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to have us create a missing topic, with the cluster's default settings, for clusters that don't create topics automatically. This needs the CREATE permission."},
+				},
+			},
 			"clickhouse_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `clickhouse`.",
 				Optional:            true,
@@ -593,11 +618,52 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.PlanetScaleConfig == nil {
 			resp.Diagnostics.AddError("planetscale_config is required", "Please provide `planetscale_config` inside `connector`.")
 		}
+	case string(openapi.EnumsConnectorSlugKafka):
+		if configData.KafkaConfig == nil {
+			resp.Diagnostics.AddError("kafka_config is required", "Please provide `kafka_config` inside `connector`.")
+			return
+		}
+
+		resp.Diagnostics.Append(validateKafkaConfig(*configData.KafkaConfig)...)
 	case string(openapi.EnumsConnectorSlugClickhouse):
 		if configData.ClickHouseConfig == nil {
 			resp.Diagnostics.AddError("clickhouse_config is required", "Please provide `clickhouse_config` inside `connector`.")
 		}
 	}
+}
+
+// validateKafkaConfig rejects credentials the API would drop on save, since reading them back empty would make the
+// apply fail with an inconsistent result.
+func validateKafkaConfig(config tfmodels.KafkaSharedConfig) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if config.SASLMechanism.IsUnknown() {
+		return diags
+	}
+
+	switch config.SASLMechanism.ValueString() {
+	case "PLAIN", "SCRAM-SHA-256", "SCRAM-SHA-512":
+	case "":
+		if tfmodels.IsKnownAndNonEmpty(config.Username) {
+			diags.AddError("sasl_mechanism is required with a username", "Please set `sasl_mechanism` inside `kafka_config` to `PLAIN`, `SCRAM-SHA-256` or `SCRAM-SHA-512`, or remove `username`.")
+		}
+		if tfmodels.IsKnownAndNonEmpty(config.Password) {
+			diags.AddError("sasl_mechanism is required with a password", "Please set `sasl_mechanism` inside `kafka_config` to `PLAIN`, `SCRAM-SHA-256` or `SCRAM-SHA-512`, or remove `password`.")
+		}
+	default:
+		if tfmodels.IsKnownAndNonEmpty(config.Username) {
+			diags.AddError("username is not used with this sasl_mechanism", "`username` inside `kafka_config` is only used with `PLAIN`, `SCRAM-SHA-256` and `SCRAM-SHA-512`.")
+		}
+		if tfmodels.IsKnownAndNonEmpty(config.Password) {
+			diags.AddError("password is not used with this sasl_mechanism", "`password` inside `kafka_config` is only used with `PLAIN`, `SCRAM-SHA-256` and `SCRAM-SHA-512`.")
+		}
+	}
+
+	if tfmodels.IsKnownAndNonEmpty(config.ClientKey) {
+		if tfmodels.IsKnownAndEmpty(config.ClientCert) {
+			diags.AddError("client_cert is required with a client_key", "Please provide `client_cert` inside `kafka_config`, or remove `client_key`.")
+		}
+	}
+	return diags
 }
 
 func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
