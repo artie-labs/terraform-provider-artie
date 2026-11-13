@@ -176,3 +176,22 @@ func TestIcebergRESTTokenAPIModelRoundTrip(t *testing.T) {
 	assert.Equal(t, "real-token", connector.IcebergConfig.Token.ValueString())
 	assert.Equal(t, "real-token", config["token"])
 }
+
+func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
+	{
+		// DocumentDB
+		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "secret", "disableSSL": true}`, Connector{})
+		require.NotNil(t, connector.DocumentDBConfig)
+		assert.Equal(t, "docdb.example.com", connector.DocumentDBConfig.Host.ValueString())
+		assert.Equal(t, int32(27017), connector.DocumentDBConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.DocumentDBConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.DocumentDBConfig.Password.ValueString())
+		assert.True(t, connector.DocumentDBConfig.DisableSSL.ValueBool())
+
+		assert.Equal(t, "docdb.example.com", config["host"])
+		assert.InDelta(t, 27017, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.Equal(t, true, config["disableSSL"])
+	}
+}

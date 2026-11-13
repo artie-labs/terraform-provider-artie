@@ -67,6 +67,9 @@ type ConnectorConfig struct {
 	IcebergScope      string `json:"scope,omitempty"`
 	IcebergWarehouse  string `json:"warehouse,omitempty"`
 	IcebergPrefix     string `json:"prefix,omitempty"`
+
+	// DocumentDB:
+	DocumentDBDisableSSL bool `json:"disableSSL,omitempty"`
 }
 
 // maskedSecret is what the API returns in place of a secret when it masks it.

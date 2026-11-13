@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -35,6 +36,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugBigquery),
 	string(openapi.EnumsConnectorSlugCockroach),
 	string(openapi.EnumsConnectorSlugDatabricks),
+	string(openapi.EnumsConnectorSlugDocumentdb),
 	string(openapi.EnumsConnectorSlugDynamodb),
 	string(openapi.EnumsConnectorSlugGcs),
 	string(openapi.EnumsConnectorSlugIceberg),
@@ -313,6 +315,17 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
 				},
 			},
+			"documentdb_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `documentdb`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":        schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Amazon DocumentDB cluster."},
+					"port":        schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for DocumentDB is 27017."},
+					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to DocumentDB."},
+					"password":    schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"disable_ssl": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without SSL, for example over AWS PrivateLink."},
+				},
+			},
 		},
 	}
 }
@@ -525,6 +538,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 		if clientIDSet != clientSecretSet {
 			resp.Diagnostics.AddError("Incomplete OAuth M2M configuration", "Both `client_id` and `client_secret` must be provided together inside `databricks_config`.")
+		}
+	case string(openapi.EnumsConnectorSlugDocumentdb):
+		if configData.DocumentDBConfig == nil {
+			resp.Diagnostics.AddError("documentdb_config is required", "Please provide `documentdb_config` inside `connector`.")
 		}
 	}
 }

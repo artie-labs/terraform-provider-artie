@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `documentdb`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -163,6 +163,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `cockroach_config` (Attributes) This should be filled out if the connector type is `cockroach`. (see [below for nested schema](#nestedatt--cockroach_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing connector to a different data plane destroys and recreates it, so change the data plane of the source readers and pipelines that use it in the same apply. Terraform deletes the old resource before the new data plane is validated, so a wrong name leaves it deleted; add `lifecycle { prevent_destroy = true }` to block replacements entirely. If an administrator moved this resource to another data plane, update `data_plane_name` to match before applying, or Terraform will recreate it in the old one.
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M). (see [below for nested schema](#nestedatt--databricks_config))
+- `documentdb_config` (Attributes) This should be filled out if the connector type is `documentdb`. (see [below for nested schema](#nestedatt--documentdb_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
@@ -223,6 +224,21 @@ Optional:
 - `client_id` (String) The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`.
 - `client_secret` (String, Sensitive) The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`.
 - `personal_access_token` (String, Sensitive) The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`.
+
+
+<a id="nestedatt--documentdb_config"></a>
+### Nested Schema for `documentdb_config`
+
+Required:
+
+- `host` (String) The hostname of the Amazon DocumentDB cluster.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for DocumentDB is 27017.
+- `username` (String) The username of the service account we will use to connect to DocumentDB.
+
+Optional:
+
+- `disable_ssl` (Boolean) Set to `true` to connect without SSL, for example over AWS PrivateLink.
 
 
 <a id="nestedatt--dynamodb_config"></a>
