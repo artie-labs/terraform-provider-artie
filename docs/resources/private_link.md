@@ -3,22 +3,28 @@
 page_title: "artie_private_link Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
-  Artie PrivateLink connection resource. This resource represents an AWS PrivateLink connection to Artie.
+  Artie PrivateLink connection resource. This resource represents a Private Link connection to Artie: AWS PrivateLink (set vpc_service_name and az_ids) or Azure Private Link (set private_link_service_alias). The data plane decides which cloud is used.
 ---
 
 # artie_private_link (Resource)
 
-Artie PrivateLink connection resource. This resource represents an AWS PrivateLink connection to Artie.
+Artie PrivateLink connection resource. This resource represents a Private Link connection to Artie: AWS PrivateLink (set `vpc_service_name` and `az_ids`) or Azure Private Link (set `private_link_service_alias`). The data plane decides which cloud is used.
 
 ## Example Usage
 
 ```terraform
+# AWS PrivateLink
 resource "artie_private_link" "example" {
   name             = "my-privatelink"
   vpc_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-1234567890abcdef0"
-  region           = "us-east-1"
-  vpc_endpoint_id  = "vpce-1234567890abcdef0"
   az_ids           = ["use1-az1", "use1-az2"]
+}
+
+# Azure Private Link (on an Azure data plane)
+resource "artie_private_link" "azure" {
+  name                       = "my-azure-privatelink"
+  private_link_service_alias = "my-pls.00000000-0000-0000-0000-000000000000.eastus.azure.privatelinkservice"
+  data_plane_name            = "my-azure-data-plane"
 }
 ```
 
@@ -27,19 +33,20 @@ resource "artie_private_link" "example" {
 
 ### Required
 
-- `az_ids` (List of String) List of AWS Availability Zone IDs where the PrivateLink endpoint is available (e.g., ["use1-az1", "use1-az2"]).
 - `name` (String) The name of the PrivateLink connection.
-- `vpc_service_name` (String) The VPC endpoint service name for Artie's service (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx).
 
 ### Optional
 
+- `az_ids` (List of String) AWS only: list of Availability Zone IDs where the PrivateLink endpoint is available (e.g., ["use1-az1", "use1-az2"]). Required with `vpc_service_name` for AWS; conflicts with `private_link_service_alias`.
 - `data_plane_name` (String) The data plane name associated with this PrivateLink connection. If not provided, it will be computed by the server.
+- `private_link_service_alias` (String) Azure only: the alias of the Private Link Service to connect to. Conflicts with `vpc_service_name` and `az_ids`.
+- `vpc_service_name` (String) AWS only: the VPC endpoint service name for Artie's service (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx). Required with `az_ids` for AWS; conflicts with `private_link_service_alias`.
 
 ### Read-Only
 
 - `cloud_provider` (String) The cloud provider of the Private Link target (`aws`, `azure` or `gcp`), derived by Artie from the target.
 - `dns_entry` (String) The DNS entry for the PrivateLink connection.
-- `region` (String) The AWS region of the VPC endpoint (e.g., us-east-1).
+- `region` (String) The cloud region of the Private Link target (e.g., us-east-1 on AWS, eastus on Azure).
 - `status` (String) The status of the PrivateLink connection (e.g., available, pending).
 - `uuid` (String) The unique identifier for this PrivateLink connection.
 - `vpc_endpoint_id` (String) The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service.

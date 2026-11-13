@@ -107,3 +107,43 @@ func TestKafkaClusterModifyPlan(t *testing.T) {
 	// A new region replaces the cluster, so it can start smaller.
 	assert.Empty(t, modifyPlan("us-east-1", "us-west-2", 80, 50))
 }
+
+func TestRetentionChangeConflict(t *testing.T) {
+	ctx := t.Context()
+	state := tfmodels.KafkaCluster{
+		Name:          types.StringValue("my-cluster"),
+		Brokers:       types.Int64Value(3),
+		AllowedCIDRs:  types.ListValueMust(types.StringType, []attr.Value{}),
+		RetentionMS:   types.Int64Value(1209600000),
+		TieredStorage: types.ObjectNull(tfmodels.KafkaClusterTieredStorageAttrTypes),
+	}
+	{
+		// Retention alone.
+		plan := state
+		plan.RetentionMS = types.Int64Value(-1)
+		assert.Empty(t, retentionChangeConflict(ctx, plan, state))
+	}
+	{
+		// Retention with a rename, which applies nothing to the cluster.
+		plan := state
+		plan.RetentionMS = types.Int64Value(-1)
+		plan.Name = types.StringValue("renamed")
+		assert.Empty(t, retentionChangeConflict(ctx, plan, state))
+	}
+	{
+		// Adding brokers without changing retention.
+		plan := state
+		plan.Brokers = types.Int64Value(4)
+		assert.Empty(t, retentionChangeConflict(ctx, plan, state))
+	}
+	{
+		// Retention and adding brokers in one apply.
+		plan := state
+		plan.RetentionMS = types.Int64Value(-1)
+		plan.Brokers = types.Int64Value(4)
+		diags := retentionChangeConflict(ctx, plan, state)
+		if assert.Len(t, diags, 1) {
+			assert.Equal(t, "Kafka cluster changes can't be combined", diags[0].Summary())
+		}
+	}
+}

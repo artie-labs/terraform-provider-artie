@@ -117,8 +117,8 @@ Optional:
 - `compaction` (Attributes) Delta Lake compaction settings. Settings left out keep their current value. This is only applicable if the destination is Delta Lake. (see [below for nested schema](#nestedatt--destination_config--compaction))
 - `container_name` (String) The Oracle container (PDB) name stored with this pipeline's destination settings. Artie doesn't use it for Oracle destinations today; it's exposed so applies keep a value set in the dashboard.
 - `create_iceberg_namespaces` (Boolean) If set to true, Artie will automatically create namespaces if they don't exist. This is only applicable if the destination is Iceberg.
-- `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.
-- `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.
+- `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake (unless `use_same_schema_as_source` is set to true), or with the dataset name if the destination is BigQuery.
+- `dataset` (String, Deprecated) Deprecated: this is not sent to the API and must be left empty. For BigQuery, set the dataset name in `database` instead.
 - `external_stage_name` (String) The name of the Snowflake external stage Artie should load data through. This is only applicable if the destination is Snowflake.
 - `external_stage_s3_bucket` (String) The S3 bucket behind `external_stage_name`. This is only applicable if the destination is Snowflake.
 - `external_stage_s3_prefix` (String) The S3 prefix behind `external_stage_name`. This is only applicable if the destination is Snowflake.
