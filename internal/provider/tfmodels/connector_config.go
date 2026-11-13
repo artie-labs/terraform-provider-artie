@@ -83,6 +83,10 @@ type ConnectorConfig struct {
 	// DocumentDB:
 	DocumentDBDisableSSL bool `json:"disableSSL,omitempty"`
 
+	// ClickHouse:
+	ClickHouseAddresses  []string `json:"addresses,omitempty"`
+	ClickHouseIsInsecure bool     `json:"isInsecure,omitempty"`
+
 	// Redis:
 	RedisDatabase        redisDatabase `json:"database,omitempty"`
 	RedisTLS             bool          `json:"tls,omitempty"`

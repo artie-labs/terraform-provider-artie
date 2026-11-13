@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -308,5 +309,27 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 
 		assert.Equal(t, "real-password", config["password"])
 		assert.NotContains(t, config, "disableSSL")
+	}
+	{
+		// ClickHouse: the API returns a masked password and a database name under the key Redis uses for its index
+		prior := Connector{Type: types.StringValue("clickhouse"), ClickHouseConfig: &ClickHouseSharedConfig{Password: types.StringValue("real-password")}}
+		connector, config := roundTripSharedConfig(t, "clickhouse", `{"addresses": ["ch1.example.com:9440", "ch2.example.com:9440"], "username": "artie", "password": "********", "isInsecure": true, "database": ""}`, prior)
+		require.NotNil(t, connector.ClickHouseConfig)
+		assert.Equal(t, types.ListValueMust(types.StringType, []attr.Value{types.StringValue("ch1.example.com:9440"), types.StringValue("ch2.example.com:9440")}), connector.ClickHouseConfig.Addresses)
+		assert.Equal(t, "artie", connector.ClickHouseConfig.Username.ValueString())
+		assert.Equal(t, "real-password", connector.ClickHouseConfig.Password.ValueString())
+		assert.True(t, connector.ClickHouseConfig.IsInsecure.ValueBool())
+
+		assert.Equal(t, []any{"ch1.example.com:9440", "ch2.example.com:9440"}, config["addresses"])
+		assert.Equal(t, "artie", config["username"])
+		assert.Equal(t, "real-password", config["password"])
+		assert.Equal(t, true, config["isInsecure"])
+		// A number here would fail to decode into ClickHouse's string database field
+		assert.NotContains(t, config, "database")
+	}
+	{
+		// An unknown address list, e.g. from another resource's output, converts without panicking
+		config := ClickHouseSharedConfig{Addresses: types.ListUnknown(types.StringType)}.ToAPIModel()
+		assert.Empty(t, config.ClickHouseAddresses)
 	}
 }
