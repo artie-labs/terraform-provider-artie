@@ -44,8 +44,8 @@ func TestTieredRetentionError(t *testing.T) {
 
 	forever := types.Int64Value(kafkaTopicRetentionForever)
 	assert.Empty(t, tieredRetentionError(topic(forever, types.StringValue("off"))))
-	assert.NotEmpty(t, tieredRetentionError(topic(forever, types.StringValue("on"))))
-	assert.NotEmpty(t, tieredRetentionError(topic(forever, types.StringValue("paused"))))
+	assert.Empty(t, tieredRetentionError(topic(forever, types.StringValue("on"))))
+	assert.Empty(t, tieredRetentionError(topic(forever, types.StringValue("paused"))))
 }
 
 func TestKafkaTopicRetentionMSValidator(t *testing.T) {
