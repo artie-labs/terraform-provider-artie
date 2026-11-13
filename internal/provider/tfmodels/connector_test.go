@@ -201,6 +201,21 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "real-token", config["token"])
 	}
 	{
+		// PlanetScale: the API forces tlsMode, so it's neither read nor sent
+		connector, config := roundTripSharedConfig(t, "planetscale", `{"host": "aws.connect.psdb.cloud", "port": 3306, "user": "artie", "password": "secret", "tlsMode": "true"}`, Connector{})
+		require.NotNil(t, connector.PlanetScaleConfig)
+		assert.Equal(t, "aws.connect.psdb.cloud", connector.PlanetScaleConfig.Host.ValueString())
+		assert.Equal(t, int32(3306), connector.PlanetScaleConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.PlanetScaleConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.PlanetScaleConfig.Password.ValueString())
+
+		assert.Equal(t, "aws.connect.psdb.cloud", config["host"])
+		assert.InDelta(t, 3306, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.NotContains(t, config, "tlsMode")
+	}
+	{
 		// ClickHouse: the API returns a masked password and a database name under the key Redis uses for its index
 		prior := Connector{Type: types.StringValue("clickhouse"), ClickHouseConfig: &ClickHouseSharedConfig{Password: types.StringValue("real-password")}}
 		connector, config := roundTripSharedConfig(t, "clickhouse", `{"addresses": ["ch1.example.com:9440", "ch2.example.com:9440"], "username": "artie", "password": "********", "isInsecure": true, "database": ""}`, prior)
