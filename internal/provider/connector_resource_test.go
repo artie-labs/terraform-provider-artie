@@ -130,6 +130,16 @@ func TestConnectorValidateConfigPrivateLinks(t *testing.T) {
 		assert.Equal(t, 2, diags.ErrorsCount(), diags)
 	}
 	{
+		// documentdb is rejected too: the API would replace its host with the link's DNS entry
+		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("documentdb"), "private_link_uuid": types.StringValue(linkA)})
+		assert.Equal(t, []string{"`private_link_uuid` isn't supported for `documentdb` connectors."}, privateLinkRejections(diags))
+	}
+	{
+		// planetscale is rejected for both links: it shares MySQL's host and snapshotHost
+		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("planetscale"), "snapshot_private_link_uuid": types.StringValue(linkB)})
+		assert.Equal(t, []string{"`snapshot_private_link_uuid` isn't supported for `planetscale` connectors."}, privateLinkRejections(diags))
+	}
+	{
 		// mongodb with the link removed or left out is fine
 		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("mongodb"), "mongodb_config": mongoDBConfig, "private_link_uuid": types.StringValue("")})
 		assert.False(t, diags.HasError(), diags)
@@ -165,10 +175,7 @@ func TestConnectorValidateConfigPrivateLinks(t *testing.T) {
 func TestSMBSharePrivateLinkPlanModifier(t *testing.T) {
 	const link = "11111111-1111-1111-1111-111111111111"
 	plan := func(attributes map[string]attr.Value, configValue types.String) (types.String, diag.Diagnostics) {
-		req := planmodifier.StringRequest{Config: connectorConfig(t, attributes), ConfigValue: configValue, PlanValue: types.StringUnknown()}
-		resp := &planmodifier.StringResponse{PlanValue: req.PlanValue}
-		smbSharePrivateLinkPlanModifier{}.PlanModifyString(t.Context(), req, resp)
-		return resp.PlanValue, resp.Diagnostics
+		return runStringPlanModifier(t, smbSharePrivateLinkPlanModifier{}, attributes, configValue, types.StringUnknown())
 	}
 	{
 		// another type with no smb_share_config: reading through the null block works and the plan is unchanged
@@ -191,9 +198,10 @@ func TestSMBSharePrivateLinkPlanModifier(t *testing.T) {
 	}
 	{
 		// smb_share setting the top-level value keeps the planned value
-		value, diags := plan(map[string]attr.Value{"type": types.StringValue("smb_share"), "smb_share_config": smbShareConfigValue(types.StringValue(link))}, types.StringValue(link))
+		const other = "22222222-2222-2222-2222-222222222222"
+		value, diags := runStringPlanModifier(t, smbSharePrivateLinkPlanModifier{}, map[string]attr.Value{"type": types.StringValue("smb_share"), "smb_share_config": smbShareConfigValue(types.StringValue(link))}, types.StringValue(other), types.StringValue(other))
 		assert.False(t, diags.HasError(), diags)
-		assert.True(t, value.IsUnknown())
+		assert.Equal(t, types.StringValue(other), value)
 	}
 }
 
@@ -274,4 +282,60 @@ func TestSSHTunnelPrivateLinkPlan(t *testing.T) {
 		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringNull(), types.StringValue(link)))
 		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringValue(""), types.StringValue(link)))
 	}
+}
+
+// runStringPlanModifier runs a string plan modifier against a connector config with the given attributes set.
+func runStringPlanModifier(t *testing.T, modifier planmodifier.String, attributes map[string]attr.Value, configValue, planValue types.String) (types.String, diag.Diagnostics) {
+	req := planmodifier.StringRequest{Config: connectorConfig(t, attributes), ConfigValue: configValue, PlanValue: planValue}
+	resp := &planmodifier.StringResponse{PlanValue: req.PlanValue}
+	modifier.PlanModifyString(t.Context(), req, resp)
+	return resp.PlanValue, resp.Diagnostics
+}
+
+func TestSSHTunnelAndPrivateLinkPlanModifiers(t *testing.T) {
+	const link = "11111111-1111-1111-1111-111111111111"
+	const tunnel = "33333333-3333-3333-3333-333333333333"
+	{
+		// A link left out while the config sets a tunnel is planned as removed
+		value, diags := runStringPlanModifier(t, sshTunnelDetachesPrivateLinkPlanModifier{}, map[string]attr.Value{"type": types.StringValue("postgresql"), "ssh_tunnel_uuid": types.StringValue(tunnel)}, types.StringNull(), types.StringValue(link))
+		assert.False(t, diags.HasError(), diags)
+		assert.Equal(t, types.StringValue(""), value)
+	}
+	{
+		// A link set in the config is left alone
+		value, diags := runStringPlanModifier(t, sshTunnelDetachesPrivateLinkPlanModifier{}, map[string]attr.Value{"type": types.StringValue("postgresql"), "ssh_tunnel_uuid": types.StringValue(tunnel)}, types.StringValue(link), types.StringValue(link))
+		assert.False(t, diags.HasError(), diags)
+		assert.Equal(t, types.StringValue(link), value)
+	}
+	{
+		// A tunnel left out while the config sets a link is planned as removed
+		value, diags := runStringPlanModifier(t, privateLinkDetachesSSHTunnelPlanModifier{}, map[string]attr.Value{"type": types.StringValue("postgresql"), "private_link_uuid": types.StringValue(link)}, types.StringNull(), types.StringValue(tunnel))
+		assert.False(t, diags.HasError(), diags)
+		assert.Equal(t, types.StringValue(""), value)
+	}
+	{
+		// A stray smb_share_config link on another type isn't sent, so it doesn't remove the tunnel
+		value, diags := runStringPlanModifier(t, privateLinkDetachesSSHTunnelPlanModifier{}, map[string]attr.Value{"type": types.StringValue("postgresql"), "smb_share_config": smbShareConfigValue(types.StringValue(link))}, types.StringNull(), types.StringValue(tunnel))
+		assert.False(t, diags.HasError(), diags)
+		assert.Equal(t, types.StringValue(tunnel), value)
+	}
+}
+
+func TestDetachPlansKeepARemovedValue(t *testing.T) {
+	{
+		// Already removed: stays "", even while the other side is only known at apply
+		assert.Equal(t, types.StringValue(""), sshTunnelPrivateLinkPlan(types.StringUnknown(), types.StringValue("")))
+		assert.Equal(t, types.StringValue(""), privateLinkSSHTunnelPlan([]privateLinkAttribute{{path.Root("private_link_uuid"), types.StringUnknown()}}, types.StringValue("")))
+	}
+}
+
+// privateLinkRejections returns the details of the "PrivateLink not supported" errors.
+func privateLinkRejections(diags diag.Diagnostics) []string {
+	var rejected []string
+	for _, d := range diags.Errors() {
+		if d.Summary() == "PrivateLink not supported" {
+			rejected = append(rejected, d.Detail())
+		}
+	}
+	return rejected
 }

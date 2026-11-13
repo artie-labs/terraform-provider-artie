@@ -312,6 +312,10 @@ func TestConflictingSMBSharePrivateLinks(t *testing.T) {
 		assert.True(t, ConflictingSMBSharePrivateLinks(types.StringValue(""), b))
 		assert.False(t, ConflictingSMBSharePrivateLinks(types.StringValue(""), types.StringValue("")))
 	}
+	{
+		// A link at the top level conflicts with an explicit "" in smb_share_config, which would otherwise be ignored
+		assert.True(t, ConflictingSMBSharePrivateLinks(a, types.StringValue("")))
+	}
 }
 
 func TestConnectorFromAPIModelKeepsHostsRewrittenByPrivateLink(t *testing.T) {

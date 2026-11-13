@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -36,6 +37,13 @@ var _ resource.ResourceWithConfigure = &ConnectorResource{}
 var _ resource.ResourceWithImportState = &ConnectorResource{}
 
 // supportedConnectorTypes lists the source and destination connector types this resource can configure.
+// hostRewritingPrivateLinkTypes are the connector types a PrivateLink would break; see ValidateConfig.
+var hostRewritingPrivateLinkTypes = []string{
+	string(openapi.EnumsConnectorSlugDocumentdb),
+	string(openapi.EnumsConnectorSlugMongodb),
+	string(openapi.EnumsConnectorSlugPlanetscale),
+}
+
 var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugApi),
 	string(openapi.EnumsConnectorSlugBigquery),
@@ -90,19 +98,19 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), sshTunnelDetachesPrivateLinkPlanModifier{}, smbSharePrivateLinkPlanModifier{}},
-				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `mongodb` is rejected at plan time, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `documentdb`, `mongodb` and `planetscale` are rejected at plan time, since the API would replace their host (MongoDB's whole connection string) with the link's DNS entry, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
 			},
 			"snapshot_private_link_uuid": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), sshTunnelDetachesPrivateLinkPlanModifier{}},
-				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`. `mongodb` is rejected at plan time, and other types fail when applied. Leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`. `documentdb`, `mongodb` and `planetscale` are rejected at plan time, since the API would replace their host (MongoDB's whole connection string) with the link's DNS entry, and other types fail when applied. Leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`. After an import, `snapshot_host` can hold the link's DNS entry, so set `snapshot_host` in the config when detaching.",
 			},
 			"default_database": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-				MarkdownDescription: "The database we connect to when testing the connection and listing a source's databases. `postgresql`, `cockroach`, and `oracle` connectors need one to be usable as a source. If this is left out, it keeps the value already saved on the connector; set it to `\"\"` to clear it.",
+				MarkdownDescription: "The database we connect to when testing the connection and listing a source's databases. `postgresql`, `cockroach`, and `oracle` connectors need one to be usable as a source. If this is left out, it keeps the value already saved on the connector. Setting it to `\"\"` clears it, but on a source connector Artie fills an empty value back in from the source reader's database.",
 			},
 			"type": schema.StringAttribute{
 				Required:            true,
@@ -495,6 +503,16 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 	}
 
+	// The API accepts a PrivateLink for these types but replaces their host (MongoDB's whole connection string) with the
+	// link's DNS entry, which breaks the connection.
+	if slices.Contains(hostRewritingPrivateLinkTypes, configData.Type.ValueString()) {
+		for name, value := range map[string]types.String{"private_link_uuid": configData.PrivateLinkUUID, "snapshot_private_link_uuid": configData.SnapshotPrivateLinkUUID} {
+			if tfmodels.IsKnownAndNonEmpty(value) {
+				resp.Diagnostics.AddAttributeError(path.Root(name), "PrivateLink not supported", fmt.Sprintf("`%s` isn't supported for `%s` connectors.", name, configData.Type.ValueString()))
+			}
+		}
+	}
+
 	switch configData.Type.ValueString() {
 	case string(openapi.EnumsConnectorSlugBigquery):
 		if configData.BigQueryConfig == nil {
@@ -574,12 +592,6 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.MongoDBConfig == nil {
 			resp.Diagnostics.AddError("mongodb_config is required", "Please provide `mongodb_config` inside `connector`.")
 			return
-		}
-		// The API would replace the whole connection string with the link's DNS entry.
-		for name, value := range map[string]types.String{"private_link_uuid": configData.PrivateLinkUUID, "snapshot_private_link_uuid": configData.SnapshotPrivateLinkUUID} {
-			if tfmodels.IsKnownAndNonEmpty(value) {
-				resp.Diagnostics.AddAttributeError(path.Root(name), "PrivateLink not supported", fmt.Sprintf("`%s` isn't supported for `mongodb` connectors.", name))
-			}
 		}
 	case string(openapi.EnumsConnectorSlugMysql):
 		if configData.MySQLConfig == nil {
@@ -870,6 +882,9 @@ func (sshTunnelDetachesPrivateLinkPlanModifier) PlanModifyString(ctx context.Con
 // sshTunnelPrivateLinkPlan returns the plan for a PrivateLink left out of the config: "" when an SSH tunnel is set,
 // unknown when the tunnel is only known at apply, and plan unchanged otherwise.
 func sshTunnelPrivateLinkPlan(sshTunnelUUID, plan types.String) types.String {
+	if isKnownEmpty(plan) {
+		return plan
+	}
 	if sshTunnelUUID.IsUnknown() {
 		return types.StringUnknown()
 	}
@@ -890,7 +905,11 @@ func configuredPrivateLinks(config tfmodels.Connector) []privateLinkAttribute {
 		{path.Root("private_link_uuid"), config.PrivateLinkUUID},
 		{path.Root("snapshot_private_link_uuid"), config.SnapshotPrivateLinkUUID},
 	}
-	if config.SMBShareConfig != nil {
+	if config.SMBShareConfig == nil {
+		return links
+	}
+	// ToAPIModel ignores a stray smb_share_config block on other types.
+	if config.Type.ValueString() == string(openapi.EnumsConnectorSlugSmbShare) {
 		links = append(links, privateLinkAttribute{path.Root("smb_share_config").AtName("private_link_uuid"), config.SMBShareConfig.PrivateLinkUUID})
 	}
 	return links
@@ -924,6 +943,9 @@ func (privateLinkDetachesSSHTunnelPlanModifier) PlanModifyString(ctx context.Con
 // privateLinkSSHTunnelPlan returns the plan for an SSH tunnel left out of the config: "" when a PrivateLink is set,
 // unknown when one is only known at apply, and plan unchanged otherwise.
 func privateLinkSSHTunnelPlan(links []privateLinkAttribute, plan types.String) types.String {
+	if isKnownEmpty(plan) {
+		return plan
+	}
 	unknown := false
 	for _, link := range links {
 		if tfmodels.IsKnownAndNonEmpty(link.value) {
@@ -937,4 +959,12 @@ func privateLinkSSHTunnelPlan(links []privateLinkAttribute, plan types.String) t
 		return types.StringUnknown()
 	}
 	return plan
+}
+
+// isKnownEmpty reports whether a planned tunnel or link is already removed, so planning it as removed changes nothing.
+func isKnownEmpty(plan types.String) bool {
+	if !tfmodels.IsKnown(plan) {
+		return false
+	}
+	return plan.ValueString() == ""
 }
