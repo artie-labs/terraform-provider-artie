@@ -35,6 +35,7 @@ type Connector struct {
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
 	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
 	MotherDuckConfig  *MotherDuckSharedConfig  `tfsdk:"motherduck_config"`
+	PlanetScaleConfig *PlanetScaleSharedConfig `tfsdk:"planetscale_config"`
 	DocumentDBConfig  *DocumentDBSharedConfig  `tfsdk:"documentdb_config"`
 }
 
@@ -79,6 +80,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DeltaConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugMotherduck:
 		sharedConfig = c.MotherDuckConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugPlanetscale:
+		sharedConfig = c.PlanetScaleConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugDocumentdb:
 		sharedConfig = c.DocumentDBConfig.ToAPIModel()
 	default:
@@ -183,6 +186,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DeltaConfig = S3SharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugMotherduck:
 		connector.MotherDuckConfig = MotherDuckSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugPlanetscale:
+		connector.PlanetScaleConfig = PlanetScaleSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugDocumentdb:
 		connector.DocumentDBConfig = DocumentDBSharedConfigFromAPIModel(config)
 	default:
@@ -668,6 +673,32 @@ func (m MotherDuckSharedConfig) ToAPIModel() ConnectorConfig {
 
 func MotherDuckSharedConfigFromAPIModel(apiModel ConnectorConfig) *MotherDuckSharedConfig {
 	return &MotherDuckSharedConfig{Token: types.StringValue(apiModel.Token)}
+}
+
+// PlanetScaleSharedConfig leaves out the TLS mode, which the API always sets to required for PlanetScale.
+type PlanetScaleSharedConfig struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int32  `tfsdk:"port"`
+	Username types.String `tfsdk:"username"`
+	Password types.String `tfsdk:"password"`
+}
+
+func (p PlanetScaleSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:     p.Host.ValueString(),
+		Port:     p.Port.ValueInt32(),
+		User:     p.Username.ValueString(),
+		Password: p.Password.ValueString(),
+	}
+}
+
+func PlanetScaleSharedConfigFromAPIModel(apiModel ConnectorConfig) *PlanetScaleSharedConfig {
+	return &PlanetScaleSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		Username: types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+	}
 }
 
 type DocumentDBSharedConfig struct {
