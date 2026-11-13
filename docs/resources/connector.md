@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redis`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -173,6 +173,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `name` (String) An optional human-readable label for this connector.
 - `oracle_config` (Attributes) This should be filled out if the connector type is `oracle`. (see [below for nested schema](#nestedatt--oracle_config))
 - `postgresql_config` (Attributes) This should be filled out if the connector type is `postgresql`. (see [below for nested schema](#nestedatt--postgresql_config))
+- `redis_config` (Attributes) This should be filled out if the connector type is `redis`. (see [below for nested schema](#nestedatt--redis_config))
 - `redshift_config` (Attributes) This should be filled out if the connector type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
 - `s3_config` (Attributes) This should be filled out if the connector type is `s3`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--s3_config))
 - `smb_share_config` (Attributes) This should be filled out if the connector type is `smb_share`. An SMB share connector is a folder of an SMB share (such as one on Amazon FSx for Windows File Server) that a Microsoft SQL Server source reader using `trn_log_backup` reads its transaction log backup files from. Link it to the source reader with `archive_connector_uuid`. (see [below for nested schema](#nestedatt--smb_share_config))
@@ -358,6 +359,24 @@ Required:
 Optional:
 
 - `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
+
+
+<a id="nestedatt--redis_config"></a>
+### Nested Schema for `redis_config`
+
+Required:
+
+- `host` (String) The hostname of the Redis server. With `cluster_mode`, any node of the cluster.
+- `port` (Number) The default port for Redis is 6379.
+
+Optional:
+
+- `cluster_mode` (Boolean) Set to `true` to connect to a Redis Cluster.
+- `database` (Number) The database index. Redis Cluster only supports `0`.
+- `max_stream_length` (Number) Trims each stream to approximately this many entries. `0` never trims.
+- `password` (String, Sensitive) The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `tls` (Boolean) Set to `true` to connect over TLS.
+- `username` (String) The username to connect with, if your server uses ACL users.
 
 
 <a id="nestedatt--redshift_config"></a>

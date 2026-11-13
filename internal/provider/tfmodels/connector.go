@@ -33,6 +33,7 @@ type Connector struct {
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
+	RedisConfig       *RedisSharedConfig       `tfsdk:"redis_config"`
 }
 
 func (c Connector) sharedConfig() (ConnectorConfig, error) {
@@ -72,6 +73,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugRedis:
+		sharedConfig = c.RedisConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -170,6 +173,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugKeyspaces:
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugRedis:
+		connector.RedisConfig = RedisSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -640,5 +645,42 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
 		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:         types.StringValue(apiModel.AWSExternalID),
+	}
+}
+
+type RedisSharedConfig struct {
+	Host            types.String `tfsdk:"host"`
+	Port            types.Int32  `tfsdk:"port"`
+	Username        types.String `tfsdk:"username"`
+	Password        types.String `tfsdk:"password"`
+	Database        types.Int32  `tfsdk:"database"`
+	TLS             types.Bool   `tfsdk:"tls"`
+	ClusterMode     types.Bool   `tfsdk:"cluster_mode"`
+	MaxStreamLength types.Int64  `tfsdk:"max_stream_length"`
+}
+
+func (r RedisSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:                 r.Host.ValueString(),
+		Port:                 r.Port.ValueInt32(),
+		Username:             r.Username.ValueString(),
+		Password:             r.Password.ValueString(),
+		RedisDatabase:        redisDatabase(r.Database.ValueInt32()),
+		RedisTLS:             r.TLS.ValueBool(),
+		RedisClusterMode:     r.ClusterMode.ValueBool(),
+		RedisMaxStreamLength: r.MaxStreamLength.ValueInt64(),
+	}
+}
+
+func RedisSharedConfigFromAPIModel(apiModel ConnectorConfig) *RedisSharedConfig {
+	return &RedisSharedConfig{
+		Host:            types.StringValue(apiModel.Host),
+		Port:            types.Int32Value(apiModel.Port),
+		Username:        types.StringValue(apiModel.Username),
+		Password:        types.StringValue(apiModel.Password),
+		Database:        types.Int32Value(int32(apiModel.RedisDatabase)),
+		TLS:             types.BoolValue(apiModel.RedisTLS),
+		ClusterMode:     types.BoolValue(apiModel.RedisClusterMode),
+		MaxStreamLength: types.Int64Value(apiModel.RedisMaxStreamLength),
 	}
 }
