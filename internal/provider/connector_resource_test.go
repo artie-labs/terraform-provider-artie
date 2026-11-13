@@ -134,25 +134,62 @@ func TestSMBSharePrivateLinkPlanModifier(t *testing.T) {
 func TestConnectorValidateConfigSSHTunnelAndPrivateLink(t *testing.T) {
 	const link = "11111111-1111-1111-1111-111111111111"
 	const tunnel = "33333333-3333-3333-3333-333333333333"
+	conflicts := func(diags diag.Diagnostics) []string {
+		var paths []string
+		for _, d := range diags.Errors() {
+			withPath, ok := d.(diag.DiagnosticWithPath)
+			if !ok {
+				continue
+			}
+			if d.Summary() == "Conflicting connection settings" {
+				paths = append(paths, withPath.Path().String())
+			}
+		}
+		return paths
+	}
 	{
 		// A tunnel and a link together: rejected, since the API refuses the pair
 		diags := validateConnectorConfig(t, map[string]attr.Value{
-			"type":              types.StringValue("mongodb"),
-			"mongodb_config":    mongoDBConfig,
-			"ssh_tunnel_uuid":   types.StringValue(tunnel),
-			"private_link_uuid": types.StringValue(link),
+			"type":                       types.StringValue("postgresql"),
+			"ssh_tunnel_uuid":            types.StringValue(tunnel),
+			"snapshot_private_link_uuid": types.StringValue(link),
 		})
-		assert.True(t, diags.HasError(), diags)
+		assert.Equal(t, []string{"snapshot_private_link_uuid"}, conflicts(diags))
+	}
+	{
+		// A tunnel with a link in the SMB share block: rejected too
+		diags := validateConnectorConfig(t, map[string]attr.Value{
+			"type":             types.StringValue("smb_share"),
+			"ssh_tunnel_uuid":  types.StringValue(tunnel),
+			"smb_share_config": smbShareConfigValue(types.StringValue(link)),
+		})
+		assert.Equal(t, []string{"smb_share_config.private_link_uuid"}, conflicts(diags))
 	}
 	{
 		// A tunnel with the link removed: fine
 		diags := validateConnectorConfig(t, map[string]attr.Value{
-			"type":              types.StringValue("mongodb"),
-			"mongodb_config":    mongoDBConfig,
+			"type":              types.StringValue("postgresql"),
 			"ssh_tunnel_uuid":   types.StringValue(tunnel),
 			"private_link_uuid": types.StringValue(""),
 		})
-		assert.False(t, diags.HasError(), diags)
+		assert.Empty(t, conflicts(diags))
+	}
+}
+
+func TestPrivateLinkSSHTunnelPlan(t *testing.T) {
+	const tunnel = "33333333-3333-3333-3333-333333333333"
+	{
+		// Switching to a PrivateLink (top level or in the SMB share block): a tunnel left out of the config is removed
+		assert.Equal(t, types.StringValue(""), privateLinkSSHTunnelPlan([]privateLinkAttribute{{path.Root("private_link_uuid"), types.StringValue("11111111-1111-1111-1111-111111111111")}}, types.StringValue(tunnel)))
+		assert.Equal(t, types.StringValue(""), privateLinkSSHTunnelPlan([]privateLinkAttribute{{path.Root("smb_share_config").AtName("private_link_uuid"), types.StringValue("11111111-1111-1111-1111-111111111111")}}, types.StringValue(tunnel)))
+	}
+	{
+		// A link only known at apply: unknown
+		assert.True(t, privateLinkSSHTunnelPlan([]privateLinkAttribute{{path.Root("private_link_uuid"), types.StringUnknown()}}, types.StringValue(tunnel)).IsUnknown())
+	}
+	{
+		// No link (left out or removed): the tunnel from state is kept
+		assert.Equal(t, types.StringValue(tunnel), privateLinkSSHTunnelPlan([]privateLinkAttribute{{path.Root("private_link_uuid"), types.StringNull()}, {path.Root("snapshot_private_link_uuid"), types.StringValue("")}}, types.StringValue(tunnel)))
 	}
 }
 

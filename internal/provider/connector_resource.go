@@ -73,7 +73,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 		MarkdownDescription: "Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect."},
+			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), privateLinkDetachesSSHTunnelPlanModifier{}}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect. This can't be combined with a PrivateLink; leaving it out while one is set removes the SSH tunnel."},
 			"private_link_uuid": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -389,9 +389,9 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 
 	// The API rejects an SSH tunnel combined with a PrivateLink.
 	if tfmodels.IsKnownAndNonEmpty(configData.SSHTunnelUUID) {
-		for name, value := range map[string]types.String{"private_link_uuid": configData.PrivateLinkUUID, "snapshot_private_link_uuid": configData.SnapshotPrivateLinkUUID} {
-			if tfmodels.IsKnownAndNonEmpty(value) {
-				resp.Diagnostics.AddAttributeError(path.Root(name), "Conflicting connection settings", fmt.Sprintf("`%s` can't be combined with `ssh_tunnel_uuid`.", name))
+		for _, link := range configuredPrivateLinks(configData) {
+			if tfmodels.IsKnownAndNonEmpty(link.value) {
+				resp.Diagnostics.AddAttributeError(link.path, "Conflicting connection settings", fmt.Sprintf("`%s` can't be combined with `ssh_tunnel_uuid`.", link.path))
 			}
 		}
 	}
@@ -477,9 +477,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			return
 		}
 		// The API would replace the whole connection string with the link's DNS entry.
-		for _, name := range []string{"private_link_uuid", "snapshot_private_link_uuid"} {
-			var value types.String
-			resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(name), &value)...)
+		for name, value := range map[string]types.String{"private_link_uuid": configData.PrivateLinkUUID, "snapshot_private_link_uuid": configData.SnapshotPrivateLinkUUID} {
 			if tfmodels.IsKnownAndNonEmpty(value) {
 				resp.Diagnostics.AddAttributeError(path.Root(name), "PrivateLink not supported", fmt.Sprintf("`%s` isn't supported for `mongodb` connectors.", name))
 			}
@@ -705,4 +703,64 @@ func sshTunnelPrivateLinkPlan(sshTunnelUUID, plan types.String) types.String {
 		return plan
 	}
 	return types.StringValue("")
+}
+
+type privateLinkAttribute struct {
+	path  path.Path
+	value types.String
+}
+
+// configuredPrivateLinks returns the connector's configured PrivateLinks, the SMB share block's included.
+func configuredPrivateLinks(config tfmodels.Connector) []privateLinkAttribute {
+	links := []privateLinkAttribute{
+		{path.Root("private_link_uuid"), config.PrivateLinkUUID},
+		{path.Root("snapshot_private_link_uuid"), config.SnapshotPrivateLinkUUID},
+	}
+	if config.SMBShareConfig != nil {
+		links = append(links, privateLinkAttribute{path.Root("smb_share_config").AtName("private_link_uuid"), config.SMBShareConfig.PrivateLinkUUID})
+	}
+	return links
+}
+
+// privateLinkDetachesSSHTunnelPlanModifier plans an SSH tunnel left out of the config as removed ("") when the config
+// sets a PrivateLink, the reverse of sshTunnelDetachesPrivateLinkPlanModifier, so switching from an SSH tunnel to a
+// PrivateLink doesn't need the tunnel set to "" by hand.
+type privateLinkDetachesSSHTunnelPlanModifier struct{}
+
+func (privateLinkDetachesSSHTunnelPlanModifier) Description(context.Context) string {
+	return "Removes an SSH tunnel left out of the config when a PrivateLink is set."
+}
+
+func (m privateLinkDetachesSSHTunnelPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (privateLinkDetachesSSHTunnelPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.ConfigValue.IsNull() {
+		return
+	}
+	var config tfmodels.Connector
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.PlanValue = privateLinkSSHTunnelPlan(configuredPrivateLinks(config), resp.PlanValue)
+}
+
+// privateLinkSSHTunnelPlan returns the plan for an SSH tunnel left out of the config: "" when a PrivateLink is set,
+// unknown when one is only known at apply, and plan unchanged otherwise.
+func privateLinkSSHTunnelPlan(links []privateLinkAttribute, plan types.String) types.String {
+	unknown := false
+	for _, link := range links {
+		if tfmodels.IsKnownAndNonEmpty(link.value) {
+			return types.StringValue("")
+		}
+		if link.value.IsUnknown() {
+			unknown = true
+		}
+	}
+	if unknown {
+		return types.StringUnknown()
+	}
+	return plan
 }

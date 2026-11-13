@@ -180,7 +180,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `smb_share_config` (Attributes) This should be filled out if the connector type is `smb_share`. An SMB share connector is a folder of an SMB share (such as one on Amazon FSx for Windows File Server) that a Microsoft SQL Server source reader using `trn_log_backup` reads its transaction log backup files from. Link it to the source reader with `archive_connector_uuid`. (see [below for nested schema](#nestedatt--smb_share_config))
 - `snapshot_private_link_uuid` (String) This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`. `mongodb` is rejected at plan time, and other types fail when applied. Leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `""` to detach the connector before destroying its `artie_private_link`.
 - `snowflake_config` (Attributes) This should be filled out if the connector type is `snowflake`. (see [below for nested schema](#nestedatt--snowflake_config))
-- `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect.
+- `ssh_tunnel_uuid` (String) This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect. This can't be combined with a PrivateLink; leaving it out while one is set removes the SSH tunnel.
 
 ### Read-Only
 
