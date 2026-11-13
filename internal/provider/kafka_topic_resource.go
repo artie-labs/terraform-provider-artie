@@ -43,6 +43,9 @@ const (
 	kafkaClusterDeployTimeout = time.Hour
 )
 
+// kafkaRetentionMSValidator allows a topic's or cluster's retention_ms: at least one day, or -1 to keep messages forever.
+var kafkaRetentionMSValidator = int64validator.Any(int64validator.OneOf(kafkaTopicRetentionForever), int64validator.AtLeast(kafkaTopicMinRetentionMS))
+
 // kafkaClusterDeployPollInterval is how often Create retries while the topic's cluster is deploying (a var for tests).
 var kafkaClusterDeployPollInterval = 30 * time.Second
 
@@ -96,7 +99,7 @@ func (r *KafkaTopicResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
-				Validators:          []validator.Int64{int64validator.Any(int64validator.OneOf(kafkaTopicRetentionForever), int64validator.AtLeast(kafkaTopicMinRetentionMS))},
+				Validators:          []validator.Int64{kafkaRetentionMSValidator},
 				MarkdownDescription: "How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), or `-1` to keep messages forever. Otherwise at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set when the topic is created, the topic keeps the cluster's default. Removing it from the config later keeps the topic's current retention.",
 			},
 			"local_retention_ms": schema.Int64Attribute{

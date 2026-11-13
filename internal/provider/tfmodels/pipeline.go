@@ -2,6 +2,7 @@ package tfmodels
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -35,6 +36,14 @@ func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
 		FolderName:                  lib.ToPtr(d.Folder.ValueString()),
 		DynamicallyCreateNamespaces: lib.ToPtr(d.CreateIcebergNamespaces.ValueBool()),
 	}
+}
+
+// Validate rejects a non-empty `dataset`: the API has no such field, so the value would be silently dropped.
+func (d PipelineDestinationConfig) Validate() error {
+	if d.Dataset.ValueString() != "" {
+		return errors.New("destination_config.dataset is not supported and would be ignored. For BigQuery, set the dataset name in `database` instead")
+	}
+	return nil
 }
 
 func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConfig) PipelineDestinationConfig {

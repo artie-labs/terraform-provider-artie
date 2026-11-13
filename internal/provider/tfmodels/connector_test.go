@@ -313,3 +313,12 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.NotContains(t, config, "database")
 	}
 }
+
+func TestIcebergRESTTokenAPIModelRoundTrip(t *testing.T) {
+	// A masked token is kept from prior and sent back under the same key
+	prior := Connector{Type: types.StringValue("iceberg"), IcebergConfig: &IcebergSharedConfig{Token: types.StringValue("real-token")}}
+	connector, config := roundTripSharedConfig(t, "iceberg", `{"provider": "rest", "uri": "https://catalog.example.com", "token": "********", "warehouse": "wh"}`, prior)
+	require.NotNil(t, connector.IcebergConfig)
+	assert.Equal(t, "real-token", connector.IcebergConfig.Token.ValueString())
+	assert.Equal(t, "real-token", config["token"])
+}

@@ -544,3 +544,16 @@ func TestPipelineToAPIModel_UnknownSettingsAreOmitted(t *testing.T) {
 	assert.Nil(t, apiModel.AdvancedSettings.IncludeArtieUpdatedAtColumn)
 	assert.Nil(t, apiModel.AdvancedSettings.StagingSchema)
 }
+
+func TestPipelineDestinationConfigValidate(t *testing.T) {
+	{
+		// dataset left out, empty, or unknown: valid, so existing state with dataset = "" keeps working.
+		assert.NoError(t, PipelineDestinationConfig{Dataset: types.StringNull()}.Validate())
+		assert.NoError(t, PipelineDestinationConfig{Dataset: types.StringValue("")}.Validate())
+		assert.NoError(t, PipelineDestinationConfig{Dataset: types.StringUnknown()}.Validate())
+	}
+	{
+		// dataset set: rejected, since the API would drop it.
+		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
+	}
+}
