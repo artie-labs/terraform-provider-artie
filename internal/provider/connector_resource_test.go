@@ -130,3 +130,45 @@ func TestSMBSharePrivateLinkPlanModifier(t *testing.T) {
 		assert.True(t, value.IsUnknown())
 	}
 }
+
+func TestConnectorValidateConfigSSHTunnelAndPrivateLink(t *testing.T) {
+	const link = "11111111-1111-1111-1111-111111111111"
+	const tunnel = "33333333-3333-3333-3333-333333333333"
+	{
+		// A tunnel and a link together: rejected, since the API refuses the pair
+		diags := validateConnectorConfig(t, map[string]attr.Value{
+			"type":              types.StringValue("mongodb"),
+			"mongodb_config":    mongoDBConfig,
+			"ssh_tunnel_uuid":   types.StringValue(tunnel),
+			"private_link_uuid": types.StringValue(link),
+		})
+		assert.True(t, diags.HasError(), diags)
+	}
+	{
+		// A tunnel with the link removed: fine
+		diags := validateConnectorConfig(t, map[string]attr.Value{
+			"type":              types.StringValue("mongodb"),
+			"mongodb_config":    mongoDBConfig,
+			"ssh_tunnel_uuid":   types.StringValue(tunnel),
+			"private_link_uuid": types.StringValue(""),
+		})
+		assert.False(t, diags.HasError(), diags)
+	}
+}
+
+func TestSSHTunnelPrivateLinkPlan(t *testing.T) {
+	const link = "11111111-1111-1111-1111-111111111111"
+	{
+		// Switching to an SSH tunnel: a link left out of the config is removed, the way main always sent null
+		assert.Equal(t, types.StringValue(""), sshTunnelPrivateLinkPlan(types.StringValue("33333333-3333-3333-3333-333333333333"), types.StringValue(link)))
+	}
+	{
+		// Tunnel only known at apply: unknown
+		assert.True(t, sshTunnelPrivateLinkPlan(types.StringUnknown(), types.StringValue(link)).IsUnknown())
+	}
+	{
+		// No tunnel (left out or removed): the link from state is kept
+		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringNull(), types.StringValue(link)))
+		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringValue(""), types.StringValue(link)))
+	}
+}
