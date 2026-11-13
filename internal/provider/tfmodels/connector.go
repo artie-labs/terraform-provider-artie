@@ -689,8 +689,10 @@ type ClickHouseSharedConfig struct {
 func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
 	// An unknown list has no elements; ToAPIModel only sends planned values, which are known.
 	addresses := make([]string, 0, len(c.Addresses.Elements()))
-	for _, address := range c.Addresses.Elements() {
-		addresses = append(addresses, address.(types.String).ValueString())
+	for _, element := range c.Addresses.Elements() {
+		if address, ok := element.(types.String); ok {
+			addresses = append(addresses, address.ValueString())
+		}
 	}
 	return ConnectorConfig{
 		ClickHouseAddresses:  addresses,
