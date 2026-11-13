@@ -99,14 +99,40 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 Optional:
 
 - `bucket` (String) The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg with provider `s3tables` (for Iceberg S3 Tables, this bucket is where delta files will be stored). Not used for Iceberg REST catalog.
+- `checkpoint_interval` (Number) How often, in commits, Artie should write a Delta Lake checkpoint. Set to 0 to use Artie's default (10) or -1 to turn checkpoints off. This is only applicable if the destination is Delta Lake.
+- `compaction` (Attributes) Delta Lake compaction settings. Settings left out keep their current value. This is only applicable if the destination is Delta Lake. (see [below for nested schema](#nestedatt--destination_config--compaction))
+- `container_name` (String) The Oracle container (PDB) name stored with this pipeline's destination settings. Artie doesn't use it for Oracle destinations today; it's exposed so applies keep a value set in the dashboard.
 - `create_iceberg_namespaces` (Boolean) If set to true, Artie will automatically create namespaces if they don't exist. This is only applicable if the destination is Iceberg.
 - `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake (unless `use_same_schema_as_source` is set to true), or with the dataset name if the destination is BigQuery.
 - `dataset` (String, Deprecated) Deprecated: this is not sent to the API and must be left empty. For BigQuery, set the dataset name in `database` instead.
+- `external_stage_name` (String) The name of the Snowflake external stage Artie should load data through. This is only applicable if the destination is Snowflake.
+- `external_stage_s3_bucket` (String) The S3 bucket behind `external_stage_name`. This is only applicable if the destination is Snowflake.
+- `external_stage_s3_prefix` (String) The S3 prefix behind `external_stage_name`. This is only applicable if the destination is Snowflake.
 - `folder` (String) If provided, all files will be stored under this folder inside the S3 or GCS bucket. This is optional and only applies if the destination is S3 or GCS.
+- `iceberg_format_version` (String) The Iceberg format version new tables are created with, either `v2` (the default) or `v3`. Tables can't be downgraded from v3, and tables that already have data keep their version. S3 Tables and the Spark engine can't create v3 tables. This is only applicable if the destination is Iceberg.
 - `schema` (String) The name of the schema or namespace that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, Iceberg, or Snowflake (unless `use_same_schema_as_source` is set to true).
 - `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this pipeline's schemas in the destination.
 - `table_name_separator` (String) If provided, this is the separator between database, schema and table name. This is only applicable if the destination is S3 or GCS.
 - `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, Databricks, etc). A MongoDB source supports this when its source reader has `mongodb_deployment_scoped_mode` set to true, and each collection's database is used as its schema.
+
+<a id="nestedatt--destination_config--compaction"></a>
+### Nested Schema for `destination_config.compaction`
+
+Optional:
+
+- `enabled` (Boolean) If set to true, Artie will compact this pipeline's Delta tables on a schedule.
+- `every_seconds` (Number) How often, in seconds, each table is compacted. Set to 0 to use Artie's default (86400, once a day).
+- `quiet_window` (Attributes) An optional UTC time window that compaction is limited to. Set `start` and `end` to `""` to compact at any time. (see [below for nested schema](#nestedatt--destination_config--compaction--quiet_window))
+
+<a id="nestedatt--destination_config--compaction--quiet_window"></a>
+### Nested Schema for `destination_config.compaction.quiet_window`
+
+Required:
+
+- `end` (String) The end of the window in `HH:MM` UTC, e.g. `06:00`. Must differ from `start`.
+- `start` (String) The start of the window in `HH:MM` UTC, e.g. `02:00`.
+
+
 
 
 <a id="nestedatt--tables"></a>
