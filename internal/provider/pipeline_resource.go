@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -96,6 +97,20 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"range_batch_size":       schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true."},
 						"skip_backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will skip backfilling this table and only process new changes going forward."},
 						"skip_no_op_updates":     schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL."},
+
+						"buffer_rows":                     schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of rows to buffer before flushing this table to the destination. This only applies to tables that are deployed individually."},
+						"flush_interval_seconds":          schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How often, in seconds, Artie should flush this table to the destination. This only applies to tables that are deployed individually."},
+						"flush_size_kb":                   schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The size in kb of data to buffer before flushing this table to the destination. This only applies to tables that are deployed individually."},
+						"k8s_request_cpu":                 schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The CPU to request for this table's deployment. This only applies to tables that are deployed individually."},
+						"k8s_request_memory_mb":           schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The memory, in MB, to request for this table's deployment. This only applies to tables that are deployed individually."},
+						"columns_to_trim":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of string columns whose values should have leading and trailing whitespace trimmed. A column can't be both trimmed and excluded or in `primary_keys_override`."},
+						"flatten_documents":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, nested document fields are flattened into their own columns in the destination. This is only applicable if the source is MongoDB or DocumentDB."},
+						"flatten_documents_max_depth":     schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How many levels of nested fields to flatten when `flatten_documents` is set to true. Set to 0 to use Artie's default."},
+						"partition_backfill":              schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, a partitioned source table is backfilled one partition at a time. Can't be combined with `ctid_backfill` or `range_backfill`."},
+						"partition_range_backfill":        schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true along with `partition_backfill`, each partition is split into ranges that are backfilled in parallel."},
+						"partition_range_chunk_size":      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of rows per range when `partition_range_backfill` is set to true. If set, this should be at least 100,000. Set to 0 to use Artie's default."},
+						"partition_range_max_parallelism": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The maximum number of ranges to backfill in parallel when `partition_range_backfill` is set to true. Set to 0 to use Artie's default."},
+						"stream_arn":                      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The CDC stream ARN for this table. This is only applicable if the source is Amazon Keyspaces."},
 						"merge_predicates": schema.ListNestedAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -229,6 +244,28 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						Default:             booldefault.StaticBool(false),
 						PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 					},
+					"checkpoint_interval":      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(-1)}, MarkdownDescription: "How often, in commits, Artie should write a Delta Lake checkpoint. Set to 0 to use Artie's default (10) or -1 to turn checkpoints off. This is only applicable if the destination is Delta Lake."},
+					"container_name":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the container (PDB) that data should be synced to. This is only applicable if the destination is Oracle."},
+					"external_stage_name":      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the Snowflake external stage Artie should load data through. This is only applicable if the destination is Snowflake."},
+					"external_stage_s3_bucket": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 bucket behind `external_stage_name`. This is only applicable if the destination is Snowflake."},
+					"external_stage_s3_prefix": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 prefix behind `external_stage_name`. This is only applicable if the destination is Snowflake."},
+					"iceberg_format_version":   schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, Validators: []validator.String{stringvalidator.OneOf("v2", "v3")}, MarkdownDescription: "The Iceberg format version new tables are created with, either `v2` (the default) or `v3`. Tables can't be downgraded from v3, and tables that already have data keep their version. S3 Tables and the Spark engine can't create v3 tables. This is only applicable if the destination is Iceberg."},
+					"compaction": schema.SingleNestedAttribute{
+						Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+						MarkdownDescription: "Delta Lake compaction settings. Settings left out keep their current value. This is only applicable if the destination is Delta Lake.",
+						Attributes: map[string]schema.Attribute{
+							"enabled":       schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will compact this pipeline's Delta tables on a schedule."},
+							"every_seconds": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How often, in seconds, each table is compacted. Set to 0 to use Artie's default (86400, once a day)."},
+							"quiet_window": schema.SingleNestedAttribute{
+								Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+								MarkdownDescription: "An optional UTC time window that compaction is limited to. Set `start` and `end` to `\"\"` to compact at any time.",
+								Attributes: map[string]schema.Attribute{
+									"start": schema.StringAttribute{Required: true, MarkdownDescription: "The start of the window in `HH:MM` UTC, e.g. `02:00`."},
+									"end":   schema.StringAttribute{Required: true, MarkdownDescription: "The end of the window in `HH:MM` UTC, e.g. `06:00`. Must differ from `start`."},
+								},
+							},
+						},
+					},
 				},
 			},
 			"data_plane_name": schema.StringAttribute{
@@ -265,6 +302,30 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"turbo_warehouse":                                      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The Snowflake warehouse Artie should use for Turbo mode."},
 			"turbo_row_threshold":                                  schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The source row threshold for enabling Turbo mode on Snowflake pipelines."},
 			"turbo_latency_threshold_minutes":                      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The replication latency threshold, in minutes, for enabling Turbo mode on Snowflake pipelines."},
+			"backfill_mysql_floats_as_shortest_decimal":            schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, backfills write FLOAT columns as their shortest decimal (e.g. 528.92), the way replication does, instead of the exact float32 value (528.91998291015625). This is only applicable if the source is MySQL or PlanetScale."},
+			"bigquery_reservation":                                 schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The BigQuery reservation Artie should run queries in. This is only applicable if the destination is BigQuery."},
+			"cast_all_columns_to_string":                           schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, every column (including the primary key) is written as a string instead of using the type inferred from each event. Artie's own `__artie_*` columns keep their types. This is only applicable if the source is MongoDB or DocumentDB."},
+			"json_as_varchar":                                      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, JSON values are stored as text in `VARCHAR(MAX)` columns instead of `SUPER`. This is only applicable if the destination is Redshift."},
+			"json_parse_truncate_strings":                          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, strings inside `SUPER` values that are over Redshift's limit are truncated instead of failing the load. This is only applicable if the destination is Redshift."},
+			"postgres_partition_mirroring":                         schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie creates each partitioned source table's partitions on the destination before writing to it, and adds partitions the source gains later. This is only applicable if both the source and the destination are Postgres."},
+			"snowpipe_streaming_max_channels":                      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The maximum number of Snowpipe Streaming channels Artie should open. Set to 0 to use Artie's default. This is only applicable if `use_snowpipe_streaming` is set to true."},
+			"truncate_exceeded_values":                             schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, values that are too large for their destination column are truncated instead of failing the load. This is only applicable if the destination is Redshift or BigQuery."},
+			"use_bq_batch_priority":                                schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie runs BigQuery queries with batch priority instead of interactive priority. This is only applicable if the destination is BigQuery."},
+			"use_bignumeric_for_variable_numeric":                  schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, numeric columns without a fixed precision and scale are created as `BIGNUMERIC` instead of `NUMERIC`. This is only applicable if the destination is BigQuery."},
+			"use_double_for_variable_numeric":                      schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, numeric columns without a fixed precision and scale are created as `DOUBLE`. This is only applicable if the destination is MotherDuck."},
+			"use_new_string_method":                                schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "Overrides the account's setting for how Artie writes string values. If not set, the pipeline follows the account's setting. This is only applicable if the destination is Databricks."},
+			"use_snowpipe_streaming":                               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie loads data with Snowpipe Streaming. This is only applicable if the destination is Snowflake."},
+			"dynamodb_backfill_config": schema.SingleNestedAttribute{
+				Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+				MarkdownDescription: "Settings for backfilling a DynamoDB table from an S3 export. Settings left out keep their current value. This is only applicable if the source is DynamoDB.",
+				Attributes: map[string]schema.Attribute{
+					"enabled":         schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, new tables are backfilled from a DynamoDB export to S3."},
+					"bucket":          schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 bucket DynamoDB exports the table to. Required when `enabled` is true, unless `export_arn` is set."},
+					"optional_folder": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional folder inside `bucket` for the export."},
+					"export_arn":      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The ARN of an existing DynamoDB export to backfill from, instead of starting a new export."},
+					"max_parallelism": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How many export files the backfill reads and writes at once. Set to 0 to use Artie's default (1)."},
+				},
+			},
 			"status_override": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.",
@@ -360,6 +421,14 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(pair[1]), &include)...)
 		if ignore.ValueString() != "" && include.ValueString() != "" {
 			resp.Diagnostics.AddError("Invalid configuration", fmt.Sprintf("Only one of `%s` and `%s` can be set.", pair[0], pair[1]))
+		}
+	}
+
+	if tfmodels.IsKnown(configData.DynamoDBBackfillConfig) {
+		var dynamoDBBackfillConfig tfmodels.DynamoDBBackfillConfig
+		resp.Diagnostics.Append(configData.DynamoDBBackfillConfig.As(ctx, &dynamoDBBackfillConfig, basetypes.ObjectAsOptions{})...)
+		if err := dynamoDBBackfillConfig.Validate(); err != nil {
+			resp.Diagnostics.AddError("Invalid configuration", err.Error())
 		}
 	}
 

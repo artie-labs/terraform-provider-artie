@@ -60,6 +60,9 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `auto_replicate_ignore_regex` (String) An optional regular expression for excluding newly discovered tables from auto-replication.
 - `auto_replicate_include_regex` (String) An optional regular expression for only auto-replicating newly discovered tables that match it. Cannot be combined with `auto_replicate_ignore_regex`; set either one to `""` to clear it.
 - `auto_replicate_new_tables` (Boolean) If set to true, Artie will automatically start replicating any new tables that are created in the source database.
+- `backfill_mysql_floats_as_shortest_decimal` (Boolean) If set to true, backfills write FLOAT columns as their shortest decimal (e.g. 528.92), the way replication does, instead of the exact float32 value (528.91998291015625). This is only applicable if the source is MySQL or PlanetScale.
+- `bigquery_reservation` (String) The BigQuery reservation Artie should run queries in. This is only applicable if the destination is BigQuery.
+- `cast_all_columns_to_string` (Boolean) If set to true, every column (including the primary key) is written as a string instead of using the type inferred from each event. Artie's own `__artie_*` columns keep their types. This is only applicable if the source is MongoDB or DocumentDB.
 - `column_hashing_salt_uuid` (String) UUID of an `artie_column_hashing_salt` used when hashing column values. Required if any table has `columns_to_hash` set.
 - `data_plane_name` (String) The name of the data plane to use for this pipeline. If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing pipeline to a different data plane destroys and recreates it (with a new UUID), so change the data plane of its source reader and destination connector in the same apply. Terraform deletes the old resource before the new data plane is validated, so a wrong name leaves it deleted; add `lifecycle { prevent_destroy = true }` to block replacements entirely. If an administrator moved this resource to another data plane, update `data_plane_name` to match before applying, or Terraform will recreate it in the old one.
 - `databricks_auto_liquid_clustering` (Boolean) If set to true, Artie will create Databricks tables with automatic liquid clustering (`CLUSTER BY AUTO`) and enable it on existing tables after each deploy. Requires Unity Catalog managed tables with predictive optimization enabled. Turning this off does not remove clustering from existing tables. This is only applicable if the destination is Databricks.
@@ -67,6 +70,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true).
 - `disable_alerts` (Boolean) If set to true, Artie will not send email alerts for this pipeline (connection failures, replication errors, ingestion lag, etc.). Pipeline health is still tracked in the dashboard.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
+- `dynamodb_backfill_config` (Attributes) Settings for backfilling a DynamoDB table from an S3 export. Settings left out keep their current value. This is only applicable if the source is DynamoDB. (see [below for nested schema](#nestedatt--dynamodb_backfill_config))
 - `encryption_key_uuid` (String) UUID of an `artie_encryption_key` to use for column-level encryption. Required if any table has `columns_to_encrypt` set.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
 - `force_utc_timezone` (Boolean) If set to true, timestamps without timezone information in the source will be written as UTC in the destination.
@@ -76,17 +80,27 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `include_full_source_table_name_column` (Boolean) If set to true, Artie will add a new column called `__artie_full_source_table_name` to the destination table containing the fully qualified source table name (e.g., schema.table). Useful when unifying tables across schemas/databases.
 - `include_full_source_table_name_column_as_primary_key` (Boolean) If set to true, includes the full source table name column as part of the primary key in destination tables. Requires `include_full_source_table_name_column` to be true.
 - `include_source_metadata_column` (Boolean) If set to true, Artie will add a new column called `__artie_source_metadata` to the destination table which will contain a JSON blob of metadata about the source event.
+- `json_as_varchar` (Boolean) If set to true, JSON values are stored as text in `VARCHAR(MAX)` columns instead of `SUPER`. This is only applicable if the destination is Redshift.
+- `json_parse_truncate_strings` (Boolean) If set to true, strings inside `SUPER` values that are over Redshift's limit are truncated instead of failing the load. This is only applicable if the destination is Redshift.
 - `max_concurrent_snapshots` (Number) The maximum number of tables Artie should backfill concurrently for this pipeline.
+- `postgres_partition_mirroring` (Boolean) If set to true, Artie creates each partitioned source table's partitions on the destination before writing to it, and adds partitions the source gains later. This is only applicable if both the source and the destination are Postgres.
 - `snowflake_eco_schedule_uuid` (String) If the pipeline's destination is Snowflake, this can point to a Snowflake Eco Mode Schedule that will be used to adjust the pipeline's flush rules according to a schedule. Schedules are created in our UI; if this is not set, any schedule already attached to the pipeline is left unchanged.
+- `snowpipe_streaming_max_channels` (Number) The maximum number of Snowpipe Streaming channels Artie should open. Set to 0 to use Artie's default. This is only applicable if `use_snowpipe_streaming` is set to true.
 - `soft_delete_rows` (Boolean) If set to true, when a row is deleted from the source it will not be deleted from the destination. Instead, a new boolean column called `__artie_delete` will be added to the destination table to indicate which rows have been deleted in the source.
 - `split_events_by_type` (Boolean) If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API.
 - `staging_schema` (String) If set, Artie's temporary staging tables will be created in this schema instead of in the same schema as the destination table. This can be used to avoid cluttering the destination schema. Note: this only applies to destinations that support schemas/namespaces.
 - `static_columns` (Attributes List) Static columns allow you to add hardcoded column/value pairs to all destination rows. This is useful for tagging data with metadata like environment, source identifier, etc. (see [below for nested schema](#nestedatt--static_columns))
 - `status_override` (String) Override the pipeline status after update. Currently only `paused` is supported. If set to `paused`, the pipeline will be paused instead of started after an update. This cannot be set on creation.
 - `struct_as_variant` (Boolean) If set to true, new JSON, nested object, and array columns are created as VARIANT instead of STRING or ARRAY. Primary keys and existing columns keep their type. To turn it off, set it to false (removing it keeps the current value); existing VARIANT columns aren't converted back. Requires Databricks Runtime 15.4 LTS or later. It only applies when the destination is Databricks.
+- `truncate_exceeded_values` (Boolean) If set to true, values that are too large for their destination column are truncated instead of failing the load. This is only applicable if the destination is Redshift or BigQuery.
 - `turbo_latency_threshold_minutes` (Number) The replication latency threshold, in minutes, for enabling Turbo mode on Snowflake pipelines.
 - `turbo_row_threshold` (Number) The source row threshold for enabling Turbo mode on Snowflake pipelines.
 - `turbo_warehouse` (String) The Snowflake warehouse Artie should use for Turbo mode.
+- `use_bignumeric_for_variable_numeric` (Boolean) If set to true, numeric columns without a fixed precision and scale are created as `BIGNUMERIC` instead of `NUMERIC`. This is only applicable if the destination is BigQuery.
+- `use_bq_batch_priority` (Boolean) If set to true, Artie runs BigQuery queries with batch priority instead of interactive priority. This is only applicable if the destination is BigQuery.
+- `use_double_for_variable_numeric` (Boolean) If set to true, numeric columns without a fixed precision and scale are created as `DOUBLE`. This is only applicable if the destination is MotherDuck.
+- `use_new_string_method` (Boolean) Overrides the account's setting for how Artie writes string values. If not set, the pipeline follows the account's setting. This is only applicable if the destination is Databricks.
+- `use_snowpipe_streaming` (Boolean) If set to true, Artie loads data with Snowpipe Streaming. This is only applicable if the destination is Snowflake.
 - `write_raw_binary_values` (Boolean) If set to true, binary columns (e.g. BINARY type) are created in the destination table for raw binary data instead of creating string columns that store Base64-encoded values. It only applies when the destination is Databricks.
 
 ### Read-Only
@@ -99,14 +113,40 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 Optional:
 
 - `bucket` (String) The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg with provider `s3tables` (for Iceberg S3 Tables, this bucket is where delta files will be stored). Not used for Iceberg REST catalog.
+- `checkpoint_interval` (Number) How often, in commits, Artie should write a Delta Lake checkpoint. Set to 0 to use Artie's default (10) or -1 to turn checkpoints off. This is only applicable if the destination is Delta Lake.
+- `compaction` (Attributes) Delta Lake compaction settings. Settings left out keep their current value. This is only applicable if the destination is Delta Lake. (see [below for nested schema](#nestedatt--destination_config--compaction))
+- `container_name` (String) The name of the container (PDB) that data should be synced to. This is only applicable if the destination is Oracle.
 - `create_iceberg_namespaces` (Boolean) If set to true, Artie will automatically create namespaces if they don't exist. This is only applicable if the destination is Iceberg.
 - `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.
 - `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.
+- `external_stage_name` (String) The name of the Snowflake external stage Artie should load data through. This is only applicable if the destination is Snowflake.
+- `external_stage_s3_bucket` (String) The S3 bucket behind `external_stage_name`. This is only applicable if the destination is Snowflake.
+- `external_stage_s3_prefix` (String) The S3 prefix behind `external_stage_name`. This is only applicable if the destination is Snowflake.
 - `folder` (String) If provided, all files will be stored under this folder inside the S3 or GCS bucket. This is optional and only applies if the destination is S3 or GCS.
+- `iceberg_format_version` (String) The Iceberg format version new tables are created with, either `v2` (the default) or `v3`. Tables can't be downgraded from v3, and tables that already have data keep their version. S3 Tables and the Spark engine can't create v3 tables. This is only applicable if the destination is Iceberg.
 - `schema` (String) The name of the schema or namespace that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, Iceberg, or Snowflake (unless `use_same_schema_as_source` is set to true).
 - `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this pipeline's schemas in the destination.
 - `table_name_separator` (String) If provided, this is the separator between database, schema and table name. This is only applicable if the destination is S3 or GCS.
 - `use_same_schema_as_source` (Boolean) If set to true, each table from the source database will be synced to a schema with the same name as its source schema. This can only be used if both the source and destination support multiple schemas (e.g. PostgreSQL, Redshift, Snowflake, Databricks, etc). A MongoDB source supports this when its source reader has `mongodb_deployment_scoped_mode` set to true, and each collection's database is used as its schema.
+
+<a id="nestedatt--destination_config--compaction"></a>
+### Nested Schema for `destination_config.compaction`
+
+Optional:
+
+- `enabled` (Boolean) If set to true, Artie will compact this pipeline's Delta tables on a schedule.
+- `every_seconds` (Number) How often, in seconds, each table is compacted. Set to 0 to use Artie's default (86400, once a day).
+- `quiet_window` (Attributes) An optional UTC time window that compaction is limited to. Set `start` and `end` to `""` to compact at any time. (see [below for nested schema](#nestedatt--destination_config--compaction--quiet_window))
+
+<a id="nestedatt--destination_config--compaction--quiet_window"></a>
+### Nested Schema for `destination_config.compaction.quiet_window`
+
+Required:
+
+- `end` (String) The end of the window in `HH:MM` UTC, e.g. `06:00`. Must differ from `start`.
+- `start` (String) The start of the window in `HH:MM` UTC, e.g. `02:00`.
+
+
 
 
 <a id="nestedatt--tables"></a>
@@ -120,18 +160,30 @@ Optional:
 
 - `alias` (String) An optional alias for the table. If set, this will be the name of the destination table.
 - `backfill_history_table` (Boolean) If set to true, Artie will backfill the history table with existing data. This is only applicable if `enable_history_mode` is set to true.
+- `buffer_rows` (Number) The number of rows to buffer before flushing this table to the destination. This only applies to tables that are deployed individually.
 - `columns_to_compress` (List of String) An optional list of columns to compress using transparent GZIP compression. This can help reduce Kafka payload sizes for columns with large values.
 - `columns_to_encrypt` (List of String) An optional list of columns to encrypt during replication. Requires `encryption_key_uuid` to be set on the pipeline.
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from syncing to the destination.
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
 - `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables.
+- `columns_to_trim` (List of String) An optional list of string columns whose values should have leading and trailing whitespace trimmed. A column can't be both trimmed and excluded or in `primary_keys_override`.
 - `ctid_backfill` (Boolean) If set to true, enables CTID backfill for this table. This is only applicable if the source type is `postgres`.
 - `ctid_chunk_size` (Number) The chunk size to use for CTID backfill. This should be between 100,000 and 1,000,000. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `ctid_max_parallelism` (Number) The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `disable_replication` (Boolean) If set to true along with `enable_history_mode`, this table will only replicate to the history table and not the main destination table.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `encrypt_jsonb_columns` (Boolean) If set to true, all JSONB (struct) columns will be automatically encrypted before writing to the destination. Requires `encryption_key_uuid` to be set on the pipeline.
+- `flatten_documents` (Boolean) If set to true, nested document fields are flattened into their own columns in the destination. This is only applicable if the source is MongoDB or DocumentDB.
+- `flatten_documents_max_depth` (Number) How many levels of nested fields to flatten when `flatten_documents` is set to true. Set to 0 to use Artie's default.
+- `flush_interval_seconds` (Number) How often, in seconds, Artie should flush this table to the destination. This only applies to tables that are deployed individually.
+- `flush_size_kb` (Number) The size in kb of data to buffer before flushing this table to the destination. This only applies to tables that are deployed individually.
+- `k8s_request_cpu` (Number) The CPU to request for this table's deployment. This only applies to tables that are deployed individually.
+- `k8s_request_memory_mb` (Number) The memory, in MB, to request for this table's deployment. This only applies to tables that are deployed individually.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range-partitioned column; set `partition_type` to 'time' or 'integer' accordingly. (see [below for nested schema](#nestedatt--tables--merge_predicates))
+- `partition_backfill` (Boolean) If set to true, a partitioned source table is backfilled one partition at a time. Can't be combined with `ctid_backfill` or `range_backfill`.
+- `partition_range_backfill` (Boolean) If set to true along with `partition_backfill`, each partition is split into ranges that are backfilled in parallel.
+- `partition_range_chunk_size` (Number) The number of rows per range when `partition_range_backfill` is set to true. If set, this should be at least 100,000. Set to 0 to use Artie's default.
+- `partition_range_max_parallelism` (Number) The maximum number of ranges to backfill in parallel when `partition_range_backfill` is set to true. Set to 0 to use Artie's default.
 - `primary_keys_override` (List of String) An optional ordered list of source columns to use as the table's primary key. For Postgres, this requires the table to have REPLICA IDENTITY FULL.
 - `range_backfill` (Boolean) If set to true, enables range-based parallel backfill for this table.
 - `range_batch_size` (Number) The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true.
@@ -142,6 +194,7 @@ Optional:
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
 - `skip_no_op_updates` (Boolean) If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL.
 - `soft_partitioning` (Attributes) Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column. (see [below for nested schema](#nestedatt--tables--soft_partitioning))
+- `stream_arn` (String) The CDC stream ARN for this table. This is only applicable if the source is Amazon Keyspaces.
 - `unify_across_databases` (Boolean) If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled.
 - `unify_across_schemas` (Boolean) If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration.
 
@@ -172,6 +225,18 @@ Required:
 - `partition_column` (String) The column to use for soft partitioning. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.
 - `partition_frequency` (String) The frequency of partitioning ('monthly' and 'daily' are supported).
 
+
+
+<a id="nestedatt--dynamodb_backfill_config"></a>
+### Nested Schema for `dynamodb_backfill_config`
+
+Optional:
+
+- `bucket` (String) The S3 bucket DynamoDB exports the table to. Required when `enabled` is true, unless `export_arn` is set.
+- `enabled` (Boolean) If set to true, new tables are backfilled from a DynamoDB export to S3.
+- `export_arn` (String) The ARN of an existing DynamoDB export to backfill from, instead of starting a new export.
+- `max_parallelism` (Number) How many export files the backfill reads and writes at once. Set to 0 to use Artie's default (1).
+- `optional_folder` (String) An optional folder inside `bucket` for the export.
 
 
 <a id="nestedatt--flush_rules"></a>

@@ -236,3 +236,73 @@ func TestMergePredicateValidate(t *testing.T) {
 		assert.ErrorContains(t, err, `merge predicate "id" is an integer column, so it cannot have a `+"`partition_by`")
 	}
 }
+
+func TestTableParityAdvancedSettingsRoundTrip(t *testing.T) {
+	{
+		// Omitted -> 0, false, "" and an empty list, not null
+		tables, diags := TablesFromAPIModel(t.Context(), []openapi.PayloadsTable{{Uuid: ptr(uuid.New()), Name: ptr("t"), AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{}}})
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		table := tables["t"]
+		assert.Equal(t, types.Int64Value(0), table.BufferRows)
+		assert.Equal(t, types.Int64Value(0), table.K8sRequestCPU)
+		assert.Equal(t, types.BoolValue(false), table.FlattenDocuments)
+		assert.Equal(t, types.BoolValue(false), table.PartitionBackfill)
+		assert.Equal(t, types.Int64Value(0), table.PartitionRangeChunkSize)
+		assert.Equal(t, types.StringValue(""), table.StreamARN)
+		assert.Empty(t, table.ColumnsToTrim.Elements())
+		assert.False(t, table.ColumnsToTrim.IsNull())
+	}
+	{
+		apiSettings := &openapi.PayloadsTableAdvancedSettings{
+			BufferRows:               ptr(10000),
+			FlushIntervalSeconds:     ptr(30),
+			FlushSizeKb:              ptr(50000),
+			ColumnsToTrim:            &[]string{"name"},
+			FlattenDocuments:         ptr(true),
+			FlattenDocumentsMaxDepth: ptr(2),
+			K8sRequestCPU:            ptr(1),
+			K8sRequestMemoryMB:       ptr(2048),
+			StreamARN:                ptr("arn:stream"),
+			PartitionRangeSettings: &openapi.PayloadsPartitionRangeSettings{
+				Enabled: ptr(true),
+				Range:   &openapi.PayloadsRangeSettings{Enabled: ptr(true), ChunksSize: ptr(200000), MaxParallelism: ptr(4)},
+			},
+		}
+		tables, diags := TablesFromAPIModel(t.Context(), []openapi.PayloadsTable{{Uuid: ptr(uuid.New()), Name: ptr("t"), AdvancedSettings: apiSettings}})
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+
+		apiTable, diags := tables["t"].ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		settings := apiTable.AdvancedSettings
+		assert.Equal(t, 10000, *settings.BufferRows)
+		assert.Equal(t, 30, *settings.FlushIntervalSeconds)
+		assert.Equal(t, 50000, *settings.FlushSizeKb)
+		assert.Equal(t, []string{"name"}, *settings.ColumnsToTrim)
+		assert.True(t, *settings.FlattenDocuments)
+		assert.Equal(t, 2, *settings.FlattenDocumentsMaxDepth)
+		assert.Equal(t, 1, *settings.K8sRequestCPU)
+		assert.Equal(t, 2048, *settings.K8sRequestMemoryMB)
+		assert.Equal(t, "arn:stream", *settings.StreamARN)
+		assert.Equal(t, *apiSettings.PartitionRangeSettings, *settings.PartitionRangeSettings)
+	}
+	{
+		// Left out of the config on a new table: send nothing, so the saved value stays
+		table := Table{
+			Name:                 types.StringValue("t"),
+			BufferRows:           types.Int64Unknown(),
+			ColumnsToTrim:        types.ListUnknown(types.StringType),
+			FlattenDocuments:     types.BoolUnknown(),
+			StreamARN:            types.StringUnknown(),
+			PartitionBackfill:    types.BoolUnknown(),
+			FlushIntervalSeconds: types.Int64Null(),
+		}
+		apiTable, diags := table.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Nil(t, apiTable.AdvancedSettings.BufferRows)
+		assert.Nil(t, apiTable.AdvancedSettings.FlushIntervalSeconds)
+		assert.Nil(t, apiTable.AdvancedSettings.ColumnsToTrim)
+		assert.Nil(t, apiTable.AdvancedSettings.FlattenDocuments)
+		assert.Nil(t, apiTable.AdvancedSettings.StreamARN)
+		assert.Nil(t, apiTable.AdvancedSettings.PartitionRangeSettings)
+	}
+}
