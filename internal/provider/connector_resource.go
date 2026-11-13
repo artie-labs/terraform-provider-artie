@@ -39,6 +39,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugBigquery),
 	string(openapi.EnumsConnectorSlugCockroach),
 	string(openapi.EnumsConnectorSlugDatabricks),
+	string(openapi.EnumsConnectorSlugDelta),
 	string(openapi.EnumsConnectorSlugDynamodb),
 	string(openapi.EnumsConnectorSlugGcs),
 	string(openapi.EnumsConnectorSlugIceberg),
@@ -318,6 +319,17 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
 				},
 			},
+			"delta_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `delta` (Delta Lake on S3). You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your Delta tables in S3."},
+					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required."},
+					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
+				},
+			},
 			"redis_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `redis`.",
 				Optional:            true,
@@ -544,6 +556,20 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 		if clientIDSet != clientSecretSet {
 			resp.Diagnostics.AddError("Incomplete OAuth M2M configuration", "Both `client_id` and `client_secret` must be provided together inside `databricks_config`.")
+		}
+	case string(openapi.EnumsConnectorSlugDelta):
+		if configData.DeltaConfig == nil {
+			resp.Diagnostics.AddError("delta_config is required", "Please provide `delta_config` inside `connector`.")
+			return
+		}
+
+		if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.RoleARN) {
+			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.AccessKeyID) {
+				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.SecretAccessKey) {
+				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
 		}
 	case string(openapi.EnumsConnectorSlugRedis):
 		if configData.RedisConfig == nil {
