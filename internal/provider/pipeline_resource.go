@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -96,6 +97,20 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						"range_batch_size":       schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true."},
 						"skip_backfill":          schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will skip backfilling this table and only process new changes going forward."},
 						"skip_no_op_updates":     schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL."},
+
+						"buffer_rows":                     schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of rows to buffer before flushing this table to the destination. This only applies to tables that are deployed individually."},
+						"flush_interval_seconds":          schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How often, in seconds, Artie should flush this table to the destination. This only applies to tables that are deployed individually."},
+						"flush_size_kb":                   schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The size in kb of data to buffer before flushing this table to the destination. This only applies to tables that are deployed individually."},
+						"k8s_request_cpu":                 schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The CPU to request for this table's deployment. This only applies to tables that are deployed individually."},
+						"k8s_request_memory_mb":           schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The memory, in MB, to request for this table's deployment. This only applies to tables that are deployed individually."},
+						"columns_to_trim":                 schema.ListAttribute{Optional: true, Computed: true, ElementType: types.StringType, PlanModifiers: []planmodifier.List{listplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional list of string columns whose values should have leading and trailing whitespace trimmed. A column can't be both trimmed and excluded or in `primary_keys_override`."},
+						"flatten_documents":               schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, nested document fields are flattened into their own columns in the destination. This is only applicable if the source is MongoDB or DocumentDB."},
+						"flatten_documents_max_depth":     schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How many levels of nested fields to flatten when `flatten_documents` is set to true. Set to 0 to use Artie's default."},
+						"partition_backfill":              schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, a partitioned source table is backfilled one partition at a time. Can't be combined with `ctid_backfill` or `range_backfill`."},
+						"partition_range_backfill":        schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true along with `partition_backfill`, each partition is split into ranges that are backfilled in parallel."},
+						"partition_range_chunk_size":      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The number of rows per range when `partition_range_backfill` is set to true. If set, this should be at least 100,000. Set to 0 to use Artie's default."},
+						"partition_range_max_parallelism": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "The maximum number of ranges to backfill in parallel when `partition_range_backfill` is set to true. Set to 0 to use Artie's default."},
+						"stream_arn":                      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The CDC stream ARN for this table. This is only applicable if the source is Amazon Keyspaces."},
 						"merge_predicates": schema.ListNestedAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -403,6 +418,18 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 				}
 				if table.RangeBatchSize.IsNull() || table.RangeBatchSize.IsUnknown() {
 					resp.Diagnostics.AddError("Range batch size is required", "range_batch_size is required when range_backfill is enabled.")
+				}
+			}
+			// The partition range settings are only sent along with partition_backfill.
+			if table.PartitionBackfill.IsNull() {
+				for name, value := range map[string]attr.Value{
+					"partition_range_backfill":        table.PartitionRangeBackfill,
+					"partition_range_chunk_size":      table.PartitionRangeChunkSize,
+					"partition_range_max_parallelism": table.PartitionRangeMaxParallelism,
+				} {
+					if !value.IsNull() {
+						resp.Diagnostics.AddError("partition_backfill is required", fmt.Sprintf("%q table: `%s` requires `partition_backfill` to be set.", tableKey, name))
+					}
 				}
 			}
 			if tfmodels.IsKnown(table.MergePredicates) {

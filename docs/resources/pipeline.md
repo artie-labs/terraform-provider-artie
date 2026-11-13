@@ -120,18 +120,30 @@ Optional:
 
 - `alias` (String) An optional alias for the table. If set, this will be the name of the destination table.
 - `backfill_history_table` (Boolean) If set to true, Artie will backfill the history table with existing data. This is only applicable if `enable_history_mode` is set to true.
+- `buffer_rows` (Number) The number of rows to buffer before flushing this table to the destination. This only applies to tables that are deployed individually.
 - `columns_to_compress` (List of String) An optional list of columns to compress using transparent GZIP compression. This can help reduce Kafka payload sizes for columns with large values.
 - `columns_to_encrypt` (List of String) An optional list of columns to encrypt during replication. Requires `encryption_key_uuid` to be set on the pipeline.
 - `columns_to_exclude` (List of String) An optional list of columns to exclude from syncing to the destination.
 - `columns_to_hash` (List of String) An optional list of columns to hash in the destination. Values for these columns will be obscured with a one-way hash.
 - `columns_to_include` (List of String) An optional list of columns to include in replication. If not provided, all columns will be replicated. A pipeline can only have one of `columns_to_include` or `columns_to_exclude` set in any of its tables.
+- `columns_to_trim` (List of String) An optional list of string columns whose values should have leading and trailing whitespace trimmed. A column can't be both trimmed and excluded or in `primary_keys_override`.
 - `ctid_backfill` (Boolean) If set to true, enables CTID backfill for this table. This is only applicable if the source type is `postgres`.
 - `ctid_chunk_size` (Number) The chunk size to use for CTID backfill. This should be between 100,000 and 1,000,000. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `ctid_max_parallelism` (Number) The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `disable_replication` (Boolean) If set to true along with `enable_history_mode`, this table will only replicate to the history table and not the main destination table.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `encrypt_jsonb_columns` (Boolean) If set to true, all JSONB (struct) columns will be automatically encrypted before writing to the destination. Requires `encryption_key_uuid` to be set on the pipeline.
+- `flatten_documents` (Boolean) If set to true, nested document fields are flattened into their own columns in the destination. This is only applicable if the source is MongoDB or DocumentDB.
+- `flatten_documents_max_depth` (Number) How many levels of nested fields to flatten when `flatten_documents` is set to true. Set to 0 to use Artie's default.
+- `flush_interval_seconds` (Number) How often, in seconds, Artie should flush this table to the destination. This only applies to tables that are deployed individually.
+- `flush_size_kb` (Number) The size in kb of data to buffer before flushing this table to the destination. This only applies to tables that are deployed individually.
+- `k8s_request_cpu` (Number) The CPU to request for this table's deployment. This only applies to tables that are deployed individually.
+- `k8s_request_memory_mb` (Number) The memory, in MB, to request for this table's deployment. This only applies to tables that are deployed individually.
 - `merge_predicates` (Attributes List) Optional: if the destination table is partitioned, specify the partition column(s) and type. This helps merge performance and currently only applies to Snowflake and BigQuery. For BigQuery, only one column can be specified and it may be either a time-partitioned or an integer range-partitioned column; set `partition_type` to 'time' or 'integer' accordingly. (see [below for nested schema](#nestedatt--tables--merge_predicates))
+- `partition_backfill` (Boolean) If set to true, a partitioned source table is backfilled one partition at a time. Can't be combined with `ctid_backfill` or `range_backfill`.
+- `partition_range_backfill` (Boolean) If set to true along with `partition_backfill`, each partition is split into ranges that are backfilled in parallel.
+- `partition_range_chunk_size` (Number) The number of rows per range when `partition_range_backfill` is set to true. If set, this should be at least 100,000. Set to 0 to use Artie's default.
+- `partition_range_max_parallelism` (Number) The maximum number of ranges to backfill in parallel when `partition_range_backfill` is set to true. Set to 0 to use Artie's default.
 - `primary_keys_override` (List of String) An optional ordered list of source columns to use as the table's primary key. For Postgres, this requires the table to have REPLICA IDENTITY FULL.
 - `range_backfill` (Boolean) If set to true, enables range-based parallel backfill for this table.
 - `range_batch_size` (Number) The batch size Artie should use while processing each range backfill chunk. Set to 0 to use Artie's default. This is only applicable if `range_backfill` is set to true.
@@ -142,6 +154,7 @@ Optional:
 - `skip_deletes` (Boolean) If set to true, we will skip delete events for this table and only process insert and update events.
 - `skip_no_op_updates` (Boolean) If set to true, update events where the before and after rows are identical (after applying column inclusion/exclusion) will be skipped. Only supported for Postgres and requires REPLICA IDENTITY FULL.
 - `soft_partitioning` (Attributes) Optional: configuration for soft partitioning of the destination table. This can improve query performance for large tables by partitioning data based on a specified column. (see [below for nested schema](#nestedatt--tables--soft_partitioning))
+- `stream_arn` (String) The CDC stream ARN for this table. This is only applicable if the source is Amazon Keyspaces.
 - `unify_across_databases` (Boolean) If set to true, we will replicate tables with the same name and schema name from all specified databases into the same destination table. This is only applicable if the source reader has `enable_unify_across_databases` set to true and `databases_to_unify` filled.
 - `unify_across_schemas` (Boolean) If set to true, we will replicate tables with the same name from all schemas into the same destination table. This is only applicable if the source reader has `enable_unify_across_schemas` set to true. You should still specify a schema name where this table exists; we will use that schema to fetch metadata for the table and validate its configuration.
 
