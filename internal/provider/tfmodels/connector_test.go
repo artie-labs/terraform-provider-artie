@@ -200,6 +200,21 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "real-token", config["token"])
 	}
 	{
+		// PlanetScale: the API forces tlsMode, so it's neither read nor sent
+		connector, config := roundTripSharedConfig(t, "planetscale", `{"host": "aws.connect.psdb.cloud", "port": 3306, "user": "artie", "password": "secret", "tlsMode": "true"}`, Connector{})
+		require.NotNil(t, connector.PlanetScaleConfig)
+		assert.Equal(t, "aws.connect.psdb.cloud", connector.PlanetScaleConfig.Host.ValueString())
+		assert.Equal(t, int32(3306), connector.PlanetScaleConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.PlanetScaleConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.PlanetScaleConfig.Password.ValueString())
+
+		assert.Equal(t, "aws.connect.psdb.cloud", config["host"])
+		assert.InDelta(t, 3306, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.NotContains(t, config, "tlsMode")
+	}
+	{
 		// Redis
 		connector, config := roundTripSharedConfig(t, "redis", `{"host": "redis.example.com", "port": 6379, "username": "artie", "password": "secret", "database": 2, "tls": true, "clusterMode": false, "maxStreamLength": 10000}`, Connector{})
 		require.NotNil(t, connector.RedisConfig)
