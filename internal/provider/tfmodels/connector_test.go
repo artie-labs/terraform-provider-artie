@@ -192,6 +192,14 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "us-west-2", config["awsRegion"])
 	}
 	{
+		// MotherDuck
+		prior := Connector{Type: types.StringValue("motherduck"), MotherDuckConfig: &MotherDuckSharedConfig{Token: types.StringValue("real-token")}}
+		connector, config := roundTripSharedConfig(t, "motherduck", `{"token": "********"}`, prior)
+		require.NotNil(t, connector.MotherDuckConfig)
+		assert.Equal(t, "real-token", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, "real-token", config["token"])
+	}
+	{
 		// Redis
 		connector, config := roundTripSharedConfig(t, "redis", `{"host": "redis.example.com", "port": 6379, "username": "artie", "password": "secret", "database": 2, "tls": true, "clusterMode": false, "maxStreamLength": 10000}`, Connector{})
 		require.NotNil(t, connector.RedisConfig)
