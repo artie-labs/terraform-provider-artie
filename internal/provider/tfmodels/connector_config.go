@@ -80,6 +80,9 @@ type ConnectorConfig struct {
 	ClientCert            string `json:"clientCert,omitempty"`
 	ClientKey             string `json:"clientKey,omitempty"`
 
+	// DocumentDB:
+	DocumentDBDisableSSL bool `json:"disableSSL,omitempty"`
+
 	// ClickHouse:
 	ClickHouseAddresses  []string `json:"addresses,omitempty"`
 	ClickHouseIsInsecure bool     `json:"isInsecure,omitempty"`

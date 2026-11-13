@@ -39,6 +39,7 @@ type Connector struct {
 	PlanetScaleConfig *PlanetScaleSharedConfig `tfsdk:"planetscale_config"`
 	KafkaConfig       *KafkaSharedConfig       `tfsdk:"kafka_config"`
 	RedisConfig       *RedisSharedConfig       `tfsdk:"redis_config"`
+	DocumentDBConfig  *DocumentDBSharedConfig  `tfsdk:"documentdb_config"`
 	ClickHouseConfig  *ClickHouseSharedConfig  `tfsdk:"clickhouse_config"`
 }
 
@@ -89,6 +90,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.KafkaConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugRedis:
 		sharedConfig = c.RedisConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugDocumentdb:
+		sharedConfig = c.DocumentDBConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugClickhouse:
 		sharedConfig = c.ClickHouseConfig.ToAPIModel()
 	default:
@@ -199,6 +202,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.KafkaConfig = KafkaSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugRedis:
 		connector.RedisConfig = RedisSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDocumentdb:
+		connector.DocumentDBConfig = DocumentDBSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugClickhouse:
 		connector.ClickHouseConfig = ClickHouseSharedConfigFromAPIModel(config)
 	default:
@@ -795,6 +800,34 @@ func RedisSharedConfigFromAPIModel(apiModel ConnectorConfig) *RedisSharedConfig 
 		TLS:             types.BoolValue(apiModel.RedisTLS),
 		ClusterMode:     types.BoolValue(apiModel.RedisClusterMode),
 		MaxStreamLength: types.Int64Value(apiModel.RedisMaxStreamLength),
+	}
+}
+
+type DocumentDBSharedConfig struct {
+	Host       types.String `tfsdk:"host"`
+	Port       types.Int32  `tfsdk:"port"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
+	DisableSSL types.Bool   `tfsdk:"disable_ssl"`
+}
+
+func (d DocumentDBSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:                 d.Host.ValueString(),
+		Port:                 d.Port.ValueInt32(),
+		User:                 d.Username.ValueString(),
+		Password:             d.Password.ValueString(),
+		DocumentDBDisableSSL: d.DisableSSL.ValueBool(),
+	}
+}
+
+func DocumentDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *DocumentDBSharedConfig {
+	return &DocumentDBSharedConfig{
+		Host:       types.StringValue(apiModel.Host),
+		Port:       types.Int32Value(apiModel.Port),
+		Username:   types.StringValue(apiModel.User),
+		Password:   types.StringValue(apiModel.Password),
+		DisableSSL: types.BoolValue(apiModel.DocumentDBDisableSSL),
 	}
 }
 

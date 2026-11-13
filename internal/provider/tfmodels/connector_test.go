@@ -284,6 +284,33 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.NotContains(t, config, "database")
 	}
 	{
+		// DocumentDB
+		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "secret", "disableSSL": true}`, Connector{})
+		require.NotNil(t, connector.DocumentDBConfig)
+		assert.Equal(t, "docdb.example.com", connector.DocumentDBConfig.Host.ValueString())
+		assert.Equal(t, int32(27017), connector.DocumentDBConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.DocumentDBConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.DocumentDBConfig.Password.ValueString())
+		assert.True(t, connector.DocumentDBConfig.DisableSSL.ValueBool())
+
+		assert.Equal(t, "docdb.example.com", config["host"])
+		assert.InDelta(t, 27017, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.Equal(t, true, config["disableSSL"])
+	}
+	{
+		// DocumentDB: a masked password is kept from prior, and SSL left on omits disableSSL, which the API reads as false
+		prior := Connector{Type: types.StringValue("documentdb"), DocumentDBConfig: &DocumentDBSharedConfig{Password: types.StringValue("real-password")}}
+		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "********"}`, prior)
+		require.NotNil(t, connector.DocumentDBConfig)
+		assert.Equal(t, "real-password", connector.DocumentDBConfig.Password.ValueString())
+		assert.False(t, connector.DocumentDBConfig.DisableSSL.ValueBool())
+
+		assert.Equal(t, "real-password", config["password"])
+		assert.NotContains(t, config, "disableSSL")
+	}
+	{
 		// ClickHouse: the API returns a masked password and a database name under the key Redis uses for its index
 		prior := Connector{Type: types.StringValue("clickhouse"), ClickHouseConfig: &ClickHouseSharedConfig{Password: types.StringValue("real-password")}}
 		connector, config := roundTripSharedConfig(t, "clickhouse", `{"addresses": ["ch1.example.com:9440", "ch2.example.com:9440"], "username": "artie", "password": "********", "isInsecure": true, "database": ""}`, prior)
