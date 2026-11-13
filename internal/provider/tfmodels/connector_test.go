@@ -176,3 +176,19 @@ func TestIcebergRESTTokenAPIModelRoundTrip(t *testing.T) {
 	assert.Equal(t, "real-token", connector.IcebergConfig.Token.ValueString())
 	assert.Equal(t, "real-token", config["token"])
 }
+
+func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
+	{
+		// Delta takes the same keys as S3
+		prior := Connector{Type: types.StringValue("delta"), DeltaConfig: &S3SharedConfig{SecretAccessKey: types.StringValue("real-secret")}}
+		connector, config := roundTripSharedConfig(t, "delta", `{"awsAccessKeyID": "AKIA123", "awsSecretAccessKey": "********", "awsRegion": "us-west-2", "awsRoleARN": "", "awsExternalID": ""}`, prior)
+		require.NotNil(t, connector.DeltaConfig)
+		assert.Equal(t, "AKIA123", connector.DeltaConfig.AccessKeyID.ValueString())
+		assert.Equal(t, "real-secret", connector.DeltaConfig.SecretAccessKey.ValueString())
+		assert.Equal(t, "us-west-2", connector.DeltaConfig.Region.ValueString())
+
+		assert.Equal(t, "AKIA123", config["awsAccessKeyID"])
+		assert.Equal(t, "real-secret", config["awsSecretAccessKey"])
+		assert.Equal(t, "us-west-2", config["awsRegion"])
+	}
+}
