@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -23,9 +24,22 @@ type PipelineDestinationConfig struct {
 	TableNameSeparator      types.String `tfsdk:"table_name_separator"`
 	Folder                  types.String `tfsdk:"folder"`
 	CreateIcebergNamespaces types.Bool   `tfsdk:"create_iceberg_namespaces"`
+	CheckpointInterval      types.Int64  `tfsdk:"checkpoint_interval"`
+	Compaction              types.Object `tfsdk:"compaction"`
+	ContainerName           types.String `tfsdk:"container_name"`
+	ExternalStageName       types.String `tfsdk:"external_stage_name"`
+	ExternalStageS3Bucket   types.String `tfsdk:"external_stage_s3_bucket"`
+	ExternalStageS3Prefix   types.String `tfsdk:"external_stage_s3_prefix"`
+	IcebergFormatVersion    types.String `tfsdk:"iceberg_format_version"`
 }
 
-func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
+func (d PipelineDestinationConfig) ToAPIModel(ctx context.Context) (openapi.PayloadsSpecificConfig, diag.Diagnostics) {
+	compaction, diags := compactionToAPI(ctx, d.Compaction)
+	var icebergFormatVersion *openapi.PayloadsSpecificConfigIcebergFormatVersion
+	if version := nonEmptyStringPointer(d.IcebergFormatVersion); version != nil {
+		icebergFormatVersion = lib.ToPtr(openapi.PayloadsSpecificConfigIcebergFormatVersion(*version))
+	}
+
 	return openapi.PayloadsSpecificConfig{
 		Database:                    lib.ToPtr(d.Database.ValueString()),
 		Schema:                      lib.ToPtr(d.Schema.ValueString()),
@@ -35,7 +49,14 @@ func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
 		TableNameSeparator:          lib.ToPtr(d.TableNameSeparator.ValueString()),
 		FolderName:                  lib.ToPtr(d.Folder.ValueString()),
 		DynamicallyCreateNamespaces: lib.ToPtr(d.CreateIcebergNamespaces.ValueBool()),
-	}
+		CheckpointInterval:          int64ToIntPointer(d.CheckpointInterval),
+		Compaction:                  compaction,
+		ContainerName:               stringPointer(d.ContainerName),
+		ExternalStageName:           stringPointer(d.ExternalStageName),
+		ExternalStageS3Bucket:       stringPointer(d.ExternalStageS3Bucket),
+		ExternalStageS3Prefix:       stringPointer(d.ExternalStageS3Prefix),
+		IcebergFormatVersion:        icebergFormatVersion,
+	}, diags
 }
 
 // Validate rejects a non-empty `dataset`: the API has no such field, so the value would be silently dropped.
@@ -46,7 +67,9 @@ func (d PipelineDestinationConfig) Validate() error {
 	return nil
 }
 
-func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConfig) PipelineDestinationConfig {
+func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConfig) (PipelineDestinationConfig, diag.Diagnostics) {
+	compaction, diags := compactionFromAPI(apiModel.Compaction)
+	// The API omits empty and zero values, so they read back as ""/0 (not null) to match a config that sets them.
 	return PipelineDestinationConfig{
 		// The API has no dataset field (BigQuery uses database), so this always reads back empty.
 		Dataset:                 types.StringValue(""),
@@ -58,7 +81,160 @@ func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConf
 		TableNameSeparator:      types.StringValue(lib.RemovePtr(apiModel.TableNameSeparator)),
 		Folder:                  types.StringValue(lib.RemovePtr(apiModel.FolderName)),
 		CreateIcebergNamespaces: types.BoolValue(lib.RemovePtr(apiModel.DynamicallyCreateNamespaces)),
+		CheckpointInterval:      types.Int64Value(int64(lib.RemovePtr(apiModel.CheckpointInterval))),
+		Compaction:              compaction,
+		ContainerName:           types.StringValue(lib.RemovePtr(apiModel.ContainerName)),
+		ExternalStageName:       types.StringValue(lib.RemovePtr(apiModel.ExternalStageName)),
+		ExternalStageS3Bucket:   types.StringValue(lib.RemovePtr(apiModel.ExternalStageS3Bucket)),
+		ExternalStageS3Prefix:   types.StringValue(lib.RemovePtr(apiModel.ExternalStageS3Prefix)),
+		IcebergFormatVersion:    types.StringValue(string(lib.RemovePtr(apiModel.IcebergFormatVersion))),
+	}, diags
+}
+
+type Compaction struct {
+	Enabled      types.Bool   `tfsdk:"enabled"`
+	EverySeconds types.Int64  `tfsdk:"every_seconds"`
+	QuietWindow  types.Object `tfsdk:"quiet_window"`
+}
+
+type CompactionQuietWindow struct {
+	Start types.String `tfsdk:"start"`
+	End   types.String `tfsdk:"end"`
+}
+
+var CompactionQuietWindowAttrTypes = map[string]attr.Type{
+	"start": types.StringType,
+	"end":   types.StringType,
+}
+
+var CompactionAttrTypes = map[string]attr.Type{
+	"enabled":       types.BoolType,
+	"every_seconds": types.Int64Type,
+	"quiet_window":  types.ObjectType{AttrTypes: CompactionQuietWindowAttrTypes},
+}
+
+func compactionToAPI(ctx context.Context, value types.Object) (*openapi.PayloadsCompactionConfig, diag.Diagnostics) {
+	compaction, diags := parseOptionalObject[Compaction](ctx, &value)
+	if compaction == nil {
+		return nil, diags
 	}
+
+	quietWindow, quietWindowDiags := parseOptionalObject[CompactionQuietWindow](ctx, &compaction.QuietWindow)
+	diags.Append(quietWindowDiags...)
+	var apiQuietWindow *openapi.PayloadsCompactionQuietWindow
+	if quietWindow != nil {
+		apiQuietWindow = &openapi.PayloadsCompactionQuietWindow{
+			Start: stringPointer(quietWindow.Start),
+			End:   stringPointer(quietWindow.End),
+		}
+	}
+
+	return &openapi.PayloadsCompactionConfig{
+		Enabled:      boolPointer(compaction.Enabled),
+		EverySeconds: int64ToIntPointer(compaction.EverySeconds),
+		QuietWindow:  apiQuietWindow,
+	}, diags
+}
+
+func compactionFromAPI(apiCompaction *openapi.PayloadsCompactionConfig) (types.Object, diag.Diagnostics) {
+	if apiCompaction == nil {
+		return types.ObjectNull(CompactionAttrTypes), nil
+	}
+
+	quietWindow := types.ObjectNull(CompactionQuietWindowAttrTypes)
+	var diags diag.Diagnostics
+	if apiCompaction.QuietWindow != nil {
+		quietWindow, diags = types.ObjectValue(CompactionQuietWindowAttrTypes, map[string]attr.Value{
+			"start": types.StringValue(lib.RemovePtr(apiCompaction.QuietWindow.Start)),
+			"end":   types.StringValue(lib.RemovePtr(apiCompaction.QuietWindow.End)),
+		})
+	}
+
+	compaction, compactionDiags := types.ObjectValue(CompactionAttrTypes, map[string]attr.Value{
+		"enabled":       boolPointerValueOrFalse(apiCompaction.Enabled),
+		"every_seconds": types.Int64Value(int64(lib.RemovePtr(apiCompaction.EverySeconds))),
+		"quiet_window":  quietWindow,
+	})
+	diags.Append(compactionDiags...)
+	return compaction, diags
+}
+
+type DynamoDBBackfillConfig struct {
+	Enabled        types.Bool   `tfsdk:"enabled"`
+	Bucket         types.String `tfsdk:"bucket"`
+	OptionalFolder types.String `tfsdk:"optional_folder"`
+	ExportARN      types.String `tfsdk:"export_arn"`
+	MaxParallelism types.Int64  `tfsdk:"max_parallelism"`
+}
+
+var DynamoDBBackfillConfigAttrTypes = map[string]attr.Type{
+	"enabled":         types.BoolType,
+	"bucket":          types.StringType,
+	"optional_folder": types.StringType,
+	"export_arn":      types.StringType,
+	"max_parallelism": types.Int64Type,
+}
+
+// Validate mirrors the API's check that an enabled DynamoDB backfill needs a bucket or an export ARN. Values left out
+// of the config keep their saved value, so only explicit empty strings are checked.
+func (d DynamoDBBackfillConfig) Validate() error {
+	if !IsExplicitlyTrue(d.Enabled) {
+		return nil
+	}
+	if !IsKnown(d.Bucket) {
+		return nil
+	}
+	if d.Bucket.ValueString() != "" {
+		return nil
+	}
+	if !IsKnown(d.ExportARN) {
+		return nil
+	}
+	if d.ExportARN.ValueString() != "" {
+		return nil
+	}
+	return fmt.Errorf("`dynamodb_backfill_config.bucket` is required when the backfill is enabled, unless `export_arn` is set")
+}
+
+// ValidateOnCreate is Validate for a new pipeline, which has no saved values, so a bucket or export ARN left out of
+// the config counts as empty.
+func (d DynamoDBBackfillConfig) ValidateOnCreate() error {
+	if d.Bucket.IsNull() {
+		d.Bucket = types.StringValue("")
+	}
+	if d.ExportARN.IsNull() {
+		d.ExportARN = types.StringValue("")
+	}
+	return d.Validate()
+}
+
+func dynamoDBBackfillConfigToAPI(ctx context.Context, value types.Object) (*openapi.PayloadsDynamoDBSnapshotConfig, diag.Diagnostics) {
+	config, diags := parseOptionalObject[DynamoDBBackfillConfig](ctx, &value)
+	if config == nil {
+		return nil, diags
+	}
+
+	return &openapi.PayloadsDynamoDBSnapshotConfig{
+		Enabled:        boolPointer(config.Enabled),
+		Bucket:         stringPointer(config.Bucket),
+		OptionalFolder: stringPointer(config.OptionalFolder),
+		ExportArn:      stringPointer(config.ExportARN),
+		MaxParallelism: int64ToIntPointer(config.MaxParallelism),
+	}, diags
+}
+
+func dynamoDBBackfillConfigFromAPI(apiConfig *openapi.PayloadsDynamoDBSnapshotConfig) (types.Object, diag.Diagnostics) {
+	if apiConfig == nil {
+		return types.ObjectNull(DynamoDBBackfillConfigAttrTypes), nil
+	}
+
+	return types.ObjectValue(DynamoDBBackfillConfigAttrTypes, map[string]attr.Value{
+		"enabled":         boolPointerValueOrFalse(apiConfig.Enabled),
+		"bucket":          types.StringValue(lib.RemovePtr(apiConfig.Bucket)),
+		"optional_folder": types.StringValue(lib.RemovePtr(apiConfig.OptionalFolder)),
+		"export_arn":      types.StringValue(lib.RemovePtr(apiConfig.ExportArn)),
+		"max_parallelism": types.Int64Value(int64(lib.RemovePtr(apiConfig.MaxParallelism))),
+	})
 }
 
 type FlushConfig struct {
@@ -176,6 +352,20 @@ type Pipeline struct {
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
+	BackfillMySQLFloatsAsShortestDecimal         types.Bool   `tfsdk:"backfill_mysql_floats_as_shortest_decimal"`
+	BigQueryReservation                          types.String `tfsdk:"bigquery_reservation"`
+	CastAllColumnsToString                       types.Bool   `tfsdk:"cast_all_columns_to_string"`
+	DynamoDBBackfillConfig                       types.Object `tfsdk:"dynamodb_backfill_config"`
+	JSONAsVarchar                                types.Bool   `tfsdk:"json_as_varchar"`
+	JSONParseTruncateStrings                     types.Bool   `tfsdk:"json_parse_truncate_strings"`
+	PostgresPartitionMirroring                   types.Bool   `tfsdk:"postgres_partition_mirroring"`
+	SnowpipeStreamingMaxChannels                 types.Int64  `tfsdk:"snowpipe_streaming_max_channels"`
+	TruncateExceededValues                       types.Bool   `tfsdk:"truncate_exceeded_values"`
+	UseBQBatchPriority                           types.Bool   `tfsdk:"use_bq_batch_priority"`
+	UseBigNumericForVariableNumeric              types.Bool   `tfsdk:"use_bignumeric_for_variable_numeric"`
+	UseDoubleForVariableNumeric                  types.Bool   `tfsdk:"use_double_for_variable_numeric"`
+	UseNewStringMethod                           types.Bool   `tfsdk:"use_new_string_method"`
+	UseSnowpipeStreaming                         types.Bool   `tfsdk:"use_snowpipe_streaming"`
 }
 
 func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePayload, diag.Diagnostics) {
@@ -237,6 +427,18 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
+	dynamoDBBackfillConfig, dynamoDBDiags := dynamoDBBackfillConfigToAPI(ctx, p.DynamoDBBackfillConfig)
+	diags.Append(dynamoDBDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsPipelinePayload{}, diags
+	}
+
+	destinationConfig, destinationConfigDiags := p.DestinationConfig.ToAPIModel(ctx)
+	diags.Append(destinationConfigDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsPipelinePayload{}, diags
+	}
+
 	advancedSettings := openapi.PayloadsAdvancedPipelineSettingsPayload{
 		DropDeletedColumns:                           boolPointer(p.DropDeletedColumns),
 		EnableSoftDelete:                             boolPointer(p.SoftDeleteRows),
@@ -267,6 +469,20 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		TurboWarehouse:                               stringPointer(p.TurboWarehouse),
 		TurboRowThreshold:                            int64ToIntPointer(p.TurboRowThreshold),
 		TurboLatencyThresholdMinutes:                 int64ToIntPointer(p.TurboLatencyThresholdMinutes),
+		BackfillMySQLFloatsAsShortestDecimal:         boolPointer(p.BackfillMySQLFloatsAsShortestDecimal),
+		BigQueryReservation:                          stringPointer(p.BigQueryReservation),
+		CastAllColumnsToString:                       boolPointer(p.CastAllColumnsToString),
+		DynamoDBBackfillConfig:                       dynamoDBBackfillConfig,
+		JsonAsVarchar:                                boolPointer(p.JSONAsVarchar),
+		JsonParseTruncateStrings:                     boolPointer(p.JSONParseTruncateStrings),
+		PostgresPartitionMirroring:                   boolPointer(p.PostgresPartitionMirroring),
+		SnowpipeStreamingMaxChannels:                 int64ToIntPointer(p.SnowpipeStreamingMaxChannels),
+		TruncateExceededValues:                       boolPointer(p.TruncateExceededValues),
+		UseBQBatchPriority:                           boolPointer(p.UseBQBatchPriority),
+		UseBigNumericForVariableNumeric:              boolPointer(p.UseBigNumericForVariableNumeric),
+		UseDoubleForVariableNumeric:                  boolPointer(p.UseDoubleForVariableNumeric),
+		UseNewStringMethod:                           boolPointer(p.UseNewStringMethod),
+		UseSnowpipeStreaming:                         boolPointer(p.UseSnowpipeStreaming),
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = int64ToIntPointer(flushConfig.FlushIntervalSeconds)
@@ -274,7 +490,6 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		advancedSettings.FlushSizeKb = int64ToIntPointer(flushConfig.FlushSizeKB)
 	}
 
-	destinationConfig := p.DestinationConfig.ToAPIModel()
 	return openapi.PayloadsPipelinePayload{
 		Name:                     lib.ToPtr(p.Name.ValueString()),
 		SourceReaderUUID:         sourceReaderUUID,
@@ -301,7 +516,11 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		return Pipeline{}, diags
 	}
 
-	destinationConfig := PipelineDestinationConfigFromAPIModel(apiModel.SpecificDestCfg)
+	destinationConfig, destinationConfigDiags := PipelineDestinationConfigFromAPIModel(apiModel.SpecificDestCfg)
+	diags.Append(destinationConfigDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
 
 	var flushConfig types.Object
 	var dropDeletedColumns types.Bool
@@ -416,6 +635,12 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		return Pipeline{}, diags
 	}
 
+	dynamoDBBackfillConfig, dynamoDBDiags := dynamoDBBackfillConfigFromAPI(settings.DynamoDBBackfillConfig)
+	diags.Append(dynamoDBDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
+
 	return Pipeline{
 		UUID:                     types.StringValue(apiModel.Uuid.String()),
 		Name:                     types.StringValue(apiModel.Name),
@@ -461,5 +686,21 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		TurboLatencyThresholdMinutes:      turboLatencyThresholdMinutes,
 		// The API omits structAsVariant when it's false, so it reads back as false (not null) to match a config that sets false.
 		StructAsVariant: boolPointerValueOrFalse(settings.StructAsVariant),
+		// The API omits these when false, empty or zero, so they read back as false/""/0 (not null) for the same reason.
+		BackfillMySQLFloatsAsShortestDecimal: boolPointerValueOrFalse(settings.BackfillMySQLFloatsAsShortestDecimal),
+		BigQueryReservation:                  types.StringValue(lib.RemovePtr(settings.BigQueryReservation)),
+		CastAllColumnsToString:               boolPointerValueOrFalse(settings.CastAllColumnsToString),
+		DynamoDBBackfillConfig:               dynamoDBBackfillConfig,
+		JSONAsVarchar:                        boolPointerValueOrFalse(settings.JsonAsVarchar),
+		JSONParseTruncateStrings:             boolPointerValueOrFalse(settings.JsonParseTruncateStrings),
+		PostgresPartitionMirroring:           boolPointerValueOrFalse(settings.PostgresPartitionMirroring),
+		SnowpipeStreamingMaxChannels:         types.Int64Value(int64(lib.RemovePtr(settings.SnowpipeStreamingMaxChannels))),
+		TruncateExceededValues:               boolPointerValueOrFalse(settings.TruncateExceededValues),
+		UseBQBatchPriority:                   boolPointerValueOrFalse(settings.UseBQBatchPriority),
+		UseBigNumericForVariableNumeric:      boolPointerValueOrFalse(settings.UseBigNumericForVariableNumeric),
+		UseDoubleForVariableNumeric:          boolPointerValueOrFalse(settings.UseDoubleForVariableNumeric),
+		// Unset means the pipeline follows the company default, so it reads back as null rather than false.
+		UseNewStringMethod:   types.BoolPointerValue(settings.UseNewStringMethod),
+		UseSnowpipeStreaming: boolPointerValueOrFalse(settings.UseSnowpipeStreaming),
 	}, diags
 }

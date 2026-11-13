@@ -131,6 +131,20 @@ type Table struct {
 	RangeBatchSize       types.Int64  `tfsdk:"range_batch_size"`
 	SkipBackfill         types.Bool   `tfsdk:"skip_backfill"`
 	SkipNoOpUpdates      types.Bool   `tfsdk:"skip_no_op_updates"`
+
+	BufferRows                   types.Int64  `tfsdk:"buffer_rows"`
+	FlushIntervalSeconds         types.Int64  `tfsdk:"flush_interval_seconds"`
+	FlushSizeKB                  types.Int64  `tfsdk:"flush_size_kb"`
+	ColumnsToTrim                types.List   `tfsdk:"columns_to_trim"`
+	FlattenDocuments             types.Bool   `tfsdk:"flatten_documents"`
+	FlattenDocumentsMaxDepth     types.Int64  `tfsdk:"flatten_documents_max_depth"`
+	K8sRequestCPU                types.Int64  `tfsdk:"k8s_request_cpu"`
+	K8sRequestMemoryMB           types.Int64  `tfsdk:"k8s_request_memory_mb"`
+	PartitionBackfill            types.Bool   `tfsdk:"partition_backfill"`
+	PartitionRangeBackfill       types.Bool   `tfsdk:"partition_range_backfill"`
+	PartitionRangeChunkSize      types.Int64  `tfsdk:"partition_range_chunk_size"`
+	PartitionRangeMaxParallelism types.Int64  `tfsdk:"partition_range_max_parallelism"`
+	StreamARN                    types.String `tfsdk:"stream_arn"`
 }
 
 var TableAttrTypes = map[string]attr.Type{
@@ -162,6 +176,20 @@ var TableAttrTypes = map[string]attr.Type{
 	"range_batch_size":       types.Int64Type,
 	"skip_backfill":          types.BoolType,
 	"skip_no_op_updates":     types.BoolType,
+
+	"buffer_rows":                     types.Int64Type,
+	"flush_interval_seconds":          types.Int64Type,
+	"flush_size_kb":                   types.Int64Type,
+	"columns_to_trim":                 types.ListType{ElemType: types.StringType},
+	"flatten_documents":               types.BoolType,
+	"flatten_documents_max_depth":     types.Int64Type,
+	"k8s_request_cpu":                 types.Int64Type,
+	"k8s_request_memory_mb":           types.Int64Type,
+	"partition_backfill":              types.BoolType,
+	"partition_range_backfill":        types.BoolType,
+	"partition_range_chunk_size":      types.Int64Type,
+	"partition_range_max_parallelism": types.Int64Type,
+	"stream_arn":                      types.StringType,
 }
 
 func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, diag.Diagnostics) {
@@ -188,6 +216,9 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 
 	colsToEncrypt, encryptDiags := parseOptionalList[string](ctx, t.ColumnsToEncrypt)
 	diags.Append(encryptDiags...)
+
+	colsToTrim, trimDiags := parseOptionalList[string](ctx, t.ColumnsToTrim)
+	diags.Append(trimDiags...)
 
 	mergePredicates, mergePredDiags := parseOptionalList[MergePredicate](ctx, t.MergePredicates)
 	diags.Append(mergePredDiags...)
@@ -227,6 +258,19 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 		}
 	}
 
+	// The API replaces the whole partition range object when it's sent, so it's only sent when the switch is known.
+	var clientPartitionRangeSettings *openapi.PayloadsPartitionRangeSettings
+	if IsKnown(t.PartitionBackfill) {
+		clientPartitionRangeSettings = &openapi.PayloadsPartitionRangeSettings{
+			Enabled: lib.ToPtr(t.PartitionBackfill.ValueBool()),
+			Range: &openapi.PayloadsRangeSettings{
+				Enabled:        lib.ToPtr(t.PartitionRangeBackfill.ValueBool()),
+				ChunksSize:     lib.ToPtr(int(t.PartitionRangeChunkSize.ValueInt64())),
+				MaxParallelism: lib.ToPtr(int(t.PartitionRangeMaxParallelism.ValueInt64())),
+			},
+		}
+	}
+
 	if diags.HasError() {
 		return openapi.PayloadsTablePayload{}, diags
 	}
@@ -257,6 +301,16 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 			RangeSettings:              clientRangeSettings,
 			SkipBackfill:               boolPointer(t.SkipBackfill),
 			SkipNoOpUpdates:            boolPointer(t.SkipNoOpUpdates),
+			BufferRows:                 int64ToIntPointer(t.BufferRows),
+			FlushIntervalSeconds:       int64ToIntPointer(t.FlushIntervalSeconds),
+			FlushSizeKb:                int64ToIntPointer(t.FlushSizeKB),
+			ColumnsToTrim:              colsToTrim,
+			FlattenDocuments:           boolPointer(t.FlattenDocuments),
+			FlattenDocumentsMaxDepth:   int64ToIntPointer(t.FlattenDocumentsMaxDepth),
+			K8sRequestCPU:              int64ToIntPointer(t.K8sRequestCPU),
+			K8sRequestMemoryMB:         int64ToIntPointer(t.K8sRequestMemoryMB),
+			PartitionRangeSettings:     clientPartitionRangeSettings,
+			StreamARN:                  stringPointer(t.StreamARN),
 		},
 	}, diags
 }
@@ -291,6 +345,9 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 		colsToEncrypt, encryptDiags := optionalStringListToListValue(ctx, settings.ColumnsToEncrypt)
 		diags.Append(encryptDiags...)
 
+		colsToTrim, trimDiags := optionalStringListToListValue(ctx, settings.ColumnsToTrim)
+		diags.Append(trimDiags...)
+
 		mergePredicates, mergePredDiags := MergePredicatesFromAPIModel(ctx, settings.MergePredicates)
 		diags.Append(mergePredDiags...)
 
@@ -317,6 +374,20 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			rangeChunkSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.ChunksSize)))
 			rangeMaxParallelism = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.MaxParallelism)))
 			rangeBatchSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.BatchSize)))
+		}
+
+		// Null while the table has no partition settings, so ToAPIModel doesn't send (and save) a disabled object for
+		// every table that never set one.
+		partitionBackfill := types.BoolNull()
+		partitionRangeBackfill := types.BoolValue(false)
+		partitionRangeChunkSize := types.Int64Value(0)
+		partitionRangeMaxParallelism := types.Int64Value(0)
+		if settings.PartitionRangeSettings != nil {
+			partitionRange := lib.RemovePtr(settings.PartitionRangeSettings.Range)
+			partitionBackfill = types.BoolValue(lib.RemovePtr(settings.PartitionRangeSettings.Enabled))
+			partitionRangeBackfill = types.BoolValue(lib.RemovePtr(partitionRange.Enabled))
+			partitionRangeChunkSize = types.Int64Value(int64(lib.RemovePtr(partitionRange.ChunksSize)))
+			partitionRangeMaxParallelism = types.Int64Value(int64(lib.RemovePtr(partitionRange.MaxParallelism)))
 		}
 
 		tables[tableKey] = Table{
@@ -350,6 +421,20 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			RangeBatchSize:       rangeBatchSize,
 			SkipBackfill:         boolPointerValueOrFalse(settings.SkipBackfill),
 			SkipNoOpUpdates:      boolPointerValueOrFalse(settings.SkipNoOpUpdates),
+			// The API omits these when zero, false or empty, so they read back as 0/false/"" (not null).
+			BufferRows:                   types.Int64Value(int64(lib.RemovePtr(settings.BufferRows))),
+			FlushIntervalSeconds:         types.Int64Value(int64(lib.RemovePtr(settings.FlushIntervalSeconds))),
+			FlushSizeKB:                  types.Int64Value(int64(lib.RemovePtr(settings.FlushSizeKb))),
+			ColumnsToTrim:                colsToTrim,
+			FlattenDocuments:             boolPointerValueOrFalse(settings.FlattenDocuments),
+			FlattenDocumentsMaxDepth:     types.Int64Value(int64(lib.RemovePtr(settings.FlattenDocumentsMaxDepth))),
+			K8sRequestCPU:                types.Int64Value(int64(lib.RemovePtr(settings.K8sRequestCPU))),
+			K8sRequestMemoryMB:           types.Int64Value(int64(lib.RemovePtr(settings.K8sRequestMemoryMB))),
+			PartitionBackfill:            partitionBackfill,
+			PartitionRangeBackfill:       partitionRangeBackfill,
+			PartitionRangeChunkSize:      partitionRangeChunkSize,
+			PartitionRangeMaxParallelism: partitionRangeMaxParallelism,
+			StreamARN:                    types.StringValue(lib.RemovePtr(settings.StreamARN)),
 		}
 	}
 

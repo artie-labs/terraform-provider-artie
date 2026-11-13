@@ -545,6 +545,191 @@ func TestPipelineToAPIModel_UnknownSettingsAreOmitted(t *testing.T) {
 	assert.Nil(t, apiModel.AdvancedSettings.StagingSchema)
 }
 
+func TestPipelineFromAPIModel_ParityAdvancedSettings(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+	}
+	{
+		// Omitted -> false, "" and 0, so an explicit false, "" or 0 round-trips.
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		for name, value := range map[string]types.Bool{
+			"backfill_mysql_floats_as_shortest_decimal": pipeline.BackfillMySQLFloatsAsShortestDecimal,
+			"cast_all_columns_to_string":                pipeline.CastAllColumnsToString,
+			"json_as_varchar":                           pipeline.JSONAsVarchar,
+			"json_parse_truncate_strings":               pipeline.JSONParseTruncateStrings,
+			"postgres_partition_mirroring":              pipeline.PostgresPartitionMirroring,
+			"truncate_exceeded_values":                  pipeline.TruncateExceededValues,
+			"use_bq_batch_priority":                     pipeline.UseBQBatchPriority,
+			"use_bignumeric_for_variable_numeric":       pipeline.UseBigNumericForVariableNumeric,
+			"use_double_for_variable_numeric":           pipeline.UseDoubleForVariableNumeric,
+			"use_snowpipe_streaming":                    pipeline.UseSnowpipeStreaming,
+		} {
+			assert.Equal(t, types.BoolValue(false), value, name)
+		}
+		assert.Equal(t, types.StringValue(""), pipeline.BigQueryReservation)
+		assert.Equal(t, types.Int64Value(0), pipeline.SnowpipeStreamingMaxChannels)
+		// Unset follows the company default, so it stays null rather than reading back as false.
+		assert.True(t, pipeline.UseNewStringMethod.IsNull())
+		assert.True(t, pipeline.DynamoDBBackfillConfig.IsNull())
+	}
+	{
+		base.AdvancedSettings.UseSnowpipeStreaming = ptr(true)
+		base.AdvancedSettings.SnowpipeStreamingMaxChannels = ptr(8)
+		base.AdvancedSettings.BigQueryReservation = ptr("projects/p/locations/us/reservations/r")
+		base.AdvancedSettings.UseNewStringMethod = ptr(false)
+		base.AdvancedSettings.DynamoDBBackfillConfig = &openapi.PayloadsDynamoDBSnapshotConfig{Enabled: ptr(true), Bucket: ptr("bucket"), ExportArn: ptr("")}
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.UseSnowpipeStreaming.ValueBool())
+		assert.Equal(t, int64(8), pipeline.SnowpipeStreamingMaxChannels.ValueInt64())
+		assert.Equal(t, "projects/p/locations/us/reservations/r", pipeline.BigQueryReservation.ValueString())
+		assert.Equal(t, types.BoolValue(false), pipeline.UseNewStringMethod)
+		assert.Equal(t, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"optional_folder": types.StringValue(""),
+			"export_arn":      types.StringValue(""),
+			"max_parallelism": types.Int64Value(0),
+		}, pipeline.DynamoDBBackfillConfig.Attributes())
+	}
+}
+
+func TestPipelineToAPIModel_ParityAdvancedSettings(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	pipeline := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}}
+	{
+		// Left out of the config on create: send nothing, so the API keeps its default.
+		pipeline.UseSnowpipeStreaming = types.BoolUnknown()
+		pipeline.SnowpipeStreamingMaxChannels = types.Int64Unknown()
+		pipeline.BigQueryReservation = types.StringUnknown()
+		pipeline.DynamoDBBackfillConfig = types.ObjectUnknown(DynamoDBBackfillConfigAttrTypes)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.UseSnowpipeStreaming)
+		assert.Nil(t, apiModel.AdvancedSettings.SnowpipeStreamingMaxChannels)
+		assert.Nil(t, apiModel.AdvancedSettings.BigQueryReservation)
+		assert.Nil(t, apiModel.AdvancedSettings.DynamoDBBackfillConfig)
+	}
+	{
+		pipeline.UseSnowpipeStreaming = types.BoolValue(false)
+		pipeline.SnowpipeStreamingMaxChannels = types.Int64Value(4)
+		pipeline.BigQueryReservation = types.StringValue("")
+		pipeline.UseBQBatchPriority = types.BoolValue(true)
+		dynamoDB, objDiags := types.ObjectValue(DynamoDBBackfillConfigAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"optional_folder": types.StringValue("folder"),
+			"export_arn":      types.StringValue(""),
+			"max_parallelism": types.Int64Value(3),
+		})
+		assert.False(t, objDiags.HasError(), "unexpected diags: %v", objDiags)
+		pipeline.DynamoDBBackfillConfig = dynamoDB
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, false, *apiModel.AdvancedSettings.UseSnowpipeStreaming)
+		assert.Equal(t, 4, *apiModel.AdvancedSettings.SnowpipeStreamingMaxChannels)
+		assert.Equal(t, "", *apiModel.AdvancedSettings.BigQueryReservation)
+		assert.Equal(t, true, *apiModel.AdvancedSettings.UseBQBatchPriority)
+		assert.Equal(t, openapi.PayloadsDynamoDBSnapshotConfig{
+			Enabled:        ptr(true),
+			Bucket:         ptr("bucket"),
+			OptionalFolder: ptr("folder"),
+			ExportArn:      ptr(""),
+			MaxParallelism: ptr(3),
+		}, *apiModel.AdvancedSettings.DynamoDBBackfillConfig)
+	}
+}
+
+func TestDynamoDBBackfillConfigValidate(t *testing.T) {
+	{
+		// Enabled with neither a bucket nor an export ARN
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
+		assert.ErrorContains(t, config.Validate(), "bucket")
+	}
+	{
+		// An export ARN instead of a bucket
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue(""), ExportARN: types.StringValue("arn")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// A bucket left out of the config keeps its saved value
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringValue("")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// Disabled
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(false), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// On create there's no saved bucket, so leaving both out is rejected
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringNull()}
+		assert.ErrorContains(t, config.ValidateOnCreate(), "bucket")
+	}
+	{
+		// On create with a bucket, or with a value only known at apply
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue("exports"), ExportARN: types.StringNull()}.ValidateOnCreate())
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringUnknown(), ExportARN: types.StringNull()}.ValidateOnCreate())
+	}
+}
+
+func TestPipelineDestinationConfigRoundTrip(t *testing.T) {
+	{
+		// Omitted -> ""/0 and a null compaction
+		config, diags := PipelineDestinationConfigFromAPIModel(openapi.PayloadsSpecificConfig{})
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.Int64Value(0), config.CheckpointInterval)
+		assert.Equal(t, types.StringValue(""), config.ContainerName)
+		assert.Equal(t, types.StringValue(""), config.ExternalStageName)
+		assert.Equal(t, types.StringValue(""), config.IcebergFormatVersion)
+		assert.True(t, config.Compaction.IsNull())
+
+		apiModel, diags := config.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.IcebergFormatVersion)
+		assert.Nil(t, apiModel.Compaction)
+		assert.Equal(t, 0, *apiModel.CheckpointInterval)
+	}
+	{
+		apiConfig := openapi.PayloadsSpecificConfig{
+			CheckpointInterval:    ptr(-1),
+			ContainerName:         ptr("pdb"),
+			ExternalStageName:     ptr("stage"),
+			ExternalStageS3Bucket: ptr("bucket"),
+			ExternalStageS3Prefix: ptr("prefix"),
+			IcebergFormatVersion:  ptr(openapi.PayloadsSpecificConfigIcebergFormatVersionV3),
+			Compaction: &openapi.PayloadsCompactionConfig{
+				Enabled:     ptr(true),
+				QuietWindow: &openapi.PayloadsCompactionQuietWindow{Start: ptr("02:00"), End: ptr("06:00")},
+			},
+		}
+		config, diags := PipelineDestinationConfigFromAPIModel(apiConfig)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, "v3", config.IcebergFormatVersion.ValueString())
+		// everySeconds is omitted when 0, so it reads back as 0
+		assert.Equal(t, types.Int64Value(0), config.Compaction.Attributes()["every_seconds"])
+
+		apiModel, diags := config.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, -1, *apiModel.CheckpointInterval)
+		assert.Equal(t, "pdb", *apiModel.ContainerName)
+		assert.Equal(t, "stage", *apiModel.ExternalStageName)
+		assert.Equal(t, "bucket", *apiModel.ExternalStageS3Bucket)
+		assert.Equal(t, "prefix", *apiModel.ExternalStageS3Prefix)
+		assert.Equal(t, openapi.PayloadsSpecificConfigIcebergFormatVersionV3, *apiModel.IcebergFormatVersion)
+		assert.Equal(t, openapi.PayloadsCompactionConfig{
+			Enabled:      ptr(true),
+			EverySeconds: ptr(0),
+			QuietWindow:  &openapi.PayloadsCompactionQuietWindow{Start: ptr("02:00"), End: ptr("06:00")},
+		}, *apiModel.Compaction)
+	}
+}
+
 func TestPipelineDestinationConfigValidate(t *testing.T) {
 	{
 		// dataset left out, empty, or unknown: valid, so existing state with dataset = "" keeps working.
