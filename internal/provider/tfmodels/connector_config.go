@@ -61,7 +61,7 @@ type ConnectorConfig struct {
 
 	// Iceberg REST Catalog:
 	IcebergURI        string `json:"uri,omitempty"`
-	IcebergToken      string `json:"token,omitempty"`
+	Token             string `json:"token,omitempty"`
 	IcebergCredential string `json:"credential,omitempty"`
 	IcebergAuthURI    string `json:"authURI,omitempty"`
 	IcebergScope      string `json:"scope,omitempty"`
@@ -84,7 +84,7 @@ func (c *ConnectorConfig) keepMaskedSecrets(prior ConnectorConfig) {
 		{&c.DatabricksPersonalAccessToken, prior.DatabricksPersonalAccessToken},
 		{&c.DatabricksClientSecret, prior.DatabricksClientSecret},
 		{&c.AWSSecretAccessKey, prior.AWSSecretAccessKey},
-		{&c.IcebergToken, prior.IcebergToken},
+		{&c.Token, prior.Token},
 		{&c.IcebergCredential, prior.IcebergCredential},
 	}
 	for _, secret := range secrets {

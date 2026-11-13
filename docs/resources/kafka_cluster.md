@@ -45,6 +45,7 @@ resource "artie_kafka_cluster" "example" {
 ### Optional
 
 - `allowed_cidrs` (List of String) Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password.
+- `retention_ms` (Number) How long topics keep messages unless they set their own `retention.ms`, in ms (the brokers' `log.retention.ms`): at least 86400000 (one day), and no shorter than `tiered_storage.local_retention_ms`, or `-1` to keep messages forever. If not set when the cluster is created, Artie uses 14 days; removing it from the config later keeps the cluster's current retention. Changing it restarts the brokers one at a time, since consumer offsets retention follows it, and can't be combined in one apply with a change to `allowed_cidrs`, `storage_gib`, `instance_type`, `brokers` or `tiered_storage`.
 - `storage_autoscale` (Attributes) How Artie grows the brokers' disks before they fill. If not set, Artie turns it on, growing at 65% full to 55% full, with no limit. (see [below for nested schema](#nestedatt--storage_autoscale))
 - `tiered_storage` (Attributes) How the cluster's topics tier data to remote storage. If not set, Artie turns it on for every topic, with no disk cap per partition. (see [below for nested schema](#nestedatt--tiered_storage))
 
@@ -76,7 +77,7 @@ Optional:
 
 - `enabled` (Boolean) Whether Artie turns tiered storage on for every topic. Turning it off pauses every topic tiered through Artie. Defaults to `true`.
 - `local_retention_bytes` (Number) The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Can only be set while `enabled` is `true`. If not set, there is no cap.
-- `local_retention_ms` (Number) How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days), and no longer than the cluster's retention, which is 14 days unless changed in Artie. Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.
+- `local_retention_ms` (Number) How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days), and no longer than `retention_ms`. Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.
 
 ## Import
 

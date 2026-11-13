@@ -33,6 +33,7 @@ type Connector struct {
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
+	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
 
 	PrivateLinkUUID         types.String `tfsdk:"private_link_uuid"`
 	SnapshotPrivateLinkUUID types.String `tfsdk:"snapshot_private_link_uuid"`
@@ -76,6 +77,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugDelta:
+		sharedConfig = c.DeltaConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -247,6 +250,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugKeyspaces:
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDelta:
+		connector.DeltaConfig = S3SharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -660,7 +665,7 @@ func (i IcebergSharedConfig) ToAPIModel() ConnectorConfig {
 		IcebergBucketARN:   i.BucketARN.ValueString(),
 		IcebergRegion:      i.Region.ValueString(),
 		IcebergURI:         i.URI.ValueString(),
-		IcebergToken:       i.Token.ValueString(),
+		Token:              i.Token.ValueString(),
 		IcebergCredential:  i.Credential.ValueString(),
 		IcebergAuthURI:     i.AuthURI.ValueString(),
 		IcebergScope:       i.Scope.ValueString(),
@@ -677,7 +682,7 @@ func IcebergSharedConfigFromAPIModel(apiModel ConnectorConfig) *IcebergSharedCon
 		BucketARN:          types.StringValue(apiModel.IcebergBucketARN),
 		Region:             types.StringValue(apiModel.IcebergRegion),
 		URI:                types.StringValue(apiModel.IcebergURI),
-		Token:              types.StringValue(apiModel.IcebergToken),
+		Token:              types.StringValue(apiModel.Token),
 		Credential:         types.StringValue(apiModel.IcebergCredential),
 		AuthURI:            types.StringValue(apiModel.IcebergAuthURI),
 		Scope:              types.StringValue(apiModel.IcebergScope),

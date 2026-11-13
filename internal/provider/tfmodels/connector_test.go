@@ -362,3 +362,50 @@ func TestConnectorFromAPIModelKeepsHostsRewrittenByPrivateLink(t *testing.T) {
 		assert.Equal(t, "vpce-2.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
 	}
 }
+
+// roundTripSharedConfig reads sharedConfig into a connector of connectorType, then returns that connector and the
+// sharedConfig it sends back.
+func roundTripSharedConfig(t *testing.T, connectorType string, sharedConfig string, prior Connector) (Connector, map[string]any) {
+	t.Helper()
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "`+connectorType+`",
+		"label": "test",
+		"sharedConfig": `+sharedConfig+`
+	}`), &apiConnector))
+
+	connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+	require.False(t, diags.HasError(), diags)
+
+	body, diags := connector.ToAPIModel()
+	require.False(t, diags.HasError(), diags)
+	assert.Equal(t, connectorType, *body.Type)
+	require.NotNil(t, body.SharedConfig)
+	return connector, *body.SharedConfig
+}
+
+func TestIcebergRESTTokenAPIModelRoundTrip(t *testing.T) {
+	// A masked token is kept from prior and sent back under the same key
+	prior := Connector{Type: types.StringValue("iceberg"), IcebergConfig: &IcebergSharedConfig{Token: types.StringValue("real-token")}}
+	connector, config := roundTripSharedConfig(t, "iceberg", `{"provider": "rest", "uri": "https://catalog.example.com", "token": "********", "warehouse": "wh"}`, prior)
+	require.NotNil(t, connector.IcebergConfig)
+	assert.Equal(t, "real-token", connector.IcebergConfig.Token.ValueString())
+	assert.Equal(t, "real-token", config["token"])
+}
+
+func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
+	{
+		// Delta takes the same keys as S3
+		prior := Connector{Type: types.StringValue("delta"), DeltaConfig: &S3SharedConfig{SecretAccessKey: types.StringValue("real-secret")}}
+		connector, config := roundTripSharedConfig(t, "delta", `{"awsAccessKeyID": "AKIA123", "awsSecretAccessKey": "********", "awsRegion": "us-west-2", "awsRoleARN": "", "awsExternalID": ""}`, prior)
+		require.NotNil(t, connector.DeltaConfig)
+		assert.Equal(t, "AKIA123", connector.DeltaConfig.AccessKeyID.ValueString())
+		assert.Equal(t, "real-secret", connector.DeltaConfig.SecretAccessKey.ValueString())
+		assert.Equal(t, "us-west-2", connector.DeltaConfig.Region.ValueString())
+
+		assert.Equal(t, "AKIA123", config["awsAccessKeyID"])
+		assert.Equal(t, "real-secret", config["awsSecretAccessKey"])
+		assert.Equal(t, "us-west-2", config["awsRegion"])
+	}
+}

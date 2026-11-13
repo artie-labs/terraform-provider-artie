@@ -85,6 +85,13 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 			"brokers":       schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.AtLeast(3)}, MarkdownDescription: "The number of brokers, at least 3. Brokers can only be added. Existing partitions stay on the brokers they're on; new topics use every broker."},
 			"storage_gib":   schema.Int64Attribute{Required: true, Validators: []validator.Int64{int64validator.Any(int64validator.OneOf(20, 50, 80), int64validator.Between(100, 1024))}, MarkdownDescription: "Disk per broker in GiB: 20, 50 or 80, or any size from 100 to 1024 (1 TiB). Storage can only grow, to 50 GiB or more, at most 3 times in 24 hours. Storage autoscaling can grow the disks past this size without a diff; `current_storage_gib` has the size they have."},
 			"allowed_cidrs": schema.ListAttribute{ElementType: types.StringType, Optional: true, Computed: true, Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), MarkdownDescription: "Client IPv4 ranges allowed to reach the cluster. Empty (the default) allows any IP; clients still need the password."},
+			"retention_ms": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+				Validators:          []validator.Int64{kafkaRetentionMSValidator},
+				MarkdownDescription: "How long topics keep messages unless they set their own `retention.ms`, in ms (the brokers' `log.retention.ms`): at least 86400000 (one day), and no shorter than `tiered_storage.local_retention_ms`, or `-1` to keep messages forever. If not set when the cluster is created, Artie uses 14 days; removing it from the config later keeps the cluster's current retention. Changing it restarts the brokers one at a time, since consumer offsets retention follows it, and can't be combined in one apply with a change to `allowed_cidrs`, `storage_gib`, `instance_type`, `brokers` or `tiered_storage`.",
+			},
 			"tiered_storage": schema.SingleNestedAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -97,7 +104,7 @@ func (r *KafkaClusterResource) Schema(ctx context.Context, req resource.SchemaRe
 						Computed:            true,
 						PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 						Validators:          []validator.Int64{int64validator.Between(86400000, 2592000000)},
-						MarkdownDescription: "How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days), and no longer than the cluster's retention, which is 14 days unless changed in Artie. Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.",
+						MarkdownDescription: "How long tiered topics keep data on broker disks, in ms, from 86400000 (one day) to 2592000000 (30 days), and no longer than `retention_ms`. Can only be set while `enabled` is `true`. If not set, Artie uses 3 days.",
 					},
 					"local_retention_bytes": schema.Int64Attribute{Optional: true, Validators: []validator.Int64{int64validator.AtLeast(1073741824)}, MarkdownDescription: "The most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Can only be set while `enabled` is `true`. If not set, there is no cap."},
 				},
@@ -239,7 +246,8 @@ func validateKafkaStorageAutoscale(settings tfmodels.KafkaClusterStorageAutoscal
 	return diags
 }
 
-// ModifyPlan rejects removing brokers or shrinking storage at plan time, since the API can only grow either.
+// ModifyPlan rejects removing brokers or shrinking storage at plan time, since the API can only grow either, and a
+// retention change combined with another change the cluster has to apply, since the API takes one at a time.
 func (r *KafkaClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
 		return // creating or destroying
@@ -259,6 +267,31 @@ func (r *KafkaClusterResource) ModifyPlan(ctx context.Context, req resource.Modi
 				fmt.Sprintf("`%s` can only grow (from %d to %d was planned).", attr, prior.ValueInt64(), planned.ValueInt64()))
 		}
 	}
+
+	var planData, stateData tfmodels.KafkaCluster
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(retentionChangeConflict(ctx, planData, stateData)...)
+}
+
+// retentionChangeConflict rejects changing retention_ms in the same apply as a change the cluster has to apply: the
+// broker settings endpoint returns 409 until that change is applied. Errors from ToAPIUpdateRequest are left for
+// Update to report.
+func retentionChangeConflict(ctx context.Context, plan, state tfmodels.KafkaCluster) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if plan.BrokerSettingsToAPIUpdate(state) == nil {
+		return diags
+	}
+	body, _ := plan.ToAPIUpdateRequest(ctx, state)
+	if !tfmodels.AppliesToBrokers(body) {
+		return diags
+	}
+	diags.AddAttributeError(path.Root("retention_ms"), "Kafka cluster changes can't be combined",
+		"Artie applies one change to a Kafka cluster at a time, so `retention_ms` can't change in the same apply as `allowed_cidrs`, `storage_gib`, `instance_type`, `brokers` or `tiered_storage`. Apply the other change first, then change `retention_ms` once it's applied.")
+	return diags
 }
 
 func shrinks(prior, planned types.Int64) bool {
@@ -376,6 +409,12 @@ func (r *KafkaClusterResource) Update(ctx context.Context, req resource.UpdateRe
 	if body != (openapi.RouterUpdateKafkaClusterRequest{}) {
 		if _, err := artieclient.JSON200(r.client.KafkaClusterUpdateWithResponse(ctx, uuid, body)); err != nil {
 			resp.Diagnostics.AddError("Unable to update Kafka cluster", err.Error())
+			return
+		}
+	}
+	if brokerSettings := planData.BrokerSettingsToAPIUpdate(stateData); brokerSettings != nil {
+		if _, err := artieclient.JSON200(r.client.KafkaClusterBrokerSettingsUpdateWithResponse(ctx, uuid, *brokerSettings)); err != nil {
+			resp.Diagnostics.AddError("Unable to update Kafka cluster broker settings", err.Error())
 			return
 		}
 	}

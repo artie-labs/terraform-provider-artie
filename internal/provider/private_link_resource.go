@@ -3,16 +3,19 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"terraform-provider-artie/internal/artieclient"
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -21,6 +24,7 @@ import (
 var _ resource.Resource = &PrivateLinkResource{}
 var _ resource.ResourceWithConfigure = &PrivateLinkResource{}
 var _ resource.ResourceWithImportState = &PrivateLinkResource{}
+var _ resource.ResourceWithValidateConfig = &PrivateLinkResource{}
 
 func NewPrivateLinkResource() resource.Resource {
 	return &PrivateLinkResource{}
@@ -36,18 +40,19 @@ func (r *PrivateLinkResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *PrivateLinkResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie PrivateLink connection resource. This resource represents an AWS PrivateLink connection to Artie.",
+		MarkdownDescription: "Artie PrivateLink connection resource. This resource represents a Private Link connection to Artie: AWS PrivateLink (set `vpc_service_name` and `az_ids`) or Azure Private Link (set `private_link_service_alias`). The data plane decides which cloud is used.",
 		Attributes: map[string]schema.Attribute{
-			"uuid":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The unique identifier for this PrivateLink connection."},
-			"name":             schema.StringAttribute{Required: true, MarkdownDescription: "The name of the PrivateLink connection."},
-			"vpc_service_name": schema.StringAttribute{Required: true, MarkdownDescription: "The VPC endpoint service name for Artie's service (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx)."},
-			"region":           schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The AWS region of the VPC endpoint (e.g., us-east-1)."},
-			"vpc_endpoint_id":  schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
-			"az_ids":           schema.ListAttribute{ElementType: types.StringType, Required: true, MarkdownDescription: "List of AWS Availability Zone IDs where the PrivateLink endpoint is available (e.g., [\"use1-az1\", \"use1-az2\"])."},
-			"status":           schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
-			"dns_entry":        schema.StringAttribute{Computed: true, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
-			"cloud_provider":   schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The cloud provider of the Private Link target (`aws`, `azure` or `gcp`), derived by Artie from the target."},
-			"data_plane_name":  schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The data plane name associated with this PrivateLink connection. If not provided, it will be computed by the server."},
+			"uuid":                       schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The unique identifier for this PrivateLink connection."},
+			"name":                       schema.StringAttribute{Required: true, MarkdownDescription: "The name of the PrivateLink connection."},
+			"vpc_service_name":           schema.StringAttribute{Optional: true, MarkdownDescription: "AWS only: the VPC endpoint service name for Artie's service (e.g., com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx). Required with `az_ids` for AWS; conflicts with `private_link_service_alias`.", Validators: []validator.String{trimmedNonEmptyString}},
+			"region":                     schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The cloud region of the Private Link target (e.g., us-east-1 on AWS, eastus on Azure)."},
+			"vpc_endpoint_id":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The VPC Endpoint ID (e.g., vpce-xxxxxxxxxxxxxxxxx) that connects to Artie's endpoint service."},
+			"az_ids":                     schema.ListAttribute{ElementType: types.StringType, Optional: true, MarkdownDescription: "AWS only: list of Availability Zone IDs where the PrivateLink endpoint is available (e.g., [\"use1-az1\", \"use1-az2\"]). Required with `vpc_service_name` for AWS; conflicts with `private_link_service_alias`."},
+			"private_link_service_alias": schema.StringAttribute{Optional: true, MarkdownDescription: "Azure only: the alias of the Private Link Service to connect to. Conflicts with `vpc_service_name` and `az_ids`.", Validators: []validator.String{trimmedNonEmptyString}},
+			"status":                     schema.StringAttribute{Computed: true, MarkdownDescription: "The status of the PrivateLink connection (e.g., available, pending)."},
+			"dns_entry":                  schema.StringAttribute{Computed: true, MarkdownDescription: "The DNS entry for the PrivateLink connection."},
+			"cloud_provider":             schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The cloud provider of the Private Link target (`aws`, `azure` or `gcp`), derived by Artie from the target."},
+			"data_plane_name":            schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The data plane name associated with this PrivateLink connection. If not provided, it will be computed by the server."},
 		},
 	}
 }
@@ -75,6 +80,53 @@ func (r *PrivateLinkResource) Configure(ctx context.Context, req resource.Config
 	}
 
 	r.client = client
+}
+
+// trimmedNonEmptyString rejects "" and leading or trailing whitespace, which the API trims and would read back changed.
+var trimmedNonEmptyString = stringvalidator.RegexMatches(regexp.MustCompile(`^\S(.*\S)?$`), "must not be empty or start or end with whitespace")
+
+// ValidateConfig requires exactly one Private Link target: the AWS pair or the Azure alias. The API keeps only the
+// target that matches the data plane's cloud, so setting both would read back as an inconsistent result.
+func (r *PrivateLinkResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config tfmodels.PrivateLink
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(validatePrivateLinkConfig(config)...)
+}
+
+func validatePrivateLinkConfig(config tfmodels.PrivateLink) diag.Diagnostics {
+	var diags diag.Diagnostics
+	// Wait until the target values are known.
+	if config.VpcServiceName.IsUnknown() {
+		return diags
+	}
+	if config.AzIDs.IsUnknown() {
+		return diags
+	}
+	if config.PrivateLinkServiceAlias.IsUnknown() {
+		return diags
+	}
+
+	// An empty alias is rejected by its attribute validator; treat it as unset here so the error points there.
+	if config.PrivateLinkServiceAlias.ValueString() != "" {
+		for name, isSet := range map[string]bool{"vpc_service_name": !config.VpcServiceName.IsNull(), "az_ids": !config.AzIDs.IsNull()} {
+			if isSet {
+				diags.AddAttributeError(path.Root(name), "Conflicting Private Link targets",
+					fmt.Sprintf("`%s` is for AWS and can't be set with `private_link_service_alias`, which is for Azure.", name))
+			}
+		}
+		return diags
+	}
+
+	for name, isNull := range map[string]bool{"vpc_service_name": config.VpcServiceName.IsNull(), "az_ids": config.AzIDs.IsNull()} {
+		if isNull {
+			diags.AddAttributeError(path.Root(name), "Missing Private Link target",
+				fmt.Sprintf("`%s` is required for an AWS connection. For Azure, set `private_link_service_alias` instead.", name))
+		}
+	}
+	return diags
 }
 
 func (r *PrivateLinkResource) GetUUIDFromState(ctx context.Context, state tfsdk.State, diagnostics *diag.Diagnostics) (string, bool) {

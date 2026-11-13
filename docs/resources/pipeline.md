@@ -100,8 +100,8 @@ Optional:
 
 - `bucket` (String) The name of the S3 or GCS bucket that data should be synced to. This should be filled if the destination is S3, GCS, or Iceberg with provider `s3tables` (for Iceberg S3 Tables, this bucket is where delta files will be stored). Not used for Iceberg REST catalog.
 - `create_iceberg_namespaces` (Boolean) If set to true, Artie will automatically create namespaces if they don't exist. This is only applicable if the destination is Iceberg.
-- `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.
-- `dataset` (String) The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.
+- `database` (String) The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake (unless `use_same_schema_as_source` is set to true), or with the dataset name if the destination is BigQuery.
+- `dataset` (String, Deprecated) Deprecated: this is not sent to the API and must be left empty. For BigQuery, set the dataset name in `database` instead.
 - `folder` (String) If provided, all files will be stored under this folder inside the S3 or GCS bucket. This is optional and only applies if the destination is S3 or GCS.
 - `schema` (String) The name of the schema or namespace that data should be synced to in the destination. This should be filled if the destination is MS SQL, Redshift, Iceberg, or Snowflake (unless `use_same_schema_as_source` is set to true).
 - `schema_name_prefix` (String) If `use_same_schema_as_source` is enabled, this prefix will be added to each schema name in the destination. This is useful if you want to namespace all of this pipeline's schemas in the destination.
