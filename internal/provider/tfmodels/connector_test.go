@@ -105,7 +105,7 @@ func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
 	}`), &apiConnector))
 	prior := Connector{
 		Type:           types.StringValue("smb_share"),
-		SMBShareConfig: &SMBShareConfig{Password: types.StringValue("real-password")},
+		SMBShareConfig: &SMBShareConfig{Password: types.StringValue("real-password"), PrivateLinkUUID: types.StringValue("5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d")},
 	}
 
 	connector, diags := ConnectorFromAPIModel(apiConnector, prior)
@@ -131,6 +131,7 @@ func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
 	{
 		// No PrivateLink
 		connector.SMBShareConfig.PrivateLinkUUID = types.StringValue("")
+		connector.PrivateLinkUUID = types.StringValue("")
 		body, diags := connector.ToAPIModel()
 		require.False(t, diags.HasError(), diags)
 		assert.Nil(t, body.PrivateLinkUUID)
@@ -144,6 +145,222 @@ func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
 		body, diags := other.ToAPIModel()
 		require.False(t, diags.HasError(), diags)
 		assert.Nil(t, body.PrivateLinkUUID)
+	}
+	{
+		// The top-level private_link_uuid is sent when smb_share_config leaves it empty
+		connector.SMBShareConfig.PrivateLinkUUID = types.StringValue("")
+		connector.PrivateLinkUUID = types.StringValue("9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d")
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d", body.PrivateLinkUUID.String())
+	}
+	{
+		// smb_share_config.private_link_uuid wins over the top-level one, which is unknown until apply when it follows it
+		connector.SMBShareConfig.PrivateLinkUUID = types.StringValue("5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d")
+		connector.PrivateLinkUUID = types.StringUnknown()
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", body.PrivateLinkUUID.String())
+	}
+}
+
+func TestSMBShareConnectorPrivateLinkReadBack(t *testing.T) {
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "smb_share",
+		"privateLinkUUID": "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d",
+		"sharedConfig": {"path": "\\\\fs\\share", "username": "u", "password": "********"}
+	}`), &apiConnector))
+	{
+		// A config that sets smb_share_config.private_link_uuid reads it back there and at the top level
+		prior := Connector{Type: types.StringValue("smb_share"), SMBShareConfig: &SMBShareConfig{PrivateLinkUUID: types.StringValue("5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d")}}
+		connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.SMBShareConfig.PrivateLinkUUID.ValueString())
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.PrivateLinkUUID.ValueString())
+	}
+	{
+		// An unknown smb_share_config.private_link_uuid (another resource's uuid on create) reads back the API's value
+		prior := Connector{Type: types.StringValue("smb_share"), SMBShareConfig: &SMBShareConfig{PrivateLinkUUID: types.StringUnknown()}}
+		connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.SMBShareConfig.PrivateLinkUUID.ValueString())
+	}
+	{
+		// A config that uses the top-level private_link_uuid keeps smb_share_config's empty, so it plans no change
+		prior := Connector{Type: types.StringValue("smb_share"), SMBShareConfig: &SMBShareConfig{PrivateLinkUUID: types.StringValue("")}}
+		connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "", connector.SMBShareConfig.PrivateLinkUUID.ValueString())
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.PrivateLinkUUID.ValueString())
+	}
+	{
+		// An import has no prior block, so both read back the PrivateLink, as smb_share_config did before
+		connector, diags := ConnectorFromAPIModel(apiConnector, Connector{})
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.SMBShareConfig.PrivateLinkUUID.ValueString())
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.PrivateLinkUUID.ValueString())
+	}
+}
+
+func TestConnectorPrivateLinksAndDefaultDatabase(t *testing.T) {
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "postgresql",
+		"privateLinkUUID": "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d",
+		"snapshotPrivateLinkUUID": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+		"defaultDatabase": "app",
+		"sharedConfig": {"host": "db.example.com", "port": 5432, "user": "artie", "password": "secret"}
+	}`), &apiConnector))
+
+	connector, diags := ConnectorFromAPIModel(apiConnector, Connector{})
+	require.False(t, diags.HasError(), diags)
+	assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", connector.PrivateLinkUUID.ValueString())
+	assert.Equal(t, "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d", connector.SnapshotPrivateLinkUUID.ValueString())
+	assert.Equal(t, "app", connector.DefaultDatabase.ValueString())
+	{
+		// The values read back are sent back, so an apply keeps ones set in the UI
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d", body.PrivateLinkUUID.String())
+		assert.Equal(t, "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d", body.SnapshotPrivateLinkUUID.String())
+		assert.Equal(t, "app", *body.DefaultDatabase)
+	}
+	{
+		// Unknown (create) leaves them out. The API keeps the saved default database but removes the PrivateLinks.
+		connector.PrivateLinkUUID = types.StringUnknown()
+		connector.SnapshotPrivateLinkUUID = types.StringUnknown()
+		connector.DefaultDatabase = types.StringUnknown()
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Nil(t, body.PrivateLinkUUID)
+		assert.Nil(t, body.SnapshotPrivateLinkUUID)
+		assert.Nil(t, body.DefaultDatabase)
+	}
+	{
+		// "" removes the PrivateLinks and clears the default database
+		connector.PrivateLinkUUID = types.StringValue("")
+		connector.SnapshotPrivateLinkUUID = types.StringValue("")
+		connector.DefaultDatabase = types.StringValue("")
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Nil(t, body.PrivateLinkUUID)
+		assert.Nil(t, body.SnapshotPrivateLinkUUID)
+		require.NotNil(t, body.DefaultDatabase)
+		assert.Equal(t, "", *body.DefaultDatabase)
+	}
+	{
+		// Unset in the API reads back as "", not null
+		connector, diags := ConnectorFromAPIModel(openapi.PayloadsFullConnector{Type: "postgresql", SharedConfig: apiConnector.SharedConfig}, Connector{})
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, types.StringValue(""), connector.PrivateLinkUUID)
+		assert.Equal(t, types.StringValue(""), connector.SnapshotPrivateLinkUUID)
+		assert.Equal(t, types.StringValue(""), connector.DefaultDatabase)
+	}
+}
+
+func TestSMBSharePrivateLinkPlan(t *testing.T) {
+	smbShare := types.StringValue("smb_share")
+	link := types.StringValue("5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d")
+	state := types.StringValue("9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d")
+	{
+		// Other types keep the plan
+		assert.Equal(t, state, SMBSharePrivateLinkPlan(types.StringValue("postgresql"), types.StringNull(), link, state))
+	}
+	{
+		// A configured top-level value keeps the plan
+		assert.Equal(t, state, SMBSharePrivateLinkPlan(smbShare, state, link, state))
+	}
+	{
+		// Follows smb_share_config.private_link_uuid
+		assert.Equal(t, link, SMBSharePrivateLinkPlan(smbShare, types.StringNull(), link, state))
+	}
+	{
+		// Removing smb_share_config.private_link_uuid removes the top-level value too
+		assert.Equal(t, types.StringValue(""), SMBSharePrivateLinkPlan(smbShare, types.StringNull(), types.StringNull(), state))
+	}
+	{
+		// Unknown smb_share_config.private_link_uuid
+		assert.Equal(t, types.StringUnknown(), SMBSharePrivateLinkPlan(smbShare, types.StringNull(), types.StringUnknown(), state))
+	}
+}
+
+func TestConflictingSMBSharePrivateLinks(t *testing.T) {
+	a := types.StringValue("5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d")
+	b := types.StringValue("9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d")
+	{
+		// Different values conflict
+		assert.True(t, ConflictingSMBSharePrivateLinks(a, b))
+	}
+	{
+		// The same value doesn't
+		assert.False(t, ConflictingSMBSharePrivateLinks(a, a))
+	}
+	{
+		// Only one set doesn't
+		assert.False(t, ConflictingSMBSharePrivateLinks(a, types.StringNull()))
+		assert.False(t, ConflictingSMBSharePrivateLinks(types.StringNull(), b))
+	}
+	{
+		// Unknown isn't checked yet
+		assert.False(t, ConflictingSMBSharePrivateLinks(types.StringUnknown(), b))
+	}
+	{
+		// An explicit "" conflicts with a link in smb_share_config
+		assert.True(t, ConflictingSMBSharePrivateLinks(types.StringValue(""), b))
+		assert.False(t, ConflictingSMBSharePrivateLinks(types.StringValue(""), types.StringValue("")))
+	}
+}
+
+func TestConnectorFromAPIModelKeepsHostsRewrittenByPrivateLink(t *testing.T) {
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "postgresql",
+		"privateLinkUUID": "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d",
+		"snapshotPrivateLinkUUID": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+		"sharedConfig": {"host": "vpce-1.example.com", "snapshotHost": "vpce-2.example.com", "port": 5432, "user": "artie", "password": "secret"}
+	}`), &apiConnector))
+	prior := Connector{
+		Type: types.StringValue("postgresql"),
+		PostgresConfig: &PostgresSharedConfig{
+			Host:         types.StringValue("db.example.com"),
+			SnapshotHost: types.StringValue("replica.example.com"),
+		},
+	}
+	{
+		// Both links set: host and snapshot_host stay as configured
+		connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "db.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "replica.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
+	}
+	{
+		// Only the snapshot link set: host is the API's
+		onlySnapshot := apiConnector
+		onlySnapshot.PrivateLinkUUID = nil
+		connector, diags := ConnectorFromAPIModel(onlySnapshot, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "vpce-1.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "replica.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
+	}
+	{
+		// Only the primary link set: snapshot_host is the API's
+		onlyPrimary := apiConnector
+		onlyPrimary.SnapshotPrivateLinkUUID = nil
+		connector, diags := ConnectorFromAPIModel(onlyPrimary, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "db.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "vpce-2.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
+	}
+	{
+		// An import has no prior, so it keeps the API's hosts
+		connector, diags := ConnectorFromAPIModel(apiConnector, Connector{})
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "vpce-1.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "vpce-2.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
 	}
 }
 

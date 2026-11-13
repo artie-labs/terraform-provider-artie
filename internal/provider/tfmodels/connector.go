@@ -41,6 +41,10 @@ type Connector struct {
 	RedisConfig       *RedisSharedConfig       `tfsdk:"redis_config"`
 	DocumentDBConfig  *DocumentDBSharedConfig  `tfsdk:"documentdb_config"`
 	ClickHouseConfig  *ClickHouseSharedConfig  `tfsdk:"clickhouse_config"`
+
+	PrivateLinkUUID         types.String `tfsdk:"private_link_uuid"`
+	SnapshotPrivateLinkUUID types.String `tfsdk:"snapshot_private_link_uuid"`
+	DefaultDatabase         types.String `tfsdk:"default_database"`
 }
 
 func (c Connector) sharedConfig() (ConnectorConfig, error) {
@@ -116,13 +120,14 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 		return openapi.PayloadsConnectorPayload{}, diags
 	}
 
-	var privateLinkUUID *uuid.UUID
-	// Only an SMB share takes a PrivateLink here; a stray smb_share_config block on another type is ignored like its sharedConfig.
-	if c.SMBShareConfig != nil && openapi.EnumsConnectorSlug(c.Type.ValueString()) == openapi.EnumsConnectorSlugSmbShare {
-		privateLinkUUID, diags = parseOptionalUUID(c.SMBShareConfig.PrivateLinkUUID)
-		if diags.HasError() {
-			return openapi.PayloadsConnectorPayload{}, diags
-		}
+	privateLinkUUID, diags := parseOptionalUUID(c.smbOrTopLevelPrivateLinkUUID())
+	if diags.HasError() {
+		return openapi.PayloadsConnectorPayload{}, diags
+	}
+
+	snapshotPrivateLinkUUID, diags := parseOptionalUUID(c.SnapshotPrivateLinkUUID)
+	if diags.HasError() {
+		return openapi.PayloadsConnectorPayload{}, diags
 	}
 
 	return openapi.PayloadsConnectorPayload{
@@ -134,7 +139,63 @@ func (c Connector) ToAPIModel() (openapi.PayloadsConnectorPayload, diag.Diagnost
 		SharedConfig:    apiSharedConfig,
 		SshTunnelUUID:   sshTunnelUUID,
 		PrivateLinkUUID: privateLinkUUID,
+		// The API keeps the saved default database when this is left out.
+		DefaultDatabase:         stringPointer(c.DefaultDatabase),
+		SnapshotPrivateLinkUUID: snapshotPrivateLinkUUID,
 	}, diags
+}
+
+// smbOrTopLevelPrivateLinkUUID returns smb_share_config.private_link_uuid when an SMB share sets it, and the top-level
+// private_link_uuid otherwise. A stray smb_share_config block on another type is ignored like its sharedConfig.
+func (c Connector) smbOrTopLevelPrivateLinkUUID() types.String {
+	if openapi.EnumsConnectorSlug(c.Type.ValueString()) != openapi.EnumsConnectorSlugSmbShare {
+		return c.PrivateLinkUUID
+	}
+	if c.SMBShareConfig == nil {
+		return c.PrivateLinkUUID
+	}
+	if c.SMBShareConfig.PrivateLinkUUID.ValueString() == "" {
+		return c.PrivateLinkUUID
+	}
+	return c.SMBShareConfig.PrivateLinkUUID
+}
+
+// SMBSharePrivateLinkPlan plans the top-level private_link_uuid of an SMB share whose config leaves it out: it follows
+// smb_share_config.private_link_uuid, so changing or removing the link there moves the top-level value with it.
+// It returns plan unchanged for other types or when the config sets the top-level value.
+func SMBSharePrivateLinkPlan(connectorType, configValue, smbConfigValue, plan types.String) types.String {
+	if connectorType.ValueString() != string(openapi.EnumsConnectorSlugSmbShare) {
+		return plan
+	}
+	if !configValue.IsNull() {
+		return plan
+	}
+	if smbConfigValue.IsUnknown() {
+		return types.StringUnknown()
+	}
+	return types.StringValue(smbConfigValue.ValueString())
+}
+
+// ConflictingSMBSharePrivateLinks reports whether an SMB share's config sets the top-level private_link_uuid, "" included,
+// to something other than a non-empty smb_share_config.private_link_uuid.
+func ConflictingSMBSharePrivateLinks(topLevel, smbShare types.String) bool {
+	if !IsKnown(topLevel) {
+		return false
+	}
+	if !IsKnownAndNonEmpty(smbShare) {
+		return false
+	}
+	return topLevel.ValueString() != smbShare.ValueString()
+}
+
+// smbSharePrivateLinkConfigured reports whether smb_share_config.private_link_uuid should read back the connector's
+// PrivateLink: only when the prior plan or state sets it (or after an import, which has no prior block), so a config
+// that uses the top-level private_link_uuid keeps "" there.
+func smbSharePrivateLinkConfigured(prior Connector) bool {
+	if prior.SMBShareConfig == nil {
+		return true
+	}
+	return !IsKnownAndEmpty(prior.SMBShareConfig.PrivateLinkUUID)
 }
 
 // ConnectorFromAPIModel converts an API connector into the Terraform model. prior is the plan or state the request
@@ -147,6 +208,14 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 	// prior has no type after an import, so there are no secrets to keep yet.
 	if priorConfig, err := prior.sharedConfig(); err == nil {
 		config.keepMaskedSecrets(priorConfig)
+		// With a PrivateLink the API stores its DNS entry as the host it dials, so keep the host as configured. An
+		// import has no prior and keeps the API's value.
+		if apiModel.PrivateLinkUUID != nil {
+			config.Host = priorConfig.Host
+		}
+		if apiModel.SnapshotPrivateLinkUUID != nil {
+			config.SnapshotHost = priorConfig.SnapshotHost
+		}
 	}
 
 	connector := Connector{
@@ -155,6 +224,10 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		DataPlaneName: types.StringValue(lib.RemovePtr(apiModel.DataPlaneName)),
 		Name:          types.StringValue(apiModel.Label),
 		SSHTunnelUUID: optionalUUIDToStringValue(apiModel.SshTunnelUUID),
+		// Filled for every type, an SMB share included, so it shows the PrivateLink in use however it was set.
+		PrivateLinkUUID:         optionalUUIDToStringValue(apiModel.PrivateLinkUUID),
+		SnapshotPrivateLinkUUID: optionalUUIDToStringValue(apiModel.SnapshotPrivateLinkUUID),
+		DefaultDatabase:         types.StringValue(lib.RemovePtr(apiModel.DefaultDatabase)),
 	}
 
 	switch apiModel.Type {
@@ -185,7 +258,11 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 	case openapi.EnumsConnectorSlugS3:
 		connector.S3Config = S3SharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugSmbShare:
-		connector.SMBShareConfig = SMBShareConfigFromAPIModel(config, apiModel.PrivateLinkUUID)
+		var smbPrivateLinkUUID *uuid.UUID
+		if smbSharePrivateLinkConfigured(prior) {
+			smbPrivateLinkUUID = apiModel.PrivateLinkUUID
+		}
+		connector.SMBShareConfig = SMBShareConfigFromAPIModel(config, smbPrivateLinkUUID)
 	case openapi.EnumsConnectorSlugSnowflake:
 		connector.SnowflakeConfig = SnowflakeSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugDatabricks:

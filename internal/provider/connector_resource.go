@@ -85,7 +85,25 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 		MarkdownDescription: "Artie Connector resource. This represents a database or data warehouse that you want to sync data from or to. Connectors are used by Pipelines and Source Readers.",
 		Attributes: map[string]schema.Attribute{
 			"uuid":            schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect."},
+			"ssh_tunnel_uuid": schema.StringAttribute{Computed: true, Optional: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), privateLinkDetachesSSHTunnelPlanModifier{}}, MarkdownDescription: "This can point to an `artie_ssh_tunnel` resource if you need us to use an SSH tunnel to connect. This can't be combined with a PrivateLink; leaving it out while one is set removes the SSH tunnel."},
+			"private_link_uuid": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), sshTunnelDetachesPrivateLinkPlanModifier{}, smbSharePrivateLinkPlanModifier{}},
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `mongodb` is rejected at plan time, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
+			},
+			"snapshot_private_link_uuid": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), sshTunnelDetachesPrivateLinkPlanModifier{}},
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`. `mongodb` is rejected at plan time, and other types fail when applied. Leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
+			},
+			"default_database": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				MarkdownDescription: "The database we connect to when testing the connection and listing a source's databases. `postgresql`, `cockroach`, and `oracle` connectors need one to be usable as a source. If this is left out, it keeps the value already saved on the connector; set it to `\"\"` to clear it.",
+			},
 			"type": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: fmt.Sprintf("The type of connector. This must be one of the following: %s.", strings.Join(connectorTypes.Keys(), ", ")),
@@ -468,6 +486,15 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		return
 	}
 
+	// The API rejects an SSH tunnel combined with a PrivateLink.
+	if tfmodels.IsKnownAndNonEmpty(configData.SSHTunnelUUID) {
+		for _, link := range configuredPrivateLinks(configData) {
+			if tfmodels.IsKnownAndNonEmpty(link.value) {
+				resp.Diagnostics.AddAttributeError(link.path, "Conflicting connection settings", fmt.Sprintf("`%s` can't be combined with `ssh_tunnel_uuid`.", link.path))
+			}
+		}
+	}
+
 	switch configData.Type.ValueString() {
 	case string(openapi.EnumsConnectorSlugBigquery):
 		if configData.BigQueryConfig == nil {
@@ -548,6 +575,12 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			resp.Diagnostics.AddError("mongodb_config is required", "Please provide `mongodb_config` inside `connector`.")
 			return
 		}
+		// The API would replace the whole connection string with the link's DNS entry.
+		for name, value := range map[string]types.String{"private_link_uuid": configData.PrivateLinkUUID, "snapshot_private_link_uuid": configData.SnapshotPrivateLinkUUID} {
+			if tfmodels.IsKnownAndNonEmpty(value) {
+				resp.Diagnostics.AddAttributeError(path.Root(name), "PrivateLink not supported", fmt.Sprintf("`%s` isn't supported for `mongodb` connectors.", name))
+			}
+		}
 	case string(openapi.EnumsConnectorSlugMysql):
 		if configData.MySQLConfig == nil {
 			resp.Diagnostics.AddError("mysql_config is required", "Please provide `mysql_config` inside `connector`.")
@@ -591,6 +624,9 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if configData.SMBShareConfig == nil {
 			resp.Diagnostics.AddError("smb_share_config is required", "Please provide `smb_share_config` inside `connector`.")
 			return
+		}
+		if tfmodels.ConflictingSMBSharePrivateLinks(configData.PrivateLinkUUID, configData.SMBShareConfig.PrivateLinkUUID) {
+			resp.Diagnostics.AddAttributeError(path.Root("private_link_uuid"), "Conflicting PrivateLinks", "`private_link_uuid` and `smb_share_config.private_link_uuid` set the same PrivateLink, so they must match (`\"\"` included). Set only one of them.")
 		}
 	case string(openapi.EnumsConnectorSlugSnowflake):
 		if configData.SnowflakeConfig == nil {
@@ -776,4 +812,129 @@ func (r *ConnectorResource) Delete(ctx context.Context, req resource.DeleteReque
 
 func (r *ConnectorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("uuid"), req, resp)
+}
+
+// smbSharePrivateLinkPlanModifier makes an SMB share's top-level private_link_uuid follow smb_share_config's; see
+// [tfmodels.SMBSharePrivateLinkPlan].
+type smbSharePrivateLinkPlanModifier struct{}
+
+func (smbSharePrivateLinkPlanModifier) Description(context.Context) string {
+	return "Follows smb_share_config.private_link_uuid on an SMB share that leaves this out."
+}
+
+func (m smbSharePrivateLinkPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (smbSharePrivateLinkPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	var connectorType, smbPrivateLinkUUID types.String
+	var smbShareConfig types.Object
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("type"), &connectorType)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("smb_share_config"), &smbShareConfig)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("smb_share_config").AtName("private_link_uuid"), &smbPrivateLinkUUID)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// GetAttribute reads a field of an unknown block as null, not unknown.
+	if smbShareConfig.IsUnknown() {
+		smbPrivateLinkUUID = types.StringUnknown()
+	}
+	resp.PlanValue = tfmodels.SMBSharePrivateLinkPlan(connectorType, req.ConfigValue, smbPrivateLinkUUID, resp.PlanValue)
+}
+
+// sshTunnelDetachesPrivateLinkPlanModifier plans a PrivateLink left out of the config as removed ("") when the config
+// sets an SSH tunnel, since the API rejects a connector with both, so switching from a PrivateLink to an SSH tunnel
+// doesn't need the link set to "" by hand.
+type sshTunnelDetachesPrivateLinkPlanModifier struct{}
+
+func (sshTunnelDetachesPrivateLinkPlanModifier) Description(context.Context) string {
+	return "Removes a PrivateLink left out of the config when ssh_tunnel_uuid is set."
+}
+
+func (m sshTunnelDetachesPrivateLinkPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (sshTunnelDetachesPrivateLinkPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.ConfigValue.IsNull() {
+		return
+	}
+	var sshTunnelUUID types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("ssh_tunnel_uuid"), &sshTunnelUUID)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.PlanValue = sshTunnelPrivateLinkPlan(sshTunnelUUID, resp.PlanValue)
+}
+
+// sshTunnelPrivateLinkPlan returns the plan for a PrivateLink left out of the config: "" when an SSH tunnel is set,
+// unknown when the tunnel is only known at apply, and plan unchanged otherwise.
+func sshTunnelPrivateLinkPlan(sshTunnelUUID, plan types.String) types.String {
+	if sshTunnelUUID.IsUnknown() {
+		return types.StringUnknown()
+	}
+	if sshTunnelUUID.ValueString() == "" {
+		return plan
+	}
+	return types.StringValue("")
+}
+
+type privateLinkAttribute struct {
+	path  path.Path
+	value types.String
+}
+
+// configuredPrivateLinks returns the connector's configured PrivateLinks, the SMB share block's included.
+func configuredPrivateLinks(config tfmodels.Connector) []privateLinkAttribute {
+	links := []privateLinkAttribute{
+		{path.Root("private_link_uuid"), config.PrivateLinkUUID},
+		{path.Root("snapshot_private_link_uuid"), config.SnapshotPrivateLinkUUID},
+	}
+	if config.SMBShareConfig != nil {
+		links = append(links, privateLinkAttribute{path.Root("smb_share_config").AtName("private_link_uuid"), config.SMBShareConfig.PrivateLinkUUID})
+	}
+	return links
+}
+
+// privateLinkDetachesSSHTunnelPlanModifier plans an SSH tunnel left out of the config as removed ("") when the config
+// sets a PrivateLink, the reverse of sshTunnelDetachesPrivateLinkPlanModifier, so switching from an SSH tunnel to a
+// PrivateLink doesn't need the tunnel set to "" by hand.
+type privateLinkDetachesSSHTunnelPlanModifier struct{}
+
+func (privateLinkDetachesSSHTunnelPlanModifier) Description(context.Context) string {
+	return "Removes an SSH tunnel left out of the config when a PrivateLink is set."
+}
+
+func (m privateLinkDetachesSSHTunnelPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (privateLinkDetachesSSHTunnelPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.ConfigValue.IsNull() {
+		return
+	}
+	var config tfmodels.Connector
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.PlanValue = privateLinkSSHTunnelPlan(configuredPrivateLinks(config), resp.PlanValue)
+}
+
+// privateLinkSSHTunnelPlan returns the plan for an SSH tunnel left out of the config: "" when a PrivateLink is set,
+// unknown when one is only known at apply, and plan unchanged otherwise.
+func privateLinkSSHTunnelPlan(links []privateLinkAttribute, plan types.String) types.String {
+	unknown := false
+	for _, link := range links {
+		if tfmodels.IsKnownAndNonEmpty(link.value) {
+			return types.StringValue("")
+		}
+		if link.value.IsUnknown() {
+			unknown = true
+		}
+	}
+	if unknown {
+		return types.StringUnknown()
+	}
+	return plan
 }
