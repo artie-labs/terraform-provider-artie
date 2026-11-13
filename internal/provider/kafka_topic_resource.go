@@ -38,6 +38,7 @@ var _ resource.ResourceWithModifyPlan = &KafkaTopicResource{}
 const (
 	kafkaTopicMinRetentionMS     = 86400000   // one day
 	kafkaTopicMaxTieredRetention = 1209600000 // 14 days
+	kafkaTopicRetentionForever   = -1         // keep messages forever
 
 	kafkaClusterDeployTimeout = time.Hour
 )
@@ -95,8 +96,8 @@ func (r *KafkaTopicResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
-				Validators:          []validator.Int64{int64validator.AtLeast(kafkaTopicMinRetentionMS)},
-				MarkdownDescription: "How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), and at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set when the topic is created, the topic keeps the cluster's default. Removing it from the config later keeps the topic's current retention.",
+				Validators:          []validator.Int64{int64validator.Any(int64validator.OneOf(kafkaTopicRetentionForever), int64validator.AtLeast(kafkaTopicMinRetentionMS))},
+				MarkdownDescription: "How long the topic keeps messages (`retention.ms`), at least 86400000 (one day), or `-1` to keep messages forever. Otherwise at most 1209600000 (14 days) while tiered storage is `on` or `paused`. If not set when the topic is created, the topic keeps the cluster's default. Removing it from the config later keeps the topic's current retention.",
 			},
 			"local_retention_ms": schema.Int64Attribute{
 				Optional:            true,
@@ -222,14 +223,18 @@ func tieredRetentionError(plan tfmodels.KafkaTopic) string {
 	if !tfmodels.IsKnown(plan.RetentionMS) || !tfmodels.IsKnown(plan.TieredStorage) {
 		return ""
 	}
-	if plan.TieredStorage.ValueString() == string(openapi.EnumsKafkaTopicTieredStorageStateOff) || plan.RetentionMS.ValueInt64() <= kafkaTopicMaxTieredRetention {
+	if plan.TieredStorage.ValueString() == string(openapi.EnumsKafkaTopicTieredStorageStateOff) {
+		return ""
+	}
+	// The API allows -1 (forever) with tiered storage, and a topic can read it back, so it isn't capped.
+	if plan.RetentionMS.ValueInt64() <= kafkaTopicMaxTieredRetention {
 		return ""
 	}
 	return fmt.Sprintf("`retention_ms` can be at most %d (14 days) while `tiered_storage` is `%s` (%d was planned).", kafkaTopicMaxTieredRetention, plan.TieredStorage.ValueString(), plan.RetentionMS.ValueInt64())
 }
 
-// localRetentionError rejects keeping data on broker disks longer than the topic keeps it at all. A negative value is
-// one read back from the API (`-2` for local retention), which isn't checked.
+// localRetentionError rejects keeping data on broker disks longer than the topic keeps it at all. Negative values
+// (`-1` retention keeps messages forever, `-2` local retention means the same as `retention_ms`) aren't checked.
 func localRetentionError(plan tfmodels.KafkaTopic) string {
 	if !tfmodels.IsKnown(plan.RetentionMS) || !tfmodels.IsKnown(plan.LocalRetentionMS) || plan.TieredStorage.ValueString() == string(openapi.EnumsKafkaTopicTieredStorageStateOff) {
 		return ""

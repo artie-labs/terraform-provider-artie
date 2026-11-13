@@ -10,8 +10,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
@@ -36,6 +41,32 @@ func TestTieredRetentionError(t *testing.T) {
 	assert.Empty(t, tieredRetentionError(topic(fifteenDays, types.StringValue("off"))))
 	assert.Empty(t, tieredRetentionError(topic(types.Int64Value(kafkaTopicMaxTieredRetention), types.StringValue("on"))))
 	assert.Empty(t, tieredRetentionError(topic(fifteenDays, types.StringUnknown())))
+
+	forever := types.Int64Value(kafkaTopicRetentionForever)
+	assert.Empty(t, tieredRetentionError(topic(forever, types.StringValue("off"))))
+	assert.Empty(t, tieredRetentionError(topic(forever, types.StringValue("on"))))
+	assert.Empty(t, tieredRetentionError(topic(forever, types.StringValue("paused"))))
+}
+
+func TestKafkaTopicRetentionMSValidator(t *testing.T) {
+	var resp resource.SchemaResponse
+	(&KafkaTopicResource{}).Schema(context.Background(), resource.SchemaRequest{}, &resp)
+	retentionAttr, ok := resp.Schema.Attributes["retention_ms"].(schema.Int64Attribute)
+	require.True(t, ok)
+
+	validate := func(value int64) bool {
+		req := validator.Int64Request{Path: path.Root("retention_ms"), ConfigValue: types.Int64Value(value)}
+		var res validator.Int64Response
+		for _, v := range retentionAttr.Validators {
+			v.ValidateInt64(context.Background(), req, &res)
+		}
+		return !res.Diagnostics.HasError()
+	}
+	assert.True(t, validate(kafkaTopicRetentionForever))
+	assert.True(t, validate(kafkaTopicMinRetentionMS))
+	assert.False(t, validate(0))
+	assert.False(t, validate(-2))
+	assert.False(t, validate(kafkaTopicMinRetentionMS-1))
 }
 
 func TestLocalRetentionError(t *testing.T) {
