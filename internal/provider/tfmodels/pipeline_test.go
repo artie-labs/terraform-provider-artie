@@ -557,3 +557,98 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
 	}
 }
+
+func TestDynamoDBBackfillConfigValidate(t *testing.T) {
+	{
+		// Enabled with neither a bucket nor an export ARN
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
+		assert.ErrorContains(t, config.Validate(), "bucket")
+	}
+	{
+		// An export ARN instead of a bucket
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue(""), ExportARN: types.StringValue("arn")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// A bucket left out of the config keeps its saved value
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringValue("")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// Disabled
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(false), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// On create there's no saved bucket, so leaving both out is rejected
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringNull()}
+		assert.ErrorContains(t, config.ValidateOnCreate(), "bucket")
+	}
+	{
+		// On create with a bucket, or with a value only known at apply
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue("exports"), ExportARN: types.StringNull()}.ValidateOnCreate())
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringUnknown(), ExportARN: types.StringNull()}.ValidateOnCreate())
+	}
+}
+
+func TestPipelineFromAPIModel_DynamoDBBackfillConfig(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+	}
+	{
+		// Omitted: null
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.DynamoDBBackfillConfig.IsNull())
+	}
+	{
+		// Returned: omitted fields read back as "" and 0
+		base.AdvancedSettings.DynamoDBBackfillConfig = &openapi.PayloadsDynamoDBSnapshotConfig{Enabled: ptr(true), Bucket: ptr("bucket"), ExportArn: ptr("")}
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"optional_folder": types.StringValue(""),
+			"export_arn":      types.StringValue(""),
+			"max_parallelism": types.Int64Value(0),
+		}, pipeline.DynamoDBBackfillConfig.Attributes())
+	}
+}
+
+func TestPipelineToAPIModel_DynamoDBBackfillConfig(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	pipeline := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}}
+	{
+		// Left out of the config on create: send nothing, so the API keeps its default.
+		pipeline.DynamoDBBackfillConfig = types.ObjectUnknown(DynamoDBBackfillConfigAttrTypes)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.DynamoDBBackfillConfig)
+	}
+	{
+		// Set: the whole object is sent, since the API replaces it
+		dynamoDB, objDiags := types.ObjectValue(DynamoDBBackfillConfigAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"optional_folder": types.StringValue("folder"),
+			"export_arn":      types.StringValue(""),
+			"max_parallelism": types.Int64Value(3),
+		})
+		assert.False(t, objDiags.HasError(), "unexpected diags: %v", objDiags)
+		pipeline.DynamoDBBackfillConfig = dynamoDB
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, openapi.PayloadsDynamoDBSnapshotConfig{
+			Enabled:        ptr(true),
+			Bucket:         ptr("bucket"),
+			OptionalFolder: ptr("folder"),
+			ExportArn:      ptr(""),
+			MaxParallelism: ptr(3),
+		}, *apiModel.AdvancedSettings.DynamoDBBackfillConfig)
+	}
+}
