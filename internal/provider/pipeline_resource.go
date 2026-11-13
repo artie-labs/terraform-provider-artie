@@ -230,6 +230,28 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						Default:             booldefault.StaticBool(false),
 						PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 					},
+					"checkpoint_interval":      schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(-1)}, MarkdownDescription: "How often, in commits, Artie should write a Delta Lake checkpoint. Set to 0 to use Artie's default (10) or -1 to turn checkpoints off. Leaving it out keeps the current value. This is only applicable if the destination is Delta Lake."},
+					"container_name":           schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The Oracle container (PDB) name stored with this pipeline's destination settings. Artie doesn't use it for Oracle destinations today; it's exposed so applies keep a value set in the dashboard. Leaving it out keeps the current value; set it to `\"\"` to clear it."},
+					"external_stage_name":      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The name of the Snowflake external stage Artie should load data through. Leaving it out keeps the current value; set it to `\"\"` to stop using the stage. This is only applicable if the destination is Snowflake."},
+					"external_stage_s3_bucket": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 bucket behind `external_stage_name`. Leaving it out keeps the current value; set it to `\"\"` to clear it. This is only applicable if the destination is Snowflake."},
+					"external_stage_s3_prefix": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 prefix behind `external_stage_name`. Leaving it out keeps the current value; set it to `\"\"` to clear it. This is only applicable if the destination is Snowflake."},
+					"iceberg_format_version":   schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, Validators: []validator.String{stringvalidator.OneOf("", "v2", "v3")}, MarkdownDescription: "The Iceberg format version new tables are created with, either `v2` (the default) or `v3`. Leaving it out keeps the current value; `\"\"` uses the default. Tables can't be downgraded from v3, and tables that already have data keep their version. S3 Tables and the Spark engine can't create v3 tables. This is only applicable if the destination is Iceberg."},
+					"compaction": schema.SingleNestedAttribute{
+						Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+						MarkdownDescription: "Delta Lake compaction settings. Settings left out keep their current value. This is only applicable if the destination is Delta Lake.",
+						Attributes: map[string]schema.Attribute{
+							"enabled":       schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will compact this pipeline's Delta tables on a schedule."},
+							"every_seconds": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How often, in seconds, each table is compacted. Set to 0 to use Artie's default (86400, once a day)."},
+							"quiet_window": schema.SingleNestedAttribute{
+								Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+								MarkdownDescription: "An optional UTC time window that compaction is limited to. Set `start` and `end` to `\"\"` to compact at any time.",
+								Attributes: map[string]schema.Attribute{
+									"start": schema.StringAttribute{Required: true, MarkdownDescription: "The start of the window in `HH:MM` UTC, e.g. `02:00`."},
+									"end":   schema.StringAttribute{Required: true, MarkdownDescription: "The end of the window in `HH:MM` UTC, e.g. `06:00`. Must differ from `start`."},
+								},
+							},
+						},
+					},
 				},
 			},
 			"data_plane_name": schema.StringAttribute{

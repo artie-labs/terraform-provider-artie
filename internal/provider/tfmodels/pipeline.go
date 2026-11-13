@@ -23,9 +23,22 @@ type PipelineDestinationConfig struct {
 	TableNameSeparator      types.String `tfsdk:"table_name_separator"`
 	Folder                  types.String `tfsdk:"folder"`
 	CreateIcebergNamespaces types.Bool   `tfsdk:"create_iceberg_namespaces"`
+	CheckpointInterval      types.Int64  `tfsdk:"checkpoint_interval"`
+	Compaction              types.Object `tfsdk:"compaction"`
+	ContainerName           types.String `tfsdk:"container_name"`
+	ExternalStageName       types.String `tfsdk:"external_stage_name"`
+	ExternalStageS3Bucket   types.String `tfsdk:"external_stage_s3_bucket"`
+	ExternalStageS3Prefix   types.String `tfsdk:"external_stage_s3_prefix"`
+	IcebergFormatVersion    types.String `tfsdk:"iceberg_format_version"`
 }
 
-func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
+func (d PipelineDestinationConfig) ToAPIModel(ctx context.Context) (openapi.PayloadsSpecificConfig, diag.Diagnostics) {
+	compaction, diags := compactionToAPI(ctx, d.Compaction)
+	var icebergFormatVersion *openapi.PayloadsSpecificConfigIcebergFormatVersion
+	if version := nonEmptyStringPointer(d.IcebergFormatVersion); version != nil {
+		icebergFormatVersion = lib.ToPtr(openapi.PayloadsSpecificConfigIcebergFormatVersion(*version))
+	}
+
 	return openapi.PayloadsSpecificConfig{
 		Database:                    lib.ToPtr(d.Database.ValueString()),
 		Schema:                      lib.ToPtr(d.Schema.ValueString()),
@@ -35,7 +48,14 @@ func (d PipelineDestinationConfig) ToAPIModel() openapi.PayloadsSpecificConfig {
 		TableNameSeparator:          lib.ToPtr(d.TableNameSeparator.ValueString()),
 		FolderName:                  lib.ToPtr(d.Folder.ValueString()),
 		DynamicallyCreateNamespaces: lib.ToPtr(d.CreateIcebergNamespaces.ValueBool()),
-	}
+		CheckpointInterval:          int64ToIntPointer(d.CheckpointInterval),
+		Compaction:                  compaction,
+		ContainerName:               stringPointer(d.ContainerName),
+		ExternalStageName:           stringPointer(d.ExternalStageName),
+		ExternalStageS3Bucket:       stringPointer(d.ExternalStageS3Bucket),
+		ExternalStageS3Prefix:       stringPointer(d.ExternalStageS3Prefix),
+		IcebergFormatVersion:        icebergFormatVersion,
+	}, diags
 }
 
 // Validate rejects a non-empty `dataset`: the API has no such field, so the value would be silently dropped.
@@ -46,7 +66,9 @@ func (d PipelineDestinationConfig) Validate() error {
 	return nil
 }
 
-func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConfig) PipelineDestinationConfig {
+func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConfig) (PipelineDestinationConfig, diag.Diagnostics) {
+	compaction, diags := compactionFromAPI(apiModel.Compaction)
+	// The API omits empty and zero values, so they read back as ""/0 (not null) to match a config that sets them.
 	return PipelineDestinationConfig{
 		// The API has no dataset field (BigQuery uses database), so this always reads back empty.
 		Dataset:                 types.StringValue(""),
@@ -58,7 +80,82 @@ func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConf
 		TableNameSeparator:      types.StringValue(lib.RemovePtr(apiModel.TableNameSeparator)),
 		Folder:                  types.StringValue(lib.RemovePtr(apiModel.FolderName)),
 		CreateIcebergNamespaces: types.BoolValue(lib.RemovePtr(apiModel.DynamicallyCreateNamespaces)),
+		CheckpointInterval:      types.Int64Value(int64(lib.RemovePtr(apiModel.CheckpointInterval))),
+		Compaction:              compaction,
+		ContainerName:           types.StringValue(lib.RemovePtr(apiModel.ContainerName)),
+		ExternalStageName:       types.StringValue(lib.RemovePtr(apiModel.ExternalStageName)),
+		ExternalStageS3Bucket:   types.StringValue(lib.RemovePtr(apiModel.ExternalStageS3Bucket)),
+		ExternalStageS3Prefix:   types.StringValue(lib.RemovePtr(apiModel.ExternalStageS3Prefix)),
+		IcebergFormatVersion:    types.StringValue(string(lib.RemovePtr(apiModel.IcebergFormatVersion))),
+	}, diags
+}
+
+type Compaction struct {
+	Enabled      types.Bool   `tfsdk:"enabled"`
+	EverySeconds types.Int64  `tfsdk:"every_seconds"`
+	QuietWindow  types.Object `tfsdk:"quiet_window"`
+}
+
+type CompactionQuietWindow struct {
+	Start types.String `tfsdk:"start"`
+	End   types.String `tfsdk:"end"`
+}
+
+var CompactionQuietWindowAttrTypes = map[string]attr.Type{
+	"start": types.StringType,
+	"end":   types.StringType,
+}
+
+var CompactionAttrTypes = map[string]attr.Type{
+	"enabled":       types.BoolType,
+	"every_seconds": types.Int64Type,
+	"quiet_window":  types.ObjectType{AttrTypes: CompactionQuietWindowAttrTypes},
+}
+
+func compactionToAPI(ctx context.Context, value types.Object) (*openapi.PayloadsCompactionConfig, diag.Diagnostics) {
+	compaction, diags := parseOptionalObject[Compaction](ctx, &value)
+	if compaction == nil {
+		return nil, diags
 	}
+
+	quietWindow, quietWindowDiags := parseOptionalObject[CompactionQuietWindow](ctx, &compaction.QuietWindow)
+	diags.Append(quietWindowDiags...)
+	var apiQuietWindow *openapi.PayloadsCompactionQuietWindow
+	if quietWindow != nil {
+		apiQuietWindow = &openapi.PayloadsCompactionQuietWindow{
+			Start: stringPointer(quietWindow.Start),
+			End:   stringPointer(quietWindow.End),
+		}
+	}
+
+	return &openapi.PayloadsCompactionConfig{
+		Enabled:      boolPointer(compaction.Enabled),
+		EverySeconds: int64ToIntPointer(compaction.EverySeconds),
+		QuietWindow:  apiQuietWindow,
+	}, diags
+}
+
+func compactionFromAPI(apiCompaction *openapi.PayloadsCompactionConfig) (types.Object, diag.Diagnostics) {
+	if apiCompaction == nil {
+		return types.ObjectNull(CompactionAttrTypes), nil
+	}
+
+	quietWindow := types.ObjectNull(CompactionQuietWindowAttrTypes)
+	var diags diag.Diagnostics
+	if apiCompaction.QuietWindow != nil {
+		quietWindow, diags = types.ObjectValue(CompactionQuietWindowAttrTypes, map[string]attr.Value{
+			"start": types.StringValue(lib.RemovePtr(apiCompaction.QuietWindow.Start)),
+			"end":   types.StringValue(lib.RemovePtr(apiCompaction.QuietWindow.End)),
+		})
+	}
+
+	compaction, compactionDiags := types.ObjectValue(CompactionAttrTypes, map[string]attr.Value{
+		"enabled":       boolPointerValueOrFalse(apiCompaction.Enabled),
+		"every_seconds": types.Int64Value(int64(lib.RemovePtr(apiCompaction.EverySeconds))),
+		"quiet_window":  quietWindow,
+	})
+	diags.Append(compactionDiags...)
+	return compaction, diags
 }
 
 type FlushConfig struct {
@@ -237,6 +334,12 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
+	destinationConfig, destinationConfigDiags := p.DestinationConfig.ToAPIModel(ctx)
+	diags.Append(destinationConfigDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsPipelinePayload{}, diags
+	}
+
 	advancedSettings := openapi.PayloadsAdvancedPipelineSettingsPayload{
 		DropDeletedColumns:                           boolPointer(p.DropDeletedColumns),
 		EnableSoftDelete:                             boolPointer(p.SoftDeleteRows),
@@ -274,7 +377,6 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		advancedSettings.FlushSizeKb = int64ToIntPointer(flushConfig.FlushSizeKB)
 	}
 
-	destinationConfig := p.DestinationConfig.ToAPIModel()
 	return openapi.PayloadsPipelinePayload{
 		Name:                     lib.ToPtr(p.Name.ValueString()),
 		SourceReaderUUID:         sourceReaderUUID,
@@ -301,7 +403,11 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		return Pipeline{}, diags
 	}
 
-	destinationConfig := PipelineDestinationConfigFromAPIModel(apiModel.SpecificDestCfg)
+	destinationConfig, destinationConfigDiags := PipelineDestinationConfigFromAPIModel(apiModel.SpecificDestCfg)
+	diags.Append(destinationConfigDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
 
 	var flushConfig types.Object
 	var dropDeletedColumns types.Bool

@@ -557,3 +557,87 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
 	}
 }
+
+func TestPipelineDestinationConfigRoundTrip(t *testing.T) {
+	{
+		// Omitted -> ""/0 and a null compaction
+		config, diags := PipelineDestinationConfigFromAPIModel(openapi.PayloadsSpecificConfig{})
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, types.Int64Value(0), config.CheckpointInterval)
+		assert.Equal(t, types.StringValue(""), config.ContainerName)
+		assert.Equal(t, types.StringValue(""), config.ExternalStageName)
+		assert.Equal(t, types.StringValue(""), config.IcebergFormatVersion)
+		assert.True(t, config.Compaction.IsNull())
+
+		apiModel, diags := config.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.IcebergFormatVersion)
+		assert.Nil(t, apiModel.Compaction)
+		assert.Equal(t, 0, *apiModel.CheckpointInterval)
+	}
+	{
+		apiConfig := openapi.PayloadsSpecificConfig{
+			CheckpointInterval:    ptr(-1),
+			ContainerName:         ptr("pdb"),
+			ExternalStageName:     ptr("stage"),
+			ExternalStageS3Bucket: ptr("bucket"),
+			ExternalStageS3Prefix: ptr("prefix"),
+			IcebergFormatVersion:  ptr(openapi.PayloadsSpecificConfigIcebergFormatVersionV3),
+			Compaction: &openapi.PayloadsCompactionConfig{
+				Enabled:     ptr(true),
+				QuietWindow: &openapi.PayloadsCompactionQuietWindow{Start: ptr("02:00"), End: ptr("06:00")},
+			},
+		}
+		config, diags := PipelineDestinationConfigFromAPIModel(apiConfig)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, "v3", config.IcebergFormatVersion.ValueString())
+		// everySeconds is omitted when 0, so it reads back as 0
+		assert.Equal(t, types.Int64Value(0), config.Compaction.Attributes()["every_seconds"])
+
+		apiModel, diags := config.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, -1, *apiModel.CheckpointInterval)
+		assert.Equal(t, "pdb", *apiModel.ContainerName)
+		assert.Equal(t, "stage", *apiModel.ExternalStageName)
+		assert.Equal(t, "bucket", *apiModel.ExternalStageS3Bucket)
+		assert.Equal(t, "prefix", *apiModel.ExternalStageS3Prefix)
+		assert.Equal(t, openapi.PayloadsSpecificConfigIcebergFormatVersionV3, *apiModel.IcebergFormatVersion)
+		assert.Equal(t, openapi.PayloadsCompactionConfig{
+			Enabled:      ptr(true),
+			EverySeconds: ptr(0),
+			QuietWindow:  &openapi.PayloadsCompactionQuietWindow{Start: ptr("02:00"), End: ptr("06:00")},
+		}, *apiModel.Compaction)
+	}
+	{
+		// Unknown (left out of the config on create): sent as nil so the API keeps what it has
+		config := PipelineDestinationConfig{
+			CheckpointInterval:    types.Int64Unknown(),
+			Compaction:            types.ObjectUnknown(CompactionAttrTypes),
+			ContainerName:         types.StringUnknown(),
+			ExternalStageName:     types.StringUnknown(),
+			ExternalStageS3Bucket: types.StringUnknown(),
+			ExternalStageS3Prefix: types.StringUnknown(),
+			IcebergFormatVersion:  types.StringUnknown(),
+		}
+		apiModel, diags := config.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.CheckpointInterval)
+		assert.Nil(t, apiModel.Compaction)
+		assert.Nil(t, apiModel.ContainerName)
+		assert.Nil(t, apiModel.ExternalStageName)
+		assert.Nil(t, apiModel.ExternalStageS3Bucket)
+		assert.Nil(t, apiModel.ExternalStageS3Prefix)
+		assert.Nil(t, apiModel.IcebergFormatVersion)
+	}
+	{
+		// Compaction settings left out inside a set block: sent as nil
+		compaction := types.ObjectValueMust(CompactionAttrTypes, map[string]attr.Value{
+			"enabled":       types.BoolValue(true),
+			"every_seconds": types.Int64Unknown(),
+			"quiet_window":  types.ObjectUnknown(CompactionQuietWindowAttrTypes),
+		})
+		apiModel, diags := PipelineDestinationConfig{Compaction: compaction}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, openapi.PayloadsCompactionConfig{Enabled: ptr(true)}, *apiModel.Compaction)
+	}
+}

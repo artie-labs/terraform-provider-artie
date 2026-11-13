@@ -3,8 +3,16 @@ package provider
 import (
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
+
+	"terraform-provider-artie/internal/lib"
+	"terraform-provider-artie/internal/openapi"
+	"terraform-provider-artie/internal/provider/tfmodels"
 )
 
 func TestClearedRegexPlan(t *testing.T) {
@@ -53,4 +61,35 @@ func TestPlannedPartitionBy(t *testing.T) {
 		// Partition type only known at apply time: the granularity from state is kept.
 		assert.Equal(t, types.StringValue("monthly"), plannedPartitionBy(types.StringUnknown(), types.StringValue("monthly")))
 	}
+}
+
+func TestPipelineSchemaMatchesModel_DestinationConfig(t *testing.T) {
+	// Setting state from a populated API model fails if destination_config's nested schema and model types disagree.
+	ctx := t.Context()
+	schemaResp := &resource.SchemaResponse{}
+	(&PipelineResource{}).Schema(ctx, resource.SchemaRequest{}, schemaResp)
+	apiModel := openapi.PayloadsFullPipeline{
+		Uuid:   uuid.New(),
+		Name:   "test",
+		Tables: []openapi.PayloadsTable{},
+		SpecificDestCfg: openapi.PayloadsSpecificConfig{
+			Compaction: &openapi.PayloadsCompactionConfig{QuietWindow: &openapi.PayloadsCompactionQuietWindow{}},
+		},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{
+			// The API always returns the flush rules.
+			FlushIntervalSeconds: lib.ToPtr(30),
+			BufferRows:           lib.ToPtr(1000),
+			FlushSizeKb:          lib.ToPtr(1000),
+		},
+	}
+	pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, apiModel)
+	assert.False(t, diags.HasError(), diags)
+
+	state := tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
+	setDiags := state.Set(ctx, pipeline)
+	assert.False(t, setDiags.HasError(), setDiags)
+	var readBack tfmodels.Pipeline
+	getDiags := state.Get(ctx, &readBack)
+	assert.False(t, getDiags.HasError(), getDiags)
+	assert.True(t, readBack.DestinationConfig.Compaction.Equal(pipeline.DestinationConfig.Compaction))
 }
