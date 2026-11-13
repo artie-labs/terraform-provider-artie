@@ -354,7 +354,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"port":        schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for DocumentDB is 27017."},
 					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to DocumentDB."},
 					"password":    schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-					"disable_ssl": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without SSL, for example over AWS PrivateLink."},
+					"disable_ssl": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without SSL. Leave it `false` (the default) to require SSL."},
 				},
 			},
 		},

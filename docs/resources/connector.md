@@ -256,7 +256,7 @@ Required:
 
 Optional:
 
-- `disable_ssl` (Boolean) Set to `true` to connect without SSL, for example over AWS PrivateLink.
+- `disable_ssl` (Boolean) Set to `true` to connect without SSL. Leave it `false` (the default) to require SSL.
 
 
 <a id="nestedatt--dynamodb_config"></a>
