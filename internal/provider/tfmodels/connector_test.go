@@ -145,3 +145,34 @@ func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
 		assert.Nil(t, body.PrivateLinkUUID)
 	}
 }
+
+// roundTripSharedConfig reads sharedConfig into a connector of connectorType, then returns that connector and the
+// sharedConfig it sends back.
+func roundTripSharedConfig(t *testing.T, connectorType string, sharedConfig string, prior Connector) (Connector, map[string]any) {
+	t.Helper()
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "`+connectorType+`",
+		"label": "test",
+		"sharedConfig": `+sharedConfig+`
+	}`), &apiConnector))
+
+	connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+	require.False(t, diags.HasError(), diags)
+
+	body, diags := connector.ToAPIModel()
+	require.False(t, diags.HasError(), diags)
+	assert.Equal(t, connectorType, *body.Type)
+	require.NotNil(t, body.SharedConfig)
+	return connector, *body.SharedConfig
+}
+
+func TestIcebergRESTTokenAPIModelRoundTrip(t *testing.T) {
+	// A masked token is kept from prior and sent back under the same key
+	prior := Connector{Type: types.StringValue("iceberg"), IcebergConfig: &IcebergSharedConfig{Token: types.StringValue("real-token")}}
+	connector, config := roundTripSharedConfig(t, "iceberg", `{"provider": "rest", "uri": "https://catalog.example.com", "token": "********", "warehouse": "wh"}`, prior)
+	require.NotNil(t, connector.IcebergConfig)
+	assert.Equal(t, "real-token", connector.IcebergConfig.Token.ValueString())
+	assert.Equal(t, "real-token", config["token"])
+}
