@@ -36,14 +36,13 @@ var _ resource.Resource = &ConnectorResource{}
 var _ resource.ResourceWithConfigure = &ConnectorResource{}
 var _ resource.ResourceWithImportState = &ConnectorResource{}
 
-// supportedConnectorTypes lists the source and destination connector types this resource can configure.
 // hostRewritingPrivateLinkTypes are the connector types a PrivateLink would break; see ValidateConfig.
 var hostRewritingPrivateLinkTypes = []string{
-	string(openapi.EnumsConnectorSlugDocumentdb),
 	string(openapi.EnumsConnectorSlugMongodb),
 	string(openapi.EnumsConnectorSlugPlanetscale),
 }
 
+// supportedConnectorTypes lists the source and destination connector types this resource can configure.
 var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugApi),
 	string(openapi.EnumsConnectorSlugBigquery),
@@ -98,13 +97,13 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), sshTunnelDetachesPrivateLinkPlanModifier{}, smbSharePrivateLinkPlanModifier{}},
-				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `documentdb`, `mongodb` and `planetscale` are rejected at plan time, since the API would replace their host (MongoDB's whole connection string) with the link's DNS entry, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `documentdb` (set `documentdb_config.disable_ssl = true`, since DocumentDB can't present a valid TLS certificate over a PrivateLink), `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `mongodb` and `planetscale` are rejected at plan time, since the API would replace their host (MongoDB's whole connection string) with the link's DNS entry, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`.",
 			},
 			"snapshot_private_link_uuid": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), sshTunnelDetachesPrivateLinkPlanModifier{}},
-				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`. `documentdb`, `mongodb` and `planetscale` are rejected at plan time, since the API would replace their host (MongoDB's whole connection string) with the link's DNS entry, and other types fail when applied. Leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`. After an import, `snapshot_host` can hold the link's DNS entry, so set `snapshot_host` in the config when detaching.",
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`. `documentdb` (which has no snapshot host), `mongodb` and `planetscale` are rejected at plan time, since the API would replace their host (MongoDB's whole connection string) with the link's DNS entry, and other types fail when applied. Leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `\"\"` to detach the connector before destroying its `artie_private_link`. After an import, `snapshot_host` can hold the link's DNS entry, so set `snapshot_host` in the config when detaching.",
 			},
 			"default_database": schema.StringAttribute{
 				Optional:            true,
@@ -487,6 +486,12 @@ func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State
 	diagnostics.Append(state.Set(ctx, connector)...)
 }
 
+func rejectPrivateLink(resp *resource.ValidateConfigResponse, name string, value types.String, connectorType string) {
+	if tfmodels.IsKnownAndNonEmpty(value) {
+		resp.Diagnostics.AddAttributeError(path.Root(name), "PrivateLink not supported", fmt.Sprintf("`%s` isn't supported for `%s` connectors.", name, connectorType))
+	}
+}
+
 func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var configData tfmodels.Connector
 	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
@@ -506,11 +511,12 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	// The API accepts a PrivateLink for these types but replaces their host (MongoDB's whole connection string) with the
 	// link's DNS entry, which breaks the connection.
 	if slices.Contains(hostRewritingPrivateLinkTypes, configData.Type.ValueString()) {
-		for name, value := range map[string]types.String{"private_link_uuid": configData.PrivateLinkUUID, "snapshot_private_link_uuid": configData.SnapshotPrivateLinkUUID} {
-			if tfmodels.IsKnownAndNonEmpty(value) {
-				resp.Diagnostics.AddAttributeError(path.Root(name), "PrivateLink not supported", fmt.Sprintf("`%s` isn't supported for `%s` connectors.", name, configData.Type.ValueString()))
-			}
-		}
+		rejectPrivateLink(resp, "private_link_uuid", configData.PrivateLinkUUID, configData.Type.ValueString())
+		rejectPrivateLink(resp, "snapshot_private_link_uuid", configData.SnapshotPrivateLinkUUID, configData.Type.ValueString())
+	}
+	// DocumentDB works over a PrivateLink, but it has no snapshot host.
+	if configData.Type.ValueString() == string(openapi.EnumsConnectorSlugDocumentdb) {
+		rejectPrivateLink(resp, "snapshot_private_link_uuid", configData.SnapshotPrivateLinkUUID, configData.Type.ValueString())
 	}
 
 	switch configData.Type.ValueString() {

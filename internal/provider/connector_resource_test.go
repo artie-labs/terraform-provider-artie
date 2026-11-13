@@ -130,14 +130,19 @@ func TestConnectorValidateConfigPrivateLinks(t *testing.T) {
 		assert.Equal(t, 2, diags.ErrorsCount(), diags)
 	}
 	{
-		// documentdb is rejected too: the API would replace its host with the link's DNS entry
+		// documentdb works over a PrivateLink
 		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("documentdb"), "private_link_uuid": types.StringValue(linkA)})
-		assert.Equal(t, []string{"`private_link_uuid` isn't supported for `documentdb` connectors."}, privateLinkRejections(diags))
+		assert.Empty(t, privateLinkRejections(diags))
+	}
+	{
+		// documentdb has no snapshot host, so the snapshot link is rejected
+		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("documentdb"), "snapshot_private_link_uuid": types.StringValue(linkB)})
+		assert.Equal(t, []string{"`snapshot_private_link_uuid` isn't supported for `documentdb` connectors."}, privateLinkRejections(diags))
 	}
 	{
 		// planetscale is rejected for both links: it shares MySQL's host and snapshotHost
-		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("planetscale"), "snapshot_private_link_uuid": types.StringValue(linkB)})
-		assert.Equal(t, []string{"`snapshot_private_link_uuid` isn't supported for `planetscale` connectors."}, privateLinkRejections(diags))
+		diags := validateConnectorConfig(t, map[string]attr.Value{"type": types.StringValue("planetscale"), "private_link_uuid": types.StringValue(linkA), "snapshot_private_link_uuid": types.StringValue(linkB)})
+		assert.ElementsMatch(t, []string{"`private_link_uuid` isn't supported for `planetscale` connectors.", "`snapshot_private_link_uuid` isn't supported for `planetscale` connectors."}, privateLinkRejections(diags))
 	}
 	{
 		// mongodb with the link removed or left out is fine
@@ -197,11 +202,10 @@ func TestSMBSharePrivateLinkPlanModifier(t *testing.T) {
 		assert.True(t, value.IsUnknown())
 	}
 	{
-		// smb_share setting the top-level value keeps the planned value
-		const other = "22222222-2222-2222-2222-222222222222"
-		value, diags := runStringPlanModifier(t, smbSharePrivateLinkPlanModifier{}, map[string]attr.Value{"type": types.StringValue("smb_share"), "smb_share_config": smbShareConfigValue(types.StringValue(link))}, types.StringValue(other), types.StringValue(other))
+		// smb_share setting the top-level value to the block's value keeps the planned value
+		value, diags := runStringPlanModifier(t, smbSharePrivateLinkPlanModifier{}, map[string]attr.Value{"type": types.StringValue("smb_share"), "smb_share_config": smbShareConfigValue(types.StringValue(link))}, types.StringValue(link), types.StringValue(link))
 		assert.False(t, diags.HasError(), diags)
-		assert.Equal(t, types.StringValue(other), value)
+		assert.Equal(t, types.StringValue(link), value)
 	}
 }
 
@@ -238,6 +242,15 @@ func TestConnectorValidateConfigSSHTunnelAndPrivateLink(t *testing.T) {
 			"smb_share_config": smbShareConfigValue(types.StringValue(link)),
 		})
 		assert.Equal(t, []string{"smb_share_config.private_link_uuid"}, conflicts(diags))
+	}
+	{
+		// A tunnel on a non-SMB type with a stray SMB share block link: fine, since only smb_share uses that link
+		diags := validateConnectorConfig(t, map[string]attr.Value{
+			"type":             types.StringValue("postgresql"),
+			"ssh_tunnel_uuid":  types.StringValue(tunnel),
+			"smb_share_config": smbShareConfigValue(types.StringValue(link)),
+		})
+		assert.Empty(t, conflicts(diags))
 	}
 	{
 		// A tunnel with the link removed: fine
