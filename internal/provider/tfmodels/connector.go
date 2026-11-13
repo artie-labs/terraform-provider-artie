@@ -176,13 +176,13 @@ func SMBSharePrivateLinkPlan(connectorType, configValue, smbConfigValue, plan ty
 	return types.StringValue(smbConfigValue.ValueString())
 }
 
-// ConflictingSMBSharePrivateLinks reports whether an SMB share's config sets the top-level private_link_uuid, "" included,
-// to something other than a non-empty smb_share_config.private_link_uuid.
+// ConflictingSMBSharePrivateLinks reports whether an SMB share's config sets both the top-level private_link_uuid and
+// smb_share_config.private_link_uuid to different values, "" included.
 func ConflictingSMBSharePrivateLinks(topLevel, smbShare types.String) bool {
 	if !IsKnown(topLevel) {
 		return false
 	}
-	if !IsKnownAndNonEmpty(smbShare) {
+	if !IsKnown(smbShare) {
 		return false
 	}
 	return topLevel.ValueString() != smbShare.ValueString()
