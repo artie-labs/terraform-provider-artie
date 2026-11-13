@@ -33,11 +33,12 @@ func testKafkaClusterPayload() openapi.PayloadsKafkaCluster {
 		TierAllTopics:        true,
 		LocalRetentionMS:     lib.ToPtr(259200000),
 		Managed: &openapi.PayloadsKafkaClusterManaged{
-			AllowedCIDRs: []string{"10.0.0.0/16"},
-			Brokers:      3,
-			InstanceType: "m8g.xlarge",
-			KafkaVersion: "4.0.0",
-			StorageGiB:   100,
+			AllowedCIDRs:   []string{"10.0.0.0/16"},
+			BrokerSettings: openapi.PayloadsKafkaClusterBrokerSettings{RetentionMS: 1209600000},
+			Brokers:        3,
+			InstanceType:   "m8g.xlarge",
+			KafkaVersion:   "4.0.0",
+			StorageGiB:     100,
 		},
 		StorageAutoscale: &openapi.PayloadsKafkaClusterStorageAutoscale{
 			Enabled:       true,
@@ -54,6 +55,7 @@ func TestKafkaClusterFromAPIModel(t *testing.T) {
 	assert.Equal(t, int64(3), cluster.Brokers.ValueInt64())
 	assert.Equal(t, int64(100), cluster.StorageGiB.ValueInt64())
 	assert.Equal(t, int64(100), cluster.CurrentStorageGiB.ValueInt64())
+	assert.Equal(t, int64(1209600000), cluster.RetentionMS.ValueInt64())
 	assert.Equal(t, testTieredStorage(true, types.Int64Value(259200000), types.Int64Null()), cluster.TieredStorage)
 	assert.Equal(t, "active", cluster.Status.ValueString())
 
@@ -90,9 +92,59 @@ func TestKafkaClusterToAPICreateRequest_Defaults(t *testing.T) {
 	assert.Nil(t, req.LocalRetentionMS)
 	assert.Nil(t, req.LocalRetentionBytes)
 	assert.Nil(t, req.StorageAutoscale)
+	assert.Nil(t, req.RetentionMS)
 	// The API requires the list, so an empty one is sent rather than null.
 	assert.Equal(t, []string{}, req.AllowedCIDRs)
 	assert.Equal(t, openapi.PayloadsKafkaInstanceTypeM8gXlarge, req.InstanceType)
+}
+
+func TestKafkaClusterToAPICreateRequest_RetentionMS(t *testing.T) {
+	cluster := KafkaCluster{
+		AllowedCIDRs:     types.ListValueMust(types.StringType, []attr.Value{}),
+		RetentionMS:      types.Int64Value(-1),
+		TieredStorage:    testTieredStorage(true, types.Int64Unknown(), types.Int64Null()),
+		StorageAutoscale: types.ObjectUnknown(KafkaClusterStorageAutoscaleAttrTypes),
+	}
+	req, diags := cluster.ToAPICreateRequest(t.Context())
+	assert.False(t, diags.HasError())
+	assert.Equal(t, -1, *req.RetentionMS)
+}
+
+func TestKafkaClusterBrokerSettingsToAPIUpdate(t *testing.T) {
+	state, diags := KafkaClusterFromAPIModel(t.Context(), testKafkaClusterPayload())
+	assert.False(t, diags.HasError())
+
+	{
+		// Unchanged: nothing is sent.
+		assert.Nil(t, state.BrokerSettingsToAPIUpdate(state))
+	}
+	{
+		// Left out of the config with none in state (e.g. state from before the attribute existed): not a change.
+		plan := state
+		plan.RetentionMS = types.Int64Unknown()
+		prior := state
+		prior.RetentionMS = types.Int64Null()
+		assert.Nil(t, plan.BrokerSettingsToAPIUpdate(prior))
+	}
+	{
+		// Changed: the new retention is sent, and it isn't part of the cluster update.
+		plan := state
+		plan.RetentionMS = types.Int64Value(-1)
+		req := plan.BrokerSettingsToAPIUpdate(state)
+		if assert.NotNil(t, req) {
+			assert.Equal(t, -1, *req.RetentionMS)
+		}
+		update, diags := plan.ToAPIUpdateRequest(t.Context(), state)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, openapi.RouterUpdateKafkaClusterRequest{}, update)
+	}
+}
+
+func TestAppliesToBrokers(t *testing.T) {
+	assert.False(t, AppliesToBrokers(openapi.RouterUpdateKafkaClusterRequest{}))
+	assert.False(t, AppliesToBrokers(openapi.RouterUpdateKafkaClusterRequest{Name: lib.ToPtr("renamed"), StorageAutoscale: &openapi.PayloadsKafkaClusterStorageAutoscale{}}))
+	assert.True(t, AppliesToBrokers(openapi.RouterUpdateKafkaClusterRequest{Brokers: lib.ToPtr(4)}))
+	assert.True(t, AppliesToBrokers(openapi.RouterUpdateKafkaClusterRequest{Name: lib.ToPtr("renamed"), AllowedCIDRs: &[]string{}}))
 }
 
 func TestKafkaClusterToAPIUpdateRequest(t *testing.T) {
@@ -183,8 +235,13 @@ func TestKafkaClusterWithCreatedCluster(t *testing.T) {
 		CurrentStorageGiB:      types.Int64Unknown(),
 		KafkaVersion:           types.StringUnknown(),
 		TieredStorageAvailable: types.BoolUnknown(),
+		RetentionMS:            types.Int64Unknown(),
 	}
 	cluster := plan.WithCreatedCluster(payload)
+	// Left out of the config, the retention comes from the response; a configured one is kept.
+	assert.Equal(t, int64(1209600000), cluster.RetentionMS.ValueInt64())
+	plan.RetentionMS = types.Int64Value(-1)
+	assert.Equal(t, int64(-1), plan.WithCreatedCluster(payload).RetentionMS.ValueInt64())
 	assert.Equal(t, payload.Uuid.String(), cluster.UUID.ValueString())
 	assert.Equal(t, "my-cluster", cluster.Name.ValueString())
 	assert.Equal(t, "active", cluster.Status.ValueString())
