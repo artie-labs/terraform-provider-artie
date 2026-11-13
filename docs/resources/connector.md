@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `kafka`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redis`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `documentdb`, `dynamodb`, `gcs`, `iceberg`, `kafka`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redis`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -165,6 +165,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M). (see [below for nested schema](#nestedatt--databricks_config))
 - `default_database` (String) The database we connect to when testing the connection and listing a source's databases. `postgresql`, `cockroach`, and `oracle` connectors need one to be usable as a source. If this is left out, it keeps the value already saved on the connector; set it to `""` to clear it.
 - `delta_config` (Attributes) This should be filled out if the connector type is `delta` (Delta Lake on S3). You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--delta_config))
+- `documentdb_config` (Attributes) This should be filled out if the connector type is `documentdb`. (see [below for nested schema](#nestedatt--documentdb_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
@@ -246,6 +247,21 @@ Optional:
 - `external_id` (String) The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set.
 - `role_arn` (String) The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required.
 - `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+
+
+<a id="nestedatt--documentdb_config"></a>
+### Nested Schema for `documentdb_config`
+
+Required:
+
+- `host` (String) The hostname of the Amazon DocumentDB cluster.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for DocumentDB is 27017.
+- `username` (String) The username of the service account we will use to connect to DocumentDB.
+
+Optional:
+
+- `disable_ssl` (Boolean) Set to `true` to connect without SSL. Leave it `false` (the default) to require SSL.
 
 
 <a id="nestedatt--dynamodb_config"></a>

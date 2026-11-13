@@ -499,4 +499,31 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, int32(0), connector.RedisConfig.Database.ValueInt32())
 		assert.NotContains(t, config, "database")
 	}
+	{
+		// DocumentDB
+		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "secret", "disableSSL": true}`, Connector{})
+		require.NotNil(t, connector.DocumentDBConfig)
+		assert.Equal(t, "docdb.example.com", connector.DocumentDBConfig.Host.ValueString())
+		assert.Equal(t, int32(27017), connector.DocumentDBConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.DocumentDBConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.DocumentDBConfig.Password.ValueString())
+		assert.True(t, connector.DocumentDBConfig.DisableSSL.ValueBool())
+
+		assert.Equal(t, "docdb.example.com", config["host"])
+		assert.InDelta(t, 27017, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.Equal(t, true, config["disableSSL"])
+	}
+	{
+		// DocumentDB: a masked password is kept from prior, and SSL left on omits disableSSL, which the API reads as false
+		prior := Connector{Type: types.StringValue("documentdb"), DocumentDBConfig: &DocumentDBSharedConfig{Password: types.StringValue("real-password")}}
+		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "********"}`, prior)
+		require.NotNil(t, connector.DocumentDBConfig)
+		assert.Equal(t, "real-password", connector.DocumentDBConfig.Password.ValueString())
+		assert.False(t, connector.DocumentDBConfig.DisableSSL.ValueBool())
+
+		assert.Equal(t, "real-password", config["password"])
+		assert.NotContains(t, config, "disableSSL")
+	}
 }

@@ -41,6 +41,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugCockroach),
 	string(openapi.EnumsConnectorSlugDatabricks),
 	string(openapi.EnumsConnectorSlugDelta),
+	string(openapi.EnumsConnectorSlugDocumentdb),
 	string(openapi.EnumsConnectorSlugDynamodb),
 	string(openapi.EnumsConnectorSlugGcs),
 	string(openapi.EnumsConnectorSlugIceberg),
@@ -407,6 +408,17 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"max_stream_length": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "Trims each stream to approximately this many entries. `0` never trims."},
 				},
 			},
+			"documentdb_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `documentdb`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":        schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Amazon DocumentDB cluster."},
+					"port":        schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for DocumentDB is 27017."},
+					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to DocumentDB."},
+					"password":    schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"disable_ssl": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without SSL. Leave it `false` (the default) to require SSL."},
+				},
+			},
 		},
 	}
 }
@@ -670,6 +682,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 	case string(openapi.EnumsConnectorSlugRedis):
 		if configData.RedisConfig == nil {
 			resp.Diagnostics.AddError("redis_config is required", "Please provide `redis_config` inside `connector`.")
+		}
+	case string(openapi.EnumsConnectorSlugDocumentdb):
+		if configData.DocumentDBConfig == nil {
+			resp.Diagnostics.AddError("documentdb_config is required", "Please provide `documentdb_config` inside `connector`.")
 		}
 	}
 }

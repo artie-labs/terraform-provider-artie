@@ -80,6 +80,9 @@ type ConnectorConfig struct {
 	ClientCert            string `json:"clientCert,omitempty"`
 	ClientKey             string `json:"clientKey,omitempty"`
 
+	// DocumentDB:
+	DocumentDBDisableSSL bool `json:"disableSSL,omitempty"`
+
 	// Redis:
 	RedisDatabase        redisDatabase `json:"database,omitempty"`
 	RedisTLS             bool          `json:"tls,omitempty"`
