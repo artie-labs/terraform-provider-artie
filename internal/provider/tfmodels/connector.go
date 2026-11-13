@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -679,16 +680,17 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 }
 
 type ClickHouseSharedConfig struct {
-	Addresses  []types.String `tfsdk:"addresses"`
-	Username   types.String   `tfsdk:"username"`
-	Password   types.String   `tfsdk:"password"`
-	IsInsecure types.Bool     `tfsdk:"is_insecure"`
+	Addresses  types.List   `tfsdk:"addresses"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
+	IsInsecure types.Bool   `tfsdk:"is_insecure"`
 }
 
 func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
-	addresses := make([]string, 0, len(c.Addresses))
-	for _, address := range c.Addresses {
-		addresses = append(addresses, address.ValueString())
+	// An unknown list has no elements; ToAPIModel only sends planned values, which are known.
+	addresses := make([]string, 0, len(c.Addresses.Elements()))
+	for _, address := range c.Addresses.Elements() {
+		addresses = append(addresses, address.(types.String).ValueString())
 	}
 	return ConnectorConfig{
 		ClickHouseAddresses:  addresses,
@@ -699,12 +701,12 @@ func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
 }
 
 func ClickHouseSharedConfigFromAPIModel(apiModel ConnectorConfig) *ClickHouseSharedConfig {
-	addresses := make([]types.String, 0, len(apiModel.ClickHouseAddresses))
+	addresses := make([]attr.Value, 0, len(apiModel.ClickHouseAddresses))
 	for _, address := range apiModel.ClickHouseAddresses {
 		addresses = append(addresses, types.StringValue(address))
 	}
 	return &ClickHouseSharedConfig{
-		Addresses:  addresses,
+		Addresses:  types.ListValueMust(types.StringType, addresses),
 		Username:   types.StringValue(apiModel.Username),
 		Password:   types.StringValue(apiModel.Password),
 		IsInsecure: types.BoolValue(apiModel.ClickHouseIsInsecure),
