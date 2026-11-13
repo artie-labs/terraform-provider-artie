@@ -34,6 +34,7 @@ type Connector struct {
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
 	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
+	MotherDuckConfig  *MotherDuckSharedConfig  `tfsdk:"motherduck_config"`
 
 	PrivateLinkUUID         types.String `tfsdk:"private_link_uuid"`
 	SnapshotPrivateLinkUUID types.String `tfsdk:"snapshot_private_link_uuid"`
@@ -79,6 +80,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugDelta:
 		sharedConfig = c.DeltaConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugMotherduck:
+		sharedConfig = c.MotherDuckConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -252,6 +255,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugDelta:
 		connector.DeltaConfig = S3SharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugMotherduck:
+		connector.MotherDuckConfig = MotherDuckSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -723,4 +728,16 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:         types.StringValue(apiModel.AWSExternalID),
 	}
+}
+
+type MotherDuckSharedConfig struct {
+	Token types.String `tfsdk:"token"`
+}
+
+func (m MotherDuckSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{Token: m.Token.ValueString()}
+}
+
+func MotherDuckSharedConfigFromAPIModel(apiModel ConnectorConfig) *MotherDuckSharedConfig {
+	return &MotherDuckSharedConfig{Token: types.StringValue(apiModel.Token)}
 }

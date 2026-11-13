@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -170,6 +170,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
 - `keyspaces_config` (Attributes) This should be filled out if the connector type is `keyspaces`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--keyspaces_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
+- `motherduck_config` (Attributes) This should be filled out if the connector type is `motherduck`. (see [below for nested schema](#nestedatt--motherduck_config))
 - `mssql_config` (Attributes) This should be filled out if the connector type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the connector type is `mysql`. (see [below for nested schema](#nestedatt--mysql_config))
 - `name` (String) An optional human-readable label for this connector.
@@ -315,6 +316,14 @@ Required:
 - `host` (String) The connection string for the MongoDB server. This can be either SRV or standard format.
 - `password` (String, Sensitive) The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `username` (String) The username of the service account we will use to connect to the MongoDB database.
+
+
+<a id="nestedatt--motherduck_config"></a>
+### Nested Schema for `motherduck_config`
+
+Required:
+
+- `token` (String, Sensitive) The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--mssql_config"></a>
