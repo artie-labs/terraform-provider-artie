@@ -37,6 +37,7 @@ resource "artie_private_link" "example" {
 
 ### Read-Only
 
+- `cloud_provider` (String) The cloud provider of the Private Link target (`aws`, `azure` or `gcp`), derived by Artie from the target.
 - `dns_entry` (String) The DNS entry for the PrivateLink connection.
 - `region` (String) The AWS region of the VPC endpoint (e.g., us-east-1).
 - `status` (String) The status of the PrivateLink connection (e.g., available, pending).

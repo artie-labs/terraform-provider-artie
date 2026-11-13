@@ -20,6 +20,7 @@ type PrivateLink struct {
 	Status         types.String `tfsdk:"status"`
 	DnsEntry       types.String `tfsdk:"dns_entry"`
 	DataPlaneName  types.String `tfsdk:"data_plane_name"`
+	CloudProvider  types.String `tfsdk:"cloud_provider"`
 }
 
 func (p PrivateLink) ToAPICreateRequest(ctx context.Context) (openapi.RouterPrivateLinkConnectionCreateRequest, diag.Diagnostics) {
@@ -58,5 +59,6 @@ func PrivateLinkFromAPIModel(ctx context.Context, apiModel openapi.PayloadsPriva
 		Status:         types.StringValue(apiModel.Status),
 		DnsEntry:       types.StringValue(apiModel.DnsEntry),
 		DataPlaneName:  types.StringValue(lib.RemovePtr(apiModel.DataPlaneName)),
+		CloudProvider:  types.StringValue(string(apiModel.Provider)),
 	}, diags
 }
