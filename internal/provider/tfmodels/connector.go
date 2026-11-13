@@ -34,6 +34,7 @@ type Connector struct {
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
 	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
+	MotherDuckConfig  *MotherDuckSharedConfig  `tfsdk:"motherduck_config"`
 	DocumentDBConfig  *DocumentDBSharedConfig  `tfsdk:"documentdb_config"`
 }
 
@@ -76,6 +77,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugDelta:
 		sharedConfig = c.DeltaConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugMotherduck:
+		sharedConfig = c.MotherDuckConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugDocumentdb:
 		sharedConfig = c.DocumentDBConfig.ToAPIModel()
 	default:
@@ -178,6 +181,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugDelta:
 		connector.DeltaConfig = S3SharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugMotherduck:
+		connector.MotherDuckConfig = MotherDuckSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugDocumentdb:
 		connector.DocumentDBConfig = DocumentDBSharedConfigFromAPIModel(config)
 	default:
@@ -651,6 +656,18 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:         types.StringValue(apiModel.AWSExternalID),
 	}
+}
+
+type MotherDuckSharedConfig struct {
+	Token types.String `tfsdk:"token"`
+}
+
+func (m MotherDuckSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{Token: m.Token.ValueString()}
+}
+
+func MotherDuckSharedConfigFromAPIModel(apiModel ConnectorConfig) *MotherDuckSharedConfig {
+	return &MotherDuckSharedConfig{Token: types.StringValue(apiModel.Token)}
 }
 
 type DocumentDBSharedConfig struct {
