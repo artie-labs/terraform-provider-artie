@@ -271,10 +271,10 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 				Optional: true, Computed: true, PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
 				MarkdownDescription: "Settings for backfilling a DynamoDB table from an S3 export. Settings left out keep their current value. This is only applicable if the source is DynamoDB.",
 				Attributes: map[string]schema.Attribute{
-					"enabled":         schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, new tables are backfilled from a DynamoDB export to S3."},
-					"bucket":          schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 bucket DynamoDB exports the table to. Required when `enabled` is true, unless `export_arn` is set."},
+					"enabled":         schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, new tables are backfilled from a DynamoDB export to S3. Requires `export_arn`. Turning it on clears `skip_backfill` on every existing table. While it's off, Artie sets `skip_backfill` on new tables and on tables still waiting for a backfill, so leave `skip_backfill` out (or set it to true) on those."},
+					"bucket":          schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The S3 bucket the DynamoDB export was written to."},
 					"optional_folder": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "An optional folder inside `bucket` for the export."},
-					"export_arn":      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The ARN of an existing DynamoDB export to backfill from, instead of starting a new export."},
+					"export_arn":      schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "The ARN of the DynamoDB export to S3 to backfill from. Required when `enabled` is true. Terraform doesn't start an export, so start one in the Artie UI (or with AWS) and set its ARN here."},
 					"max_parallelism": schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseNonNullStateForUnknown()}, Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "How many export files the backfill reads and writes at once. Set to 0 to use Artie's default (1)."},
 				},
 			},
@@ -453,8 +453,8 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 }
 
 // ModifyPlan clears a regex left out of the config while the other of its pair is set, so switching from an ignore
-// regex to an include regex (or back) doesn't send the old one from state alongside the new one. It also plans the
-// existing tables' skip_backfill when the DynamoDB backfill is switched on or off.
+// regex to an include regex (or back) doesn't send the old one from state alongside the new one. It also checks the
+// planned DynamoDB backfill and plans the existing tables' skip_backfill when the backfill is switched on or off.
 func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroying
@@ -469,42 +469,63 @@ func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 			}
 		}
 	}
+	validateDynamoDBBackfillPlan(ctx, req, resp)
 	if req.State.Raw.IsNull() {
-		validateNewDynamoDBBackfill(ctx, req, resp)
 		return
 	}
 	planSkipBackfillOnBackfillSwitch(ctx, req, resp)
 }
 
-// validateNewDynamoDBBackfill rejects a new pipeline whose DynamoDB backfill is enabled with neither a bucket nor an
-// export ARN, which ValidateConfig can't tell apart from an existing one keeping its saved bucket.
-func validateNewDynamoDBBackfill(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var config types.Object
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("dynamodb_backfill_config"), &config)...)
-	if !tfmodels.IsKnown(config) {
-		return
-	}
-	var backfill tfmodels.DynamoDBBackfillConfig
-	resp.Diagnostics.Append(config.As(ctx, &backfill, basetypes.ObjectAsOptions{})...)
+// validateDynamoDBBackfillPlan runs DynamoDBBackfillConfig.Validate on the planned config, which carries the saved values
+// for settings left out of the config. An export ARN that's still unknown in the plan but left out of the config has
+// no saved value behind it, so it counts as empty.
+func validateDynamoDBBackfillPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	backfillPath := path.Root("dynamodb_backfill_config")
+	var planned types.Object
+	var configured types.String
+	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, backfillPath, &planned)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, backfillPath.AtName("export_arn"), &configured)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if err := backfill.ValidateOnCreate(); err != nil {
-		resp.Diagnostics.AddAttributeError(path.Root("dynamodb_backfill_config"), "Invalid configuration", err.Error())
+	if !tfmodels.IsKnown(planned) {
+		return
+	}
+	var backfill tfmodels.DynamoDBBackfillConfig
+	resp.Diagnostics.Append(planned.As(ctx, &backfill, basetypes.ObjectAsOptions{})...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if backfill.ExportARN.IsUnknown() {
+		if !configured.IsNull() {
+			return
+		}
+		backfill.ExportARN = types.StringValue("")
+	}
+	if err := backfill.Validate(); err != nil {
+		resp.Diagnostics.AddAttributeError(backfillPath.AtName("export_arn"), "Invalid configuration", err.Error())
 	}
 }
 
 // planSkipBackfillOnBackfillSwitch plans the existing tables' skip_backfill when the DynamoDB backfill is switched on or
 // off, since the API overwrites it then: turning the backfill on clears skipBackfill on every existing table, and turning
 // it off sets it on tables still waiting for their backfill. Tables that leave skip_backfill out plan it as unknown, and
-// an existing table can't keep skip_backfill = true in the plan that turns the backfill on.
+// an existing table can't keep skip_backfill = true in the plan that turns the backfill on. A table that sets
+// skip_backfill = false while the backfill is off isn't caught: the plan can't tell whether it's still waiting for its
+// backfill, so the docs cover it.
 func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	enabledPath := path.Root("dynamodb_backfill_config").AtName("enabled")
+	backfillPath := path.Root("dynamodb_backfill_config")
 	var prior, planned types.Bool
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, enabledPath, &prior)...)
-	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, enabledPath, &planned)...)
+	var plannedConfig types.Object
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, backfillPath.AtName("enabled"), &prior)...)
+	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, backfillPath, &plannedConfig)...)
+	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, backfillPath.AtName("enabled"), &planned)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	// Reading through a wholly unknown object gives null, but its enabled may be anything at apply.
+	if plannedConfig.IsUnknown() {
+		planned = types.BoolUnknown()
 	}
 	if !backfillMaySwitch(prior, planned) {
 		return
@@ -520,8 +541,9 @@ func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPl
 		return
 	}
 	turnsOn := tfmodels.IsExplicitlyTrue(planned)
-	// Only existing tables still in the config: the API keeps the payload's skip_backfill on tables this apply adds,
-	// and a table removed from the config must stay out of the plan.
+	// Only existing tables still in the config: tables this apply adds aren't affected by the switch (turning it off
+	// sets skip_backfill on them, as it does whenever the backfill is off), and a table removed from the config must
+	// stay out of the plan.
 	for key := range priorTables.Elements() {
 		configTable, ok := configTables.Elements()[key].(types.Object)
 		if !ok {
@@ -700,6 +722,13 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 }
 
+func dynamoDBBackfillConfig(settings *openapi.PayloadsAdvancedPipelineSettingsPayload) *openapi.PayloadsDynamoDBSnapshotConfig {
+	if settings == nil {
+		return nil
+	}
+	return settings.DynamoDBBackfillConfig
+}
+
 // validate runs the API's source and destination checks against an unsaved pipeline.
 func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.PayloadsPipelinePayload) error {
 	tables, err := tfmodels.ValidationTables(pipeline.Tables)
@@ -708,10 +737,11 @@ func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.Payloa
 	}
 
 	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedSourceWithResponse(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
-		SourceReaderUUID: pipeline.SourceReaderUUID,
-		ValidateTables:   true,
-		Tables:           tables,
-		DataPlaneName:    pipeline.DataPlaneName,
+		SourceReaderUUID:       pipeline.SourceReaderUUID,
+		ValidateTables:         true,
+		Tables:                 tables,
+		DataPlaneName:          pipeline.DataPlaneName,
+		DynamoDBBackfillConfig: dynamoDBBackfillConfig(pipeline.AdvancedSettings),
 	})); err != nil {
 		return fmt.Errorf("source validation failed: %w", err)
 	}

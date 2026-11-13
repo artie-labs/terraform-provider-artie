@@ -560,34 +560,24 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 
 func TestDynamoDBBackfillConfigValidate(t *testing.T) {
 	{
-		// Enabled with neither a bucket nor an export ARN
-		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
-		assert.ErrorContains(t, config.Validate(), "bucket")
+		// Enabled without an export ARN: rejected, since Terraform can't start an export
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue("exports"), ExportARN: types.StringValue("")}
+		assert.ErrorContains(t, config.Validate(), "export_arn")
 	}
 	{
-		// An export ARN instead of a bucket
-		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue(""), ExportARN: types.StringValue("arn")}
+		// Enabled with an export ARN
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), ExportARN: types.StringValue("arn")}
 		assert.NoError(t, config.Validate())
 	}
 	{
-		// A bucket left out of the config keeps its saved value
-		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringValue("")}
-		assert.NoError(t, config.Validate())
+		// An ARN left out of the config keeps its saved value, and one only known at apply is accepted
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), ExportARN: types.StringNull()}.Validate())
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), ExportARN: types.StringUnknown()}.Validate())
 	}
 	{
 		// Disabled
-		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(false), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(false), ExportARN: types.StringValue("")}
 		assert.NoError(t, config.Validate())
-	}
-	{
-		// On create there's no saved bucket, so leaving both out is rejected
-		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringNull()}
-		assert.ErrorContains(t, config.ValidateOnCreate(), "bucket")
-	}
-	{
-		// On create with a bucket, or with a value only known at apply
-		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue("exports"), ExportARN: types.StringNull()}.ValidateOnCreate())
-		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringUnknown(), ExportARN: types.StringNull()}.ValidateOnCreate())
 	}
 }
 

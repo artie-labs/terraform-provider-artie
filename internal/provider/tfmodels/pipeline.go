@@ -78,16 +78,11 @@ var DynamoDBBackfillConfigAttrTypes = map[string]attr.Type{
 	"max_parallelism": types.Int64Type,
 }
 
-// Validate mirrors the API's check that an enabled DynamoDB backfill needs a bucket or an export ARN. Values left out
-// of the config keep their saved value, so only explicit empty strings are checked.
+// Validate rejects an enabled DynamoDB backfill without an export ARN: only the Artie UI starts an export, and the
+// reader can't deploy without one. A value left out of the config (null) keeps its saved value, and one only known at
+// apply is accepted.
 func (d DynamoDBBackfillConfig) Validate() error {
 	if !IsExplicitlyTrue(d.Enabled) {
-		return nil
-	}
-	if !IsKnown(d.Bucket) {
-		return nil
-	}
-	if d.Bucket.ValueString() != "" {
 		return nil
 	}
 	if !IsKnown(d.ExportARN) {
@@ -96,19 +91,7 @@ func (d DynamoDBBackfillConfig) Validate() error {
 	if d.ExportARN.ValueString() != "" {
 		return nil
 	}
-	return fmt.Errorf("`dynamodb_backfill_config.bucket` is required when the backfill is enabled, unless `export_arn` is set")
-}
-
-// ValidateOnCreate is Validate for a new pipeline, which has no saved values, so a bucket or export ARN left out of
-// the config counts as empty.
-func (d DynamoDBBackfillConfig) ValidateOnCreate() error {
-	if d.Bucket.IsNull() {
-		d.Bucket = types.StringValue("")
-	}
-	if d.ExportARN.IsNull() {
-		d.ExportARN = types.StringValue("")
-	}
-	return d.Validate()
+	return fmt.Errorf("`dynamodb_backfill_config.export_arn` is required when the backfill is enabled. Terraform can't start a DynamoDB export, so start one in the Artie UI (or with AWS) and set its ARN here")
 }
 
 func dynamoDBBackfillConfigToAPI(ctx context.Context, value types.Object) (*openapi.PayloadsDynamoDBSnapshotConfig, diag.Diagnostics) {

@@ -100,7 +100,7 @@ func TestPipelineModifyPlanBackfillSwitch(t *testing.T) {
 				FlushIntervalSeconds:   lib.ToPtr(30),
 				BufferRows:             lib.ToPtr(1000),
 				FlushSizeKb:            lib.ToPtr(1000),
-				DynamoDBBackfillConfig: &openapi.PayloadsDynamoDBSnapshotConfig{Enabled: lib.ToPtr(backfillEnabled), Bucket: lib.ToPtr("exports")},
+				DynamoDBBackfillConfig: &openapi.PayloadsDynamoDBSnapshotConfig{Enabled: lib.ToPtr(backfillEnabled), Bucket: lib.ToPtr("exports"), ExportArn: lib.ToPtr("arn")},
 			},
 		}
 		pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, apiModel)
@@ -169,10 +169,90 @@ func TestPipelineModifyPlanBackfillSwitch(t *testing.T) {
 		assert.False(t, hasB)
 	}
 	{
+		// A backfill block only known at apply may turn the backfill on, so a left-out skip_backfill is unknown
+		config := tfsdk.State{Schema: schemaResp.Schema, Raw: pipelineValue(false)}
+		assert.False(t, config.SetAttribute(ctx, path.Root("tables").AtMapKey("a").AtName("skip_backfill"), types.BoolNull()).HasError())
+		unknownBackfill := types.ObjectUnknown(tfmodels.DynamoDBBackfillConfigAttrTypes)
+		assert.False(t, config.SetAttribute(ctx, path.Root("dynamodb_backfill_config"), unknownBackfill).HasError())
+		req := resource.ModifyPlanRequest{
+			Config: tfsdk.Config{Schema: schemaResp.Schema, Raw: config.Raw},
+			State:  tfsdk.State{Schema: schemaResp.Schema, Raw: pipelineValue(false)},
+			Plan:   tfsdk.Plan{Schema: schemaResp.Schema, Raw: config.Raw},
+		}
+		resp := &resource.ModifyPlanResponse{Plan: req.Plan}
+		(&PipelineResource{}).ModifyPlan(ctx, req, resp)
+		assert.False(t, resp.Diagnostics.HasError(), resp.Diagnostics)
+		var a types.Bool
+		resp.Plan.GetAttribute(ctx, path.Root("tables").AtMapKey("a").AtName("skip_backfill"), &a)
+		assert.True(t, a.IsUnknown())
+	}
+	{
 		// Backfill already on: the plan is left alone
 		a, b, diags := modifyPlan(true, true, types.BoolValue(true))
 		assert.False(t, diags.HasError(), diags)
 		assert.Equal(t, types.BoolValue(true), a)
 		assert.Equal(t, types.BoolValue(true), b)
+	}
+}
+
+func TestValidateDynamoDBBackfillPlan(t *testing.T) {
+	ctx := t.Context()
+	schemaResp := &resource.SchemaResponse{}
+	(&PipelineResource{}).Schema(ctx, resource.SchemaRequest{}, schemaResp)
+	// run checks a plan whose backfill block is planned, with export_arn configured as given.
+	run := func(planned types.Object, configuredARN types.String) diag.Diagnostics {
+		pipeline, diags := tfmodels.PipelineFromAPIModel(ctx, openapi.PayloadsFullPipeline{
+			Uuid:   uuid.New(),
+			Name:   "test",
+			Tables: []openapi.PayloadsTable{},
+			// The API always returns the flush rules.
+			AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{FlushIntervalSeconds: lib.ToPtr(30), BufferRows: lib.ToPtr(1000), FlushSizeKb: lib.ToPtr(1000)},
+		})
+		assert.False(t, diags.HasError(), diags)
+		value := tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
+		setDiags := value.Set(ctx, pipeline)
+		assert.False(t, setDiags.HasError(), setDiags)
+		setDiags = value.SetAttribute(ctx, path.Root("dynamodb_backfill_config"), planned)
+		assert.False(t, setDiags.HasError(), setDiags)
+		plan := tfsdk.Plan{Schema: schemaResp.Schema, Raw: value.Raw}
+		assert.False(t, value.SetAttribute(ctx, path.Root("dynamodb_backfill_config").AtName("export_arn"), configuredARN).HasError())
+		req := resource.ModifyPlanRequest{Config: tfsdk.Config{Schema: schemaResp.Schema, Raw: value.Raw}, Plan: plan}
+		resp := &resource.ModifyPlanResponse{Plan: plan}
+		validateDynamoDBBackfillPlan(ctx, req, resp)
+		return resp.Diagnostics
+	}
+	backfill := func(enabled bool, exportARN types.String) types.Object {
+		return types.ObjectValueMust(tfmodels.DynamoDBBackfillConfigAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(enabled),
+			"bucket":          types.StringValue("exports"),
+			"optional_folder": types.StringUnknown(),
+			"export_arn":      exportARN,
+			"max_parallelism": types.Int64Unknown(),
+		})
+	}
+	{
+		// Enabled with the ARN left out and nothing saved (new pipeline or new block): rejected
+		diags := run(backfill(true, types.StringUnknown()), types.StringNull())
+		assert.True(t, diags.HasError())
+	}
+	{
+		// Enabled on an update whose saved ARN is empty: rejected
+		diags := run(backfill(true, types.StringValue("")), types.StringNull())
+		assert.True(t, diags.HasError())
+	}
+	{
+		// Enabled with a saved ARN carried into the plan: fine
+		diags := run(backfill(true, types.StringValue("arn")), types.StringNull())
+		assert.False(t, diags.HasError(), diags)
+	}
+	{
+		// Enabled with an ARN only known at apply: fine
+		diags := run(backfill(true, types.StringUnknown()), types.StringUnknown())
+		assert.False(t, diags.HasError(), diags)
+	}
+	{
+		// Disabled, or the whole block only known at apply: fine
+		assert.False(t, run(backfill(false, types.StringUnknown()), types.StringNull()).HasError())
+		assert.False(t, run(types.ObjectUnknown(tfmodels.DynamoDBBackfillConfigAttrTypes), types.StringNull()).HasError())
 	}
 }

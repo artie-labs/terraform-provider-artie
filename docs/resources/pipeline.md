@@ -180,9 +180,9 @@ Required:
 
 Optional:
 
-- `bucket` (String) The S3 bucket DynamoDB exports the table to. Required when `enabled` is true, unless `export_arn` is set.
-- `enabled` (Boolean) If set to true, new tables are backfilled from a DynamoDB export to S3.
-- `export_arn` (String) The ARN of an existing DynamoDB export to backfill from, instead of starting a new export.
+- `bucket` (String) The S3 bucket the DynamoDB export was written to.
+- `enabled` (Boolean) If set to true, new tables are backfilled from a DynamoDB export to S3. Requires `export_arn`. Turning it on clears `skip_backfill` on every existing table. While it's off, Artie sets `skip_backfill` on new tables and on tables still waiting for a backfill, so leave `skip_backfill` out (or set it to true) on those.
+- `export_arn` (String) The ARN of the DynamoDB export to S3 to backfill from. Required when `enabled` is true. Terraform doesn't start an export, so start one in the Artie UI (or with AWS) and set its ARN here.
 - `max_parallelism` (Number) How many export files the backfill reads and writes at once. Set to 0 to use Artie's default (1).
 - `optional_folder` (String) An optional folder inside `bucket` for the export.
 
