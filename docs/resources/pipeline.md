@@ -67,6 +67,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 - `default_source_schema` (String) If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true).
 - `disable_alerts` (Boolean) If set to true, Artie will not send email alerts for this pipeline (connection failures, replication errors, ingestion lag, etc.). Pipeline health is still tracked in the dashboard.
 - `drop_deleted_columns` (Boolean) If set to true, when a column is dropped from the source it will also be dropped in the destination.
+- `dynamodb_backfill_config` (Attributes) Settings for backfilling a DynamoDB table from an S3 export. Settings left out keep their current value. This is only applicable if the source is DynamoDB. (see [below for nested schema](#nestedatt--dynamodb_backfill_config))
 - `encryption_key_uuid` (String) UUID of an `artie_encryption_key` to use for column-level encryption. Required if any table has `columns_to_encrypt` set.
 - `flush_rules` (Attributes) This contains rules for how often Artie should flush data to the destination. If not specified, Artie will provide default values. A flush will happen when any of the rules are met (e.g. 30 seconds since the last flush OR 150k rows OR 50MB of data). (see [below for nested schema](#nestedatt--flush_rules))
 - `force_utc_timezone` (Boolean) If set to true, timestamps without timezone information in the source will be written as UTC in the destination.
@@ -172,6 +173,18 @@ Required:
 - `partition_column` (String) The column to use for soft partitioning. To prevent duplicate rows, the partition column should be immutable, for example `created_at`.
 - `partition_frequency` (String) The frequency of partitioning ('monthly' and 'daily' are supported).
 
+
+
+<a id="nestedatt--dynamodb_backfill_config"></a>
+### Nested Schema for `dynamodb_backfill_config`
+
+Optional:
+
+- `bucket` (String) The S3 bucket the DynamoDB export was written to.
+- `enabled` (Boolean) If set to true, new tables are backfilled from a DynamoDB export to S3. Requires `export_arn`. Turning it on clears `skip_backfill` on every existing table. While it's off, Artie sets `skip_backfill` on new tables and on tables still waiting for a backfill, so leave `skip_backfill` out (or set it to true) on those.
+- `export_arn` (String) The ARN of the DynamoDB export to S3 to backfill from. Required when `enabled` is true. Terraform doesn't start an export, so start one in the Artie UI (or with AWS) and set its ARN here.
+- `max_parallelism` (Number) How many export files the backfill reads and writes at once. Set to 0 to use Artie's default (1).
+- `optional_folder` (String) An optional folder inside `bucket` for the export.
 
 
 <a id="nestedatt--flush_rules"></a>
