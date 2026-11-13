@@ -666,6 +666,16 @@ func TestDynamoDBBackfillConfigValidate(t *testing.T) {
 		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(false), Bucket: types.StringValue(""), ExportARN: types.StringValue("")}
 		assert.NoError(t, config.Validate())
 	}
+	{
+		// On create there's no saved bucket, so leaving both out is rejected
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringNull(), ExportARN: types.StringNull()}
+		assert.ErrorContains(t, config.ValidateOnCreate(), "bucket")
+	}
+	{
+		// On create with a bucket, or with a value only known at apply
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue("exports"), ExportARN: types.StringNull()}.ValidateOnCreate())
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringUnknown(), ExportARN: types.StringNull()}.ValidateOnCreate())
+	}
 }
 
 func TestPipelineDestinationConfigRoundTrip(t *testing.T) {

@@ -196,6 +196,18 @@ func (d DynamoDBBackfillConfig) Validate() error {
 	return fmt.Errorf("`dynamodb_backfill_config.bucket` is required when the backfill is enabled, unless `export_arn` is set")
 }
 
+// ValidateOnCreate is Validate for a new pipeline, which has no saved values, so a bucket or export ARN left out of
+// the config counts as empty.
+func (d DynamoDBBackfillConfig) ValidateOnCreate() error {
+	if d.Bucket.IsNull() {
+		d.Bucket = types.StringValue("")
+	}
+	if d.ExportARN.IsNull() {
+		d.ExportARN = types.StringValue("")
+	}
+	return d.Validate()
+}
+
 func dynamoDBBackfillConfigToAPI(ctx context.Context, value types.Object) (*openapi.PayloadsDynamoDBSnapshotConfig, diag.Diagnostics) {
 	config, diags := parseOptionalObject[DynamoDBBackfillConfig](ctx, &value)
 	if config == nil {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -105,36 +106,37 @@ func TestPipelineSchemaMatchesModel(t *testing.T) {
 	assert.True(t, readBack.DynamoDBBackfillConfig.Equal(pipeline.DynamoDBBackfillConfig))
 }
 
-func TestBackfillTurnsOn(t *testing.T) {
+func TestBackfillMaySwitch(t *testing.T) {
 	{
-		// Off or never set, then on: turned on
-		assert.True(t, backfillTurnsOn(types.BoolValue(false), types.BoolValue(true)))
-		assert.True(t, backfillTurnsOn(types.BoolNull(), types.BoolValue(true)))
+		// Turned on (from off or never set), turned off, or only known at apply: may switch
+		assert.True(t, backfillMaySwitch(types.BoolValue(false), types.BoolValue(true)))
+		assert.True(t, backfillMaySwitch(types.BoolNull(), types.BoolValue(true)))
+		assert.True(t, backfillMaySwitch(types.BoolValue(true), types.BoolValue(false)))
+		assert.True(t, backfillMaySwitch(types.BoolValue(false), types.BoolUnknown()))
 	}
 	{
-		// Already on, staying off, turned off, or only known at apply: not turned on
-		assert.False(t, backfillTurnsOn(types.BoolValue(true), types.BoolValue(true)))
-		assert.False(t, backfillTurnsOn(types.BoolValue(false), types.BoolValue(false)))
-		assert.False(t, backfillTurnsOn(types.BoolValue(true), types.BoolValue(false)))
-		assert.False(t, backfillTurnsOn(types.BoolValue(false), types.BoolUnknown()))
+		// Unchanged: no switch
+		assert.False(t, backfillMaySwitch(types.BoolValue(true), types.BoolValue(true)))
+		assert.False(t, backfillMaySwitch(types.BoolValue(false), types.BoolValue(false)))
+		assert.False(t, backfillMaySwitch(types.BoolNull(), types.BoolValue(false)))
 	}
 }
 
-func TestSkipBackfillConfigured(t *testing.T) {
+func TestConfiguredSkipBackfill(t *testing.T) {
 	attrTypes := map[string]attr.Type{"skip_backfill": types.BoolType}
 	tables := types.MapValueMust(types.ObjectType{AttrTypes: attrTypes}, map[string]attr.Value{
 		"set":   types.ObjectValueMust(attrTypes, map[string]attr.Value{"skip_backfill": types.BoolValue(true)}),
 		"unset": types.ObjectValueMust(attrTypes, map[string]attr.Value{"skip_backfill": types.BoolNull()}),
 	})
 	{
-		// Set in the config: kept as configured
-		assert.True(t, skipBackfillConfigured(tables, "set"))
+		// Set in the config
+		assert.Equal(t, types.BoolValue(true), configuredSkipBackfill(tables, "set"))
 	}
 	{
-		// Left out, or a table only in state, or no tables in the config: planned as unknown
-		assert.False(t, skipBackfillConfigured(tables, "unset"))
-		assert.False(t, skipBackfillConfigured(tables, "missing"))
-		assert.False(t, skipBackfillConfigured(types.MapNull(types.ObjectType{AttrTypes: attrTypes}), "set"))
+		// Left out, a table only in state, or no tables in the config
+		assert.True(t, configuredSkipBackfill(tables, "unset").IsNull())
+		assert.True(t, configuredSkipBackfill(tables, "missing").IsNull())
+		assert.True(t, configuredSkipBackfill(types.MapNull(types.ObjectType{AttrTypes: attrTypes}), "set").IsNull())
 	}
 }
 
@@ -166,10 +168,12 @@ func TestPipelineModifyPlanBackfillSwitch(t *testing.T) {
 		assert.False(t, setDiags.HasError(), setDiags)
 		return state.Raw
 	}
-	modifyPlan := func(priorEnabled, plannedEnabled bool) (types.Bool, types.Bool) {
-		// The config leaves skip_backfill out on table "a" and sets it on table "b".
+	// modifyPlan plans a switch of the backfill with table "a" leaving skip_backfill out of the config and table "b"
+	// setting it to configuredB.
+	modifyPlan := func(priorEnabled, plannedEnabled bool, configuredB types.Bool) (types.Bool, types.Bool, diag.Diagnostics) {
 		config := tfsdk.State{Schema: schemaResp.Schema, Raw: pipelineValue(plannedEnabled)}
 		assert.False(t, config.SetAttribute(ctx, path.Root("tables").AtMapKey("a").AtName("skip_backfill"), types.BoolNull()).HasError())
+		assert.False(t, config.SetAttribute(ctx, path.Root("tables").AtMapKey("b").AtName("skip_backfill"), configuredB).HasError())
 		req := resource.ModifyPlanRequest{
 			Config: tfsdk.Config{Schema: schemaResp.Schema, Raw: config.Raw},
 			State:  tfsdk.State{Schema: schemaResp.Schema, Raw: pipelineValue(priorEnabled)},
@@ -177,21 +181,33 @@ func TestPipelineModifyPlanBackfillSwitch(t *testing.T) {
 		}
 		resp := &resource.ModifyPlanResponse{Plan: req.Plan}
 		(&PipelineResource{}).ModifyPlan(ctx, req, resp)
-		assert.False(t, resp.Diagnostics.HasError(), resp.Diagnostics)
 		var a, b types.Bool
 		resp.Plan.GetAttribute(ctx, path.Root("tables").AtMapKey("a").AtName("skip_backfill"), &a)
 		resp.Plan.GetAttribute(ctx, path.Root("tables").AtMapKey("b").AtName("skip_backfill"), &b)
-		return a, b
+		return a, b, resp.Diagnostics
 	}
 	{
-		// Turning the backfill on: the API clears skip_backfill, so a left-out value is unknown; a configured one is kept
-		a, b := modifyPlan(false, true)
+		// Turning the backfill on: the API clears skip_backfill on existing tables, so a left-out value is unknown
+		a, b, diags := modifyPlan(false, true, types.BoolValue(false))
+		assert.False(t, diags.HasError(), diags)
 		assert.True(t, a.IsUnknown())
-		assert.Equal(t, types.BoolValue(true), b)
+		assert.Equal(t, types.BoolValue(true), b) // the test plan still carries state; ModifyPlan leaves configured values alone
+	}
+	{
+		// Turning the backfill on while an existing table keeps skip_backfill = true: rejected, since the API clears it
+		_, _, diags := modifyPlan(false, true, types.BoolValue(true))
+		assert.True(t, diags.HasError())
+	}
+	{
+		// Turning the backfill off: the API may set skip_backfill on tables waiting for a backfill, so a left-out value is unknown
+		a, _, diags := modifyPlan(true, false, types.BoolValue(true))
+		assert.False(t, diags.HasError(), diags)
+		assert.True(t, a.IsUnknown())
 	}
 	{
 		// Backfill already on: the plan is left alone
-		a, b := modifyPlan(true, true)
+		a, b, diags := modifyPlan(true, true, types.BoolValue(true))
+		assert.False(t, diags.HasError(), diags)
 		assert.Equal(t, types.BoolValue(true), a)
 		assert.Equal(t, types.BoolValue(true), b)
 	}

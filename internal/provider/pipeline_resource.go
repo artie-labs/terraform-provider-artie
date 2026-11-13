@@ -516,7 +516,7 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 
 // ModifyPlan clears a regex left out of the config while the other of its pair is set, so switching from an ignore
 // regex to an include regex (or back) doesn't send the old one from state alongside the new one. It also plans the
-// tables' skip_backfill as unknown when the DynamoDB backfill is turned on.
+// existing tables' skip_backfill when the DynamoDB backfill is switched on or off.
 func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroying
@@ -532,14 +532,34 @@ func (r *PipelineResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		}
 	}
 	if req.State.Raw.IsNull() {
-		return // creating
+		validateNewDynamoDBBackfill(ctx, req, resp)
+		return
 	}
 	planSkipBackfillOnBackfillSwitch(ctx, req, resp)
 }
 
-// planSkipBackfillOnBackfillSwitch marks each table's skip_backfill as unknown when the DynamoDB backfill is turned on,
-// unless the config sets it: while the backfill is off the API saves new tables with skipBackfill = true, and turning
-// it on clears that on every table.
+// validateNewDynamoDBBackfill rejects a new pipeline whose DynamoDB backfill is enabled with neither a bucket nor an
+// export ARN, which ValidateConfig can't tell apart from an existing one keeping its saved bucket.
+func validateNewDynamoDBBackfill(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var config types.Object
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("dynamodb_backfill_config"), &config)...)
+	if !tfmodels.IsKnown(config) {
+		return
+	}
+	var backfill tfmodels.DynamoDBBackfillConfig
+	resp.Diagnostics.Append(config.As(ctx, &backfill, basetypes.ObjectAsOptions{})...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if err := backfill.ValidateOnCreate(); err != nil {
+		resp.Diagnostics.AddAttributeError(path.Root("dynamodb_backfill_config"), "Invalid configuration", err.Error())
+	}
+}
+
+// planSkipBackfillOnBackfillSwitch plans the existing tables' skip_backfill when the DynamoDB backfill is switched on or
+// off, since the API overwrites it then: turning the backfill on clears skipBackfill on every existing table, and turning
+// it off sets it on tables still waiting for their backfill. Tables that leave skip_backfill out plan it as unknown, and
+// an existing table can't keep skip_backfill = true in the plan that turns the backfill on.
 func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	enabledPath := path.Root("dynamodb_backfill_config").AtName("enabled")
 	var prior, planned types.Bool
@@ -548,43 +568,55 @@ func planSkipBackfillOnBackfillSwitch(ctx context.Context, req resource.ModifyPl
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if !backfillTurnsOn(prior, planned) {
+	if !backfillMaySwitch(prior, planned) {
 		return
 	}
 
-	var plannedTables, configTables types.Map
-	resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, path.Root("tables"), &plannedTables)...)
+	var priorTables, configTables types.Map
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("tables"), &priorTables)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("tables"), &configTables)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	for key := range plannedTables.Elements() {
-		if skipBackfillConfigured(configTables, key) {
+	turnsOn := tfmodels.IsExplicitlyTrue(planned)
+	// Only existing tables: the API keeps the payload's skip_backfill on tables this apply adds.
+	for key := range priorTables.Elements() {
+		configured := configuredSkipBackfill(configTables, key)
+		if configured.IsNull() {
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("tables").AtMapKey(key).AtName("skip_backfill"), types.BoolUnknown())...)
 			continue
 		}
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("tables").AtMapKey(key).AtName("skip_backfill"), types.BoolUnknown())...)
+		if !turnsOn {
+			continue
+		}
+		if tfmodels.IsExplicitlyTrue(configured) {
+			resp.Diagnostics.AddAttributeError(path.Root("tables").AtMapKey(key).AtName("skip_backfill"), "skip_backfill can't be kept while turning on the DynamoDB backfill",
+				fmt.Sprintf("Turning on `dynamodb_backfill_config` clears `skip_backfill` on every existing table, so %q table can't set it to true in the same apply. Remove it (or set it to false), apply, then set it again.", key))
+		}
 	}
 }
 
-// skipBackfillConfigured reports whether the config sets skip_backfill on the table with this key.
-func skipBackfillConfigured(configTables types.Map, key string) bool {
+// configuredSkipBackfill returns the table's skip_backfill from the config: null when it's left out or the table isn't
+// in the config.
+func configuredSkipBackfill(configTables types.Map, key string) types.Bool {
 	configTable, ok := configTables.Elements()[key].(types.Object)
 	if !ok {
-		return false
+		return types.BoolNull()
 	}
-	configured, ok := configTable.Attributes()["skip_backfill"]
+	configured, ok := configTable.Attributes()["skip_backfill"].(types.Bool)
 	if !ok {
-		return false
+		return types.BoolNull()
 	}
-	return !configured.IsNull()
+	return configured
 }
 
-// backfillTurnsOn reports whether the DynamoDB backfill goes from off (or never set) to on in this plan.
-func backfillTurnsOn(prior, planned types.Bool) bool {
-	if !tfmodels.IsExplicitlyTrue(planned) {
-		return false
+// backfillMaySwitch reports whether the DynamoDB backfill may go from off (or never set) to on, or back, in this plan.
+// A value only known at apply time may do either.
+func backfillMaySwitch(prior, planned types.Bool) bool {
+	if planned.IsUnknown() {
+		return true
 	}
-	return !tfmodels.IsExplicitlyTrue(prior)
+	return tfmodels.IsExplicitlyTrue(planned) != tfmodels.IsExplicitlyTrue(prior)
 }
 
 // partitionByPlanModifier keeps a merge predicate's `partition_by` from state when it's left out of the config, so a
