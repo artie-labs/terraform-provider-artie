@@ -254,6 +254,35 @@ func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
 		assert.Equal(t, "ext", config["awsExternalID"])
 	}
 	{
+		// Redis
+		connector, config := roundTripSharedConfig(t, "redis", `{"host": "redis.example.com", "port": 6379, "username": "artie", "password": "secret", "database": 2, "tls": true, "clusterMode": false, "maxStreamLength": 10000}`, Connector{})
+		require.NotNil(t, connector.RedisConfig)
+		assert.Equal(t, "redis.example.com", connector.RedisConfig.Host.ValueString())
+		assert.Equal(t, int32(6379), connector.RedisConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.RedisConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.RedisConfig.Password.ValueString())
+		assert.Equal(t, int32(2), connector.RedisConfig.Database.ValueInt32())
+		assert.True(t, connector.RedisConfig.TLS.ValueBool())
+		assert.False(t, connector.RedisConfig.ClusterMode.ValueBool())
+		assert.Equal(t, int64(10000), connector.RedisConfig.MaxStreamLength.ValueInt64())
+
+		assert.Equal(t, "redis.example.com", config["host"])
+		assert.InDelta(t, 6379, config["port"], 0)
+		assert.Equal(t, "artie", config["username"])
+		assert.Equal(t, "secret", config["password"])
+		assert.InDelta(t, 2, config["database"], 0)
+		assert.Equal(t, true, config["tls"])
+		assert.NotContains(t, config, "clusterMode")
+		assert.InDelta(t, 10000, config["maxStreamLength"], 0)
+	}
+	{
+		// Redis database 0 is left out, which the API reads as 0
+		connector, config := roundTripSharedConfig(t, "redis", `{"host": "redis.example.com", "port": 6379, "database": 0}`, Connector{})
+		require.NotNil(t, connector.RedisConfig)
+		assert.Equal(t, int32(0), connector.RedisConfig.Database.ValueInt32())
+		assert.NotContains(t, config, "database")
+	}
+	{
 		// DocumentDB
 		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "secret", "disableSSL": true}`, Connector{})
 		require.NotNil(t, connector.DocumentDBConfig)

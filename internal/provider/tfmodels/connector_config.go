@@ -82,6 +82,23 @@ type ConnectorConfig struct {
 
 	// DocumentDB:
 	DocumentDBDisableSSL bool `json:"disableSSL,omitempty"`
+
+	// Redis:
+	RedisDatabase        redisDatabase `json:"database,omitempty"`
+	RedisTLS             bool          `json:"tls,omitempty"`
+	RedisClusterMode     bool          `json:"clusterMode,omitempty"`
+	RedisMaxStreamLength int64         `json:"maxStreamLength,omitempty"`
+}
+
+// redisDatabase is Redis's database index. ClickHouse returns its database name as a string under the same key, which
+// decodes as 0.
+type redisDatabase int32
+
+func (d *redisDatabase) UnmarshalJSON(data []byte) error {
+	if data[0] == '"' {
+		return nil
+	}
+	return json.Unmarshal(data, (*int32)(d))
 }
 
 // maskedSecret is what the API returns in place of a secret when it masks it.
