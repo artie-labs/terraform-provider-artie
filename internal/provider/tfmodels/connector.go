@@ -33,6 +33,7 @@ type Connector struct {
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
+	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
 	PlanetScaleConfig *PlanetScaleSharedConfig `tfsdk:"planetscale_config"`
 }
 
@@ -73,6 +74,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugDelta:
+		sharedConfig = c.DeltaConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugPlanetscale:
 		sharedConfig = c.PlanetScaleConfig.ToAPIModel()
 	default:
@@ -173,6 +176,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugKeyspaces:
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDelta:
+		connector.DeltaConfig = S3SharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugPlanetscale:
 		connector.PlanetScaleConfig = PlanetScaleSharedConfigFromAPIModel(config)
 	default:
