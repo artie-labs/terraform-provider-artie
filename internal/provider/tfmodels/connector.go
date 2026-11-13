@@ -154,10 +154,10 @@ func SMBSharePrivateLinkPlan(connectorType, configValue, smbConfigValue, plan ty
 	return types.StringValue(smbConfigValue.ValueString())
 }
 
-// ConflictingSMBSharePrivateLinks reports whether an SMB share's top-level and smb_share_config PrivateLinks are both
-// set to different values.
+// ConflictingSMBSharePrivateLinks reports whether an SMB share's config sets the top-level private_link_uuid, "" included,
+// to something other than a non-empty smb_share_config.private_link_uuid.
 func ConflictingSMBSharePrivateLinks(topLevel, smbShare types.String) bool {
-	if !IsKnownAndNonEmpty(topLevel) {
+	if !IsKnown(topLevel) {
 		return false
 	}
 	if !IsKnownAndNonEmpty(smbShare) {
@@ -186,6 +186,14 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 	// prior has no type after an import, so there are no secrets to keep yet.
 	if priorConfig, err := prior.sharedConfig(); err == nil {
 		config.keepMaskedSecrets(priorConfig)
+		// With a PrivateLink the API stores its DNS entry as the host it dials, so keep the host as configured. An
+		// import has no prior and keeps the API's value.
+		if apiModel.PrivateLinkUUID != nil {
+			config.Host = priorConfig.Host
+		}
+		if apiModel.SnapshotPrivateLinkUUID != nil {
+			config.SnapshotHost = priorConfig.SnapshotHost
+		}
 	}
 
 	connector := Connector{

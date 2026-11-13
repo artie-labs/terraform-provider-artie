@@ -78,13 +78,13 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown(), smbSharePrivateLinkPlanModifier{}},
-				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. Its DNS entry replaces the connector's `host` (for `mongodb`, the whole connection string), and can't be combined with `ssh_tunnel_uuid`. Supported for `cockroach`, `databricks`, `keyspaces`, `mongodb`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`; the API rejects it for other types. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it. Otherwise, if this is left out, it keeps the value set in the Artie UI; set it to `\"\"` to remove the PrivateLink.",
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`; the API rejects it for other types. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, if this is left out, it keeps the value set in the Artie UI; set it to `\"\"` to remove the PrivateLink.",
 			},
 			"snapshot_private_link_uuid": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. Its DNS entry replaces the connector's snapshot host, and can't be combined with `ssh_tunnel_uuid`. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`; the API rejects it for other types. If this is left out, it keeps the value set in the Artie UI; set it to `\"\"` to remove the PrivateLink.",
+				MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the read replica used for snapshots through AWS PrivateLink. With a link set, we connect to the replica through the link's DNS entry and `snapshot_host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`. Supported for `cockroach`, `mssql`, `mysql` (not with IAM authentication), `oracle`, and `postgresql`; the API rejects it for other types. If this is left out, it keeps the value set in the Artie UI; set it to `\"\"` to remove the PrivateLink.",
 			},
 			"default_database": schema.StringAttribute{
 				Optional:            true,
@@ -512,7 +512,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			return
 		}
 		if tfmodels.ConflictingSMBSharePrivateLinks(configData.PrivateLinkUUID, configData.SMBShareConfig.PrivateLinkUUID) {
-			resp.Diagnostics.AddAttributeError(path.Root("private_link_uuid"), "Conflicting PrivateLinks", "`private_link_uuid` and `smb_share_config.private_link_uuid` set the same PrivateLink, so they must match. Set only one of them.")
+			resp.Diagnostics.AddAttributeError(path.Root("private_link_uuid"), "Conflicting PrivateLinks", "`private_link_uuid` and `smb_share_config.private_link_uuid` set the same PrivateLink, so they must match (`\"\"` included). Set only one of them.")
 		}
 	case string(openapi.EnumsConnectorSlugSnowflake):
 		if configData.SnowflakeConfig == nil {

@@ -228,7 +228,7 @@ func TestConnectorPrivateLinksAndDefaultDatabase(t *testing.T) {
 		assert.Equal(t, "app", *body.DefaultDatabase)
 	}
 	{
-		// Unknown (create) leaves them out, so the API keeps the saved default database
+		// Unknown (create) leaves them out. The API keeps the saved default database but removes the PrivateLinks.
 		connector.PrivateLinkUUID = types.StringUnknown()
 		connector.SnapshotPrivateLinkUUID = types.StringUnknown()
 		connector.DefaultDatabase = types.StringUnknown()
@@ -305,5 +305,60 @@ func TestConflictingSMBSharePrivateLinks(t *testing.T) {
 	{
 		// Unknown isn't checked yet
 		assert.False(t, ConflictingSMBSharePrivateLinks(types.StringUnknown(), b))
+	}
+	{
+		// An explicit "" conflicts with a link in smb_share_config
+		assert.True(t, ConflictingSMBSharePrivateLinks(types.StringValue(""), b))
+		assert.False(t, ConflictingSMBSharePrivateLinks(types.StringValue(""), types.StringValue("")))
+	}
+}
+
+func TestConnectorFromAPIModelKeepsHostsRewrittenByPrivateLink(t *testing.T) {
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "postgresql",
+		"privateLinkUUID": "5d1f0a2b-8c3e-4f6a-9b7d-1e2f3a4b5c6d",
+		"snapshotPrivateLinkUUID": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+		"sharedConfig": {"host": "vpce-1.example.com", "snapshotHost": "vpce-2.example.com", "port": 5432, "user": "artie", "password": "secret"}
+	}`), &apiConnector))
+	prior := Connector{
+		Type: types.StringValue("postgresql"),
+		PostgresConfig: &PostgresSharedConfig{
+			Host:         types.StringValue("db.example.com"),
+			SnapshotHost: types.StringValue("replica.example.com"),
+		},
+	}
+	{
+		// Both links set: host and snapshot_host stay as configured
+		connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "db.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "replica.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
+	}
+	{
+		// Only the snapshot link set: host is the API's
+		onlySnapshot := apiConnector
+		onlySnapshot.PrivateLinkUUID = nil
+		connector, diags := ConnectorFromAPIModel(onlySnapshot, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "vpce-1.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "replica.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
+	}
+	{
+		// Only the primary link set: snapshot_host is the API's
+		onlyPrimary := apiConnector
+		onlyPrimary.SnapshotPrivateLinkUUID = nil
+		connector, diags := ConnectorFromAPIModel(onlyPrimary, prior)
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "db.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "vpce-2.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
+	}
+	{
+		// An import has no prior, so it keeps the API's hosts
+		connector, diags := ConnectorFromAPIModel(apiConnector, Connector{})
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "vpce-1.example.com", connector.PostgresConfig.Host.ValueString())
+		assert.Equal(t, "vpce-2.example.com", connector.PostgresConfig.SnapshotHost.ValueString())
 	}
 }
