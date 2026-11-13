@@ -145,3 +145,165 @@ func TestSMBShareConnectorAPIModelRoundTrip(t *testing.T) {
 		assert.Nil(t, body.PrivateLinkUUID)
 	}
 }
+
+// roundTripSharedConfig reads sharedConfig into a connector of connectorType, then returns that connector and the
+// sharedConfig it sends back.
+func roundTripSharedConfig(t *testing.T, connectorType string, sharedConfig string, prior Connector) (Connector, map[string]any) {
+	t.Helper()
+	var apiConnector openapi.PayloadsFullConnector
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+		"type": "`+connectorType+`",
+		"label": "test",
+		"sharedConfig": `+sharedConfig+`
+	}`), &apiConnector))
+
+	connector, diags := ConnectorFromAPIModel(apiConnector, prior)
+	require.False(t, diags.HasError(), diags)
+
+	body, diags := connector.ToAPIModel()
+	require.False(t, diags.HasError(), diags)
+	assert.Equal(t, connectorType, *body.Type)
+	require.NotNil(t, body.SharedConfig)
+	return connector, *body.SharedConfig
+}
+
+func TestNewConnectorTypesAPIModelRoundTrip(t *testing.T) {
+	{
+		// ClickHouse: the API returns a masked password and a database name under the key Redis uses for its index
+		prior := Connector{Type: types.StringValue("clickhouse"), ClickHouseConfig: &ClickHouseSharedConfig{Password: types.StringValue("real-password")}}
+		connector, config := roundTripSharedConfig(t, "clickhouse", `{"addresses": ["ch1.example.com:9440", "ch2.example.com:9440"], "username": "artie", "password": "********", "isInsecure": true, "database": ""}`, prior)
+		require.NotNil(t, connector.ClickHouseConfig)
+		assert.Equal(t, []types.String{types.StringValue("ch1.example.com:9440"), types.StringValue("ch2.example.com:9440")}, connector.ClickHouseConfig.Addresses)
+		assert.Equal(t, "artie", connector.ClickHouseConfig.Username.ValueString())
+		assert.Equal(t, "real-password", connector.ClickHouseConfig.Password.ValueString())
+		assert.True(t, connector.ClickHouseConfig.IsInsecure.ValueBool())
+
+		assert.Equal(t, []any{"ch1.example.com:9440", "ch2.example.com:9440"}, config["addresses"])
+		assert.Equal(t, "artie", config["username"])
+		assert.Equal(t, "real-password", config["password"])
+		assert.Equal(t, true, config["isInsecure"])
+		// A number here would fail to decode into ClickHouse's string database field
+		assert.NotContains(t, config, "database")
+	}
+	{
+		// Delta takes the same keys as S3
+		prior := Connector{Type: types.StringValue("delta"), DeltaConfig: &S3SharedConfig{SecretAccessKey: types.StringValue("real-secret")}}
+		connector, config := roundTripSharedConfig(t, "delta", `{"awsAccessKeyID": "AKIA123", "awsSecretAccessKey": "********", "awsRegion": "us-west-2", "awsRoleARN": "", "awsExternalID": ""}`, prior)
+		require.NotNil(t, connector.DeltaConfig)
+		assert.Equal(t, "AKIA123", connector.DeltaConfig.AccessKeyID.ValueString())
+		assert.Equal(t, "real-secret", connector.DeltaConfig.SecretAccessKey.ValueString())
+		assert.Equal(t, "us-west-2", connector.DeltaConfig.Region.ValueString())
+
+		assert.Equal(t, "AKIA123", config["awsAccessKeyID"])
+		assert.Equal(t, "real-secret", config["awsSecretAccessKey"])
+		assert.Equal(t, "us-west-2", config["awsRegion"])
+	}
+	{
+		// DocumentDB
+		connector, config := roundTripSharedConfig(t, "documentdb", `{"host": "docdb.example.com", "port": 27017, "user": "artie", "password": "secret", "disableSSL": true}`, Connector{})
+		require.NotNil(t, connector.DocumentDBConfig)
+		assert.Equal(t, "docdb.example.com", connector.DocumentDBConfig.Host.ValueString())
+		assert.Equal(t, int32(27017), connector.DocumentDBConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.DocumentDBConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.DocumentDBConfig.Password.ValueString())
+		assert.True(t, connector.DocumentDBConfig.DisableSSL.ValueBool())
+
+		assert.Equal(t, "docdb.example.com", config["host"])
+		assert.InDelta(t, 27017, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.Equal(t, true, config["disableSSL"])
+	}
+	{
+		// Kafka: masked password and client key are kept from prior
+		prior := Connector{Type: types.StringValue("kafka"), KafkaConfig: &KafkaSharedConfig{Password: types.StringValue("real-password"), ClientKey: types.StringValue("real-key")}}
+		connector, config := roundTripSharedConfig(t, "kafka", `{"bootstrapServers": "b1:9092,b2:9092", "topicPrefix": "artie", "saslMechanism": "SCRAM-SHA-512", "username": "artie", "password": "********", "caCert": "ca", "clientCert": "cert", "clientKey": "********", "createTopics": true}`, prior)
+		require.NotNil(t, connector.KafkaConfig)
+		assert.Equal(t, "b1:9092,b2:9092", connector.KafkaConfig.BootstrapServers.ValueString())
+		assert.Equal(t, "artie", connector.KafkaConfig.TopicPrefix.ValueString())
+		assert.Equal(t, "SCRAM-SHA-512", connector.KafkaConfig.SASLMechanism.ValueString())
+		assert.Equal(t, "artie", connector.KafkaConfig.Username.ValueString())
+		assert.Equal(t, "real-password", connector.KafkaConfig.Password.ValueString())
+		assert.Equal(t, "", connector.KafkaConfig.RoleARN.ValueString())
+		assert.False(t, connector.KafkaConfig.DisableTLS.ValueBool())
+		assert.Equal(t, "ca", connector.KafkaConfig.CACert.ValueString())
+		assert.Equal(t, "cert", connector.KafkaConfig.ClientCert.ValueString())
+		assert.Equal(t, "real-key", connector.KafkaConfig.ClientKey.ValueString())
+		assert.True(t, connector.KafkaConfig.CreateTopics.ValueBool())
+
+		assert.Equal(t, "b1:9092,b2:9092", config["bootstrapServers"])
+		assert.Equal(t, "artie", config["topicPrefix"])
+		assert.Equal(t, "SCRAM-SHA-512", config["saslMechanism"])
+		assert.Equal(t, "artie", config["username"])
+		assert.Equal(t, "real-password", config["password"])
+		assert.Equal(t, "ca", config["caCert"])
+		assert.Equal(t, "cert", config["clientCert"])
+		assert.Equal(t, "real-key", config["clientKey"])
+		assert.Equal(t, true, config["createTopics"])
+		assert.NotContains(t, config, "disableTLS")
+	}
+	{
+		// Kafka with AWS-MSK-IAM
+		connector, config := roundTripSharedConfig(t, "kafka", `{"bootstrapServers": "b1:9098", "topicPrefix": "artie", "saslMechanism": "AWS-MSK-IAM", "awsRoleARN": "arn:aws:iam::123:role/artie", "awsExternalID": "ext"}`, Connector{})
+		require.NotNil(t, connector.KafkaConfig)
+		assert.Equal(t, "arn:aws:iam::123:role/artie", connector.KafkaConfig.RoleARN.ValueString())
+		assert.Equal(t, "ext", connector.KafkaConfig.ExternalID.ValueString())
+		assert.Equal(t, "", connector.KafkaConfig.Username.ValueString())
+
+		assert.Equal(t, "arn:aws:iam::123:role/artie", config["awsRoleARN"])
+		assert.Equal(t, "ext", config["awsExternalID"])
+	}
+	{
+		// MotherDuck
+		prior := Connector{Type: types.StringValue("motherduck"), MotherDuckConfig: &MotherDuckSharedConfig{Token: types.StringValue("real-token")}}
+		connector, config := roundTripSharedConfig(t, "motherduck", `{"token": "********"}`, prior)
+		require.NotNil(t, connector.MotherDuckConfig)
+		assert.Equal(t, "real-token", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, "real-token", config["token"])
+	}
+	{
+		// PlanetScale: the API forces tlsMode, so it's neither read nor sent
+		connector, config := roundTripSharedConfig(t, "planetscale", `{"host": "aws.connect.psdb.cloud", "port": 3306, "user": "artie", "password": "secret", "tlsMode": "true"}`, Connector{})
+		require.NotNil(t, connector.PlanetScaleConfig)
+		assert.Equal(t, "aws.connect.psdb.cloud", connector.PlanetScaleConfig.Host.ValueString())
+		assert.Equal(t, int32(3306), connector.PlanetScaleConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.PlanetScaleConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.PlanetScaleConfig.Password.ValueString())
+
+		assert.Equal(t, "aws.connect.psdb.cloud", config["host"])
+		assert.InDelta(t, 3306, config["port"], 0)
+		assert.Equal(t, "artie", config["user"])
+		assert.Equal(t, "secret", config["password"])
+		assert.NotContains(t, config, "tlsMode")
+	}
+	{
+		// Redis
+		connector, config := roundTripSharedConfig(t, "redis", `{"host": "redis.example.com", "port": 6379, "username": "artie", "password": "secret", "database": 2, "tls": true, "clusterMode": false, "maxStreamLength": 10000}`, Connector{})
+		require.NotNil(t, connector.RedisConfig)
+		assert.Equal(t, "redis.example.com", connector.RedisConfig.Host.ValueString())
+		assert.Equal(t, int32(6379), connector.RedisConfig.Port.ValueInt32())
+		assert.Equal(t, "artie", connector.RedisConfig.Username.ValueString())
+		assert.Equal(t, "secret", connector.RedisConfig.Password.ValueString())
+		assert.Equal(t, int32(2), connector.RedisConfig.Database.ValueInt32())
+		assert.True(t, connector.RedisConfig.TLS.ValueBool())
+		assert.False(t, connector.RedisConfig.ClusterMode.ValueBool())
+		assert.Equal(t, int64(10000), connector.RedisConfig.MaxStreamLength.ValueInt64())
+
+		assert.Equal(t, "redis.example.com", config["host"])
+		assert.InDelta(t, 6379, config["port"], 0)
+		assert.Equal(t, "artie", config["username"])
+		assert.Equal(t, "secret", config["password"])
+		assert.InDelta(t, 2, config["database"], 0)
+		assert.Equal(t, true, config["tls"])
+		assert.NotContains(t, config, "clusterMode")
+		assert.InDelta(t, 10000, config["maxStreamLength"], 0)
+	}
+	{
+		// Redis database 0 is left out, which the API reads as 0
+		connector, config := roundTripSharedConfig(t, "redis", `{"host": "redis.example.com", "port": 6379, "database": 0}`, Connector{})
+		require.NotNil(t, connector.RedisConfig)
+		assert.Equal(t, int32(0), connector.RedisConfig.Database.ValueInt32())
+		assert.NotContains(t, config, "database")
+	}
+}

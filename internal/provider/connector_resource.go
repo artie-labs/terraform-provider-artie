@@ -7,16 +7,22 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-artie/internal/maputil"
 
 	"terraform-provider-artie/internal/artieclient"
@@ -33,17 +39,24 @@ var _ resource.ResourceWithImportState = &ConnectorResource{}
 var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugApi),
 	string(openapi.EnumsConnectorSlugBigquery),
+	string(openapi.EnumsConnectorSlugClickhouse),
 	string(openapi.EnumsConnectorSlugCockroach),
 	string(openapi.EnumsConnectorSlugDatabricks),
+	string(openapi.EnumsConnectorSlugDelta),
+	string(openapi.EnumsConnectorSlugDocumentdb),
 	string(openapi.EnumsConnectorSlugDynamodb),
 	string(openapi.EnumsConnectorSlugGcs),
 	string(openapi.EnumsConnectorSlugIceberg),
+	string(openapi.EnumsConnectorSlugKafka),
 	string(openapi.EnumsConnectorSlugKeyspaces),
 	string(openapi.EnumsConnectorSlugMongodb),
+	string(openapi.EnumsConnectorSlugMotherduck),
 	string(openapi.EnumsConnectorSlugMssql),
 	string(openapi.EnumsConnectorSlugMysql),
 	string(openapi.EnumsConnectorSlugOracle),
+	string(openapi.EnumsConnectorSlugPlanetscale),
 	string(openapi.EnumsConnectorSlugPostgresql),
+	string(openapi.EnumsConnectorSlugRedis),
 	string(openapi.EnumsConnectorSlugRedshift),
 	string(openapi.EnumsConnectorSlugS3),
 	string(openapi.EnumsConnectorSlugSmbShare),
@@ -313,6 +326,93 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
 				},
 			},
+			"clickhouse_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `clickhouse`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"addresses":   schema.ListAttribute{Required: true, ElementType: types.StringType, Validators: []validator.List{listvalidator.SizeAtLeast(1)}, MarkdownDescription: "The `host:port` addresses of the ClickHouse server."},
+					"username":    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The username of the service account we should use to connect to ClickHouse."},
+					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"is_insecure": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without TLS."},
+				},
+			},
+			"delta_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `delta` (Delta Lake on S3). You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set."},
+					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your Delta tables in S3."},
+					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required."},
+					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
+				},
+			},
+			"documentdb_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `documentdb`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":        schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Amazon DocumentDB cluster."},
+					"port":        schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for DocumentDB is 27017."},
+					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to DocumentDB."},
+					"password":    schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"disable_ssl": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without SSL, for example over AWS PrivateLink."},
+				},
+			},
+			"kafka_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `kafka` (your own Kafka cluster, which we publish change events to). Kafka destinations must be enabled for your account.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"bootstrap_servers": schema.StringAttribute{Required: true, MarkdownDescription: "A comma-separated list of `host:port` brokers."},
+					"topic_prefix":      schema.StringAttribute{Required: true, MarkdownDescription: "The prefix of every topic name, which is `<prefix>.<schema>.<table>`. This can only contain letters, digits, `.`, `_` and `-`."},
+					"sasl_mechanism": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						MarkdownDescription: "The SASL mechanism: `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `AWS-MSK-IAM`, or `\"\"` (empty string) for no SASL.",
+						Validators:          []validator.String{stringvalidator.OneOf("", "PLAIN", "SCRAM-SHA-256", "SCRAM-SHA-512", "AWS-MSK-IAM")},
+					},
+					"username":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The SASL username. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise."},
+					"password":      schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The SASL password. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"role_arn":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for `AWS-MSK-IAM`, which requires it."},
+					"external_id":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming `role_arn`."},
+					"disable_tls":   schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without TLS. `AWS-MSK-IAM` requires TLS."},
+					"ca_cert":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "A PEM bundle used instead of the system roots to verify the brokers."},
+					"client_cert":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "A PEM client certificate presented to the brokers for mutual TLS. Requires `client_key`."},
+					"client_key":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The PEM private key for `client_cert`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"create_topics": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to have us create a missing topic, with the cluster's default settings, for clusters that don't create topics automatically. This needs the CREATE permission."},
+				},
+			},
+			"motherduck_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `motherduck`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
+			"planetscale_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":     schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PlanetScale database."},
+					"port":     schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for PlanetScale is 3306."},
+					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to PlanetScale."},
+					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+				},
+			},
+			"redis_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `redis`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":              schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Redis server. With `cluster_mode`, any node of the cluster."},
+					"port":              schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for Redis is 6379."},
+					"username":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The username to connect with, if your server uses ACL users."},
+					"password":          schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"database":          schema.Int32Attribute{Optional: true, Computed: true, Default: int32default.StaticInt32(0), Validators: []validator.Int32{int32validator.AtLeast(0)}, MarkdownDescription: "The database index. Redis Cluster only supports `0`."},
+					"tls":               schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect over TLS."},
+					"cluster_mode":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect to a Redis Cluster."},
+					"max_stream_length": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "Trims each stream to approximately this many entries. `0` never trims."},
+				},
+			},
 		},
 	}
 }
@@ -526,7 +626,82 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		if clientIDSet != clientSecretSet {
 			resp.Diagnostics.AddError("Incomplete OAuth M2M configuration", "Both `client_id` and `client_secret` must be provided together inside `databricks_config`.")
 		}
+	case string(openapi.EnumsConnectorSlugClickhouse):
+		if configData.ClickHouseConfig == nil {
+			resp.Diagnostics.AddError("clickhouse_config is required", "Please provide `clickhouse_config` inside `connector`.")
+		}
+	case string(openapi.EnumsConnectorSlugDelta):
+		if configData.DeltaConfig == nil {
+			resp.Diagnostics.AddError("delta_config is required", "Please provide `delta_config` inside `connector`.")
+			return
+		}
+
+		if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.RoleARN) {
+			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.AccessKeyID) {
+				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.SecretAccessKey) {
+				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
+			}
+		}
+	case string(openapi.EnumsConnectorSlugDocumentdb):
+		if configData.DocumentDBConfig == nil {
+			resp.Diagnostics.AddError("documentdb_config is required", "Please provide `documentdb_config` inside `connector`.")
+		}
+	case string(openapi.EnumsConnectorSlugKafka):
+		if configData.KafkaConfig == nil {
+			resp.Diagnostics.AddError("kafka_config is required", "Please provide `kafka_config` inside `connector`.")
+			return
+		}
+
+		resp.Diagnostics.Append(validateKafkaConfig(*configData.KafkaConfig)...)
+	case string(openapi.EnumsConnectorSlugMotherduck):
+		if configData.MotherDuckConfig == nil {
+			resp.Diagnostics.AddError("motherduck_config is required", "Please provide `motherduck_config` inside `connector`.")
+		}
+	case string(openapi.EnumsConnectorSlugPlanetscale):
+		if configData.PlanetScaleConfig == nil {
+			resp.Diagnostics.AddError("planetscale_config is required", "Please provide `planetscale_config` inside `connector`.")
+		}
+	case string(openapi.EnumsConnectorSlugRedis):
+		if configData.RedisConfig == nil {
+			resp.Diagnostics.AddError("redis_config is required", "Please provide `redis_config` inside `connector`.")
+		}
 	}
+}
+
+// validateKafkaConfig rejects credentials the API would drop on save, since reading them back empty would make the
+// apply fail with an inconsistent result.
+func validateKafkaConfig(config tfmodels.KafkaSharedConfig) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if config.SASLMechanism.IsUnknown() {
+		return diags
+	}
+
+	switch config.SASLMechanism.ValueString() {
+	case "PLAIN", "SCRAM-SHA-256", "SCRAM-SHA-512":
+	case "":
+		if tfmodels.IsKnownAndNonEmpty(config.Username) {
+			diags.AddError("sasl_mechanism is required with a username", "Please set `sasl_mechanism` inside `kafka_config` to `PLAIN`, `SCRAM-SHA-256` or `SCRAM-SHA-512`, or remove `username`.")
+		}
+		if tfmodels.IsKnownAndNonEmpty(config.Password) {
+			diags.AddError("sasl_mechanism is required with a password", "Please set `sasl_mechanism` inside `kafka_config` to `PLAIN`, `SCRAM-SHA-256` or `SCRAM-SHA-512`, or remove `password`.")
+		}
+	default:
+		if tfmodels.IsKnownAndNonEmpty(config.Username) {
+			diags.AddError("username is not used with this sasl_mechanism", "`username` inside `kafka_config` is only used with `PLAIN`, `SCRAM-SHA-256` and `SCRAM-SHA-512`.")
+		}
+		if tfmodels.IsKnownAndNonEmpty(config.Password) {
+			diags.AddError("password is not used with this sasl_mechanism", "`password` inside `kafka_config` is only used with `PLAIN`, `SCRAM-SHA-256` and `SCRAM-SHA-512`.")
+		}
+	}
+
+	if tfmodels.IsKnownAndNonEmpty(config.ClientKey) {
+		if tfmodels.IsKnownAndEmpty(config.ClientCert) {
+			diags.AddError("client_cert is required with a client_key", "Please provide `client_cert` inside `kafka_config`, or remove `client_key`.")
+		}
+	}
+	return diags
 }
 
 func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

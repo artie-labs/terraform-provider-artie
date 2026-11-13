@@ -155,24 +155,31 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `clickhouse`, `cockroach`, `databricks`, `delta`, `documentdb`, `dynamodb`, `gcs`, `iceberg`, `kafka`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redis`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
 - `bigquery_config` (Attributes) This should be filled out if the connector type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
+- `clickhouse_config` (Attributes) This should be filled out if the connector type is `clickhouse`. (see [below for nested schema](#nestedatt--clickhouse_config))
 - `cockroach_config` (Attributes) This should be filled out if the connector type is `cockroach`. (see [below for nested schema](#nestedatt--cockroach_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing connector to a different data plane destroys and recreates it, so change the data plane of the source readers and pipelines that use it in the same apply. Terraform deletes the old resource before the new data plane is validated, so a wrong name leaves it deleted; add `lifecycle { prevent_destroy = true }` to block replacements entirely. If an administrator moved this resource to another data plane, update `data_plane_name` to match before applying, or Terraform will recreate it in the old one.
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M). (see [below for nested schema](#nestedatt--databricks_config))
+- `delta_config` (Attributes) This should be filled out if the connector type is `delta` (Delta Lake on S3). You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--delta_config))
+- `documentdb_config` (Attributes) This should be filled out if the connector type is `documentdb`. (see [below for nested schema](#nestedatt--documentdb_config))
 - `dynamodb_config` (Attributes) This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--dynamodb_config))
 - `gcs_config` (Attributes) This should be filled out if the connector type is `gcs`. (see [below for nested schema](#nestedatt--gcs_config))
 - `iceberg_config` (Attributes) This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials. (see [below for nested schema](#nestedatt--iceberg_config))
+- `kafka_config` (Attributes) This should be filled out if the connector type is `kafka` (your own Kafka cluster, which we publish change events to). Kafka destinations must be enabled for your account. (see [below for nested schema](#nestedatt--kafka_config))
 - `keyspaces_config` (Attributes) This should be filled out if the connector type is `keyspaces`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--keyspaces_config))
 - `mongodb_config` (Attributes) This should be filled out if the connector type is `mongodb`. (see [below for nested schema](#nestedatt--mongodb_config))
+- `motherduck_config` (Attributes) This should be filled out if the connector type is `motherduck`. (see [below for nested schema](#nestedatt--motherduck_config))
 - `mssql_config` (Attributes) This should be filled out if the connector type is `mssql`. (see [below for nested schema](#nestedatt--mssql_config))
 - `mysql_config` (Attributes) This should be filled out if the connector type is `mysql`. (see [below for nested schema](#nestedatt--mysql_config))
 - `name` (String) An optional human-readable label for this connector.
 - `oracle_config` (Attributes) This should be filled out if the connector type is `oracle`. (see [below for nested schema](#nestedatt--oracle_config))
+- `planetscale_config` (Attributes) This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS. (see [below for nested schema](#nestedatt--planetscale_config))
 - `postgresql_config` (Attributes) This should be filled out if the connector type is `postgresql`. (see [below for nested schema](#nestedatt--postgresql_config))
+- `redis_config` (Attributes) This should be filled out if the connector type is `redis`. (see [below for nested schema](#nestedatt--redis_config))
 - `redshift_config` (Attributes) This should be filled out if the connector type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
 - `s3_config` (Attributes) This should be filled out if the connector type is `s3`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--s3_config))
 - `smb_share_config` (Attributes) This should be filled out if the connector type is `smb_share`. An SMB share connector is a folder of an SMB share (such as one on Amazon FSx for Windows File Server) that a Microsoft SQL Server source reader using `trn_log_backup` reads its transaction log backup files from. Link it to the source reader with `archive_connector_uuid`. (see [below for nested schema](#nestedatt--smb_share_config))
@@ -191,6 +198,20 @@ Required:
 - `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `location` (String) The location of the BigQuery dataset. This must be either `US` or `EU`.
 - `project_id` (String) The ID of the Google Cloud project.
+
+
+<a id="nestedatt--clickhouse_config"></a>
+### Nested Schema for `clickhouse_config`
+
+Required:
+
+- `addresses` (List of String) The `host:port` addresses of the ClickHouse server.
+
+Optional:
+
+- `is_insecure` (Boolean) Set to `true` to connect without TLS.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `username` (String) The username of the service account we should use to connect to ClickHouse.
 
 
 <a id="nestedatt--cockroach_config"></a>
@@ -223,6 +244,36 @@ Optional:
 - `client_id` (String) The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`.
 - `client_secret` (String, Sensitive) The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`.
 - `personal_access_token` (String, Sensitive) The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`.
+
+
+<a id="nestedatt--delta_config"></a>
+### Nested Schema for `delta_config`
+
+Required:
+
+- `region` (String) The AWS region where we should store your Delta tables in S3.
+
+Optional:
+
+- `access_key_id` (String) The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set.
+- `external_id` (String) The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set.
+- `role_arn` (String) The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+
+
+<a id="nestedatt--documentdb_config"></a>
+### Nested Schema for `documentdb_config`
+
+Required:
+
+- `host` (String) The hostname of the Amazon DocumentDB cluster.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for DocumentDB is 27017.
+- `username` (String) The username of the service account we will use to connect to DocumentDB.
+
+Optional:
+
+- `disable_ssl` (Boolean) Set to `true` to connect without SSL, for example over AWS PrivateLink.
 
 
 <a id="nestedatt--dynamodb_config"></a>
@@ -271,6 +322,28 @@ Optional:
 - `warehouse` (String) The warehouse identifier for the REST catalog. Required if `provider` is `rest`.
 
 
+<a id="nestedatt--kafka_config"></a>
+### Nested Schema for `kafka_config`
+
+Required:
+
+- `bootstrap_servers` (String) A comma-separated list of `host:port` brokers.
+- `topic_prefix` (String) The prefix of every topic name, which is `<prefix>.<schema>.<table>`. This can only contain letters, digits, `.`, `_` and `-`.
+
+Optional:
+
+- `ca_cert` (String) A PEM bundle used instead of the system roots to verify the brokers.
+- `client_cert` (String) A PEM client certificate presented to the brokers for mutual TLS. Requires `client_key`.
+- `client_key` (String, Sensitive) The PEM private key for `client_cert`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `create_topics` (Boolean) Set to `true` to have us create a missing topic, with the cluster's default settings, for clusters that don't create topics automatically. This needs the CREATE permission.
+- `disable_tls` (Boolean) Set to `true` to connect without TLS. `AWS-MSK-IAM` requires TLS.
+- `external_id` (String) The external ID to use when assuming `role_arn`.
+- `password` (String, Sensitive) The SASL password. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `role_arn` (String) The ARN of the IAM role to assume for `AWS-MSK-IAM`, which requires it.
+- `sasl_mechanism` (String) The SASL mechanism: `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `AWS-MSK-IAM`, or `""` (empty string) for no SASL.
+- `username` (String) The SASL username. Required for `PLAIN` and `SCRAM-*` mechanisms, and not used otherwise.
+
+
 <a id="nestedatt--keyspaces_config"></a>
 ### Nested Schema for `keyspaces_config`
 
@@ -296,6 +369,14 @@ Required:
 - `host` (String) The connection string for the MongoDB server. This can be either SRV or standard format.
 - `password` (String, Sensitive) The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `username` (String) The username of the service account we will use to connect to the MongoDB database.
+
+
+<a id="nestedatt--motherduck_config"></a>
+### Nested Schema for `motherduck_config`
+
+Required:
+
+- `token` (String, Sensitive) The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 
 
 <a id="nestedatt--mssql_config"></a>
@@ -345,6 +426,17 @@ Optional:
 - `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
 
 
+<a id="nestedatt--planetscale_config"></a>
+### Nested Schema for `planetscale_config`
+
+Required:
+
+- `host` (String) The hostname of the PlanetScale database.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `port` (Number) The default port for PlanetScale is 3306.
+- `username` (String) The username of the service account we will use to connect to PlanetScale.
+
+
 <a id="nestedatt--postgresql_config"></a>
 ### Nested Schema for `postgresql_config`
 
@@ -358,6 +450,24 @@ Required:
 Optional:
 
 - `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
+
+
+<a id="nestedatt--redis_config"></a>
+### Nested Schema for `redis_config`
+
+Required:
+
+- `host` (String) The hostname of the Redis server. With `cluster_mode`, any node of the cluster.
+- `port` (Number) The default port for Redis is 6379.
+
+Optional:
+
+- `cluster_mode` (Boolean) Set to `true` to connect to a Redis Cluster.
+- `database` (Number) The database index. Redis Cluster only supports `0`.
+- `max_stream_length` (Number) Trims each stream to approximately this many entries. `0` never trims.
+- `password` (String, Sensitive) The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `tls` (Boolean) Set to `true` to connect over TLS.
+- `username` (String) The username to connect with, if your server uses ACL users.
 
 
 <a id="nestedatt--redshift_config"></a>

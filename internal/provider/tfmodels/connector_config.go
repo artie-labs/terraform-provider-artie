@@ -59,14 +59,50 @@ type ConnectorConfig struct {
 	IcebergBucketARN string `json:"bucketARN"`
 	IcebergRegion    string `json:"region,omitempty"`
 
+	// Iceberg REST Catalog, MotherDuck:
+	Token string `json:"token,omitempty"`
+
 	// Iceberg REST Catalog:
 	IcebergURI        string `json:"uri,omitempty"`
-	IcebergToken      string `json:"token,omitempty"`
 	IcebergCredential string `json:"credential,omitempty"`
 	IcebergAuthURI    string `json:"authURI,omitempty"`
 	IcebergScope      string `json:"scope,omitempty"`
 	IcebergWarehouse  string `json:"warehouse,omitempty"`
 	IcebergPrefix     string `json:"prefix,omitempty"`
+
+	// DocumentDB:
+	DocumentDBDisableSSL bool `json:"disableSSL,omitempty"`
+
+	// ClickHouse:
+	ClickHouseAddresses  []string `json:"addresses,omitempty"`
+	ClickHouseIsInsecure bool     `json:"isInsecure,omitempty"`
+
+	// Kafka:
+	KafkaBootstrapServers string `json:"bootstrapServers,omitempty"`
+	KafkaSASLMechanism    string `json:"saslMechanism,omitempty"`
+	KafkaDisableTLS       bool   `json:"disableTLS,omitempty"`
+	KafkaTopicPrefix      string `json:"topicPrefix,omitempty"`
+	KafkaCreateTopics     bool   `json:"createTopics,omitempty"`
+	CACert                string `json:"caCert,omitempty"`
+	ClientCert            string `json:"clientCert,omitempty"`
+	ClientKey             string `json:"clientKey,omitempty"`
+
+	// Redis:
+	RedisDatabase        redisDatabase `json:"database,omitempty"`
+	RedisTLS             bool          `json:"tls,omitempty"`
+	RedisClusterMode     bool          `json:"clusterMode,omitempty"`
+	RedisMaxStreamLength int64         `json:"maxStreamLength,omitempty"`
+}
+
+// redisDatabase is Redis's database index. ClickHouse returns its database name as a string under the same key, which
+// decodes as 0.
+type redisDatabase int32
+
+func (d *redisDatabase) UnmarshalJSON(data []byte) error {
+	if data[0] == '"' {
+		return nil
+	}
+	return json.Unmarshal(data, (*int32)(d))
 }
 
 // maskedSecret is what the API returns in place of a secret when it masks it.
@@ -84,8 +120,9 @@ func (c *ConnectorConfig) keepMaskedSecrets(prior ConnectorConfig) {
 		{&c.DatabricksPersonalAccessToken, prior.DatabricksPersonalAccessToken},
 		{&c.DatabricksClientSecret, prior.DatabricksClientSecret},
 		{&c.AWSSecretAccessKey, prior.AWSSecretAccessKey},
-		{&c.IcebergToken, prior.IcebergToken},
+		{&c.Token, prior.Token},
 		{&c.IcebergCredential, prior.IcebergCredential},
+		{&c.ClientKey, prior.ClientKey},
 	}
 	for _, secret := range secrets {
 		if *secret.value == maskedSecret {

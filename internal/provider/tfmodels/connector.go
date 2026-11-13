@@ -33,6 +33,13 @@ type Connector struct {
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
+	ClickHouseConfig  *ClickHouseSharedConfig  `tfsdk:"clickhouse_config"`
+	DeltaConfig       *S3SharedConfig          `tfsdk:"delta_config"`
+	DocumentDBConfig  *DocumentDBSharedConfig  `tfsdk:"documentdb_config"`
+	KafkaConfig       *KafkaSharedConfig       `tfsdk:"kafka_config"`
+	MotherDuckConfig  *MotherDuckSharedConfig  `tfsdk:"motherduck_config"`
+	PlanetScaleConfig *PlanetScaleSharedConfig `tfsdk:"planetscale_config"`
+	RedisConfig       *RedisSharedConfig       `tfsdk:"redis_config"`
 }
 
 func (c Connector) sharedConfig() (ConnectorConfig, error) {
@@ -72,6 +79,20 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugClickhouse:
+		sharedConfig = c.ClickHouseConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugDelta:
+		sharedConfig = c.DeltaConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugDocumentdb:
+		sharedConfig = c.DocumentDBConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugKafka:
+		sharedConfig = c.KafkaConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugMotherduck:
+		sharedConfig = c.MotherDuckConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugPlanetscale:
+		sharedConfig = c.PlanetScaleConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugRedis:
+		sharedConfig = c.RedisConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -170,6 +191,20 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugKeyspaces:
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugClickhouse:
+		connector.ClickHouseConfig = ClickHouseSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDelta:
+		connector.DeltaConfig = S3SharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugDocumentdb:
+		connector.DocumentDBConfig = DocumentDBSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugKafka:
+		connector.KafkaConfig = KafkaSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugMotherduck:
+		connector.MotherDuckConfig = MotherDuckSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugPlanetscale:
+		connector.PlanetScaleConfig = PlanetScaleSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugRedis:
+		connector.RedisConfig = RedisSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -583,7 +618,7 @@ func (i IcebergSharedConfig) ToAPIModel() ConnectorConfig {
 		IcebergBucketARN:   i.BucketARN.ValueString(),
 		IcebergRegion:      i.Region.ValueString(),
 		IcebergURI:         i.URI.ValueString(),
-		IcebergToken:       i.Token.ValueString(),
+		Token:              i.Token.ValueString(),
 		IcebergCredential:  i.Credential.ValueString(),
 		IcebergAuthURI:     i.AuthURI.ValueString(),
 		IcebergScope:       i.Scope.ValueString(),
@@ -600,7 +635,7 @@ func IcebergSharedConfigFromAPIModel(apiModel ConnectorConfig) *IcebergSharedCon
 		BucketARN:          types.StringValue(apiModel.IcebergBucketARN),
 		Region:             types.StringValue(apiModel.IcebergRegion),
 		URI:                types.StringValue(apiModel.IcebergURI),
-		Token:              types.StringValue(apiModel.IcebergToken),
+		Token:              types.StringValue(apiModel.Token),
 		Credential:         types.StringValue(apiModel.IcebergCredential),
 		AuthURI:            types.StringValue(apiModel.IcebergAuthURI),
 		Scope:              types.StringValue(apiModel.IcebergScope),
@@ -640,5 +675,190 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
 		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:         types.StringValue(apiModel.AWSExternalID),
+	}
+}
+
+type ClickHouseSharedConfig struct {
+	Addresses  []types.String `tfsdk:"addresses"`
+	Username   types.String   `tfsdk:"username"`
+	Password   types.String   `tfsdk:"password"`
+	IsInsecure types.Bool     `tfsdk:"is_insecure"`
+}
+
+func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
+	addresses := make([]string, 0, len(c.Addresses))
+	for _, address := range c.Addresses {
+		addresses = append(addresses, address.ValueString())
+	}
+	return ConnectorConfig{
+		ClickHouseAddresses:  addresses,
+		Username:             c.Username.ValueString(),
+		Password:             c.Password.ValueString(),
+		ClickHouseIsInsecure: c.IsInsecure.ValueBool(),
+	}
+}
+
+func ClickHouseSharedConfigFromAPIModel(apiModel ConnectorConfig) *ClickHouseSharedConfig {
+	addresses := make([]types.String, 0, len(apiModel.ClickHouseAddresses))
+	for _, address := range apiModel.ClickHouseAddresses {
+		addresses = append(addresses, types.StringValue(address))
+	}
+	return &ClickHouseSharedConfig{
+		Addresses:  addresses,
+		Username:   types.StringValue(apiModel.Username),
+		Password:   types.StringValue(apiModel.Password),
+		IsInsecure: types.BoolValue(apiModel.ClickHouseIsInsecure),
+	}
+}
+
+type DocumentDBSharedConfig struct {
+	Host       types.String `tfsdk:"host"`
+	Port       types.Int32  `tfsdk:"port"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
+	DisableSSL types.Bool   `tfsdk:"disable_ssl"`
+}
+
+func (d DocumentDBSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:                 d.Host.ValueString(),
+		Port:                 d.Port.ValueInt32(),
+		User:                 d.Username.ValueString(),
+		Password:             d.Password.ValueString(),
+		DocumentDBDisableSSL: d.DisableSSL.ValueBool(),
+	}
+}
+
+func DocumentDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *DocumentDBSharedConfig {
+	return &DocumentDBSharedConfig{
+		Host:       types.StringValue(apiModel.Host),
+		Port:       types.Int32Value(apiModel.Port),
+		Username:   types.StringValue(apiModel.User),
+		Password:   types.StringValue(apiModel.Password),
+		DisableSSL: types.BoolValue(apiModel.DocumentDBDisableSSL),
+	}
+}
+
+type KafkaSharedConfig struct {
+	BootstrapServers types.String `tfsdk:"bootstrap_servers"`
+	TopicPrefix      types.String `tfsdk:"topic_prefix"`
+	SASLMechanism    types.String `tfsdk:"sasl_mechanism"`
+	Username         types.String `tfsdk:"username"`
+	Password         types.String `tfsdk:"password"`
+	RoleARN          types.String `tfsdk:"role_arn"`
+	ExternalID       types.String `tfsdk:"external_id"`
+	DisableTLS       types.Bool   `tfsdk:"disable_tls"`
+	CACert           types.String `tfsdk:"ca_cert"`
+	ClientCert       types.String `tfsdk:"client_cert"`
+	ClientKey        types.String `tfsdk:"client_key"`
+	CreateTopics     types.Bool   `tfsdk:"create_topics"`
+}
+
+func (k KafkaSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		KafkaBootstrapServers: k.BootstrapServers.ValueString(),
+		KafkaTopicPrefix:      k.TopicPrefix.ValueString(),
+		KafkaSASLMechanism:    k.SASLMechanism.ValueString(),
+		Username:              k.Username.ValueString(),
+		Password:              k.Password.ValueString(),
+		AWSRoleARN:            k.RoleARN.ValueString(),
+		AWSExternalID:         k.ExternalID.ValueString(),
+		KafkaDisableTLS:       k.DisableTLS.ValueBool(),
+		CACert:                k.CACert.ValueString(),
+		ClientCert:            k.ClientCert.ValueString(),
+		ClientKey:             k.ClientKey.ValueString(),
+		KafkaCreateTopics:     k.CreateTopics.ValueBool(),
+	}
+}
+
+func KafkaSharedConfigFromAPIModel(apiModel ConnectorConfig) *KafkaSharedConfig {
+	return &KafkaSharedConfig{
+		BootstrapServers: types.StringValue(apiModel.KafkaBootstrapServers),
+		TopicPrefix:      types.StringValue(apiModel.KafkaTopicPrefix),
+		SASLMechanism:    types.StringValue(apiModel.KafkaSASLMechanism),
+		Username:         types.StringValue(apiModel.Username),
+		Password:         types.StringValue(apiModel.Password),
+		RoleARN:          types.StringValue(apiModel.AWSRoleARN),
+		ExternalID:       types.StringValue(apiModel.AWSExternalID),
+		DisableTLS:       types.BoolValue(apiModel.KafkaDisableTLS),
+		CACert:           types.StringValue(apiModel.CACert),
+		ClientCert:       types.StringValue(apiModel.ClientCert),
+		ClientKey:        types.StringValue(apiModel.ClientKey),
+		CreateTopics:     types.BoolValue(apiModel.KafkaCreateTopics),
+	}
+}
+
+type MotherDuckSharedConfig struct {
+	Token types.String `tfsdk:"token"`
+}
+
+func (m MotherDuckSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{Token: m.Token.ValueString()}
+}
+
+func MotherDuckSharedConfigFromAPIModel(apiModel ConnectorConfig) *MotherDuckSharedConfig {
+	return &MotherDuckSharedConfig{Token: types.StringValue(apiModel.Token)}
+}
+
+// PlanetScaleSharedConfig leaves out the TLS mode, which the API always sets to required for PlanetScale.
+type PlanetScaleSharedConfig struct {
+	Host     types.String `tfsdk:"host"`
+	Port     types.Int32  `tfsdk:"port"`
+	Username types.String `tfsdk:"username"`
+	Password types.String `tfsdk:"password"`
+}
+
+func (p PlanetScaleSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:     p.Host.ValueString(),
+		Port:     p.Port.ValueInt32(),
+		User:     p.Username.ValueString(),
+		Password: p.Password.ValueString(),
+	}
+}
+
+func PlanetScaleSharedConfigFromAPIModel(apiModel ConnectorConfig) *PlanetScaleSharedConfig {
+	return &PlanetScaleSharedConfig{
+		Host:     types.StringValue(apiModel.Host),
+		Port:     types.Int32Value(apiModel.Port),
+		Username: types.StringValue(apiModel.User),
+		Password: types.StringValue(apiModel.Password),
+	}
+}
+
+type RedisSharedConfig struct {
+	Host            types.String `tfsdk:"host"`
+	Port            types.Int32  `tfsdk:"port"`
+	Username        types.String `tfsdk:"username"`
+	Password        types.String `tfsdk:"password"`
+	Database        types.Int32  `tfsdk:"database"`
+	TLS             types.Bool   `tfsdk:"tls"`
+	ClusterMode     types.Bool   `tfsdk:"cluster_mode"`
+	MaxStreamLength types.Int64  `tfsdk:"max_stream_length"`
+}
+
+func (r RedisSharedConfig) ToAPIModel() ConnectorConfig {
+	return ConnectorConfig{
+		Host:                 r.Host.ValueString(),
+		Port:                 r.Port.ValueInt32(),
+		Username:             r.Username.ValueString(),
+		Password:             r.Password.ValueString(),
+		RedisDatabase:        redisDatabase(r.Database.ValueInt32()),
+		RedisTLS:             r.TLS.ValueBool(),
+		RedisClusterMode:     r.ClusterMode.ValueBool(),
+		RedisMaxStreamLength: r.MaxStreamLength.ValueInt64(),
+	}
+}
+
+func RedisSharedConfigFromAPIModel(apiModel ConnectorConfig) *RedisSharedConfig {
+	return &RedisSharedConfig{
+		Host:            types.StringValue(apiModel.Host),
+		Port:            types.Int32Value(apiModel.Port),
+		Username:        types.StringValue(apiModel.Username),
+		Password:        types.StringValue(apiModel.Password),
+		Database:        types.Int32Value(int32(apiModel.RedisDatabase)),
+		TLS:             types.BoolValue(apiModel.RedisTLS),
+		ClusterMode:     types.BoolValue(apiModel.RedisClusterMode),
+		MaxStreamLength: types.Int64Value(apiModel.RedisMaxStreamLength),
 	}
 }
