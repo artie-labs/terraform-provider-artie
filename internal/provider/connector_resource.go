@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -14,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -52,6 +55,7 @@ var supportedConnectorTypes = []string{
 	string(openapi.EnumsConnectorSlugOracle),
 	string(openapi.EnumsConnectorSlugPlanetscale),
 	string(openapi.EnumsConnectorSlugPostgresql),
+	string(openapi.EnumsConnectorSlugRedis),
 	string(openapi.EnumsConnectorSlugRedshift),
 	string(openapi.EnumsConnectorSlugS3),
 	string(openapi.EnumsConnectorSlugSmbShare),
@@ -373,6 +377,20 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"create_topics": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to have us create a missing topic, with the cluster's default settings, for clusters that don't create topics automatically. This needs the CREATE permission."},
 				},
 			},
+			"redis_config": schema.SingleNestedAttribute{
+				MarkdownDescription: "This should be filled out if the connector type is `redis`.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"host":              schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Redis server. With `cluster_mode`, any node of the cluster."},
+					"port":              schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for Redis is 6379."},
+					"username":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The username to connect with, if your server uses ACL users."},
+					"password":          schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
+					"database":          schema.Int32Attribute{Optional: true, Computed: true, Default: int32default.StaticInt32(0), Validators: []validator.Int32{int32validator.AtLeast(0)}, MarkdownDescription: "The database index. Redis Cluster only supports `0`."},
+					"tls":               schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect over TLS."},
+					"cluster_mode":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect to a Redis Cluster."},
+					"max_stream_length": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "Trims each stream to approximately this many entries. `0` never trims."},
+				},
+			},
 			"clickhouse_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `clickhouse`.",
 				Optional:            true,
@@ -625,6 +643,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 
 		resp.Diagnostics.Append(validateKafkaConfig(*configData.KafkaConfig)...)
+	case string(openapi.EnumsConnectorSlugRedis):
+		if configData.RedisConfig == nil {
+			resp.Diagnostics.AddError("redis_config is required", "Please provide `redis_config` inside `connector`.")
+		}
 	case string(openapi.EnumsConnectorSlugClickhouse):
 		if configData.ClickHouseConfig == nil {
 			resp.Diagnostics.AddError("clickhouse_config is required", "Please provide `clickhouse_config` inside `connector`.")
