@@ -168,7 +168,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 				MarkdownDescription: "This contains configuration that pertains to the destination database but is specific to this pipeline. The basic connection settings for the destination, which can be shared by multiple pipelines, are stored in the corresponding `artie_connector` resource.",
 				Attributes: map[string]schema.Attribute{
 					"database": schema.StringAttribute{
-						MarkdownDescription: "The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake, unless `use_same_schema_as_source` is set to true.",
+						MarkdownDescription: "The name of the database that data should be synced to in the destination. This should be filled if the destination is MS SQL or Snowflake (unless `use_same_schema_as_source` is set to true), or with the dataset name if the destination is BigQuery.",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),
@@ -182,7 +182,8 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 						PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 					},
 					"dataset": schema.StringAttribute{
-						MarkdownDescription: "The name of the dataset that data should be synced to in the destination. This should be filled if the destination is BigQuery.",
+						MarkdownDescription: "Deprecated: this is not sent to the API and must be left empty. For BigQuery, set the dataset name in `database` instead.",
+						DeprecationMessage:  "`dataset` is not sent to the API. For BigQuery, set the dataset name in `database` instead.",
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString(""),
@@ -341,6 +342,12 @@ func (r *PipelineResource) ValidateConfig(ctx context.Context, req resource.Vali
 	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if configData.DestinationConfig != nil {
+		if err := configData.DestinationConfig.Validate(); err != nil {
+			resp.Diagnostics.AddError("Invalid configuration", err.Error())
+		}
 	}
 
 	// Validate that include_full_source_table_name_column_as_primary_key requires include_full_source_table_name_column
