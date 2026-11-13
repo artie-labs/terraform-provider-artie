@@ -155,7 +155,7 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `kafka`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `delta`, `dynamodb`, `gcs`, `iceberg`, `kafka`, `keyspaces`, `mongodb`, `motherduck`, `mssql`, `mysql`, `oracle`, `planetscale`, `postgresql`, `redis`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
@@ -179,6 +179,7 @@ resource "artie_connector" "fsx_log_backups" {
 - `planetscale_config` (Attributes) This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS. (see [below for nested schema](#nestedatt--planetscale_config))
 - `postgresql_config` (Attributes) This should be filled out if the connector type is `postgresql`. (see [below for nested schema](#nestedatt--postgresql_config))
 - `private_link_uuid` (String) This can point to an `artie_private_link` resource if we should reach the connector through AWS PrivateLink. With a link set, we connect through the link's DNS entry and `host` is kept as configured. This can't be combined with `ssh_tunnel_uuid`; leaving it out while `ssh_tunnel_uuid` is set removes the PrivateLink. Supported for `cockroach`, `databricks`, `keyspaces`, `mssql`, `mysql` (not with IAM authentication), `oracle`, `postgresql`, `redshift`, and `smb_share`. `mongodb` is rejected at plan time, and other types fail when applied. For `smb_share`, this and `smb_share_config.private_link_uuid` set the same PrivateLink: set either one, or both to the same value; when only `smb_share_config.private_link_uuid` is set, this follows it, and when neither is set, a PrivateLink set in the Artie UI is removed. For other types, leaving this out keeps the current PrivateLink, whether it was set in the Artie UI or by Terraform, so set it to `""` to detach the connector before destroying its `artie_private_link`.
+- `redis_config` (Attributes) This should be filled out if the connector type is `redis`. (see [below for nested schema](#nestedatt--redis_config))
 - `redshift_config` (Attributes) This should be filled out if the connector type is `redshift`. (see [below for nested schema](#nestedatt--redshift_config))
 - `s3_config` (Attributes) This should be filled out if the connector type is `s3`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials). (see [below for nested schema](#nestedatt--s3_config))
 - `smb_share_config` (Attributes) This should be filled out if the connector type is `smb_share`. An SMB share connector is a folder of an SMB share (such as one on Amazon FSx for Windows File Server) that a Microsoft SQL Server source reader using `trn_log_backup` reads its transaction log backup files from. Link it to the source reader with `archive_connector_uuid`. (see [below for nested schema](#nestedatt--smb_share_config))
@@ -421,6 +422,24 @@ Required:
 Optional:
 
 - `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
+
+
+<a id="nestedatt--redis_config"></a>
+### Nested Schema for `redis_config`
+
+Required:
+
+- `host` (String) The hostname of the Redis server. With `cluster_mode`, any node of the cluster.
+- `port` (Number) The default port for Redis is 6379.
+
+Optional:
+
+- `cluster_mode` (Boolean) Set to `true` to connect to a Redis Cluster.
+- `database` (Number) The database index. Redis Cluster only supports `0`.
+- `max_stream_length` (Number) Trims each stream to approximately this many entries. `0` never trims.
+- `password` (String, Sensitive) The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `tls` (Boolean) Set to `true` to connect over TLS.
+- `username` (String) The username to connect with, if your server uses ACL users.
 
 
 <a id="nestedatt--redshift_config"></a>
