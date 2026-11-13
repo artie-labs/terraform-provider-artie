@@ -21,6 +21,7 @@ type KafkaCluster struct {
 	Brokers                types.Int64  `tfsdk:"brokers"`
 	StorageGiB             types.Int64  `tfsdk:"storage_gib"`
 	AllowedCIDRs           types.List   `tfsdk:"allowed_cidrs"`
+	RetentionMS            types.Int64  `tfsdk:"retention_ms"`
 	TieredStorage          types.Object `tfsdk:"tiered_storage"`
 	StorageAutoscale       types.Object `tfsdk:"storage_autoscale"`
 	CurrentStorageGiB      types.Int64  `tfsdk:"current_storage_gib"`
@@ -111,6 +112,7 @@ func (k KafkaCluster) ToAPICreateRequest(ctx context.Context) (openapi.RouterCre
 		Brokers:             int(k.Brokers.ValueInt64()),
 		StorageGiB:          int(k.StorageGiB.ValueInt64()),
 		AllowedCIDRs:        allowedCIDRs,
+		RetentionMS:         int64ToIntPointer(k.RetentionMS),
 		TieredStorage:       tieredStorage.Enabled.ValueBool(),
 		LocalRetentionMS:    int64ToIntPointer(tieredStorage.LocalRetentionMS),
 		LocalRetentionBytes: int64ToIntPointer(tieredStorage.LocalRetentionBytes),
@@ -156,6 +158,27 @@ func (k KafkaCluster) ToAPIUpdateRequest(ctx context.Context, state KafkaCluster
 	}
 
 	return req, diags
+}
+
+// BrokerSettingsToAPIUpdate returns the broker settings change, which has its own endpoint, or nil if there is none.
+// An unknown retention (left out of the config, with none in state) isn't a change.
+func (k KafkaCluster) BrokerSettingsToAPIUpdate(state KafkaCluster) *openapi.RouterUpdateKafkaClusterBrokerSettingsRequest {
+	if !IsKnown(k.RetentionMS) {
+		return nil
+	}
+	if k.RetentionMS.Equal(state.RetentionMS) {
+		return nil
+	}
+	return &openapi.RouterUpdateKafkaClusterBrokerSettingsRequest{RetentionMS: int64ToIntPointer(k.RetentionMS)}
+}
+
+// AppliesToBrokers reports whether the update saves a change the cluster has to apply. The API takes one such change
+// at a time, so a broker settings change can't follow it in the same apply. A rename and storage autoscale don't
+// apply anything to the cluster.
+func AppliesToBrokers(req openapi.RouterUpdateKafkaClusterRequest) bool {
+	req.Name = nil
+	req.StorageAutoscale = nil
+	return req != (openapi.RouterUpdateKafkaClusterRequest{})
 }
 
 // tieredStorageToAPIUpdate returns the tiered storage change, or nil if there is none. An unknown days on disk (left out
@@ -204,6 +227,12 @@ func (k KafkaCluster) WithCreatedCluster(apiModel openapi.PayloadsKafkaCluster) 
 	k.TieredStorageAvailable = types.BoolValue(apiModel.TieredStorageAvailable)
 	k.CurrentStorageGiB = types.Int64Null()
 	k.KafkaVersion = types.StringNull()
+	if !IsKnown(k.RetentionMS) {
+		k.RetentionMS = types.Int64Null()
+		if apiModel.Managed != nil {
+			k.RetentionMS = types.Int64Value(apiModel.Managed.BrokerSettings.RetentionMS)
+		}
+	}
 	if IsKnown(k.TieredStorage) {
 		tieredStorage := maps.Clone(k.TieredStorage.Attributes())
 		if !IsKnown(tieredStorage["local_retention_ms"]) {
@@ -261,6 +290,7 @@ func KafkaClusterFromAPIModel(ctx context.Context, apiModel openapi.PayloadsKafk
 		Brokers:                types.Int64Value(int64(managed.Brokers)),
 		StorageGiB:             types.Int64Value(int64(managed.StorageGiB)),
 		AllowedCIDRs:           allowedCIDRs,
+		RetentionMS:            types.Int64Value(managed.BrokerSettings.RetentionMS),
 		TieredStorage:          tieredStorageFromAPIModel(apiModel),
 		StorageAutoscale:       storageAutoscale,
 		CurrentStorageGiB:      types.Int64Value(int64(managed.StorageGiB)),
