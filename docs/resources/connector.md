@@ -155,11 +155,12 @@ resource "artie_connector" "fsx_log_backups" {
 
 ### Required
 
-- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
+- `type` (String) The type of connector. This must be one of the following: `api`, `bigquery`, `clickhouse`, `cockroach`, `databricks`, `dynamodb`, `gcs`, `iceberg`, `keyspaces`, `mongodb`, `mssql`, `mysql`, `oracle`, `postgresql`, `redshift`, `s3`, `smb_share`, `snowflake`.
 
 ### Optional
 
 - `bigquery_config` (Attributes) This should be filled out if the connector type is `bigquery`. (see [below for nested schema](#nestedatt--bigquery_config))
+- `clickhouse_config` (Attributes) This should be filled out if the connector type is `clickhouse`. (see [below for nested schema](#nestedatt--clickhouse_config))
 - `cockroach_config` (Attributes) This should be filled out if the connector type is `cockroach`. (see [below for nested schema](#nestedatt--cockroach_config))
 - `data_plane_name` (String) The name of the data plane this connector is in (if applicable; this does not apply to cloud-based connectors like BigQuery and Snowflake). If this is not set, we will use the default data plane for your account. To see the full list of supported data planes on your account, click on 'New pipeline' in our UI. Moving an existing connector to a different data plane destroys and recreates it, so change the data plane of the source readers and pipelines that use it in the same apply. Terraform deletes the old resource before the new data plane is validated, so a wrong name leaves it deleted; add `lifecycle { prevent_destroy = true }` to block replacements entirely. If an administrator moved this resource to another data plane, update `data_plane_name` to match before applying, or Terraform will recreate it in the old one.
 - `databricks_config` (Attributes) This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M). (see [below for nested schema](#nestedatt--databricks_config))
@@ -191,6 +192,20 @@ Required:
 - `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `location` (String) The location of the BigQuery dataset. This must be either `US` or `EU`.
 - `project_id` (String) The ID of the Google Cloud project.
+
+
+<a id="nestedatt--clickhouse_config"></a>
+### Nested Schema for `clickhouse_config`
+
+Required:
+
+- `addresses` (List of String) The `host:port` addresses of the ClickHouse server.
+
+Optional:
+
+- `is_insecure` (Boolean) Set to `true` to connect without TLS.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `username` (String) The username of the service account we should use to connect to ClickHouse.
 
 
 <a id="nestedatt--cockroach_config"></a>

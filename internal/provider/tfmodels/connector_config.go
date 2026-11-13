@@ -67,6 +67,10 @@ type ConnectorConfig struct {
 	IcebergScope      string `json:"scope,omitempty"`
 	IcebergWarehouse  string `json:"warehouse,omitempty"`
 	IcebergPrefix     string `json:"prefix,omitempty"`
+
+	// ClickHouse:
+	ClickHouseAddresses  []string `json:"addresses,omitempty"`
+	ClickHouseIsInsecure bool     `json:"isInsecure,omitempty"`
 }
 
 // maskedSecret is what the API returns in place of a secret when it masks it.

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -33,6 +34,7 @@ type Connector struct {
 	SnowflakeConfig   *SnowflakeSharedConfig   `tfsdk:"snowflake_config"`
 	DatabricksConfig  *DatabricksSharedConfig  `tfsdk:"databricks_config"`
 	KeyspacesConfig   *KeyspacesSharedConfig   `tfsdk:"keyspaces_config"`
+	ClickHouseConfig  *ClickHouseSharedConfig  `tfsdk:"clickhouse_config"`
 }
 
 func (c Connector) sharedConfig() (ConnectorConfig, error) {
@@ -72,6 +74,8 @@ func (c Connector) sharedConfig() (ConnectorConfig, error) {
 		sharedConfig = c.DatabricksConfig.ToAPIModel()
 	case openapi.EnumsConnectorSlugKeyspaces:
 		sharedConfig = c.KeyspacesConfig.ToAPIModel()
+	case openapi.EnumsConnectorSlugClickhouse:
+		sharedConfig = c.ClickHouseConfig.ToAPIModel()
 	default:
 		return ConnectorConfig{}, fmt.Errorf("unhandled connector type: %s", c.Type.ValueString())
 	}
@@ -170,6 +174,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		connector.DatabricksConfig = DatabricksSharedConfigFromAPIModel(config)
 	case openapi.EnumsConnectorSlugKeyspaces:
 		connector.KeyspacesConfig = KeyspacesSharedConfigFromAPIModel(config)
+	case openapi.EnumsConnectorSlugClickhouse:
+		connector.ClickHouseConfig = ClickHouseSharedConfigFromAPIModel(config)
 	default:
 		return Connector{}, []diag.Diagnostic{diag.NewErrorDiagnostic(
 			"Unable to convert API model to Connector", fmt.Sprintf("invalid connector type: %s", apiModel.Type),
@@ -640,5 +646,39 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 		AwsSecretAccessKey: types.StringValue(apiModel.AWSSecretAccessKey),
 		RoleARN:            types.StringValue(apiModel.AWSRoleARN),
 		ExternalID:         types.StringValue(apiModel.AWSExternalID),
+	}
+}
+
+type ClickHouseSharedConfig struct {
+	Addresses  types.List   `tfsdk:"addresses"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
+	IsInsecure types.Bool   `tfsdk:"is_insecure"`
+}
+
+func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
+	// An unknown list has no elements; ToAPIModel only sends planned values, which are known.
+	addresses := make([]string, 0, len(c.Addresses.Elements()))
+	for _, address := range c.Addresses.Elements() {
+		addresses = append(addresses, address.(types.String).ValueString())
+	}
+	return ConnectorConfig{
+		ClickHouseAddresses:  addresses,
+		Username:             c.Username.ValueString(),
+		Password:             c.Password.ValueString(),
+		ClickHouseIsInsecure: c.IsInsecure.ValueBool(),
+	}
+}
+
+func ClickHouseSharedConfigFromAPIModel(apiModel ConnectorConfig) *ClickHouseSharedConfig {
+	addresses := make([]attr.Value, 0, len(apiModel.ClickHouseAddresses))
+	for _, address := range apiModel.ClickHouseAddresses {
+		addresses = append(addresses, types.StringValue(address))
+	}
+	return &ClickHouseSharedConfig{
+		Addresses:  types.ListValueMust(types.StringType, addresses),
+		Username:   types.StringValue(apiModel.Username),
+		Password:   types.StringValue(apiModel.Password),
+		IsInsecure: types.BoolValue(apiModel.ClickHouseIsInsecure),
 	}
 }
