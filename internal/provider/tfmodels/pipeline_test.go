@@ -608,4 +608,36 @@ func TestPipelineDestinationConfigRoundTrip(t *testing.T) {
 			QuietWindow:  &openapi.PayloadsCompactionQuietWindow{Start: ptr("02:00"), End: ptr("06:00")},
 		}, *apiModel.Compaction)
 	}
+	{
+		// Unknown (left out of the config on create): sent as nil so the API keeps what it has
+		config := PipelineDestinationConfig{
+			CheckpointInterval:    types.Int64Unknown(),
+			Compaction:            types.ObjectUnknown(CompactionAttrTypes),
+			ContainerName:         types.StringUnknown(),
+			ExternalStageName:     types.StringUnknown(),
+			ExternalStageS3Bucket: types.StringUnknown(),
+			ExternalStageS3Prefix: types.StringUnknown(),
+			IcebergFormatVersion:  types.StringUnknown(),
+		}
+		apiModel, diags := config.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.CheckpointInterval)
+		assert.Nil(t, apiModel.Compaction)
+		assert.Nil(t, apiModel.ContainerName)
+		assert.Nil(t, apiModel.ExternalStageName)
+		assert.Nil(t, apiModel.ExternalStageS3Bucket)
+		assert.Nil(t, apiModel.ExternalStageS3Prefix)
+		assert.Nil(t, apiModel.IcebergFormatVersion)
+	}
+	{
+		// Compaction settings left out inside a set block: sent as nil
+		compaction := types.ObjectValueMust(CompactionAttrTypes, map[string]attr.Value{
+			"enabled":       types.BoolValue(true),
+			"every_seconds": types.Int64Unknown(),
+			"quiet_window":  types.ObjectUnknown(CompactionQuietWindowAttrTypes),
+		})
+		apiModel, diags := PipelineDestinationConfig{Compaction: compaction}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, openapi.PayloadsCompactionConfig{Enabled: ptr(true)}, *apiModel.Compaction)
+	}
 }
