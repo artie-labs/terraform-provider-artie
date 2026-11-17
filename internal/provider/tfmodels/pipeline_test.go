@@ -557,3 +557,88 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
 	}
 }
+
+func TestDynamoDBBackfillConfigValidate(t *testing.T) {
+	{
+		// Enabled without an export ARN: rejected, since Terraform can't start an export
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), Bucket: types.StringValue("exports"), ExportARN: types.StringValue("")}
+		assert.ErrorContains(t, config.Validate(), "export_arn")
+	}
+	{
+		// Enabled with an export ARN
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(true), ExportARN: types.StringValue("arn")}
+		assert.NoError(t, config.Validate())
+	}
+	{
+		// An ARN left out of the config keeps its saved value, and one only known at apply is accepted
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), ExportARN: types.StringNull()}.Validate())
+		assert.NoError(t, DynamoDBBackfillConfig{Enabled: types.BoolValue(true), ExportARN: types.StringUnknown()}.Validate())
+	}
+	{
+		// Disabled
+		config := DynamoDBBackfillConfig{Enabled: types.BoolValue(false), ExportARN: types.StringValue("")}
+		assert.NoError(t, config.Validate())
+	}
+}
+
+func TestPipelineFromAPIModel_DynamoDBBackfillConfig(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{
+		Uuid:             uuid.New(),
+		Name:             "test",
+		Tables:           []openapi.PayloadsTable{},
+		AdvancedSettings: openapi.PayloadsPipelineAdvancedSettings{},
+	}
+	{
+		// Omitted: null
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.DynamoDBBackfillConfig.IsNull())
+	}
+	{
+		// Returned: omitted fields read back as "" and 0
+		base.AdvancedSettings.DynamoDBBackfillConfig = &openapi.PayloadsDynamoDBSnapshotConfig{Enabled: ptr(true), Bucket: ptr("bucket"), ExportArn: ptr("")}
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"optional_folder": types.StringValue(""),
+			"export_arn":      types.StringValue(""),
+			"max_parallelism": types.Int64Value(0),
+		}, pipeline.DynamoDBBackfillConfig.Attributes())
+	}
+}
+
+func TestPipelineToAPIModel_DynamoDBBackfillConfig(t *testing.T) {
+	tablesMap, mapDiags := types.MapValueFrom(t.Context(), types.ObjectType{AttrTypes: TableAttrTypes}, map[string]Table{})
+	assert.False(t, mapDiags.HasError(), "unexpected diags: %v", mapDiags)
+	pipeline := Pipeline{Name: types.StringValue("test"), Tables: tablesMap, DestinationConfig: &PipelineDestinationConfig{}}
+	{
+		// Left out of the config on create: send nothing, so the API keeps its default.
+		pipeline.DynamoDBBackfillConfig = types.ObjectUnknown(DynamoDBBackfillConfigAttrTypes)
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.DynamoDBBackfillConfig)
+	}
+	{
+		// Set: the whole object is sent, since the API replaces it
+		dynamoDB, objDiags := types.ObjectValue(DynamoDBBackfillConfigAttrTypes, map[string]attr.Value{
+			"enabled":         types.BoolValue(true),
+			"bucket":          types.StringValue("bucket"),
+			"optional_folder": types.StringValue("folder"),
+			"export_arn":      types.StringValue(""),
+			"max_parallelism": types.Int64Value(3),
+		})
+		assert.False(t, objDiags.HasError(), "unexpected diags: %v", objDiags)
+		pipeline.DynamoDBBackfillConfig = dynamoDB
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, openapi.PayloadsDynamoDBSnapshotConfig{
+			Enabled:        ptr(true),
+			Bucket:         ptr("bucket"),
+			OptionalFolder: ptr("folder"),
+			ExportArn:      ptr(""),
+			MaxParallelism: ptr(3),
+		}, *apiModel.AdvancedSettings.DynamoDBBackfillConfig)
+	}
+}

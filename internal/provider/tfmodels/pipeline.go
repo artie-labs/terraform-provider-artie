@@ -3,6 +3,7 @@ package tfmodels
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -59,6 +60,67 @@ func PipelineDestinationConfigFromAPIModel(apiModel openapi.PayloadsSpecificConf
 		Folder:                  types.StringValue(lib.RemovePtr(apiModel.FolderName)),
 		CreateIcebergNamespaces: types.BoolValue(lib.RemovePtr(apiModel.DynamicallyCreateNamespaces)),
 	}
+}
+
+type DynamoDBBackfillConfig struct {
+	Enabled        types.Bool   `tfsdk:"enabled"`
+	Bucket         types.String `tfsdk:"bucket"`
+	OptionalFolder types.String `tfsdk:"optional_folder"`
+	ExportARN      types.String `tfsdk:"export_arn"`
+	MaxParallelism types.Int64  `tfsdk:"max_parallelism"`
+}
+
+var DynamoDBBackfillConfigAttrTypes = map[string]attr.Type{
+	"enabled":         types.BoolType,
+	"bucket":          types.StringType,
+	"optional_folder": types.StringType,
+	"export_arn":      types.StringType,
+	"max_parallelism": types.Int64Type,
+}
+
+// Validate rejects an enabled DynamoDB backfill without an export ARN: only the Artie UI starts an export, and the
+// reader can't deploy without one. A value left out of the config (null) keeps its saved value, and one only known at
+// apply is accepted.
+func (d DynamoDBBackfillConfig) Validate() error {
+	if !IsExplicitlyTrue(d.Enabled) {
+		return nil
+	}
+	if !IsKnown(d.ExportARN) {
+		return nil
+	}
+	if d.ExportARN.ValueString() != "" {
+		return nil
+	}
+	return fmt.Errorf("`dynamodb_backfill_config.export_arn` is required when the backfill is enabled. Terraform can't start a DynamoDB export, so start one in the Artie UI (or with AWS) and set its ARN here")
+}
+
+func dynamoDBBackfillConfigToAPI(ctx context.Context, value types.Object) (*openapi.PayloadsDynamoDBSnapshotConfig, diag.Diagnostics) {
+	config, diags := parseOptionalObject[DynamoDBBackfillConfig](ctx, &value)
+	if config == nil {
+		return nil, diags
+	}
+
+	return &openapi.PayloadsDynamoDBSnapshotConfig{
+		Enabled:        boolPointer(config.Enabled),
+		Bucket:         stringPointer(config.Bucket),
+		OptionalFolder: stringPointer(config.OptionalFolder),
+		ExportArn:      stringPointer(config.ExportARN),
+		MaxParallelism: int64ToIntPointer(config.MaxParallelism),
+	}, diags
+}
+
+func dynamoDBBackfillConfigFromAPI(apiConfig *openapi.PayloadsDynamoDBSnapshotConfig) (types.Object, diag.Diagnostics) {
+	if apiConfig == nil {
+		return types.ObjectNull(DynamoDBBackfillConfigAttrTypes), nil
+	}
+
+	return types.ObjectValue(DynamoDBBackfillConfigAttrTypes, map[string]attr.Value{
+		"enabled":         boolPointerValueOrFalse(apiConfig.Enabled),
+		"bucket":          types.StringValue(lib.RemovePtr(apiConfig.Bucket)),
+		"optional_folder": types.StringValue(lib.RemovePtr(apiConfig.OptionalFolder)),
+		"export_arn":      types.StringValue(lib.RemovePtr(apiConfig.ExportArn)),
+		"max_parallelism": types.Int64Value(int64(lib.RemovePtr(apiConfig.MaxParallelism))),
+	})
 }
 
 type FlushConfig struct {
@@ -176,6 +238,7 @@ type Pipeline struct {
 	TurboWarehouse                               types.String `tfsdk:"turbo_warehouse"`
 	TurboRowThreshold                            types.Int64  `tfsdk:"turbo_row_threshold"`
 	TurboLatencyThresholdMinutes                 types.Int64  `tfsdk:"turbo_latency_threshold_minutes"`
+	DynamoDBBackfillConfig                       types.Object `tfsdk:"dynamodb_backfill_config"`
 }
 
 func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePayload, diag.Diagnostics) {
@@ -237,6 +300,12 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		return openapi.PayloadsPipelinePayload{}, diags
 	}
 
+	dynamoDBBackfillConfig, dynamoDBDiags := dynamoDBBackfillConfigToAPI(ctx, p.DynamoDBBackfillConfig)
+	diags.Append(dynamoDBDiags...)
+	if diags.HasError() {
+		return openapi.PayloadsPipelinePayload{}, diags
+	}
+
 	advancedSettings := openapi.PayloadsAdvancedPipelineSettingsPayload{
 		DropDeletedColumns:                           boolPointer(p.DropDeletedColumns),
 		EnableSoftDelete:                             boolPointer(p.SoftDeleteRows),
@@ -267,6 +336,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		TurboWarehouse:                               stringPointer(p.TurboWarehouse),
 		TurboRowThreshold:                            int64ToIntPointer(p.TurboRowThreshold),
 		TurboLatencyThresholdMinutes:                 int64ToIntPointer(p.TurboLatencyThresholdMinutes),
+		DynamoDBBackfillConfig:                       dynamoDBBackfillConfig,
 	}
 	if flushConfig != nil {
 		advancedSettings.FlushIntervalSeconds = int64ToIntPointer(flushConfig.FlushIntervalSeconds)
@@ -416,6 +486,12 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		return Pipeline{}, diags
 	}
 
+	dynamoDBBackfillConfig, dynamoDBDiags := dynamoDBBackfillConfigFromAPI(settings.DynamoDBBackfillConfig)
+	diags.Append(dynamoDBDiags...)
+	if diags.HasError() {
+		return Pipeline{}, diags
+	}
+
 	return Pipeline{
 		UUID:                     types.StringValue(apiModel.Uuid.String()),
 		Name:                     types.StringValue(apiModel.Name),
@@ -460,6 +536,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		TurboRowThreshold:                 turboRowThreshold,
 		TurboLatencyThresholdMinutes:      turboLatencyThresholdMinutes,
 		// The API omits structAsVariant when it's false, so it reads back as false (not null) to match a config that sets false.
-		StructAsVariant: boolPointerValueOrFalse(settings.StructAsVariant),
+		StructAsVariant:        boolPointerValueOrFalse(settings.StructAsVariant),
+		DynamoDBBackfillConfig: dynamoDBBackfillConfig,
 	}, diags
 }
