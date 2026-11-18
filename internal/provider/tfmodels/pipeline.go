@@ -150,6 +150,7 @@ type Pipeline struct {
 	DropDeletedColumns                           types.Bool   `tfsdk:"drop_deleted_columns"`
 	SoftDeleteRows                               types.Bool   `tfsdk:"soft_delete_rows"`
 	IncludeArtieUpdatedAtColumn                  types.Bool   `tfsdk:"include_artie_updated_at_column"`
+	ArtieUpdatedAtColumnName                     types.String `tfsdk:"artie_updated_at_column_name"`
 	IncludeDatabaseUpdatedAtColumn               types.Bool   `tfsdk:"include_database_updated_at_column"`
 	IncludeArtieOperationColumn                  types.Bool   `tfsdk:"include_artie_operation_column"`
 	IncludeFullSourceTableNameColumn             types.Bool   `tfsdk:"include_full_source_table_name_column"`
@@ -242,6 +243,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		DropDeletedColumns:                           boolPointer(p.DropDeletedColumns),
 		EnableSoftDelete:                             boolPointer(p.SoftDeleteRows),
 		IncludeArtieUpdatedAtColumn:                  boolPointer(p.IncludeArtieUpdatedAtColumn),
+		ArtieUpdatedAtColumnName:                     stringPointer(p.ArtieUpdatedAtColumnName),
 		IncludeDatabaseUpdatedAtColumn:               boolPointer(p.IncludeDatabaseUpdatedAtColumn),
 		IncludeArtieOperationColumn:                  boolPointer(p.IncludeArtieOperationColumn),
 		IncludeFullSourceTableNameColumn:             boolPointer(p.IncludeFullSourceTableNameColumn),
@@ -448,10 +450,12 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		IncludeSourceMetadataColumn:                  includeSourceMetadataColumn,
 		AutoEnableHistoryForNewTables:                autoEnableHistoryForNewTables,
 		// The API omits an empty regex, so it reads back as "" (not null) to match a config that clears it with "".
-		AutoEnableHistoryIgnoreRegex:      types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
-		AutoEnableHistoryIncludeRegex:     types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
-		AutoReplicateIgnoreRegex:          types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
-		AutoReplicateIncludeRegex:         types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
+		AutoEnableHistoryIgnoreRegex:  types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIgnoreRegex)),
+		AutoEnableHistoryIncludeRegex: types.StringValue(lib.RemovePtr(settings.AutoEnableHistoryIncludeRegex)),
+		AutoReplicateIgnoreRegex:      types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
+		AutoReplicateIncludeRegex:     types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
+		// The API omits the default column name, so it reads back as "" (not null) to match a config that resets it with "".
+		ArtieUpdatedAtColumnName:          types.StringValue(lib.RemovePtr(settings.ArtieUpdatedAtColumnName)),
 		AutoReplicateNewTables:            autoReplicateNewTables,
 		AutoStopDroppedTables:             autoStopDroppedTables,
 		AppendOnly:                        appendOnly,

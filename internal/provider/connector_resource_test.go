@@ -86,7 +86,7 @@ func TestConnectorValidateConfigUnknownClickHouseAddresses(t *testing.T) {
 }
 
 // connectorConfig builds a connector config from the resource schema with the given attributes set; everything else is
-// null. A name like "postgresql_config.password" sets a nested attribute.
+// null. A name like "oracle_config.password" sets a nested attribute.
 func connectorConfig(t *testing.T, attributes map[string]attr.Value) tfsdk.Config {
 	ctx := t.Context()
 	var schemaResp resource.SchemaResponse
@@ -288,6 +288,70 @@ func TestSSHTunnelPrivateLinkPlan(t *testing.T) {
 	}
 }
 
+// validateConnectorThroughServer runs the provider server's config validation, which unlike [validateConnectorConfig]
+// includes attribute validators.
+func validateConnectorThroughServer(t *testing.T, attributes map[string]attr.Value, writeOnlyAllowed bool) []*tfprotov6.Diagnostic {
+	server := providerserver.NewProtocol6(New("test")())()
+	raw := connectorConfig(t, attributes).Raw
+	config, err := tfprotov6.NewDynamicValue(raw.Type(), raw)
+	require.NoError(t, err)
+	resp, err := server.ValidateResourceConfig(t.Context(), &tfprotov6.ValidateResourceConfigRequest{
+		TypeName:           "artie_connector",
+		Config:             &config,
+		ClientCapabilities: &tfprotov6.ValidateResourceConfigClientCapabilities{WriteOnlyAttributesAllowed: writeOnlyAllowed},
+	})
+	require.NoError(t, err)
+	return resp.Diagnostics
+}
+
+func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
+	oracle := func(password, passwordWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                      types.StringValue("oracle"),
+			"oracle_config.host":        types.StringValue("oracle.example.com"),
+			"oracle_config.port":        types.Int32Value(1521),
+			"oracle_config.username":    types.StringValue("artie"),
+			"oracle_config.password":    password,
+			"oracle_config.password_wo": passwordWO,
+		}
+	}
+	{
+		// A config from before write-only secrets still validates
+		assert.Empty(t, validateConnectorThroughServer(t, oracle(types.StringValue("secret"), types.StringNull()), true))
+	}
+	{
+		// password_wo alone validates
+		assert.Empty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringValue("secret")), true))
+	}
+	{
+		// Both is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringValue("secret"), types.StringValue("secret")), true))
+	}
+	{
+		// Neither is an error, as when password was required
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringNull()), true))
+	}
+	{
+		// An empty write-only secret is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringValue("")), true))
+	}
+	{
+		// Terraform before 1.11 can't send write-only values
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringValue("secret")), false))
+	}
+	{
+		// A version left behind after moving back to password is an error, so the change shows in the plan
+		config := oracle(types.StringValue("secret"), types.StringNull())
+		config["oracle_config.password_wo_version"] = types.Int64Value(1)
+		assert.NotEmpty(t, validateConnectorThroughServer(t, config, true))
+	}
+	{
+		config := oracle(types.StringNull(), types.StringValue("secret"))
+		config["oracle_config.password_wo_version"] = types.Int64Value(1)
+		assert.Empty(t, validateConnectorThroughServer(t, config, true))
+	}
+}
+
 func TestConnectorSchemaWriteOnlySecrets(t *testing.T) {
 	var schemaResp resource.SchemaResponse
 	(&ConnectorResource{}).Schema(t.Context(), resource.SchemaRequest{}, &schemaResp)
@@ -311,59 +375,7 @@ func TestConnectorSchemaWriteOnlySecrets(t *testing.T) {
 	}
 }
 
-// validateConnectorThroughServer runs the provider server's config validation, which unlike [validateConnectorConfig]
-// includes attribute validators.
-func validateConnectorThroughServer(t *testing.T, attributes map[string]attr.Value) []*tfprotov6.Diagnostic {
-	server := providerserver.NewProtocol6(New("test")())()
-	raw := connectorConfig(t, attributes).Raw
-	config, err := tfprotov6.NewDynamicValue(raw.Type(), raw)
-	require.NoError(t, err)
-	resp, err := server.ValidateResourceConfig(t.Context(), &tfprotov6.ValidateResourceConfigRequest{
-		TypeName:           "artie_connector",
-		Config:             &config,
-		ClientCapabilities: &tfprotov6.ValidateResourceConfigClientCapabilities{WriteOnlyAttributesAllowed: true},
-	})
-	require.NoError(t, err)
-	return resp.Diagnostics
-}
-
-func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
-	postgres := func(password, passwordWO types.String) map[string]attr.Value {
-		return map[string]attr.Value{
-			"type":                          types.StringValue("postgresql"),
-			"postgresql_config.host":        types.StringValue("db.example.com"),
-			"postgresql_config.port":        types.Int32Value(5432),
-			"postgresql_config.username":    types.StringValue("artie"),
-			"postgresql_config.password":    password,
-			"postgresql_config.password_wo": passwordWO,
-		}
-	}
-	{
-		// A config from before write-only secrets still validates
-		assert.Empty(t, validateConnectorThroughServer(t, postgres(types.StringValue("secret"), types.StringNull())))
-	}
-	{
-		// password_wo alone validates
-		assert.Empty(t, validateConnectorThroughServer(t, postgres(types.StringNull(), types.StringValue("secret"))))
-	}
-	{
-		// Both is an error
-		assert.NotEmpty(t, validateConnectorThroughServer(t, postgres(types.StringValue("secret"), types.StringValue("secret"))))
-	}
-	{
-		// Neither is an error, as when password was required
-		assert.NotEmpty(t, validateConnectorThroughServer(t, postgres(types.StringNull(), types.StringNull())))
-	}
-	{
-		// Terraform before 1.11 can't send write-only values
-		server := providerserver.NewProtocol6(New("test")())()
-		raw := connectorConfig(t, postgres(types.StringNull(), types.StringValue("secret"))).Raw
-		config, err := tfprotov6.NewDynamicValue(raw.Type(), raw)
-		require.NoError(t, err)
-		resp, err := server.ValidateResourceConfig(t.Context(), &tfprotov6.ValidateResourceConfigRequest{TypeName: "artie_connector", Config: &config})
-		require.NoError(t, err)
-		assert.NotEmpty(t, resp.Diagnostics)
-	}
+func TestConnectorValidateConfigWriteOnlyAuthChecks(t *testing.T) {
 	{
 		// Snowflake and Databricks auth checks count write-only secrets
 		snowflake := map[string]attr.Value{
@@ -373,7 +385,7 @@ func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
 			"snowflake_config.username":           types.StringValue("artie"),
 			"snowflake_config.private_key_wo":     types.StringValue("key"),
 		}
-		assert.Empty(t, validateConnectorThroughServer(t, snowflake))
+		assert.Empty(t, validateConnectorThroughServer(t, snowflake, true))
 		databricks := map[string]attr.Value{
 			"type":                               types.StringValue("databricks"),
 			"databricks_config.host":             types.StringValue("h"),
@@ -382,30 +394,20 @@ func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
 			"databricks_config.client_id":        types.StringValue("id"),
 			"databricks_config.client_secret_wo": types.StringValue("secret"),
 		}
-		assert.Empty(t, validateConnectorThroughServer(t, databricks))
-	}
-}
-
-func TestConnectorValidateConfigWriteOnlyVersion(t *testing.T) {
-	kafka := map[string]attr.Value{
-		"type":                             types.StringValue("kafka"),
-		"kafka_config.bootstrap_servers":   types.StringValue("b:9092"),
-		"kafka_config.topic_prefix":        types.StringValue("artie"),
-		"kafka_config.sasl_mechanism":      types.StringValue("SCRAM-SHA-512"),
-		"kafka_config.username":            types.StringValue("artie"),
-		"kafka_config.password_wo_version": types.Int64Value(1),
+		assert.Empty(t, validateConnectorThroughServer(t, databricks, true))
 	}
 	{
-		// A version left behind after removing password_wo is an error, so the removal shows in the plan
-		assert.NotEmpty(t, validateConnectorThroughServer(t, kafka))
-	}
-	{
+		// An optional secret's version left behind after removing its write-only secret is an error
+		kafka := map[string]attr.Value{
+			"type":                             types.StringValue("kafka"),
+			"kafka_config.bootstrap_servers":   types.StringValue("b:9092"),
+			"kafka_config.topic_prefix":        types.StringValue("artie"),
+			"kafka_config.sasl_mechanism":      types.StringValue("SCRAM-SHA-512"),
+			"kafka_config.username":            types.StringValue("artie"),
+			"kafka_config.password_wo_version": types.Int64Value(1),
+		}
+		assert.NotEmpty(t, validateConnectorThroughServer(t, kafka, true))
 		kafka["kafka_config.password_wo"] = types.StringValue("secret")
-		assert.Empty(t, validateConnectorThroughServer(t, kafka))
-	}
-	{
-		// An empty write-only secret is an error
-		kafka["kafka_config.password_wo"] = types.StringValue("")
-		assert.NotEmpty(t, validateConnectorThroughServer(t, kafka))
+		assert.Empty(t, validateConnectorThroughServer(t, kafka, true))
 	}
 }

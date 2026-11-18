@@ -54,6 +54,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 ### Optional
 
 - `append_only` (Boolean) If set to true, data will always be appended instead of merged into the destination table. This should only be used for data that is known to be append-only (e.g. event tracking data). Rows will not be deduplicated.
+- `artie_updated_at_column_name` (String) The name of the column that `include_artie_updated_at_column` adds, instead of `__artie_updated_at`. Set it to `""` to go back to `__artie_updated_at`. Must be lowercase. Artie doesn't rename columns in tables it already created, so to change it, pause the pipeline and rename the column in the destination tables before resuming. Not supported when the destination is ClickHouse.
 - `auto_enable_history_for_new_tables` (Boolean) If set to true, Artie will automatically enable history mode for new tables that are created in the source database.
 - `auto_enable_history_ignore_regex` (String) An optional regular expression for excluding newly discovered tables from auto-enable history mode.
 - `auto_enable_history_include_regex` (String) An optional regular expression for only adding newly discovered tables that match it while auto-enable history mode is on. Cannot be combined with `auto_enable_history_ignore_regex`; set either one to `""` to clear it.
