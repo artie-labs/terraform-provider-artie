@@ -88,6 +88,58 @@ func TestSourceReaderMongoDBDeploymentScopedMode(t *testing.T) {
 	}
 }
 
+func TestSourceReaderRescaleTimestampsAndOracleRowIDRanges(t *testing.T) {
+	{
+		// Set: sent to the API and read back.
+		model := SourceReader{
+			UUID:                          types.StringValue(uuid.NewString()),
+			ConnectorUUID:                 types.StringValue(uuid.NewString()),
+			RescaleTimestampsPastYear9999: types.BoolValue(true),
+			UseOracleRowIDRanges:          types.BoolValue(true),
+		}
+
+		payload, diags := model.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError())
+		assert.True(t, *payload.Settings.RescaleTimestampsPastYear9999)
+		assert.True(t, *payload.Settings.UseOracleRowIDRanges)
+
+		fromAPI, diags := SourceReaderFromAPIModel(t.Context(), openapi.PayloadsSourceReader{
+			Uuid:          payload.Uuid,
+			ConnectorUUID: payload.ConnectorUUID,
+			Settings:      payload.Settings,
+		})
+		assert.False(t, diags.HasError())
+		assert.True(t, fromAPI.RescaleTimestampsPastYear9999.ValueBool())
+		assert.True(t, fromAPI.UseOracleRowIDRanges.ValueBool())
+	}
+	{
+		// Left out of the config: omitted so the API keeps the stored value.
+		model := SourceReader{
+			UUID:                          types.StringValue(uuid.NewString()),
+			ConnectorUUID:                 types.StringValue(uuid.NewString()),
+			RescaleTimestampsPastYear9999: types.BoolUnknown(),
+			UseOracleRowIDRanges:          types.BoolUnknown(),
+		}
+
+		payload, diags := model.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError())
+		assert.Nil(t, payload.Settings.RescaleTimestampsPastYear9999)
+		assert.Nil(t, payload.Settings.UseOracleRowIDRanges)
+	}
+	{
+		// Unset in the API: read as false, never null, so a config that sets false doesn't fail the post-apply check.
+		fromAPI, diags := SourceReaderFromAPIModel(t.Context(), openapi.PayloadsSourceReader{
+			Uuid:          uuid.New(),
+			ConnectorUUID: uuid.New(),
+		})
+		assert.False(t, diags.HasError())
+		assert.False(t, fromAPI.RescaleTimestampsPastYear9999.IsNull())
+		assert.False(t, fromAPI.RescaleTimestampsPastYear9999.ValueBool())
+		assert.False(t, fromAPI.UseOracleRowIDRanges.IsNull())
+		assert.False(t, fromAPI.UseOracleRowIDRanges.ValueBool())
+	}
+}
+
 func TestSourceReaderArchiveConnectorRoundTrip(t *testing.T) {
 	archiveConnectorUUID := uuid.New()
 	model := SourceReader{
