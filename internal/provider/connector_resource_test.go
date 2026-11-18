@@ -1,15 +1,19 @@
 package provider
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -81,7 +85,8 @@ func TestConnectorValidateConfigUnknownClickHouseAddresses(t *testing.T) {
 	assert.False(t, resp.Diagnostics.HasError(), resp.Diagnostics)
 }
 
-// connectorConfig builds a connector config from the resource schema with the given attributes set; everything else is null.
+// connectorConfig builds a connector config from the resource schema with the given attributes set; everything else is
+// null. A name like "postgresql_config.password" sets a nested attribute.
 func connectorConfig(t *testing.T, attributes map[string]attr.Value) tfsdk.Config {
 	ctx := t.Context()
 	var schemaResp resource.SchemaResponse
@@ -89,7 +94,12 @@ func connectorConfig(t *testing.T, attributes map[string]attr.Value) tfsdk.Confi
 	// tfsdk.Config has no setter, so build its value as a State.
 	state := tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
 	for name, value := range attributes {
-		require.False(t, state.SetAttribute(ctx, path.Root(name), value).HasError(), name)
+		parts := strings.Split(name, ".")
+		attributePath := path.Root(parts[0])
+		for _, part := range parts[1:] {
+			attributePath = attributePath.AtName(part)
+		}
+		require.False(t, state.SetAttribute(ctx, attributePath, value).HasError(), name)
 	}
 	return tfsdk.Config{Schema: schemaResp.Schema, Raw: state.Raw}
 }
@@ -100,20 +110,22 @@ func validateConnectorConfig(t *testing.T, attributes map[string]attr.Value) dia
 	return resp.Diagnostics
 }
 
-var smbShareConfigAttrTypes = map[string]attr.Type{"path": types.StringType, "username": types.StringType, "password": types.StringType, "private_link_uuid": types.StringType}
+var smbShareConfigAttrTypes = map[string]attr.Type{"path": types.StringType, "username": types.StringType, "password": types.StringType, "password_wo": types.StringType, "password_wo_version": types.Int64Type, "private_link_uuid": types.StringType}
 
 func smbShareConfigValue(privateLinkUUID types.String) types.Object {
 	return types.ObjectValueMust(smbShareConfigAttrTypes, map[string]attr.Value{
-		"path":              types.StringValue(`\\share.example.com\data`),
-		"username":          types.StringValue("artie"),
-		"password":          types.StringValue("secret"),
-		"private_link_uuid": privateLinkUUID,
+		"path":                types.StringValue(`\\share.example.com\data`),
+		"username":            types.StringValue("artie"),
+		"password":            types.StringValue("secret"),
+		"password_wo":         types.StringNull(),
+		"password_wo_version": types.Int64Null(),
+		"private_link_uuid":   privateLinkUUID,
 	})
 }
 
 var mongoDBConfig = types.ObjectValueMust(
-	map[string]attr.Type{"host": types.StringType, "username": types.StringType, "password": types.StringType},
-	map[string]attr.Value{"host": types.StringValue("mongodb+srv://cluster.example.com"), "username": types.StringValue("artie"), "password": types.StringValue("secret")},
+	map[string]attr.Type{"host": types.StringType, "username": types.StringType, "password": types.StringType, "password_wo": types.StringType, "password_wo_version": types.Int64Type},
+	map[string]attr.Value{"host": types.StringValue("mongodb+srv://cluster.example.com"), "username": types.StringValue("artie"), "password": types.StringValue("secret"), "password_wo": types.StringNull(), "password_wo_version": types.Int64Null()},
 )
 
 func TestConnectorValidateConfigPrivateLinks(t *testing.T) {
@@ -273,5 +285,127 @@ func TestSSHTunnelPrivateLinkPlan(t *testing.T) {
 		// No tunnel (left out or removed): the link from state is kept
 		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringNull(), types.StringValue(link)))
 		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringValue(""), types.StringValue(link)))
+	}
+}
+
+func TestConnectorSchemaWriteOnlySecrets(t *testing.T) {
+	var schemaResp resource.SchemaResponse
+	(&ConnectorResource{}).Schema(t.Context(), resource.SchemaRequest{}, &schemaResp)
+	for blockName, block := range schemaResp.Schema.Attributes {
+		nested, ok := block.(schema.SingleNestedAttribute)
+		if !ok {
+			continue
+		}
+		for name, attribute := range nested.Attributes {
+			if !attribute.IsSensitive() {
+				continue
+			}
+			if strings.HasSuffix(name, "_wo") {
+				assert.True(t, attribute.IsWriteOnly(), "%s.%s", blockName, name)
+				continue
+			}
+			// Every secret has a write-only alternative
+			assert.Contains(t, nested.Attributes, name+"_wo", blockName)
+			assert.Contains(t, nested.Attributes, name+"_wo_version", blockName)
+		}
+	}
+}
+
+// validateConnectorThroughServer runs the provider server's config validation, which unlike [validateConnectorConfig]
+// includes attribute validators.
+func validateConnectorThroughServer(t *testing.T, attributes map[string]attr.Value) []*tfprotov6.Diagnostic {
+	server := providerserver.NewProtocol6(New("test")())()
+	raw := connectorConfig(t, attributes).Raw
+	config, err := tfprotov6.NewDynamicValue(raw.Type(), raw)
+	require.NoError(t, err)
+	resp, err := server.ValidateResourceConfig(t.Context(), &tfprotov6.ValidateResourceConfigRequest{
+		TypeName:           "artie_connector",
+		Config:             &config,
+		ClientCapabilities: &tfprotov6.ValidateResourceConfigClientCapabilities{WriteOnlyAttributesAllowed: true},
+	})
+	require.NoError(t, err)
+	return resp.Diagnostics
+}
+
+func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
+	postgres := func(password, passwordWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                          types.StringValue("postgresql"),
+			"postgresql_config.host":        types.StringValue("db.example.com"),
+			"postgresql_config.port":        types.Int32Value(5432),
+			"postgresql_config.username":    types.StringValue("artie"),
+			"postgresql_config.password":    password,
+			"postgresql_config.password_wo": passwordWO,
+		}
+	}
+	{
+		// A config from before write-only secrets still validates
+		assert.Empty(t, validateConnectorThroughServer(t, postgres(types.StringValue("secret"), types.StringNull())))
+	}
+	{
+		// password_wo alone validates
+		assert.Empty(t, validateConnectorThroughServer(t, postgres(types.StringNull(), types.StringValue("secret"))))
+	}
+	{
+		// Both is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, postgres(types.StringValue("secret"), types.StringValue("secret"))))
+	}
+	{
+		// Neither is an error, as when password was required
+		assert.NotEmpty(t, validateConnectorThroughServer(t, postgres(types.StringNull(), types.StringNull())))
+	}
+	{
+		// Terraform before 1.11 can't send write-only values
+		server := providerserver.NewProtocol6(New("test")())()
+		raw := connectorConfig(t, postgres(types.StringNull(), types.StringValue("secret"))).Raw
+		config, err := tfprotov6.NewDynamicValue(raw.Type(), raw)
+		require.NoError(t, err)
+		resp, err := server.ValidateResourceConfig(t.Context(), &tfprotov6.ValidateResourceConfigRequest{TypeName: "artie_connector", Config: &config})
+		require.NoError(t, err)
+		assert.NotEmpty(t, resp.Diagnostics)
+	}
+	{
+		// Snowflake and Databricks auth checks count write-only secrets
+		snowflake := map[string]attr.Value{
+			"type":                                types.StringValue("snowflake"),
+			"snowflake_config.account_identifier": types.StringValue("acme"),
+			"snowflake_config.virtual_dwh":        types.StringValue("wh"),
+			"snowflake_config.username":           types.StringValue("artie"),
+			"snowflake_config.private_key_wo":     types.StringValue("key"),
+		}
+		assert.Empty(t, validateConnectorThroughServer(t, snowflake))
+		databricks := map[string]attr.Value{
+			"type":                               types.StringValue("databricks"),
+			"databricks_config.host":             types.StringValue("h"),
+			"databricks_config.http_path":        types.StringValue("p"),
+			"databricks_config.volume":           types.StringValue("v"),
+			"databricks_config.client_id":        types.StringValue("id"),
+			"databricks_config.client_secret_wo": types.StringValue("secret"),
+		}
+		assert.Empty(t, validateConnectorThroughServer(t, databricks))
+	}
+}
+
+func TestConnectorValidateConfigWriteOnlyVersion(t *testing.T) {
+	kafka := map[string]attr.Value{
+		"type":                             types.StringValue("kafka"),
+		"kafka_config.bootstrap_servers":   types.StringValue("b:9092"),
+		"kafka_config.topic_prefix":        types.StringValue("artie"),
+		"kafka_config.sasl_mechanism":      types.StringValue("SCRAM-SHA-512"),
+		"kafka_config.username":            types.StringValue("artie"),
+		"kafka_config.password_wo_version": types.Int64Value(1),
+	}
+	{
+		// A version left behind after removing password_wo is an error, so the removal shows in the plan
+		assert.NotEmpty(t, validateConnectorThroughServer(t, kafka))
+	}
+	{
+		kafka["kafka_config.password_wo"] = types.StringValue("secret")
+		assert.Empty(t, validateConnectorThroughServer(t, kafka))
+	}
+	{
+		// An empty write-only secret is an error
+		kafka["kafka_config.password_wo"] = types.StringValue("")
+		assert.NotEmpty(t, validateConnectorThroughServer(t, kafka))
 	}
 }
