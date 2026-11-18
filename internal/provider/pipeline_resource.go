@@ -249,6 +249,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"default_source_schema":                                schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true)."},
 			"split_events_by_type":                                 schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API."},
 			"auto_replicate_new_tables":                            schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically start replicating any new tables that are created in the source database."},
+			"auto_stop_dropped_tables":                             schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically stop streaming tables that no longer exist in the source database, when it next checks the source for table changes. The destination table and its data are kept. Pairs with `auto_replicate_new_tables`, and works best when Artie manages the table list (`lifecycle { ignore_changes = [tables] }`)."},
 			"auto_replicate_ignore_regex":                          schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for excluding newly discovered tables from auto-replication."},
 			"auto_replicate_include_regex":                         schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for only auto-replicating newly discovered tables that match it. Cannot be combined with `auto_replicate_ignore_regex`; set either one to `\"\"` to clear it."},
 			"auto_enable_history_for_new_tables":                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically enable history mode for new tables that are created in the source database."},
@@ -606,11 +607,19 @@ func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.Payloa
 		return err
 	}
 
+	// With auto_stop_dropped_tables on, a table dropped from the source passes until Artie's next table changes check
+	// stops it. The API can't read the setting here because the pipeline isn't saved yet.
+	var allowDroppedTables *bool
+	if pipeline.AdvancedSettings != nil {
+		allowDroppedTables = pipeline.AdvancedSettings.AutoStopDroppedTables
+	}
+
 	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedSourceWithResponse(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
-		SourceReaderUUID: pipeline.SourceReaderUUID,
-		ValidateTables:   true,
-		Tables:           tables,
-		DataPlaneName:    pipeline.DataPlaneName,
+		SourceReaderUUID:   pipeline.SourceReaderUUID,
+		ValidateTables:     true,
+		Tables:             tables,
+		DataPlaneName:      pipeline.DataPlaneName,
+		AllowDroppedTables: allowDroppedTables,
 	})); err != nil {
 		return fmt.Errorf("source validation failed: %w", err)
 	}

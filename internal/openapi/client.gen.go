@@ -940,6 +940,36 @@ func (e PayloadsWebhookSeverity) Valid() bool {
 	}
 }
 
+// Defines values for PayloadsWebhookTrnFileProcessedEvent.
+const (
+	PayloadsWebhookTrnFileProcessedEventTrnFileProcessed PayloadsWebhookTrnFileProcessedEvent = "trn.file_processed"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsWebhookTrnFileProcessedEvent enum.
+func (e PayloadsWebhookTrnFileProcessedEvent) Valid() bool {
+	switch e {
+	case PayloadsWebhookTrnFileProcessedEventTrnFileProcessed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayloadsWebhookTrnFileStartedEvent.
+const (
+	PayloadsWebhookTrnFileStartedEventTrnFileStarted PayloadsWebhookTrnFileStartedEvent = "trn.file_started"
+)
+
+// Valid indicates whether the value is a known member of the PayloadsWebhookTrnFileStartedEvent enum.
+func (e PayloadsWebhookTrnFileStartedEvent) Valid() bool {
+	switch e {
+	case PayloadsWebhookTrnFileStartedEventTrnFileStarted:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RouterConnectorConnectionRole.
 const (
 	RouterConnectorConnectionRoleDestination RouterConnectorConnectionRole = "destination"
@@ -1119,215 +1149,427 @@ type EnumsSourceReaderStatus string
 
 // ListResponseBodyColumnHashingSalt defines model for ListResponseBodyColumnHashingSalt.
 type ListResponseBodyColumnHashingSalt struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsColumnHashingSalt `json:"items"`
 }
 
 // ListResponseBodyConnectorTable defines model for ListResponseBodyConnectorTable.
 type ListResponseBodyConnectorTable struct {
+	// Items The results, empty when there are none.
 	Items []RouterConnectorTable `json:"items"`
 }
 
 // ListResponseBodyConnectorTableDetailResponse defines model for ListResponseBodyConnectorTableDetailResponse.
 type ListResponseBodyConnectorTableDetailResponse struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsConnectorTableDetailResponse `json:"items"`
 }
 
 // ListResponseBodyDataCatalogMatch defines model for ListResponseBodyDataCatalogMatch.
 type ListResponseBodyDataCatalogMatch struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsDataCatalogMatch `json:"items"`
 }
 
 // ListResponseBodyEncryptionKey defines model for ListResponseBodyEncryptionKey.
 type ListResponseBodyEncryptionKey struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsEncryptionKey `json:"items"`
 }
 
 // ListResponseBodyKafkaCluster defines model for ListResponseBodyKafkaCluster.
 type ListResponseBodyKafkaCluster struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsKafkaCluster `json:"items"`
 }
 
 // ListResponseBodyKafkaConsumerGroup defines model for ListResponseBodyKafkaConsumerGroup.
 type ListResponseBodyKafkaConsumerGroup struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsKafkaConsumerGroup `json:"items"`
 }
 
 // ListResponseBodyKafkaConsumerGroupDetail defines model for ListResponseBodyKafkaConsumerGroupDetail.
 type ListResponseBodyKafkaConsumerGroupDetail struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsKafkaConsumerGroupDetail `json:"items"`
 }
 
 // ListResponseBodyKafkaTopic defines model for ListResponseBodyKafkaTopic.
 type ListResponseBodyKafkaTopic struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsKafkaTopic `json:"items"`
 }
 
 // ListResponseBodyKafkaTopicSize defines model for ListResponseBodyKafkaTopicSize.
 type ListResponseBodyKafkaTopicSize struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsKafkaTopicSize `json:"items"`
 }
 
 // ListResponseBodyKafkaUser defines model for ListResponseBodyKafkaUser.
 type ListResponseBodyKafkaUser struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsKafkaUser `json:"items"`
 }
 
 // ListResponseBodyLightConnector defines model for ListResponseBodyLightConnector.
 type ListResponseBodyLightConnector struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsLightConnector `json:"items"`
 }
 
 // ListResponseBodyLightPipeline defines model for ListResponseBodyLightPipeline.
 type ListResponseBodyLightPipeline struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsLightPipeline `json:"items"`
 }
 
 // ListResponseBodyManagedKafkaUser defines model for ListResponseBodyManagedKafkaUser.
 type ListResponseBodyManagedKafkaUser struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsManagedKafkaUser `json:"items"`
 }
 
 // ListResponseBodyPipelineErrorLog defines model for ListResponseBodyPipelineErrorLog.
 type ListResponseBodyPipelineErrorLog struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsPipelineErrorLog `json:"items"`
 }
 
 // ListResponseBodyPostgresPublication defines model for ListResponseBodyPostgresPublication.
 type ListResponseBodyPostgresPublication struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsPostgresPublication `json:"items"`
 }
 
 // ListResponseBodyPostgresReplicationSlot defines model for ListResponseBodyPostgresReplicationSlot.
 type ListResponseBodyPostgresReplicationSlot struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsPostgresReplicationSlot `json:"items"`
 }
 
 // ListResponseBodySchemaResponse defines model for ListResponseBodySchemaResponse.
 type ListResponseBodySchemaResponse struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsSchemaResponse `json:"items"`
 }
 
 // ListResponseBodySnowflakeEcoSchedule defines model for ListResponseBodySnowflakeEcoSchedule.
 type ListResponseBodySnowflakeEcoSchedule struct {
+	// Items The results, empty when there are none.
 	Items []PayloadsSnowflakeEcoSchedule `json:"items"`
 }
 
 // PayloadsAdvancedPipelineSettingsPayload defines model for PayloadsAdvancedPipelineSettingsPayload.
 type PayloadsAdvancedPipelineSettingsPayload struct {
-	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
-	AutoEnableHistoryForNewTables                *bool                           `json:"autoEnableHistoryForNewTables,omitempty"`
-	AutoEnableHistoryIgnoreRegex                 *string                         `json:"autoEnableHistoryIgnoreRegex,omitempty"`
-	AutoEnableHistoryIncludeRegex                *string                         `json:"autoEnableHistoryIncludeRegex,omitempty"`
-	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
-	AutoReplicateIncludeRegex                    *string                         `json:"autoReplicateIncludeRegex,omitempty"`
-	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
-	BackfillMySQLFloatsAsShortestDecimal         *bool                           `json:"backfillMySQLFloatsAsShortestDecimal,omitempty"`
-	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
-	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
-	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
-	DatabricksAutoLiquidClustering               *bool                           `json:"databricksAutoLiquidClustering,omitempty"`
-	DatabricksDisableVariantShredding            *bool                           `json:"databricksDisableVariantShredding,omitempty"`
-	DefaultSourceSchema                          *string                         `json:"defaultSourceSchema,omitempty"`
-	DisableAlerts                                *bool                           `json:"disableAlerts,omitempty"`
-	DropDeletedColumns                           *bool                           `json:"dropDeletedColumns,omitempty"`
-	DynamoDBBackfillConfig                       *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
-	EnableSoftDelete                             *bool                           `json:"enableSoftDelete,omitempty"`
-	FlushIntervalSeconds                         *int                            `json:"flushIntervalSeconds,omitempty"`
-	FlushSizeKb                                  *int                            `json:"flushSizeKb,omitempty"`
-	ForceUTCTimezone                             *bool                           `json:"forceUTCTimezone,omitempty"`
-	IncludeArtieOperationColumn                  *bool                           `json:"includeArtieOperationColumn,omitempty"`
-	IncludeArtieUpdatedAtColumn                  *bool                           `json:"includeArtieUpdatedAtColumn,omitempty"`
-	IncludeDatabaseUpdatedAtColumn               *bool                           `json:"includeDatabaseUpdatedAtColumn,omitempty"`
-	IncludeFullSourceTableNameColumn             *bool                           `json:"includeFullSourceTableNameColumn,omitempty"`
-	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
-	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
-	JsonAsVarchar                                *bool                           `json:"jsonAsVarchar,omitempty"`
-	JsonParseTruncateStrings                     *bool                           `json:"jsonParseTruncateStrings,omitempty"`
-	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
-	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
-	SnowpipeStreamingMaxChannels                 *int                            `json:"snowpipeStreamingMaxChannels,omitempty"`
-	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
-	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
-	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
-	StructAsVariant                              *bool                           `json:"structAsVariant,omitempty"`
-	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
-	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
-	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
-	TurboWarehouse                               *string                         `json:"turboWarehouse,omitempty"`
-	UseBQBatchPriority                           *bool                           `json:"useBQBatchPriority,omitempty"`
-	UseBigNumericForVariableNumeric              *bool                           `json:"useBigNumericForVariableNumeric,omitempty"`
-	UseDoubleForVariableNumeric                  *bool                           `json:"useDoubleForVariableNumeric,omitempty"`
-	UseNewStringMethod                           *bool                           `json:"useNewStringMethod,omitempty"`
-	UseSnowpipeStreaming                         *bool                           `json:"useSnowpipeStreaming,omitempty"`
-	WriteRawBinaryValues                         *bool                           `json:"writeRawBinaryValues,omitempty"`
+	// AppendOnly When true, rows are always appended instead of merged into the destination table. Use for append-only data such as event tracking.
+	AppendOnly *bool `json:"appendOnly,omitempty"`
+
+	// ArtieUpdatedAtColumnName Name for the column includeArtieUpdatedAtColumn adds, instead of __artie_updated_at; empty goes back to __artie_updated_at. Saved in lowercase, as every column name is written. To change it, pause the pipeline and rename the column in the destination tables before resuming: Artie doesn't rename columns in tables it already created. Not supported for ClickHouse.
+	ArtieUpdatedAtColumnName *string `json:"artieUpdatedAtColumnName,omitempty"`
+
+	// AutoEnableHistoryForNewTables When true, new source tables are added with history mode on; without autoReplicateNewTables they are added history-only.
+	AutoEnableHistoryForNewTables *bool `json:"autoEnableHistoryForNewTables,omitempty"`
+
+	// AutoEnableHistoryIgnoreRegex Regex of full table names that are skipped while autoEnableHistoryForNewTables is on. Can't be combined with autoEnableHistoryIncludeRegex.
+	AutoEnableHistoryIgnoreRegex *string `json:"autoEnableHistoryIgnoreRegex,omitempty"`
+
+	// AutoEnableHistoryIncludeRegex Regex of full table names; while autoEnableHistoryForNewTables is on, only new tables that match are auto-added. Can't be combined with autoEnableHistoryIgnoreRegex.
+	AutoEnableHistoryIncludeRegex *string `json:"autoEnableHistoryIncludeRegex,omitempty"`
+
+	// AutoReplicateIgnoreRegex Regex of full table names that auto-replication skips. Can't be combined with autoReplicateIncludeRegex.
+	AutoReplicateIgnoreRegex *string `json:"autoReplicateIgnoreRegex,omitempty"`
+
+	// AutoReplicateIncludeRegex Regex of full table names; only new tables that match are auto-added. Can't be combined with autoReplicateIgnoreRegex.
+	AutoReplicateIncludeRegex *string `json:"autoReplicateIncludeRegex,omitempty"`
+
+	// AutoReplicateNewTables When true, new tables found in the source are added to the pipeline automatically.
+	AutoReplicateNewTables *bool `json:"autoReplicateNewTables,omitempty"`
+
+	// AutoStopDroppedTables When true, tables that no longer exist in the source stop streaming automatically. Destination tables and their data are kept.
+	AutoStopDroppedTables *bool `json:"autoStopDroppedTables,omitempty"`
+
+	// BackfillMySQLFloatsAsShortestDecimal MySQL and PlanetScale sources only: backfills write FLOAT columns as their shortest decimal, as replication does, instead of the exact float32.
+	BackfillMySQLFloatsAsShortestDecimal *bool `json:"backfillMySQLFloatsAsShortestDecimal,omitempty"`
+
+	// BigQueryReservation BigQuery only: the reservation Transfer's queries run in; empty uses the project default.
+	BigQueryReservation *string `json:"bigQueryReservation,omitempty"`
+
+	// BufferRows Rows to buffer before flushing to the destination, at least 5; 0 or left out keeps the current value.
+	BufferRows *int `json:"bufferRows,omitempty"`
+
+	// CastAllColumnsToString MongoDB and DocumentDB sources only: write every column, including the primary key, as a string. __artie_* columns keep their types.
+	CastAllColumnsToString *bool `json:"castAllColumnsToString,omitempty"`
+
+	// DatabricksAutoLiquidClustering Databricks only: turn on automatic liquid clustering for every destination table.
+	DatabricksAutoLiquidClustering *bool `json:"databricksAutoLiquidClustering,omitempty"`
+
+	// DatabricksDisableVariantShredding Databricks only: turn off variant shredding on new tables and, after each deploy, existing ones. Already shredded data isn't rewritten.
+	DatabricksDisableVariantShredding *bool `json:"databricksDisableVariantShredding,omitempty"`
+
+	// DatabricksUseZerobus Databricks only: append to history tables and appendOnly tables through Zerobus Ingest instead of COPY INTO. Needs a connector that signs in with a service principal (OAuth M2M) and databricksZerobusEndpoint.
+	DatabricksUseZerobus *bool `json:"databricksUseZerobus,omitempty"`
+
+	// DatabricksZerobusEndpoint Databricks only: the workspace's Zerobus endpoint, https://<workspace id>.zerobus.<region>.cloud.databricks.com. Required when databricksUseZerobus is on.
+	DatabricksZerobusEndpoint *string `json:"databricksZerobusEndpoint,omitempty"`
+
+	// DefaultSourceSchema Source schema whose tables aren't prefixed with the schema name in the destination.
+	DefaultSourceSchema *string `json:"defaultSourceSchema,omitempty"`
+
+	// DisableAlerts When true, Artie stops sending email alerts for this pipeline. Health is still tracked in the dashboard.
+	DisableAlerts *bool `json:"disableAlerts,omitempty"`
+
+	// DropDeletedColumns When true, columns dropped in the source are dropped in the destination too. History tables never drop columns.
+	DropDeletedColumns *bool `json:"dropDeletedColumns,omitempty"`
+
+	// DynamoDBBackfillConfig DynamoDB sources only: how backfills read the table from a DynamoDB export to S3.
+	DynamoDBBackfillConfig *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
+
+	// EnableSoftDelete When true, rows deleted in the source are kept and marked in an __artie_delete column instead of being deleted.
+	EnableSoftDelete *bool `json:"enableSoftDelete,omitempty"`
+
+	// FlushIntervalSeconds Seconds between flushes to the destination, 5 to 86400; 0 or left out keeps the current value. Transfer flushes sooner when bufferRows or flushSizeKb is reached.
+	FlushIntervalSeconds *int `json:"flushIntervalSeconds,omitempty"`
+
+	// FlushSizeKb Buffered data, in KB, that triggers a flush to the destination, up to 1572864 (1.5 GB); 0 or left out keeps the current value.
+	FlushSizeKb *int `json:"flushSizeKb,omitempty"`
+
+	// ForceUTCTimezone When true, source timestamp columns without a time zone are written as UTC timestamps with a time zone.
+	ForceUTCTimezone *bool `json:"forceUTCTimezone,omitempty"`
+
+	// IncludeArtieOperationColumn When true, each row gets an __artie_operation column with the change type that wrote it.
+	IncludeArtieOperationColumn *bool `json:"includeArtieOperationColumn,omitempty"`
+
+	// IncludeArtieUpdatedAtColumn When true, each row gets an __artie_updated_at column with the time Artie wrote it.
+	IncludeArtieUpdatedAtColumn *bool `json:"includeArtieUpdatedAtColumn,omitempty"`
+
+	// IncludeDatabaseUpdatedAtColumn When true, each row gets an __artie_db_updated_at column with the time the change happened in the source. Always on for history tables.
+	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn,omitempty"`
+
+	// IncludeFullSourceTableNameColumn When true, each row gets an __artie_full_source_table_name column with its source table's full name.
+	IncludeFullSourceTableNameColumn *bool `json:"includeFullSourceTableNameColumn,omitempty"`
+
+	// IncludeFullSourceTableNameColumnAsPrimaryKey When true, the __artie_full_source_table_name column is added to the primary key. Requires includeFullSourceTableNameColumn.
+	IncludeFullSourceTableNameColumnAsPrimaryKey *bool `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
+
+	// IncludeSourceMetadataColumn When true, each row gets an __artie_source_metadata column with the change's source metadata.
+	IncludeSourceMetadataColumn *bool `json:"includeSourceMetadataColumn,omitempty"`
+
+	// JsonAsVarchar Redshift only: store struct values as JSON text in VARCHAR(MAX) instead of SUPER.
+	JsonAsVarchar *bool `json:"jsonAsVarchar,omitempty"`
+
+	// JsonParseTruncateStrings Redshift only: truncate strings inside SUPER values that are over Redshift's limit instead of failing the load.
+	JsonParseTruncateStrings *bool `json:"jsonParseTruncateStrings,omitempty"`
+
+	// MaxConcurrentSnapshots Most table backfills this pipeline runs at once; 0 uses the company limit, and a set value must be between 1 and that limit.
+	MaxConcurrentSnapshots *int `json:"maxConcurrentSnapshots,omitempty"`
+
+	// PostgresPartitionMirroring Postgres source and destination only: create each partitioned source table's partitions in the destination, including ones added later.
+	PostgresPartitionMirroring *bool `json:"postgresPartitionMirroring,omitempty"`
+
+	// SnowpipeStreamingMaxChannels Snowflake only: the most Snowpipe Streaming channels Transfer opens.
+	SnowpipeStreamingMaxChannels *int `json:"snowpipeStreamingMaxChannels,omitempty"`
+
+	// SplitEventsByType API sources only: when true, each event type gets its own table; when false, all events share one table with the event type as a column.
+	SplitEventsByType *bool `json:"splitEventsByType,omitempty"`
+
+	// StagingSchema Schema to create staging tables in; empty uses each table's own schema.
+	StagingSchema *string `json:"stagingSchema,omitempty"`
+
+	// StaticColumns Columns with fixed values added to every destination table.
+	StaticColumns *[]PayloadsStaticColumn `json:"staticColumns,omitempty"`
+
+	// StructAsVariant Databricks only: store new struct and array columns as VARIANT instead of STRING or ARRAY<string>.
+	StructAsVariant *bool `json:"structAsVariant,omitempty"`
+
+	// TruncateExceededValues Redshift and BigQuery only: truncate values that are too large for their column instead of replacing them with __artie_exceeded_value.
+	TruncateExceededValues *bool `json:"truncateExceededValues,omitempty"`
+
+	// TurboLatencyThresholdMinutes Snowflake Turbo Mode: ingestion lag, in minutes, that must be exceeded to switch to turboWarehouse. Defaults to 30.
+	TurboLatencyThresholdMinutes *int `json:"turboLatencyThresholdMinutes,omitempty"`
+
+	// TurboRowThreshold Snowflake Turbo Mode: row lag that must be exceeded to switch to turboWarehouse. Defaults to 5,000,000.
+	TurboRowThreshold *int `json:"turboRowThreshold,omitempty"`
+
+	// TurboWarehouse Snowflake only: a larger warehouse Turbo Mode switches to while the pipeline is behind.
+	TurboWarehouse *string `json:"turboWarehouse,omitempty"`
+
+	// UseBQBatchPriority BigQuery only: run Transfer's queries with batch priority instead of interactive.
+	UseBQBatchPriority *bool `json:"useBQBatchPriority,omitempty"`
+
+	// UseBigNumericForVariableNumeric BigQuery only: write variable-precision numeric columns as BIGNUMERIC.
+	UseBigNumericForVariableNumeric *bool `json:"useBigNumericForVariableNumeric,omitempty"`
+
+	// UseDoubleForVariableNumeric MotherDuck only: write variable-precision numeric columns as DOUBLE.
+	UseDoubleForVariableNumeric *bool `json:"useDoubleForVariableNumeric,omitempty"`
+
+	// UseNewStringMethod Databricks only: use Transfer's newer string conversion; omitted uses the company setting.
+	UseNewStringMethod *bool `json:"useNewStringMethod,omitempty"`
+
+	// UseSnowpipeStreaming Snowflake only: load data with Snowpipe Streaming.
+	UseSnowpipeStreaming *bool `json:"useSnowpipeStreaming,omitempty"`
+
+	// WriteRawBinaryValues Databricks and MSSQL only: write binary values as raw binary instead of Base64-encoded strings.
+	WriteRawBinaryValues *bool `json:"writeRawBinaryValues,omitempty"`
 }
 
 // PayloadsAdvancedTableSettingsPayload defines model for PayloadsAdvancedTableSettingsPayload.
 type PayloadsAdvancedTableSettingsPayload struct {
-	Alias                      *string                         `json:"alias,omitempty"`
-	BufferRows                 *int                            `json:"bufferRows,omitempty"`
-	ColumnsToCompress          *[]string                       `json:"columnsToCompress,omitempty"`
-	ColumnsToEncrypt           *[]string                       `json:"columnsToEncrypt,omitempty"`
-	ColumnsToHash              *[]string                       `json:"columnsToHash,omitempty"`
-	ColumnsToTrim              *[]string                       `json:"columnsToTrim,omitempty"`
-	CtidSettings               *PayloadsCTIDSettings           `json:"ctidSettings,omitempty"`
-	EncryptJSONBColumns        *bool                           `json:"encryptJSONBColumns,omitempty"`
-	ExcludeColumns             *[]string                       `json:"excludeColumns,omitempty"`
-	FlattenDocuments           *bool                           `json:"flattenDocuments,omitempty"`
-	FlattenDocumentsMaxDepth   *int                            `json:"flattenDocumentsMaxDepth,omitempty"`
-	FlushIntervalSeconds       *int                            `json:"flushIntervalSeconds,omitempty"`
-	FlushSizeKb                *int                            `json:"flushSizeKb,omitempty"`
-	IncludeColumns             *[]string                       `json:"includeColumns,omitempty"`
-	K8sRequestCPU              *int                            `json:"k8sRequestCPU,omitempty"`
-	K8sRequestMemoryMB         *int                            `json:"k8sRequestMemoryMB,omitempty"`
-	MergePredicates            *[]PayloadsMergePredicates      `json:"mergePredicates,omitempty"`
-	MsmFlushCount              *int                            `json:"msmFlushCount,omitempty"`
-	PartitionRangeSettings     *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
-	PrimaryKeysOverride        *[]string                       `json:"primaryKeysOverride,omitempty"`
-	RangeSettings              *PayloadsRangeSettings          `json:"rangeSettings,omitempty"`
-	ShouldBackfillHistoryTable *bool                           `json:"shouldBackfillHistoryTable,omitempty"`
-	SkipBackfill               *bool                           `json:"skipBackfill,omitempty"`
-	SkipDelete                 *bool                           `json:"skipDelete,omitempty"`
-	SkipNoOpUpdates            *bool                           `json:"skipNoOpUpdates,omitempty"`
-	SoftPartitioning           *PayloadsSoftPartitioning       `json:"softPartitioning,omitempty"`
-	StreamARN                  *string                         `json:"streamARN,omitempty"`
-	UnifyAcrossDatabases       *bool                           `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas         *bool                           `json:"unifyAcrossSchemas,omitempty"`
+	// Alias Destination table name to use instead of the source table name.
+	Alias *string `json:"alias,omitempty"`
+
+	// BufferRows Rows to buffer before flushing to the destination, at least 5. Only used, and required, with individualDeployment.
+	BufferRows *int `json:"bufferRows,omitempty"`
+
+	// ColumnsToCompress Postgres sources only: columns the reader gzip-compresses in transit. Transfer decompresses them before writing.
+	ColumnsToCompress *[]string `json:"columnsToCompress,omitempty"`
+
+	// ColumnsToEncrypt Columns whose values are encrypted with the pipeline's encryption key before they're written.
+	ColumnsToEncrypt *[]string `json:"columnsToEncrypt,omitempty"`
+
+	// ColumnsToHash Columns whose values are hashed before they're written: HMAC-SHA256 with the pipeline's column hashing salt, or SHA-256 without one.
+	ColumnsToHash *[]string `json:"columnsToHash,omitempty"`
+
+	// ColumnsToTrim String columns whose leading and trailing whitespace is removed before they're written.
+	ColumnsToTrim *[]string `json:"columnsToTrim,omitempty"`
+
+	// CtidSettings Postgres CTID backfill settings for this table; omitted uses the source reader's backfill defaults.
+	CtidSettings *PayloadsCTIDSettings `json:"ctidSettings,omitempty"`
+
+	// DynamicTableTargetLag How often the latest rows refresh, such as 1 minute (Snowflake TARGET_LAG, Databricks TRIGGER ON UPDATE interval); empty uses Transfer's default. Only used with enableDynamicTable.
+	DynamicTableTargetLag *string `json:"dynamicTableTargetLag,omitempty"`
+
+	// EnableDynamicTable Snowflake and Databricks only: stream changes into <table>__artie_changes, keep the latest row per key in a Snowflake dynamic table or Databricks streaming table, and make <table> a view over it.
+	EnableDynamicTable *bool `json:"enableDynamicTable,omitempty"`
+
+	// EncryptJSONBColumns When true, the table's JSONB columns are encrypted with the pipeline's encryption key.
+	EncryptJSONBColumns *bool `json:"encryptJSONBColumns,omitempty"`
+
+	// ExcludeColumns Source columns to leave out of the destination. Can't be combined with includeColumns.
+	ExcludeColumns *[]string `json:"excludeColumns,omitempty"`
+
+	// FlattenDocuments When true, nested document fields are flattened into their own columns.
+	FlattenDocuments *bool `json:"flattenDocuments,omitempty"`
+
+	// FlattenDocumentsMaxDepth How many levels of nesting flattenDocuments expands; 0 means no limit.
+	FlattenDocumentsMaxDepth *int `json:"flattenDocumentsMaxDepth,omitempty"`
+
+	// FlushIntervalSeconds Seconds between flushes to the destination, from 5 to 86400. Transfer flushes sooner when bufferRows or flushSizeKb is reached. Only used, and required, with individualDeployment.
+	FlushIntervalSeconds *int `json:"flushIntervalSeconds,omitempty"`
+
+	// FlushSizeKb Buffered data, in KB, that triggers a flush to the destination, up to 1.5 GB. Only used, and required, with individualDeployment.
+	FlushSizeKb *int `json:"flushSizeKb,omitempty"`
+
+	// IncludeColumns The only source columns to write to the destination. Can't be combined with excludeColumns.
+	IncludeColumns *[]string `json:"includeColumns,omitempty"`
+
+	// K8sRequestCPU CPU request for the table's own Transfer pod, in millicores. Only used with individualDeployment.
+	K8sRequestCPU *int `json:"k8sRequestCPU,omitempty"`
+
+	// K8sRequestMemoryMB Memory request for the table's own Transfer pod, in MiB. Only used with individualDeployment.
+	K8sRequestMemoryMB *int `json:"k8sRequestMemoryMB,omitempty"`
+
+	// MergePredicates Partition columns Transfer adds to its MERGE condition.
+	MergePredicates *[]PayloadsMergePredicates `json:"mergePredicates,omitempty"`
+
+	// MsmFlushCount Multi-step merge: how many flushes Transfer stages before merging into the destination table; 0 turns it off.
+	MsmFlushCount *int `json:"msmFlushCount,omitempty"`
+
+	// PartitionRangeSettings Postgres sources only: backfill a partitioned table by reading each partition. Cannot be enabled together with rangeSettings or ctidSettings.
+	PartitionRangeSettings *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
+
+	// PrimaryKeysOverride Columns to use as the destination primary key instead of the source table's primary key.
+	PrimaryKeysOverride *[]string `json:"primaryKeysOverride,omitempty"`
+
+	// RangeSettings Range backfill settings for this table; omitted uses the source reader's backfill defaults.
+	RangeSettings *PayloadsRangeSettings `json:"rangeSettings,omitempty"`
+
+	// ShouldBackfillHistoryTable When true, the history table is backfilled too; otherwise only the regular table is.
+	ShouldBackfillHistoryTable *bool `json:"shouldBackfillHistoryTable,omitempty"`
+
+	// SkipBackfill When true, the table skips its initial backfill and starts streaming when first deployed.
+	SkipBackfill *bool `json:"skipBackfill,omitempty"`
+
+	// SkipDelete When true, delete events are skipped, so rows deleted in the source stay in the destination.
+	SkipDelete *bool `json:"skipDelete,omitempty"`
+
+	// SkipNoOpUpdates Postgres sources only: skip update events whose before and after rows are identical after column filters. Requires REPLICA IDENTITY FULL.
+	SkipNoOpUpdates *bool `json:"skipNoOpUpdates,omitempty"`
+
+	// SoftPartitioning Splits the destination table into time-based partition tables.
+	SoftPartitioning *PayloadsSoftPartitioning `json:"softPartitioning,omitempty"`
+
+	// StreamARN Amazon Keyspaces only: the table's CDC stream ARN.
+	StreamARN *string `json:"streamARN,omitempty"`
+
+	// UnifyAcrossDatabases When the source reader unifies across databases, this table is read from every matching database into one destination table. Only PlanetScale reads it per table.
+	UnifyAcrossDatabases *bool `json:"unifyAcrossDatabases,omitempty"`
+
+	// UnifyAcrossSchemas Postgres and MySQL: when the source reader unifies across schemas, this table is read from every matching schema into one destination table.
+	UnifyAcrossSchemas *bool `json:"unifyAcrossSchemas,omitempty"`
 }
 
 // PayloadsAnalyticsDimensions defines model for PayloadsAnalyticsDimensions.
 type PayloadsAnalyticsDimensions struct {
-	Operation     *string             `json:"operation,omitempty"`
-	PipelineUUID  *openapi_types.UUID `json:"pipelineUUID,omitempty"`
-	Reason        *string             `json:"reason,omitempty"`
-	Slot          *string             `json:"slot,omitempty"`
-	Table         *string             `json:"table,omitempty"`
-	WarehouseName *string             `json:"warehouseName,omitempty"`
-	WarehouseSize *string             `json:"warehouseSize,omitempty"`
+	// Operation The row operation the series counts: create, backfill, update, delete or other.
+	Operation *string `json:"operation,omitempty"`
+
+	// PipelineUUID UUID of the pipeline the series belongs to, when grouped by pipeline.
+	PipelineUUID *openapi_types.UUID `json:"pipelineUUID,omitempty"`
+
+	// Reason Why Transfer flushed, for the flushCount dataset.
+	Reason *string `json:"reason,omitempty"`
+
+	// Slot Postgres replication slot name, for the replicationSlotSize dataset.
+	Slot *string `json:"slot,omitempty"`
+
+	// Table The table the series belongs to, when grouped by table.
+	Table *string `json:"table,omitempty"`
+
+	// WarehouseName Snowflake warehouse name, for the Snowflake datasets.
+	WarehouseName *string `json:"warehouseName,omitempty"`
+
+	// WarehouseSize Snowflake warehouse size, for the Snowflake datasets.
+	WarehouseSize *string `json:"warehouseSize,omitempty"`
 }
 
 // PayloadsAnalyticsScalarIntPoint defines model for PayloadsAnalyticsScalarIntPoint.
 type PayloadsAnalyticsScalarIntPoint struct {
+	// Value The value over the whole time window, in the dataset's unit.
 	Value *int64 `json:"value,omitempty"`
 }
 
 // PayloadsAnalyticsScalarSeries defines model for PayloadsAnalyticsScalarSeries.
 type PayloadsAnalyticsScalarSeries struct {
-	Dimensions          *PayloadsAnalyticsDimensions       `json:"dimensions,omitempty"`
-	GranularityInterval *int                               `json:"granularityInterval,omitempty"`
-	Points              *[]PayloadsAnalyticsScalarIntPoint `json:"points,omitempty"`
+	// Dimensions The tags that identify this series.
+	Dimensions *PayloadsAnalyticsDimensions `json:"dimensions,omitempty"`
+
+	// GranularityInterval Seconds between points in a timeseries; null for scalar results.
+	GranularityInterval *int `json:"granularityInterval,omitempty"`
+
+	// Points The series' data points.
+	Points *[]PayloadsAnalyticsScalarIntPoint `json:"points,omitempty"`
 }
 
 // PayloadsAnalyticsTimeseries defines model for PayloadsAnalyticsTimeseries.
 type PayloadsAnalyticsTimeseries struct {
-	Dimensions          *PayloadsAnalyticsDimensions        `json:"dimensions,omitempty"`
-	GranularityInterval *int                                `json:"granularityInterval,omitempty"`
-	Points              *[]PayloadsAnalyticsTimeseriesPoint `json:"points,omitempty"`
+	// Dimensions The tags that identify this series.
+	Dimensions *PayloadsAnalyticsDimensions `json:"dimensions,omitempty"`
+
+	// GranularityInterval Seconds between points in a timeseries; null for scalar results.
+	GranularityInterval *int `json:"granularityInterval,omitempty"`
+
+	// Points The series' data points.
+	Points *[]PayloadsAnalyticsTimeseriesPoint `json:"points,omitempty"`
 }
 
 // PayloadsAnalyticsTimeseriesPoint defines model for PayloadsAnalyticsTimeseriesPoint.
 type PayloadsAnalyticsTimeseriesPoint struct {
-	Time  *int64   `json:"time,omitempty"`
+	// Time The point's time, in Unix milliseconds.
+	Time *int64 `json:"time,omitempty"`
+
+	// Value The metric value at that time, in the dataset's unit.
 	Value *float64 `json:"value,omitempty"`
 }
 
@@ -1354,28 +1596,44 @@ type PayloadsBYOCKafkaClusterSettings struct {
 
 // PayloadsBackfillDefaultsPayload defines model for PayloadsBackfillDefaultsPayload.
 type PayloadsBackfillDefaultsPayload struct {
-	ChunkSize   *int                                       `json:"chunkSize,omitempty"`
-	Pagination  *PayloadsBackfillDefaultsPayloadPagination `json:"pagination,omitempty"`
-	Parallelism *int                                       `json:"parallelism,omitempty"`
-	Preset      *PayloadsBackfillDefaultsPayloadPreset     `json:"preset,omitempty"`
-	ReadMode    *PayloadsBackfillDefaultsPayloadReadMode   `json:"readMode,omitempty"`
+	// ChunkSize Size of each chunk a range or CTID backfill reads.
+	ChunkSize *int `json:"chunkSize,omitempty"`
+
+	// Pagination Whether backfill queries page through rows on the client or on the database server.
+	Pagination *PayloadsBackfillDefaultsPayloadPagination `json:"pagination,omitempty"`
+
+	// Parallelism How many chunks a range or CTID backfill reads at once.
+	Parallelism *int `json:"parallelism,omitempty"`
+
+	// Preset Backfill speed preset. Range reads only use chunkSize and parallelism with the performance preset.
+	Preset *PayloadsBackfillDefaultsPayloadPreset `json:"preset,omitempty"`
+
+	// ReadMode How backfills read each table; range and ctid split it into chunks read in parallel.
+	ReadMode *PayloadsBackfillDefaultsPayloadReadMode `json:"readMode,omitempty"`
 }
 
-// PayloadsBackfillDefaultsPayloadPagination defines model for PayloadsBackfillDefaultsPayload.Pagination.
+// PayloadsBackfillDefaultsPayloadPagination Whether backfill queries page through rows on the client or on the database server.
 type PayloadsBackfillDefaultsPayloadPagination string
 
-// PayloadsBackfillDefaultsPayloadPreset defines model for PayloadsBackfillDefaultsPayload.Preset.
+// PayloadsBackfillDefaultsPayloadPreset Backfill speed preset. Range reads only use chunkSize and parallelism with the performance preset.
 type PayloadsBackfillDefaultsPayloadPreset string
 
-// PayloadsBackfillDefaultsPayloadReadMode defines model for PayloadsBackfillDefaultsPayload.ReadMode.
+// PayloadsBackfillDefaultsPayloadReadMode How backfills read each table; range and ctid split it into chunks read in parallel.
 type PayloadsBackfillDefaultsPayloadReadMode string
 
 // PayloadsBackfillStageEvent defines model for PayloadsBackfillStageEvent.
 type PayloadsBackfillStageEvent struct {
-	Error       *string            `json:"error,omitempty"`
-	RowsWritten *int64             `json:"rowsWritten,omitempty"`
-	Stage       EnumsBackfillStage `json:"stage"`
-	Timestamp   time.Time          `json:"timestamp"`
+	// Error Why the backfill failed, sent with the failed stage.
+	Error *string `json:"error,omitempty"`
+
+	// RowsWritten Rows the reader reported with the stage, such as on done.
+	RowsWritten *int64 `json:"rowsWritten,omitempty"`
+
+	// Stage The backfill stage reached.
+	Stage EnumsBackfillStage `json:"stage"`
+
+	// Timestamp When the stage was reached, in RFC 3339.
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // PayloadsBigQuerySettings defines model for PayloadsBigQuerySettings.
@@ -1387,238 +1645,482 @@ type PayloadsBigQuerySettings struct {
 
 // PayloadsCTIDSettings defines model for PayloadsCTIDSettings.
 type PayloadsCTIDSettings struct {
-	ChunkSize      *int                               `json:"chunkSize,omitempty"`
-	Enabled        *bool                              `json:"enabled,omitempty"`
-	MaxParallelism *int                               `json:"maxParallelism,omitempty"`
+	// ChunkSize Target rows in each CTID range. 0 uses the reader's default; a set value must be at least 100,000.
+	ChunkSize *int `json:"chunkSize,omitempty"`
+
+	// Enabled When true, the backfill reads the table in parallel ranges of physical row locations (Postgres CTIDs) instead of by primary key. Can't be combined with partitionRangeSettings.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// MaxParallelism How many CTID ranges are read at once, up to the company's backfill parallelism limit; 0 uses the reader's default.
+	MaxParallelism *int `json:"maxParallelism,omitempty"`
+
+	// PhysicalRanges Sizes each CTID range in heap pages instead of by chunkSize. Needs enabled, and can't be used when the source reader unifies across schemas.
 	PhysicalRanges *PayloadsPhysicalCTIDRangeSettings `json:"physicalRanges,omitempty"`
 }
 
 // PayloadsCatalogTableProperty defines model for PayloadsCatalogTableProperty.
 type PayloadsCatalogTableProperty struct {
-	IsDate bool               `json:"isDate"`
-	Key    string             `json:"key"`
-	Value  *PayloadsJSONValue `json:"value"`
+	// IsDate Whether value is a timestamp.
+	IsDate bool `json:"isDate"`
+
+	// Key The property name.
+	Key string `json:"key"`
+
+	// Value The property value, as the source reports it.
+	Value *PayloadsJSONValue `json:"value"`
 }
 
 // PayloadsColumnHashingSalt defines model for PayloadsColumnHashingSalt.
 type PayloadsColumnHashingSalt struct {
-	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
-	Description *string            `json:"description,omitempty"`
-	Name        string             `json:"name"`
-	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
-	Uuid        openapi_types.UUID `json:"uuid"`
+	// CreatedAt When the salt was created.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Description Free-text notes about the salt.
+	Description *string `json:"description,omitempty"`
+
+	// Name Display name for the salt.
+	Name string `json:"name"`
+
+	// UpdatedAt When the salt was last changed.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Uuid The column hashing salt's UUID. Pipelines reference it in columnHashingSaltUUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsColumnHashingSaltDetail defines model for PayloadsColumnHashingSaltDetail.
 type PayloadsColumnHashingSaltDetail struct {
-	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
-	Description *string            `json:"description,omitempty"`
-	Name        string             `json:"name"`
-	Salt        string             `json:"salt"`
-	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
-	Uuid        openapi_types.UUID `json:"uuid"`
+	// CreatedAt When the salt was created.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Description Free-text notes about the salt.
+	Description *string `json:"description,omitempty"`
+
+	// Name Display name for the salt.
+	Name string `json:"name"`
+
+	// Salt The decrypted salt that keys the HMAC-SHA256 hash of hashed columns.
+	Salt string `json:"salt"`
+
+	// UpdatedAt When the salt was last changed.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Uuid The column hashing salt's UUID. Pipelines reference it in columnHashingSaltUUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsCompactionConfig defines model for PayloadsCompactionConfig.
 type PayloadsCompactionConfig struct {
-	Enabled      *bool                          `json:"enabled,omitempty"`
-	EverySeconds *int                           `json:"everySeconds,omitempty"`
-	QuietWindow  *PayloadsCompactionQuietWindow `json:"quietWindow,omitempty"`
+	// Enabled When true, Transfer compacts Delta tables on a schedule.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// EverySeconds How often each table is compacted, in seconds; 0 uses Transfer's default of 86400.
+	EverySeconds *int `json:"everySeconds,omitempty"`
+
+	// QuietWindow Optional UTC time window compaction is limited to.
+	QuietWindow *PayloadsCompactionQuietWindow `json:"quietWindow,omitempty"`
 }
 
 // PayloadsCompactionQuietWindow defines model for PayloadsCompactionQuietWindow.
 type PayloadsCompactionQuietWindow struct {
-	End   *string `json:"end,omitempty"`
+	// End End of the window in HH:MM UTC, such as 06:00. Must differ from start.
+	End *string `json:"end,omitempty"`
+
+	// Start Start of the window in HH:MM UTC, such as 02:00. Set together with end.
 	Start *string `json:"start,omitempty"`
 }
 
 // PayloadsConnectorColumn defines model for PayloadsConnectorColumn.
 type PayloadsConnectorColumn struct {
+	// Metadata The column's type and constraints.
 	Metadata PayloadsConnectorColumnMetadata `json:"metadata"`
-	Name     string                          `json:"name"`
+
+	// Name The column name.
+	Name string `json:"name"`
 }
 
 // PayloadsConnectorColumnMetadata defines model for PayloadsConnectorColumnMetadata.
 type PayloadsConnectorColumnMetadata struct {
-	Comment      *string `json:"comment,omitempty"`
-	DataType     string  `json:"dataType"`
+	// Comment The column comment set in the source, if any.
+	Comment *string `json:"comment,omitempty"`
+
+	// DataType The column's data type, as the source names it.
+	DataType string `json:"dataType"`
+
+	// DefaultValue The column's default expression. Omitted when it has none.
 	DefaultValue *string `json:"defaultValue,omitempty"`
-	IsPrimaryKey *bool   `json:"isPrimaryKey,omitempty"`
-	NotNull      bool    `json:"notNull"`
+
+	// IsPrimaryKey Whether the column is part of the primary key. Omitted when the source doesn't report it.
+	IsPrimaryKey *bool `json:"isPrimaryKey,omitempty"`
+
+	// NotNull Whether the column is NOT NULL.
+	NotNull bool `json:"notNull"`
 }
 
 // PayloadsConnectorFetchDatabasesResponse defines model for PayloadsConnectorFetchDatabasesResponse.
 type PayloadsConnectorFetchDatabasesResponse struct {
-	Items    []PayloadsDatabaseListItem      `json:"items"`
+	// Items The databases the connector can see.
+	Items []PayloadsDatabaseListItem `json:"items"`
+
+	// Metadata Catalog-level properties, such as an Iceberg S3 Tables bucket's maintenance settings. Omitted when the source has none.
 	Metadata *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
 }
 
 // PayloadsConnectorPayload defines model for PayloadsConnectorPayload.
 type PayloadsConnectorPayload struct {
-	DataPlaneName   *string `json:"dataPlaneName,omitempty"`
+	// DataPlaneName The data plane to connect from. Empty uses the company's default data plane.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// DefaultDatabase The database to connect to when a request doesn't name one. Required to test a Postgres (database), Oracle (service name) or S3 (bucket) connection. Omit on update to keep the saved value.
 	DefaultDatabase *string `json:"defaultDatabase,omitempty"`
 
 	// DraftPipelineUUID On create only: the draft pipeline this connector is for.
-	DraftPipelineUUID       *openapi_types.UUID     `json:"draftPipelineUUID,omitempty"`
-	EnvironmentUUID         *openapi_types.UUID     `json:"environmentUUID,omitempty"`
-	Label                   *string                 `json:"label,omitempty"`
-	PrivateLinkUUID         *openapi_types.UUID     `json:"privateLinkUUID,omitempty"`
-	SharedConfig            *map[string]interface{} `json:"sharedConfig,omitempty"`
-	SnapshotPrivateLinkUUID *openapi_types.UUID     `json:"snapshotPrivateLinkUUID,omitempty"`
-	SshTunnelUUID           *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
-	Type                    *string                 `json:"type,omitempty"`
-	Uuid                    *string                 `json:"uuid,omitempty"`
+	DraftPipelineUUID *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
+
+	// EnvironmentUUID On create only: the environment for the new connector. Required for company-wide API keys and MCP grants; ignored for environment-bound credentials.
+	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
+
+	// Label The connector's display name.
+	Label *string `json:"label,omitempty"`
+
+	// PrivateLinkUUID The PrivateLink connection to reach the database through; its DNS entry replaces the host. Omit or null for none.
+	PrivateLinkUUID *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
+
+	// SharedConfig The type-specific connection settings. To keep a saved secret, send back the masked placeholder with the saved connector's uuid.
+	SharedConfig *map[string]interface{} `json:"sharedConfig,omitempty"`
+
+	// SnapshotPrivateLinkUUID The PrivateLink connection for the snapshot (read replica) host; its DNS entry replaces the snapshot host. Omit or null for none.
+	SnapshotPrivateLinkUUID *openapi_types.UUID `json:"snapshotPrivateLinkUUID,omitempty"`
+
+	// SshTunnelUUID The SSH tunnel to reach the database through. Omit or null for none.
+	SshTunnelUUID *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
+
+	// Type The connector type slug, matched case-insensitively.
+	Type *string `json:"type,omitempty"`
+
+	// Uuid The saved connector's UUID, from connector_list. Send it when testing or reusing a saved connector so masked secrets in sharedConfig are filled from it; omit for a new connector.
+	Uuid *string `json:"uuid,omitempty"`
 }
 
 // PayloadsConnectorTableDetailResponse defines model for PayloadsConnectorTableDetailResponse.
 type PayloadsConnectorTableDetailResponse struct {
-	Columns    *[]PayloadsConnectorColumn      `json:"columns,omitempty"`
-	CreatedAt  *time.Time                      `json:"createdAt"`
-	IsView     bool                            `json:"isView"`
-	Metadata   *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
-	ModifiedAt *time.Time                      `json:"modifiedAt"`
-	Name       string                          `json:"name"`
-	Schema     string                          `json:"schema"`
-	Unreadable bool                            `json:"unreadable"`
+	// Columns The table's columns. Only filled in by connector_fetch_table_detail, not when listing tables.
+	Columns *[]PayloadsConnectorColumn `json:"columns,omitempty"`
+
+	// CreatedAt When the table was created. Null when the source doesn't report it.
+	CreatedAt *time.Time `json:"createdAt"`
+
+	// IsView Whether this is a view rather than a table.
+	IsView bool `json:"isView"`
+
+	// Metadata Source-specific table properties, such as creation time or a Postgres table's internal ID.
+	Metadata *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
+
+	// ModifiedAt When the table was last modified. Null when the source doesn't report it.
+	ModifiedAt *time.Time `json:"modifiedAt"`
+
+	// Name The table name, to pass as tableName to connector_fetch_table_detail.
+	Name string `json:"name"`
+
+	// Schema The table's schema (or namespace). Empty for sources without schemas.
+	Schema string `json:"schema"`
+
+	// Unreadable True when Artie can't read the table, such as a Postgres table the connector's user can't select from or a Keyspaces table without a stream.
+	Unreadable bool `json:"unreadable"`
 }
 
 // PayloadsDataCatalogDatabase defines model for PayloadsDataCatalogDatabase.
 type PayloadsDataCatalogDatabase struct {
+	// Name The database name.
 	Name string `json:"name"`
 }
 
 // PayloadsDataCatalogMatch defines model for PayloadsDataCatalogMatch.
 type PayloadsDataCatalogMatch struct {
-	ConnectorUUID openapi_types.UUID               `json:"connectorUUID"`
-	Object        PayloadsDataCatalogMatchedObject `json:"object"`
-	Score         float64                          `json:"score"`
+	// ConnectorUUID The source connector the object belongs to, usable as {uuid} in the connector_fetch_* tools.
+	ConnectorUUID openapi_types.UUID `json:"connectorUUID"`
+
+	// Object The matched database, schema or table; exactly one of its fields is set.
+	Object PayloadsDataCatalogMatchedObject `json:"object"`
+
+	// Score Search relevance score; higher is a better match.
+	Score float64 `json:"score"`
 }
 
 // PayloadsDataCatalogMatchedObject defines model for PayloadsDataCatalogMatchedObject.
 type PayloadsDataCatalogMatchedObject struct {
+	// Database Set when the hit is a database.
 	Database *PayloadsDataCatalogDatabase `json:"database,omitempty"`
-	Schema   *PayloadsDataCatalogSchema   `json:"schema,omitempty"`
-	Table    *PayloadsDataCatalogTable    `json:"table,omitempty"`
+
+	// Schema Set when the hit is a schema.
+	Schema *PayloadsDataCatalogSchema `json:"schema,omitempty"`
+
+	// Table Set when the hit is a table.
+	Table *PayloadsDataCatalogTable `json:"table,omitempty"`
 }
 
 // PayloadsDataCatalogSchema defines model for PayloadsDataCatalogSchema.
 type PayloadsDataCatalogSchema struct {
+	// DatabaseName The database the schema is in.
 	DatabaseName string `json:"databaseName"`
-	Name         string `json:"name"`
+
+	// Name The schema name.
+	Name string `json:"name"`
 }
 
 // PayloadsDataCatalogSearchRequest defines model for PayloadsDataCatalogSearchRequest.
 type PayloadsDataCatalogSearchRequest struct {
+	// Query Text to match against database, schema and table names. Matches substrings case-insensitively and tolerates typos. At most 100 characters.
 	Query *string `json:"query,omitempty"`
 }
 
 // PayloadsDataCatalogTable defines model for PayloadsDataCatalogTable.
 type PayloadsDataCatalogTable struct {
+	// DatabaseName The database the table is in.
 	DatabaseName string `json:"databaseName"`
-	Name         string `json:"name"`
-	SchemaName   string `json:"schemaName"`
+
+	// Name The table name.
+	Name string `json:"name"`
+
+	// SchemaName The schema the table is in.
+	SchemaName string `json:"schemaName"`
 }
 
 // PayloadsDatabaseListItem defines model for PayloadsDatabaseListItem.
 type PayloadsDatabaseListItem struct {
+	// Name The database name, to pass as databaseName to the other connector_fetch_* tools.
 	Name string `json:"name"`
 }
 
 // PayloadsDynamoDBSnapshotConfig defines model for PayloadsDynamoDBSnapshotConfig.
 type PayloadsDynamoDBSnapshotConfig struct {
-	Bucket         *string `json:"bucket,omitempty"`
-	Enabled        *bool   `json:"enabled,omitempty"`
-	ExportArn      *string `json:"exportArn,omitempty"`
-	MaxParallelism *int    `json:"maxParallelism,omitempty"`
+	// Bucket S3 bucket for a new export. Not needed when exportArn is set.
+	Bucket *string `json:"bucket,omitempty"`
+
+	// Enabled When true, backfills read the table from a DynamoDB export to S3.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// ExportArn ARN of the DynamoDB export to backfill from.
+	ExportArn *string `json:"exportArn,omitempty"`
+
+	// MaxParallelism How many export files the backfill reads and writes at once; 0 uses the reader's default of 1.
+	MaxParallelism *int `json:"maxParallelism,omitempty"`
+
+	// OptionalFolder Folder in the bucket that holds the export.
 	OptionalFolder *string `json:"optionalFolder,omitempty"`
 }
 
 // PayloadsEncryptionKey defines model for PayloadsEncryptionKey.
 type PayloadsEncryptionKey struct {
-	CreatedAt   *time.Time          `json:"createdAt,omitempty"`
-	Description *string             `json:"description,omitempty"`
-	KmsKeyUUID  *openapi_types.UUID `json:"kmsKeyUUID,omitempty"`
-	Name        string              `json:"name"`
-	Type        string              `json:"type"`
-	UpdatedAt   *time.Time          `json:"updatedAt,omitempty"`
-	Uuid        openapi_types.UUID  `json:"uuid"`
+	// CreatedAt When the key was created.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Description Free-text notes about the key.
+	Description *string `json:"description,omitempty"`
+
+	// KmsKeyUUID The KMS key that generated this data key. Only set when type is kms.
+	KmsKeyUUID *openapi_types.UUID `json:"kmsKeyUUID,omitempty"`
+
+	// Name Display name for the key.
+	Name string `json:"name"`
+
+	// Type How the key was made: passphrase for an Artie-generated passphrase, kms for a data key generated with the customer's AWS KMS key.
+	Type string `json:"type"`
+
+	// UpdatedAt When the key was last changed.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Uuid The encryption key's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsEncryptionKeyDetail defines model for PayloadsEncryptionKeyDetail.
 type PayloadsEncryptionKeyDetail struct {
-	CreatedAt   *time.Time          `json:"createdAt,omitempty"`
-	Description *string             `json:"description,omitempty"`
-	Key         string              `json:"key"`
-	KmsKeyUUID  *openapi_types.UUID `json:"kmsKeyUUID,omitempty"`
-	Name        string              `json:"name"`
-	Type        string              `json:"type"`
-	UpdatedAt   *time.Time          `json:"updatedAt,omitempty"`
-	Uuid        openapi_types.UUID  `json:"uuid"`
+	// CreatedAt When the key was created.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Description Free-text notes about the key.
+	Description *string `json:"description,omitempty"`
+
+	// Key The secret key: the plaintext passphrase, or for kms keys the KMS-encrypted data key.
+	Key string `json:"key"`
+
+	// KmsKeyUUID The KMS key that generated this data key. Only set when type is kms.
+	KmsKeyUUID *openapi_types.UUID `json:"kmsKeyUUID,omitempty"`
+
+	// Name Display name for the key.
+	Name string `json:"name"`
+
+	// Type How the key was made: passphrase for an Artie-generated passphrase, kms for a data key generated with the customer's AWS KMS key.
+	Type string `json:"type"`
+
+	// UpdatedAt When the key was last changed.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Uuid The encryption key's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsFullConnector defines model for PayloadsFullConnector.
 type PayloadsFullConnector struct {
-	CompanyUUID     openapi_types.UUID `json:"companyUUID"`
-	ConnectionLabel *string            `json:"connectionLabel,omitempty"`
-	CreatedAt       time.Time          `json:"createdAt"`
-	DataPlaneName   *string            `json:"dataPlaneName,omitempty"`
-	DefaultDatabase *string            `json:"defaultDatabase,omitempty"`
+	// CompanyUUID The company that owns the connector.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// ConnectionLabel A short summary of where the connector points, such as its host, built from the config. Empty if the config is incomplete.
+	ConnectionLabel *string `json:"connectionLabel,omitempty"`
+
+	// CreatedAt When the connector was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DataPlaneName The data plane that connects to this database. Unset means the company's default data plane.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// DefaultDatabase The database to connect to when a request doesn't name one.
+	DefaultDatabase *string `json:"defaultDatabase,omitempty"`
 
 	// DraftPipelineUUID The draft pipeline this connector was created for. Unset once a pipeline or source reader past draft uses it.
-	DraftPipelineUUID       *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
-	EnvironmentUUID         openapi_types.UUID  `json:"environmentUUID"`
-	IsValid                 bool                `json:"isValid"`
-	Label                   string              `json:"label"`
-	PrivateLinkUUID         *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
-	SharedConfig            *PayloadsJSONValue  `json:"sharedConfig,omitempty"`
+	DraftPipelineUUID *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
+
+	// EnvironmentUUID The environment the connector belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// IsValid Whether the saved config passes validation, such as having every required field.
+	IsValid bool `json:"isValid"`
+
+	// Label Display name: the connector's name, or for an unnamed Snowflake connector its type and account.
+	Label string `json:"label"`
+
+	// PrivateLinkUUID The PrivateLink connection used to reach the database, if any. Its DNS entry replaces the configured host.
+	PrivateLinkUUID *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
+
+	// SharedConfig The type-specific connection settings. Secrets come back as a masked placeholder for most callers, MCP clients included.
+	SharedConfig *PayloadsJSONValue `json:"sharedConfig,omitempty"`
+
+	// SnapshotPrivateLinkUUID The PrivateLink connection used to reach the snapshot (read replica) host, if any.
 	SnapshotPrivateLinkUUID *openapi_types.UUID `json:"snapshotPrivateLinkUUID,omitempty"`
-	SshTunnelUUID           *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
-	Type                    EnumsConnectorSlug  `json:"type"`
-	UpdatedAt               time.Time           `json:"updatedAt"`
-	Uuid                    openapi_types.UUID  `json:"uuid"`
+
+	// SshTunnelUUID The SSH tunnel used to reach the database, if any.
+	SshTunnelUUID *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
+
+	// Type The connector type.
+	Type EnumsConnectorSlug `json:"type"`
+
+	// UpdatedAt When the connector was last changed.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Uuid The connector's UUID, used as {uuid} in the connector_* tools.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsFullPipeline defines model for PayloadsFullPipeline.
 type PayloadsFullPipeline struct {
-	AdvancedSettings         PayloadsPipelineAdvancedSettings `json:"advancedSettings"`
-	BackfillStages           *[]PayloadsBackfillStageEvent    `json:"backfillStages,omitempty"`
-	ColumnHashingSaltUUID    *openapi_types.UUID              `json:"columnHashingSaltUUID,omitempty"`
-	CompanyUUID              openapi_types.UUID               `json:"companyUUID"`
-	CreatedAt                time.Time                        `json:"createdAt"`
-	DataPlaneName            string                           `json:"dataPlaneName"`
-	DestinationUUID          *openapi_types.UUID              `json:"destinationUUID,omitempty"`
-	EncryptionKeyUUID        *openapi_types.UUID              `json:"encryptionKeyUUID,omitempty"`
-	EnvironmentUUID          openapi_types.UUID               `json:"environmentUUID"`
-	ForceFlushUntil          *time.Time                       `json:"forceFlushUntil,omitempty"`
-	HasBackfillingTables     *bool                            `json:"hasBackfillingTables,omitempty"`
-	HasUndeployedChanges     bool                             `json:"hasUndeployedChanges"`
-	HistoryBackfillStages    *[]PayloadsBackfillStageEvent    `json:"historyBackfillStages,omitempty"`
-	IcebergNativeEngine      *bool                            `json:"icebergNativeEngine,omitempty"`
-	IsDeploying              bool                             `json:"isDeploying"`
-	LastDeployError          *string                          `json:"lastDeployError,omitempty"`
-	LastDeployFailedAt       *time.Time                       `json:"lastDeployFailedAt,omitempty"`
-	LastDeployedAt           *time.Time                       `json:"lastDeployedAt,omitempty"`
-	LastUpdatedAt            time.Time                        `json:"lastUpdatedAt"`
-	Name                     string                           `json:"name"`
-	SnowflakeEcoScheduleUUID *openapi_types.UUID              `json:"snowflakeEcoScheduleUUID,omitempty"`
-	SourceReaderUUID         *openapi_types.UUID              `json:"sourceReaderUUID,omitempty"`
-	SourceType               EnumsConnectorSlug               `json:"sourceType"`
-	SpecificDestCfg          PayloadsSpecificConfig           `json:"specificDestCfg"`
-	Status                   *EnumsPipelineStatus             `json:"status,omitempty"`
-	Tables                   []PayloadsTable                  `json:"tables"`
-	Uuid                     openapi_types.UUID               `json:"uuid"`
+	// AdvancedSettings The pipeline's advanced settings.
+	AdvancedSettings PayloadsPipelineAdvancedSettings `json:"advancedSettings"`
+
+	// BackfillStages The latest backfill stage of each regular table that recorded one. Can be stale once a table stops backfilling; read with hasBackfillingTables.
+	BackfillStages *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
+
+	// ColumnHashingSaltUUID UUID of the salt used to hash columnsToHash, if any.
+	ColumnHashingSaltUUID *openapi_types.UUID `json:"columnHashingSaltUUID,omitempty"`
+
+	// CompanyUUID UUID of the company that owns the pipeline.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// CreatedAt When the pipeline was created, in RFC 3339.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DataPlaneName Name of the data plane the pipeline runs on.
+	DataPlaneName string `json:"dataPlaneName"`
+
+	// DestinationUUID UUID of the destination connector.
+	DestinationUUID *openapi_types.UUID `json:"destinationUUID,omitempty"`
+
+	// EncryptionKeyUUID UUID of the encryption key used for columnsToEncrypt, if any.
+	EncryptionKeyUUID *openapi_types.UUID `json:"encryptionKeyUUID,omitempty"`
+
+	// EnvironmentUUID UUID of the environment the pipeline belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// ForceFlushUntil When the current force flush ends, in RFC 3339. Set only while a force flush overrides the flush settings.
+	ForceFlushUntil *time.Time `json:"forceFlushUntil,omitempty"`
+
+	// HasBackfillingTables True when one or more tables are in their initial backfill.
+	HasBackfillingTables *bool `json:"hasBackfillingTables,omitempty"`
+
+	// HasUndeployedChanges True when the pipeline has saved changes that haven't been deployed.
+	HasUndeployedChanges bool `json:"hasUndeployedChanges"`
+
+	// HistoryBackfillStages The latest backfill stage of each history table that recorded one. Can be stale once a table stops backfilling; read with hasBackfillingTables.
+	HistoryBackfillStages *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
+
+	// IcebergNativeEngine True when an Iceberg pipeline writes with the native engine, the only one that can create v3 tables.
+	IcebergNativeEngine *bool `json:"icebergNativeEngine,omitempty"`
+
+	// IsDeploying True while a deploy of the pipeline is in progress.
+	IsDeploying bool `json:"isDeploying"`
+
+	// LastDeployError Why the last deploy failed. Cleared once a later deploy succeeds.
+	LastDeployError *string `json:"lastDeployError,omitempty"`
+
+	// LastDeployFailedAt When the last deploy failed, in RFC 3339. Cleared once a later deploy succeeds.
+	LastDeployFailedAt *time.Time `json:"lastDeployFailedAt,omitempty"`
+
+	// LastDeployedAt When the pipeline was last deployed, in RFC 3339. Omitted if it never was.
+	LastDeployedAt *time.Time `json:"lastDeployedAt,omitempty"`
+
+	// LastUpdatedAt When the pipeline was last saved, in RFC 3339.
+	LastUpdatedAt time.Time `json:"lastUpdatedAt"`
+
+	// Name The pipeline's display name.
+	Name string `json:"name"`
+
+	// SnowflakeEcoScheduleUUID UUID of the Snowflake eco schedule the pipeline uses, if any.
+	SnowflakeEcoScheduleUUID *openapi_types.UUID `json:"snowflakeEcoScheduleUUID,omitempty"`
+
+	// SourceReaderUUID UUID of the source reader the pipeline reads from, for source_reader_detail.
+	SourceReaderUUID *openapi_types.UUID `json:"sourceReaderUUID,omitempty"`
+
+	// SourceType The source connector's type.
+	SourceType EnumsConnectorSlug `json:"sourceType"`
+
+	// SpecificDestCfg Destination-specific settings, such as the database, schema or bucket to write to.
+	SpecificDestCfg PayloadsSpecificConfig `json:"specificDestCfg"`
+
+	// Status The pipeline's run state.
+	Status *EnumsPipelineStatus `json:"status,omitempty"`
+
+	// Tables The pipeline's tables, with their UUIDs and status.
+	Tables []PayloadsTable `json:"tables"`
+
+	// Uuid The pipeline's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsIngestionAPIKey defines model for PayloadsIngestionAPIKey.
 type PayloadsIngestionAPIKey struct {
-	CompanyUUID      openapi_types.UUID `json:"companyUUID"`
-	CreatedAt        time.Time          `json:"createdAt"`
-	ExpiresAt        *time.Time         `json:"expiresAt,omitempty"`
-	Last4            string             `json:"last4"`
-	Name             string             `json:"name"`
+	// CompanyUUID The company that owns the key.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// CreatedAt When the key was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// ExpiresAt When the key stops working. Null or left out means it never expires.
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// Last4 The last four characters of the secret, to tell keys apart. The full secret is only returned on create.
+	Last4 string `json:"last4"`
+
+	// Name Display name for the key.
+	Name string `json:"name"`
+
+	// SourceReaderUUID The source reader that accepts events sent with this key.
 	SourceReaderUUID openapi_types.UUID `json:"sourceReaderUUID"`
-	UpdatedAt        time.Time          `json:"updatedAt"`
-	Uuid             openapi_types.UUID `json:"uuid"`
+
+	// UpdatedAt When the key was last changed.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Uuid The ingestion API key's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsJSONValue defines model for PayloadsJSONValue.
@@ -1651,22 +2153,32 @@ type PayloadsJsonValueString = string
 
 // PayloadsKafkaBrokerConfig defines model for PayloadsKafkaBrokerConfig.
 type PayloadsKafkaBrokerConfig struct {
-	Name  string `json:"name"`
+	// Name The broker config key, such as min.insync.replicas.
+	Name string `json:"name"`
+
+	// Value The config's value, as a string.
 	Value string `json:"value"`
 }
 
 // PayloadsKafkaCluster defines model for PayloadsKafkaCluster.
 type PayloadsKafkaCluster struct {
-	Cloud     string    `json:"cloud"`
+	// Cloud The cloud provider the cluster runs in. Empty when unknown.
+	Cloud string `json:"cloud"`
+
+	// CreatedAt When the cluster was added to Artie.
 	CreatedAt time.Time `json:"createdAt"`
 
 	// DataKeptUntil When a deleted Managed Kafka cluster's data is deleted for good. It can be restored until then. Only set while status is deleted.
 	DataKeptUntil *time.Time `json:"dataKeptUntil,omitempty"`
 
 	// DeployStage The step a Managed Kafka cluster's deploy is on. Only set while status is deploying, or failed, where it is the step the deploy stopped at.
-	DeployStage          *EnumsKafkaDeployStage `json:"deployStage,omitempty"`
-	DisableTLS           bool                   `json:"disableTLS"`
-	ExternalBootstrapURL string                 `json:"externalBootstrapURL"`
+	DeployStage *EnumsKafkaDeployStage `json:"deployStage,omitempty"`
+
+	// DisableTLS Whether clients connect without TLS.
+	DisableTLS bool `json:"disableTLS"`
+
+	// ExternalBootstrapURL Comma-separated host:port addresses clients connect to from outside. The SASL listener's addresses when usesScram is true.
+	ExternalBootstrapURL string `json:"externalBootstrapURL"`
 
 	// IsManaged Whether this is a Managed Kafka cluster that Artie runs for the company.
 	IsManaged bool `json:"isManaged"`
@@ -1679,12 +2191,18 @@ type PayloadsKafkaCluster struct {
 
 	// Managed A Managed Kafka cluster's configuration. Only set when isManaged, and only by Get a Kafka cluster.
 	Managed *PayloadsKafkaClusterManaged `json:"managed,omitempty"`
-	Name    string                       `json:"name"`
-	Region  string                       `json:"region"`
+
+	// Name The cluster's display name.
+	Name string `json:"name"`
+
+	// Region The cloud region the cluster runs in. Empty when unknown.
+	Region string `json:"region"`
 
 	// ShuttingDown Whether a deleted Managed Kafka cluster is still being taken down. It can't be restored until that finishes. Only set in the clusters list.
-	ShuttingDown *bool            `json:"shuttingDown,omitempty"`
-	Status       EnumsKafkaStatus `json:"status"`
+	ShuttingDown *bool `json:"shuttingDown,omitempty"`
+
+	// Status The cluster's lifecycle state.
+	Status EnumsKafkaStatus `json:"status"`
 
 	// StatusMessage Why the last deploy of a Managed Kafka cluster failed. Only set while status is failed.
 	StatusMessage *string `json:"statusMessage,omitempty"`
@@ -1702,9 +2220,13 @@ type PayloadsKafkaCluster struct {
 	TieredStorageSyncedAt *time.Time `json:"tieredStorageSyncedAt,omitempty"`
 
 	// UpdatedAt When the cluster row last changed. A deploying cluster can be retried 20 minutes after this.
-	UpdatedAt time.Time          `json:"updatedAt"`
-	UsesScram bool               `json:"usesScram"`
-	Uuid      openapi_types.UUID `json:"uuid"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// UsesScram Whether a BYOC cluster has a SASL listener, so clients log in with SCRAM usernames and passwords. Always false for Managed clusters, whose clients still log in with SCRAM-SHA-512 over SASL_SSL.
+	UsesScram bool `json:"usesScram"`
+
+	// Uuid The cluster's ID, which every other Kafka cluster endpoint takes.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsKafkaClusterBrokerSettings defines model for PayloadsKafkaClusterBrokerSettings.
@@ -1744,9 +2266,15 @@ type PayloadsKafkaClusterManaged struct {
 
 	// BrokerSettings The broker settings customers can change.
 	BrokerSettings PayloadsKafkaClusterBrokerSettings `json:"brokerSettings"`
-	Brokers        int                                `json:"brokers"`
-	InstanceType   string                             `json:"instanceType"`
-	KafkaVersion   string                             `json:"kafkaVersion"`
+
+	// Brokers How many brokers the cluster runs.
+	Brokers int `json:"brokers"`
+
+	// InstanceType The instance type each broker runs on.
+	InstanceType string `json:"instanceType"`
+
+	// KafkaVersion The Kafka version the brokers run.
+	KafkaVersion string `json:"kafkaVersion"`
 
 	// PendingChange The cluster's latest change that isn't applied yet. Missing once every change is applied, and while the cluster isn't active.
 	PendingChange *PayloadsKafkaClusterChange `json:"pendingChange,omitempty"`
@@ -1757,34 +2285,62 @@ type PayloadsKafkaClusterManaged struct {
 
 // PayloadsKafkaClusterRates defines model for PayloadsKafkaClusterRates.
 type PayloadsKafkaClusterRates struct {
-	Cluster           PayloadsKafkaClusterRatesCluster    `json:"cluster"`
-	Groups            []PayloadsKafkaClusterRatesGroupLag `json:"groups"`
-	SeriesStepSeconds int                                 `json:"seriesStepSeconds"`
-	Topics            []PayloadsKafkaClusterRatesTopic    `json:"topics"`
+	// Cluster Traffic for the whole cluster.
+	Cluster PayloadsKafkaClusterRatesCluster `json:"cluster"`
+
+	// Groups Each consumer group's lag per topic it reads.
+	Groups []PayloadsKafkaClusterRatesGroupLag `json:"groups"`
+
+	// SeriesStepSeconds Seconds between two points of the topic and lag series. A point's rate times this is how many messages it covers.
+	SeriesStepSeconds int `json:"seriesStepSeconds"`
+
+	// Topics Each topic's incoming message rate.
+	Topics []PayloadsKafkaClusterRatesTopic `json:"topics"`
 }
 
 // PayloadsKafkaClusterRatesCluster defines model for PayloadsKafkaClusterRatesCluster.
 type PayloadsKafkaClusterRatesCluster struct {
-	BytesInPerSecond    *float32                         `json:"bytesInPerSecond"`
-	BytesInSeries       []PayloadsKafkaMetricsGraphPoint `json:"bytesInSeries"`
-	BytesOutPerSecond   *float32                         `json:"bytesOutPerSecond"`
-	BytesOutSeries      []PayloadsKafkaMetricsGraphPoint `json:"bytesOutSeries"`
-	MessagesInPerSecond *float32                         `json:"messagesInPerSecond"`
+	// BytesInPerSecond Bytes written per second, averaged over the last 5 minutes. Null when Datadog has no data.
+	BytesInPerSecond *float32 `json:"bytesInPerSecond"`
+
+	// BytesInSeries Bytes written per second over the last 15 minutes, one point a minute. Empty when Datadog has no data.
+	BytesInSeries []PayloadsKafkaMetricsGraphPoint `json:"bytesInSeries"`
+
+	// BytesOutPerSecond Bytes read per second, averaged over the last 5 minutes. Null when Datadog has no data.
+	BytesOutPerSecond *float32 `json:"bytesOutPerSecond"`
+
+	// BytesOutSeries Bytes read per second over the last 15 minutes, one point a minute. Empty when Datadog has no data.
+	BytesOutSeries []PayloadsKafkaMetricsGraphPoint `json:"bytesOutSeries"`
+
+	// MessagesInPerSecond Messages written per second, averaged over the last 5 minutes. Null when Datadog has no data.
+	MessagesInPerSecond *float32 `json:"messagesInPerSecond"`
 }
 
 // PayloadsKafkaClusterRatesGroupLag defines model for PayloadsKafkaClusterRatesGroupLag.
 type PayloadsKafkaClusterRatesGroupLag struct {
-	Group         string                           `json:"group"`
-	Lag           []PayloadsKafkaMetricsGraphPoint `json:"lag"`
-	ReadPerSecond *float32                         `json:"readPerSecond"`
-	Topic         string                           `json:"topic"`
+	// Group The consumer group ID.
+	Group string `json:"group"`
+
+	// Lag Messages the group is behind on the topic, summed over its partitions, over the requested range.
+	Lag []PayloadsKafkaMetricsGraphPoint `json:"lag"`
+
+	// ReadPerSecond Estimated messages the group reads per second: the topic's incoming rate minus how fast the lag grew over the last 5 minutes (not the lag series here), at least 0. Null with fewer than two lag points, or when Datadog returns no topic message rates.
+	ReadPerSecond *float32 `json:"readPerSecond"`
+
+	// Topic The topic the group reads.
+	Topic string `json:"topic"`
 }
 
 // PayloadsKafkaClusterRatesTopic defines model for PayloadsKafkaClusterRatesTopic.
 type PayloadsKafkaClusterRatesTopic struct {
-	MessagesInPerSecond *float32                         `json:"messagesInPerSecond"`
-	MessagesInSeries    []PayloadsKafkaMetricsGraphPoint `json:"messagesInSeries"`
-	Topic               string                           `json:"topic"`
+	// MessagesInPerSecond Messages written to the topic per second, averaged over the last 5 minutes. Null when Datadog has no data, which usually means the topic had no writes in that window.
+	MessagesInPerSecond *float32 `json:"messagesInPerSecond"`
+
+	// MessagesInSeries Messages written per second over the requested range: a point a minute over 1h, every 2 minutes over 6h.
+	MessagesInSeries []PayloadsKafkaMetricsGraphPoint `json:"messagesInSeries"`
+
+	// Topic The topic name.
+	Topic string `json:"topic"`
 }
 
 // PayloadsKafkaClusterStorageAutoscale defines model for PayloadsKafkaClusterStorageAutoscale.
@@ -1804,44 +2360,74 @@ type PayloadsKafkaClusterStorageAutoscale struct {
 
 // PayloadsKafkaClusterSummary defines model for PayloadsKafkaClusterSummary.
 type PayloadsKafkaClusterSummary struct {
+	// ConsumerGroupCount How many consumer groups the cluster has.
 	ConsumerGroupCount int `json:"consumerGroupCount"`
-	TopicCount         int `json:"topicCount"`
+
+	// TopicCount How many topics the cluster has. On a Managed cluster, its own topics (__* and strimzi.cruisecontrol.*) aren't counted.
+	TopicCount int `json:"topicCount"`
 }
 
 // PayloadsKafkaConsumerGroup defines model for PayloadsKafkaConsumerGroup.
 type PayloadsKafkaConsumerGroup struct {
+	// GroupID The consumer group ID, which the consumer group detail endpoint takes.
 	GroupID string `json:"groupID"`
 }
 
 // PayloadsKafkaConsumerGroupDetail defines model for PayloadsKafkaConsumerGroupDetail.
 type PayloadsKafkaConsumerGroupDetail struct {
-	ConsumerCount int                                 `json:"consumerCount"`
-	GroupID       string                              `json:"groupID"`
-	Members       *[]PayloadsKafkaConsumerGroupMember `json:"members,omitempty"`
-	ReadAt        time.Time                           `json:"readAt"`
-	State         string                              `json:"state"`
-	Topics        *[]PayloadsKafkaConsumerGroupTopic  `json:"topics"`
+	// ConsumerCount How many consumers are in the group.
+	ConsumerCount int `json:"consumerCount"`
+
+	// GroupID The consumer group ID.
+	GroupID string `json:"groupID"`
+
+	// Members The group's consumers. Left out when it has none.
+	Members *[]PayloadsKafkaConsumerGroupMember `json:"members,omitempty"`
+
+	// ReadAt When the group's offsets were read. A partition's time behind is this minus its committedMessageTimestamp.
+	ReadAt time.Time `json:"readAt"`
+
+	// State The group's state as Kafka reports it, such as Stable or Empty.
+	State string `json:"state"`
+
+	// Topics Each topic the group has offsets for, sorted by name.
+	Topics *[]PayloadsKafkaConsumerGroupTopic `json:"topics"`
 }
 
 // PayloadsKafkaConsumerGroupMember defines model for PayloadsKafkaConsumerGroupMember.
 type PayloadsKafkaConsumerGroupMember struct {
+	// ClientHost The IP address the consumer connected from.
 	ClientHost string `json:"clientHost"`
-	ClientID   string `json:"clientID"`
+
+	// ClientID The client ID the consumer connected with.
+	ClientID string `json:"clientID"`
 }
 
 // PayloadsKafkaConsumerGroupTopic defines model for PayloadsKafkaConsumerGroupTopic.
 type PayloadsKafkaConsumerGroupTopic struct {
+	// Partitions The group's offsets on each partition, sorted by partition.
 	Partitions *[]PayloadsKafkaConsumerGroupTopicPartition `json:"partitions"`
-	Topic      string                                      `json:"topic"`
+
+	// Topic The topic name.
+	Topic string `json:"topic"`
 }
 
 // PayloadsKafkaConsumerGroupTopicPartition defines model for PayloadsKafkaConsumerGroupTopicPartition.
 type PayloadsKafkaConsumerGroupTopicPartition struct {
+	// CommittedMessageTimestamp When the oldest message the group hasn't read was written. Only set by the single consumer group read on a Managed Kafka cluster, for partitions with lag, and only the 50 with the most lag. Also unset when reading the message failed.
 	CommittedMessageTimestamp *time.Time `json:"committedMessageTimestamp,omitempty"`
-	CurrentOffset             int64      `json:"currentOffset"`
-	Lag                       int64      `json:"lag"`
-	LogEndOffset              int64      `json:"logEndOffset"`
-	Partition                 int        `json:"partition"`
+
+	// CurrentOffset The group's committed offset: the next message it will read. Partitions without a committed offset are left out.
+	CurrentOffset int64 `json:"currentOffset"`
+
+	// Lag How many messages the group is behind on the partition.
+	Lag int64 `json:"lag"`
+
+	// LogEndOffset The offset the next message written to the partition gets.
+	LogEndOffset int64 `json:"logEndOffset"`
+
+	// Partition The partition ID.
+	Partition int `json:"partition"`
 }
 
 // PayloadsKafkaInstanceType defines model for PayloadsKafkaInstanceType.
@@ -1849,58 +2435,109 @@ type PayloadsKafkaInstanceType string
 
 // PayloadsKafkaMessage defines model for PayloadsKafkaMessage.
 type PayloadsKafkaMessage struct {
-	Headers   *map[string]string `json:"headers,omitempty"`
-	Key       *string            `json:"key,omitempty"`
-	Offset    int64              `json:"offset"`
-	Partition int                `json:"partition"`
-	Timestamp time.Time          `json:"timestamp"`
-	Topic     string             `json:"topic"`
-	Value     *string            `json:"value,omitempty"`
+	// Headers The message headers, with each value base64-encoded.
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Key The message key, base64-encoded. Null when the message has no key.
+	Key *string `json:"key,omitempty"`
+
+	// Offset The message's offset in its partition.
+	Offset int64 `json:"offset"`
+
+	// Partition The partition the message is in.
+	Partition int `json:"partition"`
+
+	// Timestamp The message's Kafka timestamp.
+	Timestamp time.Time `json:"timestamp"`
+
+	// Topic The topic the message is in.
+	Topic string `json:"topic"`
+
+	// Value The message value, base64-encoded. Null for a tombstone.
+	Value *string `json:"value,omitempty"`
 }
 
 // PayloadsKafkaMetricsGraph defines model for PayloadsKafkaMetricsGraph.
 type PayloadsKafkaMetricsGraph struct {
-	BrokerCount    *[]PayloadsKafkaMetricsGraphSeries `json:"brokerCount"`
-	CpuSystem      *[]PayloadsKafkaMetricsGraphSeries `json:"cpuSystem"`
-	CpuUser        *[]PayloadsKafkaMetricsGraphSeries `json:"cpuUser"`
-	MemoryUsage    *[]PayloadsKafkaMetricsGraphSeries `json:"memoryUsage"`
+	// BrokerCount How many brokers reported in, over time.
+	BrokerCount *[]PayloadsKafkaMetricsGraphSeries `json:"brokerCount"`
+
+	// CpuSystem CPU each broker pod spent in kernel mode, over time, one series per broker. From Datadog's kubernetes.cpu.system.total.
+	CpuSystem *[]PayloadsKafkaMetricsGraphSeries `json:"cpuSystem"`
+
+	// CpuUser CPU each broker pod spent in user mode, over time, one series per broker. From Datadog's kubernetes.cpu.user.total.
+	CpuUser *[]PayloadsKafkaMetricsGraphSeries `json:"cpuUser"`
+
+	// MemoryUsage Memory each broker pod used, in bytes, over time, one series per broker.
+	MemoryUsage *[]PayloadsKafkaMetricsGraphSeries `json:"memoryUsage"`
+
+	// PartitionCount How many partitions each broker hosts, over time, one series per broker.
 	PartitionCount *[]PayloadsKafkaMetricsGraphSeries `json:"partitionCount"`
-	Reason         *string                            `json:"reason,omitempty"`
-	Supported      bool                               `json:"supported"`
-	TopicCount     *[]PayloadsKafkaMetricsGraphSeries `json:"topicCount"`
-	Unit           string                             `json:"unit"`
+
+	// Reason Why metrics aren't available. Only set when supported is false.
+	Reason *string `json:"reason,omitempty"`
+
+	// Supported Whether metrics are available for this cluster. When false, reason says why and every series is empty.
+	Supported bool `json:"supported"`
+
+	// TopicCount How many topics the cluster has, over time.
+	TopicCount *[]PayloadsKafkaMetricsGraphSeries `json:"topicCount"`
+
+	// Unit The unit of the broker, topic and partition count series.
+	Unit string `json:"unit"`
 }
 
 // PayloadsKafkaMetricsGraphPoint defines model for PayloadsKafkaMetricsGraphPoint.
 type PayloadsKafkaMetricsGraphPoint struct {
+	// Timestamp When the value was measured.
 	Timestamp time.Time `json:"timestamp"`
-	Value     float64   `json:"value"`
+
+	// Value The measured value.
+	Value float64 `json:"value"`
 }
 
 // PayloadsKafkaMetricsGraphSeries defines model for PayloadsKafkaMetricsGraphSeries.
 type PayloadsKafkaMetricsGraphSeries struct {
-	Label  string                            `json:"label"`
+	// Label What the line is, such as Brokers, Topics or Broker 1.
+	Label string `json:"label"`
+
+	// Points The series values, oldest first.
 	Points *[]PayloadsKafkaMetricsGraphPoint `json:"points"`
 }
 
 // PayloadsKafkaStorageGraph defines model for PayloadsKafkaStorageGraph.
 type PayloadsKafkaStorageGraph struct {
-	Reason    *string                            `json:"reason,omitempty"`
-	Series    *[]PayloadsKafkaStorageGraphSeries `json:"series"`
-	Supported bool                               `json:"supported"`
-	Threshold int                                `json:"threshold"`
-	Unit      string                             `json:"unit"`
+	// Reason Why storage usage isn't available. Only set when supported is false.
+	Reason *string `json:"reason,omitempty"`
+
+	// Series Disk usage over time, one series per volume: only broker volumes on a Managed Kafka cluster, every volume Datadog reports for the cluster otherwise.
+	Series *[]PayloadsKafkaStorageGraphSeries `json:"series"`
+
+	// Supported Whether storage usage is available for this cluster. When false, reason says why and series is empty.
+	Supported bool `json:"supported"`
+
+	// Threshold The disk usage percent the dashboard marks as the limit.
+	Threshold int `json:"threshold"`
+
+	// Unit The unit of the series values, the percent of each volume's capacity in use.
+	Unit string `json:"unit"`
 }
 
 // PayloadsKafkaStorageGraphPoint defines model for PayloadsKafkaStorageGraphPoint.
 type PayloadsKafkaStorageGraphPoint struct {
+	// Timestamp When the value was measured.
 	Timestamp time.Time `json:"timestamp"`
-	Value     float64   `json:"value"`
+
+	// Value Percent of the volume's capacity in use.
+	Value float64 `json:"value"`
 }
 
 // PayloadsKafkaStorageGraphSeries defines model for PayloadsKafkaStorageGraphSeries.
 type PayloadsKafkaStorageGraphSeries struct {
-	Label  string                            `json:"label"`
+	// Label The volume's persistent volume claim name.
+	Label string `json:"label"`
+
+	// Points The volume's usage over time, oldest first.
 	Points *[]PayloadsKafkaStorageGraphPoint `json:"points"`
 }
 
@@ -1910,31 +2547,51 @@ type PayloadsKafkaTopic struct {
 	ArtieManaged bool `json:"artieManaged"`
 
 	// LocalRetentionMS How long a tiered topic keeps data on broker disks (local.retention.ms). -2 means the same as retention. Left out when the brokers don't report it.
-	LocalRetentionMS *string                         `json:"localRetentionMS,omitempty"`
-	PartitionCount   int                             `json:"partitionCount"`
-	RetentionMS      string                          `json:"retentionMS"`
-	SourceName       *string                         `json:"sourceName,omitempty"`
-	TableName        *string                         `json:"tableName,omitempty"`
-	TieredStorage    PayloadsKafkaTopicTieredStorage `json:"tieredStorage"`
-	Topic            string                          `json:"topic"`
+	LocalRetentionMS *string `json:"localRetentionMS,omitempty"`
+
+	// PartitionCount How many partitions the topic has.
+	PartitionCount int `json:"partitionCount"`
+
+	// RetentionMS How long the topic keeps messages, in ms, as a string (retention.ms). -1 keeps them forever.
+	RetentionMS string `json:"retentionMS"`
+
+	// SourceName The name of the source reader that writes the topic. Empty unless the topic belongs to one of the company's Artie pipelines.
+	SourceName *string `json:"sourceName,omitempty"`
+
+	// TableName The source table whose changes the topic carries. Empty unless the topic belongs to one of the company's Artie pipelines.
+	TableName *string `json:"tableName,omitempty"`
+
+	// TieredStorage The topic's tiered storage state.
+	TieredStorage PayloadsKafkaTopicTieredStorage `json:"tieredStorage"`
+
+	// Topic The topic name, which the topic endpoints take.
+	Topic string `json:"topic"`
 }
 
 // PayloadsKafkaTopicCreateResponse defines model for PayloadsKafkaTopicCreateResponse.
 type PayloadsKafkaTopicCreateResponse struct {
+	// Topic The name of the topic created.
 	Topic string `json:"topic"`
 }
 
 // PayloadsKafkaTopicDetail defines model for PayloadsKafkaTopicDetail.
 type PayloadsKafkaTopicDetail struct {
 	// Managed The topic's replication and per-partition leader and offsets.
-	Managed        *PayloadsKafkaTopicDetailManaged   `json:"managed,omitempty"`
+	Managed *PayloadsKafkaTopicDetailManaged `json:"managed,omitempty"`
+
+	// PartitionSizes Each partition's size on broker disks, by partition.
 	PartitionSizes *[]PayloadsKafkaTopicPartitionSize `json:"partitionSizes"`
-	Pipelines      *[]PayloadsKafkaTopicPipeline      `json:"pipelines"`
-	Topic          PayloadsKafkaTopic                 `json:"topic"`
+
+	// Pipelines Every company pipeline on the source reader that writes the topic, not only the ones that read this topic. Empty for topics Artie doesn't write.
+	Pipelines *[]PayloadsKafkaTopicPipeline `json:"pipelines"`
+
+	// Topic The topic, as in the topic list.
+	Topic PayloadsKafkaTopic `json:"topic"`
 }
 
 // PayloadsKafkaTopicDetailManaged defines model for PayloadsKafkaTopicDetailManaged.
 type PayloadsKafkaTopicDetailManaged struct {
+	// Partitions Each partition's leader, in-sync copies and latest offset.
 	Partitions []PayloadsKafkaTopicPartition `json:"partitions"`
 
 	// ReplicationFactor How many copies of each partition the brokers keep.
@@ -1943,8 +2600,11 @@ type PayloadsKafkaTopicDetailManaged struct {
 
 // PayloadsKafkaTopicMessages defines model for PayloadsKafkaTopicMessages.
 type PayloadsKafkaTopicMessages struct {
-	LatestOffsets map[string]int64       `json:"latestOffsets"`
-	Messages      []PayloadsKafkaMessage `json:"messages"`
+	// LatestOffsets Each partition's highest offset seen, by partition ID. To get newer messages, pass it back as after in partition:offset,... form.
+	LatestOffsets map[string]int64 `json:"latestOffsets"`
+
+	// Messages The newest messages across the topic's partitions, newest first.
+	Messages []PayloadsKafkaMessage `json:"messages"`
 }
 
 // PayloadsKafkaTopicPartition defines model for PayloadsKafkaTopicPartition.
@@ -1956,29 +2616,40 @@ type PayloadsKafkaTopicPartition struct {
 	LatestOffset *int `json:"latestOffset,omitempty"`
 
 	// LeaderID The broker that serves the partition. Missing while it has no leader, except that a leaderless partition whose last in-sync copy was broker 0 still shows 0.
-	LeaderID  *int `json:"leaderID,omitempty"`
-	Partition int  `json:"partition"`
+	LeaderID *int `json:"leaderID,omitempty"`
+
+	// Partition The partition ID.
+	Partition int `json:"partition"`
 }
 
 // PayloadsKafkaTopicPartitionSize defines model for PayloadsKafkaTopicPartitionSize.
 type PayloadsKafkaTopicPartitionSize struct {
+	// Partition The partition ID.
 	Partition int32 `json:"partition"`
+
+	// SizeBytes The partition's size on disk, in bytes, from its largest copy.
 	SizeBytes int64 `json:"sizeBytes"`
 }
 
 // PayloadsKafkaTopicPipeline defines model for PayloadsKafkaTopicPipeline.
 type PayloadsKafkaTopicPipeline struct {
+	// Name The pipeline's name.
 	Name string `json:"name"`
+
+	// Uuid The pipeline's ID.
 	Uuid string `json:"uuid"`
 }
 
 // PayloadsKafkaTopicSize defines model for PayloadsKafkaTopicSize.
 type PayloadsKafkaTopicSize struct {
+	// Partitions Each partition's size on broker disks, by partition.
 	Partitions *[]PayloadsKafkaTopicPartitionSize `json:"partitions"`
 
 	// RemoteSizeBytes The topic's size in remote storage (S3). Missing when Datadog has no data for it.
-	RemoteSizeBytes *int   `json:"remoteSizeBytes,omitempty"`
-	Topic           string `json:"topic"`
+	RemoteSizeBytes *int `json:"remoteSizeBytes,omitempty"`
+
+	// Topic The topic name.
+	Topic string `json:"topic"`
 }
 
 // PayloadsKafkaTopicTieredStorage defines model for PayloadsKafkaTopicTieredStorage.
@@ -1995,182 +2666,437 @@ type PayloadsKafkaTopicTieredStorage struct {
 
 // PayloadsKafkaUser defines model for PayloadsKafkaUser.
 type PayloadsKafkaUser struct {
-	AccessProfile       string             `json:"accessProfile"`
-	ConsumerGroupPrefix string             `json:"consumerGroupPrefix"`
-	CreatedAt           time.Time          `json:"createdAt"`
-	Status              string             `json:"status"`
-	Username            string             `json:"username"`
-	Uuid                openapi_types.UUID `json:"uuid"`
+	// AccessProfile What the user can do: producer_consumer or admin.
+	AccessProfile string `json:"accessProfile"`
+
+	// ConsumerGroupPrefix The prefix a producer_consumer user's consumer group IDs must start with to read. Admin users can read any group.
+	ConsumerGroupPrefix string `json:"consumerGroupPrefix"`
+
+	// CreatedAt When the user was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Status pending until the user is ready, then active; deleting while it's being removed.
+	Status string `json:"status"`
+
+	// Username The Kafka username clients log in with.
+	Username string `json:"username"`
+
+	// Uuid The user's ID, which the user endpoints take.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsKafkaUserACL defines model for PayloadsKafkaUserACL.
 type PayloadsKafkaUserACL struct {
 	// Name Empty for the cluster, which is one resource.
-	Name      string                 `json:"name"`
+	Name string `json:"name"`
+
+	// Operation The operation the ACL allows.
 	Operation EnumsKafkaACLOperation `json:"operation"`
 
 	// PatternType literal matches name exactly, and "*" is every name; prefix matches names starting with it.
-	PatternType  EnumsKafkaACLPatternType  `json:"patternType"`
+	PatternType EnumsKafkaACLPatternType `json:"patternType"`
+
+	// ResourceType The kind of Kafka resource the ACL covers.
 	ResourceType EnumsKafkaACLResourceType `json:"resourceType"`
 }
 
 // PayloadsLightConnector defines model for PayloadsLightConnector.
 type PayloadsLightConnector struct {
-	CompanyUUID     openapi_types.UUID `json:"companyUUID"`
-	ConnectionLabel *string            `json:"connectionLabel,omitempty"`
-	CreatedAt       time.Time          `json:"createdAt"`
-	DataPlaneName   *string            `json:"dataPlaneName,omitempty"`
+	// CompanyUUID The company that owns the connector.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// ConnectionLabel A short summary of where the connector points, such as its host, built from the config. Empty if the config is incomplete.
+	ConnectionLabel *string `json:"connectionLabel,omitempty"`
+
+	// CreatedAt When the connector was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DataPlaneName The data plane that connects to this database. Unset means the company's default data plane.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
 
 	// DraftPipelineUUID The draft pipeline this connector was created for. Unset once a pipeline or source reader past draft uses it.
-	DraftPipelineUUID       *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
-	EnvironmentUUID         openapi_types.UUID  `json:"environmentUUID"`
-	IsValid                 bool                `json:"isValid"`
-	Label                   string              `json:"label"`
-	PrivateLinkUUID         *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
+	DraftPipelineUUID *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
+
+	// EnvironmentUUID The environment the connector belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// IsValid Whether the saved config passes validation, such as having every required field.
+	IsValid bool `json:"isValid"`
+
+	// Label Display name: the connector's name, or for an unnamed Snowflake connector its type and account.
+	Label string `json:"label"`
+
+	// PrivateLinkUUID The PrivateLink connection used to reach the database, if any. Its DNS entry replaces the configured host.
+	PrivateLinkUUID *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
+
+	// SnapshotPrivateLinkUUID The PrivateLink connection used to reach the snapshot (read replica) host, if any.
 	SnapshotPrivateLinkUUID *openapi_types.UUID `json:"snapshotPrivateLinkUUID,omitempty"`
-	SshTunnelUUID           *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
-	Type                    EnumsConnectorSlug  `json:"type"`
-	UpdatedAt               time.Time           `json:"updatedAt"`
-	Uuid                    openapi_types.UUID  `json:"uuid"`
+
+	// SshTunnelUUID The SSH tunnel used to reach the database, if any.
+	SshTunnelUUID *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
+
+	// Type The connector type.
+	Type EnumsConnectorSlug `json:"type"`
+
+	// UpdatedAt When the connector was last changed.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Uuid The connector's UUID, used as {uuid} in the connector_* tools.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsLightPipeline defines model for PayloadsLightPipeline.
 type PayloadsLightPipeline struct {
-	BackfillStages           *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
-	ColumnHashingSaltUUID    *openapi_types.UUID           `json:"columnHashingSaltUUID,omitempty"`
-	CompanyUUID              openapi_types.UUID            `json:"companyUUID"`
-	CreatedAt                time.Time                     `json:"createdAt"`
-	DataPlaneName            string                        `json:"dataPlaneName"`
-	DestinationUUID          *openapi_types.UUID           `json:"destinationUUID,omitempty"`
-	EncryptionKeyUUID        *openapi_types.UUID           `json:"encryptionKeyUUID,omitempty"`
-	EnvironmentUUID          openapi_types.UUID            `json:"environmentUUID"`
-	HasBackfillingTables     *bool                         `json:"hasBackfillingTables,omitempty"`
-	HasUndeployedChanges     bool                          `json:"hasUndeployedChanges"`
-	HistoryBackfillStages    *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
-	IsDeploying              bool                          `json:"isDeploying"`
-	LastDeployError          *string                       `json:"lastDeployError,omitempty"`
-	LastDeployFailedAt       *time.Time                    `json:"lastDeployFailedAt,omitempty"`
-	LastDeployedAt           *time.Time                    `json:"lastDeployedAt,omitempty"`
-	LastUpdatedAt            time.Time                     `json:"lastUpdatedAt"`
-	Name                     string                        `json:"name"`
-	SnowflakeEcoScheduleUUID *openapi_types.UUID           `json:"snowflakeEcoScheduleUUID,omitempty"`
-	SourceReaderUUID         *openapi_types.UUID           `json:"sourceReaderUUID,omitempty"`
-	SourceType               EnumsConnectorSlug            `json:"sourceType"`
-	Status                   *EnumsPipelineStatus          `json:"status,omitempty"`
-	Uuid                     openapi_types.UUID            `json:"uuid"`
+	// BackfillStages The latest backfill stage of each regular table that recorded one. Can be stale once a table stops backfilling; read with hasBackfillingTables.
+	BackfillStages *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
+
+	// ColumnHashingSaltUUID UUID of the salt used to hash columnsToHash, if any.
+	ColumnHashingSaltUUID *openapi_types.UUID `json:"columnHashingSaltUUID,omitempty"`
+
+	// CompanyUUID UUID of the company that owns the pipeline.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// CreatedAt When the pipeline was created, in RFC 3339.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DataPlaneName Name of the data plane the pipeline runs on.
+	DataPlaneName string `json:"dataPlaneName"`
+
+	// DestinationUUID UUID of the destination connector.
+	DestinationUUID *openapi_types.UUID `json:"destinationUUID,omitempty"`
+
+	// EncryptionKeyUUID UUID of the encryption key used for columnsToEncrypt, if any.
+	EncryptionKeyUUID *openapi_types.UUID `json:"encryptionKeyUUID,omitempty"`
+
+	// EnvironmentUUID UUID of the environment the pipeline belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// HasBackfillingTables True when one or more tables are in their initial backfill.
+	HasBackfillingTables *bool `json:"hasBackfillingTables,omitempty"`
+
+	// HasUndeployedChanges True when the pipeline has saved changes that haven't been deployed.
+	HasUndeployedChanges bool `json:"hasUndeployedChanges"`
+
+	// HistoryBackfillStages The latest backfill stage of each history table that recorded one. Can be stale once a table stops backfilling; read with hasBackfillingTables.
+	HistoryBackfillStages *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
+
+	// IsDeploying True while a deploy of the pipeline is in progress.
+	IsDeploying bool `json:"isDeploying"`
+
+	// LastDeployError Why the last deploy failed. Cleared once a later deploy succeeds.
+	LastDeployError *string `json:"lastDeployError,omitempty"`
+
+	// LastDeployFailedAt When the last deploy failed, in RFC 3339. Cleared once a later deploy succeeds.
+	LastDeployFailedAt *time.Time `json:"lastDeployFailedAt,omitempty"`
+
+	// LastDeployedAt When the pipeline was last deployed, in RFC 3339. Omitted if it never was.
+	LastDeployedAt *time.Time `json:"lastDeployedAt,omitempty"`
+
+	// LastUpdatedAt When the pipeline was last saved, in RFC 3339.
+	LastUpdatedAt time.Time `json:"lastUpdatedAt"`
+
+	// Name The pipeline's display name.
+	Name string `json:"name"`
+
+	// SnowflakeEcoScheduleUUID UUID of the Snowflake eco schedule the pipeline uses, if any.
+	SnowflakeEcoScheduleUUID *openapi_types.UUID `json:"snowflakeEcoScheduleUUID,omitempty"`
+
+	// SourceReaderUUID UUID of the source reader the pipeline reads from, for source_reader_detail.
+	SourceReaderUUID *openapi_types.UUID `json:"sourceReaderUUID,omitempty"`
+
+	// SourceType The source connector's type.
+	SourceType EnumsConnectorSlug `json:"sourceType"`
+
+	// Status The pipeline's run state.
+	Status *EnumsPipelineStatus `json:"status,omitempty"`
+
+	// Uuid The pipeline's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsManagedKafkaUser defines model for PayloadsManagedKafkaUser.
 type PayloadsManagedKafkaUser struct {
-	Acls      []PayloadsKafkaUserACL `json:"acls"`
-	CreatedAt time.Time              `json:"createdAt"`
-	Username  string                 `json:"username"`
-	Uuid      openapi_types.UUID     `json:"uuid"`
+	// Acls What the user is allowed. Kafka refuses it everything else.
+	Acls []PayloadsKafkaUserACL `json:"acls"`
+
+	// CreatedAt When the user was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Username The Kafka username clients log in with.
+	Username string `json:"username"`
+
+	// Uuid The user's ID, which the managed user endpoints take.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsMergePredicates defines model for PayloadsMergePredicates.
 type PayloadsMergePredicates struct {
-	PartitionBy    *string `json:"partitionBy,omitempty"`
+	// PartitionBy BigQuery time partitions only: hourly, daily, monthly or yearly; empty means daily. Not allowed with an integer partitionType.
+	PartitionBy *string `json:"partitionBy,omitempty"`
+
+	// PartitionField The destination column Transfer adds to its MERGE condition, usually the table's partition column.
 	PartitionField *string `json:"partitionField,omitempty"`
-	PartitionType  *string `json:"partitionType,omitempty"`
+
+	// PartitionType time or integer. Only BigQuery reads it: time also partitions the table by partitionBy, and integer only adds the column to the MERGE.
+	PartitionType *string `json:"partitionType,omitempty"`
 }
 
 // PayloadsPartitionRangeSettings defines model for PayloadsPartitionRangeSettings.
 type PayloadsPartitionRangeSettings struct {
-	Enabled *bool                  `json:"enabled,omitempty"`
-	Range   *PayloadsRangeSettings `json:"range,omitempty"`
+	// Enabled When true, a partitioned Postgres table is backfilled by reading each of its partitions.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Range Range settings for each partition's backfill.
+	Range *PayloadsRangeSettings `json:"range,omitempty"`
 }
 
 // PayloadsPhysicalCTIDRangeSettings defines model for PayloadsPhysicalCTIDRangeSettings.
 type PayloadsPhysicalCTIDRangeSettings struct {
-	Enabled       *bool `json:"enabled,omitempty"`
-	PagesPerRange *int  `json:"pagesPerRange,omitempty"`
+	// PagesPerRange Heap pages in each CTID range; 0 derives the width from chunkSize.
+	PagesPerRange *int `json:"pagesPerRange,omitempty"`
 }
 
 // PayloadsPipelineAdvancedSettings defines model for PayloadsPipelineAdvancedSettings.
 type PayloadsPipelineAdvancedSettings struct {
-	AppendOnly                                   *bool                           `json:"appendOnly,omitempty"`
-	AutoEnableHistoryForNewTables                *bool                           `json:"autoEnableHistoryForNewTables,omitempty"`
-	AutoEnableHistoryIgnoreRegex                 *string                         `json:"autoEnableHistoryIgnoreRegex,omitempty"`
-	AutoEnableHistoryIncludeRegex                *string                         `json:"autoEnableHistoryIncludeRegex,omitempty"`
-	AutoReplicateIgnoreRegex                     *string                         `json:"autoReplicateIgnoreRegex,omitempty"`
-	AutoReplicateIncludeRegex                    *string                         `json:"autoReplicateIncludeRegex,omitempty"`
-	AutoReplicateNewTables                       *bool                           `json:"autoReplicateNewTables,omitempty"`
-	BackfillMySQLFloatsAsShortestDecimal         *bool                           `json:"backfillMySQLFloatsAsShortestDecimal,omitempty"`
-	BigQueryReservation                          *string                         `json:"bigQueryReservation,omitempty"`
-	BufferRows                                   *int                            `json:"bufferRows,omitempty"`
-	CastAllColumnsToString                       *bool                           `json:"castAllColumnsToString,omitempty"`
-	DatabricksAutoLiquidClustering               *bool                           `json:"databricksAutoLiquidClustering,omitempty"`
-	DatabricksDisableVariantShredding            *bool                           `json:"databricksDisableVariantShredding,omitempty"`
-	DefaultSourceSchema                          *string                         `json:"defaultSourceSchema,omitempty"`
-	DisableAlerts                                *bool                           `json:"disableAlerts,omitempty"`
-	DropDeletedColumns                           *bool                           `json:"dropDeletedColumns,omitempty"`
-	DynamoDBBackfillConfig                       *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
-	EnableSoftDelete                             *bool                           `json:"enableSoftDelete,omitempty"`
-	FlushIntervalSeconds                         *int                            `json:"flushIntervalSeconds,omitempty"`
-	FlushSizeKb                                  *int                            `json:"flushSizeKb,omitempty"`
-	ForceUTCTimezone                             *bool                           `json:"forceUTCTimezone,omitempty"`
-	IncludeArtieOperationColumn                  *bool                           `json:"includeArtieOperationColumn,omitempty"`
-	IncludeArtieUpdatedAtColumn                  *bool                           `json:"includeArtieUpdatedAtColumn,omitempty"`
-	IncludeDatabaseUpdatedAtColumn               *bool                           `json:"includeDatabaseUpdatedAtColumn,omitempty"`
-	IncludeFullSourceTableNameColumn             *bool                           `json:"includeFullSourceTableNameColumn,omitempty"`
-	IncludeFullSourceTableNameColumnAsPrimaryKey *bool                           `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
-	IncludeSourceMetadataColumn                  *bool                           `json:"includeSourceMetadataColumn,omitempty"`
-	JsonAsVarchar                                *bool                           `json:"jsonAsVarchar,omitempty"`
-	JsonParseTruncateStrings                     *bool                           `json:"jsonParseTruncateStrings,omitempty"`
-	MaxConcurrentSnapshots                       *int                            `json:"maxConcurrentSnapshots,omitempty"`
-	NullOutInvalidValues                         *bool                           `json:"nullOutInvalidValues,omitempty"`
-	PostgresPartitionMirroring                   *bool                           `json:"postgresPartitionMirroring,omitempty"`
-	ReuseStagingTable                            *bool                           `json:"reuseStagingTable,omitempty"`
-	SnowpipeStreamingMaxChannels                 *int                            `json:"snowpipeStreamingMaxChannels,omitempty"`
-	SplitEventsByType                            *bool                           `json:"splitEventsByType,omitempty"`
-	StagingSchema                                *string                         `json:"stagingSchema,omitempty"`
-	StaticColumns                                *[]PayloadsStaticColumn         `json:"staticColumns,omitempty"`
-	StructAsVariant                              *bool                           `json:"structAsVariant,omitempty"`
-	TruncateExceededValues                       *bool                           `json:"truncateExceededValues,omitempty"`
-	TurboLatencyThresholdMinutes                 *int                            `json:"turboLatencyThresholdMinutes,omitempty"`
-	TurboRowThreshold                            *int                            `json:"turboRowThreshold,omitempty"`
-	TurboWarehouse                               *string                         `json:"turboWarehouse,omitempty"`
-	UseBQBatchPriority                           *bool                           `json:"useBQBatchPriority,omitempty"`
-	UseBigNumericForVariableNumeric              *bool                           `json:"useBigNumericForVariableNumeric,omitempty"`
-	UseDoubleForVariableNumeric                  *bool                           `json:"useDoubleForVariableNumeric,omitempty"`
-	UseNewStringMethod                           *bool                           `json:"useNewStringMethod,omitempty"`
-	UseSnowpipeStreaming                         *bool                           `json:"useSnowpipeStreaming,omitempty"`
-	WriteRawBinaryValues                         *bool                           `json:"writeRawBinaryValues,omitempty"`
+	// AppendOnly When true, rows are always appended instead of merged into the destination table. Use for append-only data such as event tracking.
+	AppendOnly *bool `json:"appendOnly,omitempty"`
+
+	// ArtieUpdatedAtColumnName Name for the column includeArtieUpdatedAtColumn adds, instead of __artie_updated_at. Always lowercase, as every column name is written. To change it, pause the pipeline and rename the column in the destination tables before resuming: Artie doesn't rename columns in tables it already created. Not supported for ClickHouse.
+	ArtieUpdatedAtColumnName *string `json:"artieUpdatedAtColumnName,omitempty"`
+
+	// AutoEnableHistoryForNewTables When true, new source tables are added with history mode on; without autoReplicateNewTables they are added history-only.
+	AutoEnableHistoryForNewTables *bool `json:"autoEnableHistoryForNewTables,omitempty"`
+
+	// AutoEnableHistoryIgnoreRegex Regex of full table names that are skipped while autoEnableHistoryForNewTables is on. Can't be combined with autoEnableHistoryIncludeRegex.
+	AutoEnableHistoryIgnoreRegex *string `json:"autoEnableHistoryIgnoreRegex,omitempty"`
+
+	// AutoEnableHistoryIncludeRegex Regex of full table names; while autoEnableHistoryForNewTables is on, only new tables that match are auto-added. Can't be combined with autoEnableHistoryIgnoreRegex.
+	AutoEnableHistoryIncludeRegex *string `json:"autoEnableHistoryIncludeRegex,omitempty"`
+
+	// AutoReplicateIgnoreRegex Regex of full table names that auto-replication skips. Can't be combined with autoReplicateIncludeRegex.
+	AutoReplicateIgnoreRegex *string `json:"autoReplicateIgnoreRegex,omitempty"`
+
+	// AutoReplicateIncludeRegex Regex of full table names; only new tables that match are auto-added. Can't be combined with autoReplicateIgnoreRegex.
+	AutoReplicateIncludeRegex *string `json:"autoReplicateIncludeRegex,omitempty"`
+
+	// AutoReplicateNewTables When true, new tables found in the source are added to the pipeline automatically.
+	AutoReplicateNewTables *bool `json:"autoReplicateNewTables,omitempty"`
+
+	// AutoStopDroppedTables When true, tables that no longer exist in the source stop streaming automatically. Destination tables and their data are kept.
+	AutoStopDroppedTables *bool `json:"autoStopDroppedTables,omitempty"`
+
+	// BackfillMySQLFloatsAsShortestDecimal MySQL and PlanetScale sources only: backfills write FLOAT columns as their shortest decimal, as replication does, instead of the exact float32.
+	BackfillMySQLFloatsAsShortestDecimal *bool `json:"backfillMySQLFloatsAsShortestDecimal,omitempty"`
+
+	// BigQueryReservation BigQuery only: the reservation Transfer's queries run in; empty uses the project default.
+	BigQueryReservation *string `json:"bigQueryReservation,omitempty"`
+
+	// BufferRows Rows to buffer before flushing to the destination, at least 5.
+	BufferRows *int `json:"bufferRows,omitempty"`
+
+	// CastAllColumnsToString MongoDB and DocumentDB sources only: write every column, including the primary key, as a string. __artie_* columns keep their types.
+	CastAllColumnsToString *bool `json:"castAllColumnsToString,omitempty"`
+
+	// DatabricksAutoLiquidClustering Databricks only: turn on automatic liquid clustering for every destination table.
+	DatabricksAutoLiquidClustering *bool `json:"databricksAutoLiquidClustering,omitempty"`
+
+	// DatabricksDisableVariantShredding Databricks only: turn off variant shredding on new tables and, after each deploy, existing ones. Already shredded data isn't rewritten.
+	DatabricksDisableVariantShredding *bool `json:"databricksDisableVariantShredding,omitempty"`
+
+	// DatabricksUseZerobus Databricks only: append to history tables and appendOnly tables through Zerobus Ingest instead of COPY INTO. Needs a connector that signs in with a service principal (OAuth M2M) and databricksZerobusEndpoint.
+	DatabricksUseZerobus *bool `json:"databricksUseZerobus,omitempty"`
+
+	// DatabricksZerobusEndpoint Databricks only: the workspace's Zerobus endpoint, https://<workspace id>.zerobus.<region>.cloud.databricks.com. Required when databricksUseZerobus is on.
+	DatabricksZerobusEndpoint *string `json:"databricksZerobusEndpoint,omitempty"`
+
+	// DefaultSourceSchema Source schema whose tables aren't prefixed with the schema name in the destination.
+	DefaultSourceSchema *string `json:"defaultSourceSchema,omitempty"`
+
+	// DisableAlerts When true, Artie stops sending email alerts for this pipeline. Health is still tracked in the dashboard.
+	DisableAlerts *bool `json:"disableAlerts,omitempty"`
+
+	// DropDeletedColumns When true, columns dropped in the source are dropped in the destination too. History tables never drop columns.
+	DropDeletedColumns *bool `json:"dropDeletedColumns,omitempty"`
+
+	// DynamoDBBackfillConfig DynamoDB sources only: how backfills read the table from a DynamoDB export to S3.
+	DynamoDBBackfillConfig *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
+
+	// EnableSoftDelete When true, rows deleted in the source are kept and marked in an __artie_delete column instead of being deleted.
+	EnableSoftDelete *bool `json:"enableSoftDelete,omitempty"`
+
+	// FlushIntervalSeconds Seconds between flushes to the destination, from 5 to 86400. Transfer flushes sooner when bufferRows or flushSizeKb is reached.
+	FlushIntervalSeconds *int `json:"flushIntervalSeconds,omitempty"`
+
+	// FlushSizeKb Buffered data, in KB, that triggers a flush to the destination, up to 1.5 GB.
+	FlushSizeKb *int `json:"flushSizeKb,omitempty"`
+
+	// ForceUTCTimezone When true, source timestamp columns without a time zone are written as UTC timestamps with a time zone.
+	ForceUTCTimezone *bool `json:"forceUTCTimezone,omitempty"`
+
+	// IncludeArtieOperationColumn When true, each row gets an __artie_operation column with the change type that wrote it.
+	IncludeArtieOperationColumn *bool `json:"includeArtieOperationColumn,omitempty"`
+
+	// IncludeArtieUpdatedAtColumn When true, each row gets an __artie_updated_at column with the time Artie wrote it.
+	IncludeArtieUpdatedAtColumn *bool `json:"includeArtieUpdatedAtColumn,omitempty"`
+
+	// IncludeDatabaseUpdatedAtColumn When true, each row gets an __artie_db_updated_at column with the time the change happened in the source. Always on for history tables.
+	IncludeDatabaseUpdatedAtColumn *bool `json:"includeDatabaseUpdatedAtColumn,omitempty"`
+
+	// IncludeFullSourceTableNameColumn When true, each row gets an __artie_full_source_table_name column with its source table's full name.
+	IncludeFullSourceTableNameColumn *bool `json:"includeFullSourceTableNameColumn,omitempty"`
+
+	// IncludeFullSourceTableNameColumnAsPrimaryKey When true, the __artie_full_source_table_name column is added to the primary key. Requires includeFullSourceTableNameColumn.
+	IncludeFullSourceTableNameColumnAsPrimaryKey *bool `json:"includeFullSourceTableNameColumnAsPrimaryKey,omitempty"`
+
+	// IncludeSourceMetadataColumn When true, each row gets an __artie_source_metadata column with the change's source metadata.
+	IncludeSourceMetadataColumn *bool `json:"includeSourceMetadataColumn,omitempty"`
+
+	// JsonAsVarchar Redshift only: store struct values as JSON text in VARCHAR(MAX) instead of SUPER.
+	JsonAsVarchar *bool `json:"jsonAsVarchar,omitempty"`
+
+	// JsonParseTruncateStrings Redshift only: truncate strings inside SUPER values that are over Redshift's limit instead of failing the load.
+	JsonParseTruncateStrings *bool `json:"jsonParseTruncateStrings,omitempty"`
+
+	// MaxConcurrentSnapshots Most table backfills this pipeline runs at once; 0 uses the company limit, and a set value must be between 1 and that limit.
+	MaxConcurrentSnapshots *int `json:"maxConcurrentSnapshots,omitempty"`
+
+	// NullOutInvalidValues Snowflake and BigQuery only: skip invalid values, such as bad timestamps, instead of failing the load. Set by Artie.
+	NullOutInvalidValues *bool `json:"nullOutInvalidValues,omitempty"`
+
+	// PostgresPartitionMirroring Postgres source and destination only: create each partitioned source table's partitions in the destination, including ones added later.
+	PostgresPartitionMirroring *bool `json:"postgresPartitionMirroring,omitempty"`
+
+	// ReuseStagingTable When true, Transfer truncates and reuses staging tables instead of dropping them. Set by Artie.
+	ReuseStagingTable *bool `json:"reuseStagingTable,omitempty"`
+
+	// SnowpipeStreamingMaxChannels Snowflake only: the most Snowpipe Streaming channels Transfer opens.
+	SnowpipeStreamingMaxChannels *int `json:"snowpipeStreamingMaxChannels,omitempty"`
+
+	// SplitEventsByType API sources only: when true, each event type gets its own table; when false, all events share one table with the event type as a column.
+	SplitEventsByType *bool `json:"splitEventsByType,omitempty"`
+
+	// StagingSchema Schema to create staging tables in; empty uses each table's own schema.
+	StagingSchema *string `json:"stagingSchema,omitempty"`
+
+	// StaticColumns Columns with fixed values added to every destination table.
+	StaticColumns *[]PayloadsStaticColumn `json:"staticColumns,omitempty"`
+
+	// StructAsVariant Databricks only: store new struct and array columns as VARIANT instead of STRING or ARRAY<string>.
+	StructAsVariant *bool `json:"structAsVariant,omitempty"`
+
+	// TruncateExceededValues Redshift and BigQuery only: truncate values that are too large for their column instead of replacing them with __artie_exceeded_value.
+	TruncateExceededValues *bool `json:"truncateExceededValues,omitempty"`
+
+	// TurboLatencyThresholdMinutes Snowflake Turbo Mode: ingestion lag, in minutes, that must be exceeded to switch to turboWarehouse. Defaults to 30.
+	TurboLatencyThresholdMinutes *int `json:"turboLatencyThresholdMinutes,omitempty"`
+
+	// TurboRowThreshold Snowflake Turbo Mode: row lag that must be exceeded to switch to turboWarehouse. Defaults to 5,000,000.
+	TurboRowThreshold *int `json:"turboRowThreshold,omitempty"`
+
+	// TurboWarehouse Snowflake only: a larger warehouse Turbo Mode switches to while the pipeline is behind.
+	TurboWarehouse *string `json:"turboWarehouse,omitempty"`
+
+	// UseBQBatchPriority BigQuery only: run Transfer's queries with batch priority instead of interactive.
+	UseBQBatchPriority *bool `json:"useBQBatchPriority,omitempty"`
+
+	// UseBigNumericForVariableNumeric BigQuery only: write variable-precision numeric columns as BIGNUMERIC.
+	UseBigNumericForVariableNumeric *bool `json:"useBigNumericForVariableNumeric,omitempty"`
+
+	// UseDoubleForVariableNumeric MotherDuck only: write variable-precision numeric columns as DOUBLE.
+	UseDoubleForVariableNumeric *bool `json:"useDoubleForVariableNumeric,omitempty"`
+
+	// UseNewStringMethod Databricks only: use Transfer's newer string conversion; omitted uses the company setting.
+	UseNewStringMethod *bool `json:"useNewStringMethod,omitempty"`
+
+	// UseSnowpipeStreaming Snowflake only: load data with Snowpipe Streaming.
+	UseSnowpipeStreaming *bool `json:"useSnowpipeStreaming,omitempty"`
+
+	// WriteRawBinaryValues Databricks and MSSQL only: write binary values as raw binary instead of Base64-encoded strings.
+	WriteRawBinaryValues *bool `json:"writeRawBinaryValues,omitempty"`
 }
 
 // PayloadsPipelineErrorLog defines model for PayloadsPipelineErrorLog.
 type PayloadsPipelineErrorLog struct {
-	CreatedAt        *time.Time          `json:"createdAt,omitempty"`
-	Database         *string             `json:"database,omitempty"`
-	Destination      *string             `json:"destination,omitempty"`
-	ErrorDetail      *string             `json:"errorDetail,omitempty"`
-	EventType        *string             `json:"eventType,omitempty"`
-	Message          *string             `json:"message,omitempty"`
-	Mode             *string             `json:"mode,omitempty"`
-	PipelineUUID     *openapi_types.UUID `json:"pipelineUUID,omitempty"`
-	Schema           *string             `json:"schema,omitempty"`
-	Service          *string             `json:"service,omitempty"`
-	Source           *string             `json:"source,omitempty"`
+	// CreatedAt When Artie recorded the error, in RFC 3339.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Database The database of the table the error is about, if any.
+	Database *string `json:"database,omitempty"`
+
+	// Destination The destination connector type, such as bigquery.
+	Destination *string `json:"destination,omitempty"`
+
+	// ErrorDetail The full error text, with secrets redacted.
+	ErrorDetail *string `json:"errorDetail,omitempty"`
+
+	// EventType The type of the event that reported the error.
+	EventType *string `json:"eventType,omitempty"`
+
+	// Message A short summary of the event type.
+	Message *string `json:"message,omitempty"`
+
+	// Mode Transfer's run mode when the error happened: replication or history.
+	Mode *string `json:"mode,omitempty"`
+
+	// PipelineUUID UUID of the pipeline the error belongs to.
+	PipelineUUID *openapi_types.UUID `json:"pipelineUUID,omitempty"`
+
+	// Schema The schema of the table the error is about, if any.
+	Schema *string `json:"schema,omitempty"`
+
+	// Service The Artie service that reported the error, such as transfer or reader.
+	Service *string `json:"service,omitempty"`
+
+	// Source The source connector type, such as postgresql.
+	Source *string `json:"source,omitempty"`
+
+	// SourceReaderUUID UUID of the pipeline's source reader.
 	SourceReaderUUID *openapi_types.UUID `json:"sourceReaderUUID,omitempty"`
-	Table            *string             `json:"table,omitempty"`
-	Timestamp        *time.Time          `json:"timestamp,omitempty"`
-	Uuid             openapi_types.UUID  `json:"uuid"`
-	Version          *string             `json:"version,omitempty"`
+
+	// Table The table the error is about, if any.
+	Table *string `json:"table,omitempty"`
+
+	// Timestamp When the service reported the error, in RFC 3339.
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+
+	// Uuid The error log entry's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
+
+	// Version The version of the service that reported the error.
+	Version *string `json:"version,omitempty"`
 }
 
 // PayloadsPipelinePayload defines model for PayloadsPipelinePayload.
 type PayloadsPipelinePayload struct {
-	AdvancedSettings         *PayloadsAdvancedPipelineSettingsPayload `json:"advancedSettings,omitempty"`
-	ColumnHashingSaltUUID    *openapi_types.UUID                      `json:"columnHashingSaltUUID,omitempty"`
-	DataPlaneName            *string                                  `json:"dataPlaneName,omitempty"`
-	DestinationUUID          *openapi_types.UUID                      `json:"destinationUUID,omitempty"`
-	EncryptionKeyUUID        *openapi_types.UUID                      `json:"encryptionKeyUUID,omitempty"`
-	Name                     *string                                  `json:"name,omitempty"`
-	SnowflakeEcoScheduleUUID *openapi_types.UUID                      `json:"snowflakeEcoScheduleUUID,omitempty"`
-	SourceReaderUUID         *openapi_types.UUID                      `json:"sourceReaderUUID,omitempty"`
-	SpecificDestCfg          *PayloadsSpecificConfig                  `json:"specificDestCfg,omitempty"`
-	Tables                   *[]PayloadsTablePayload                  `json:"tables,omitempty"`
+	// AdvancedSettings Pipeline settings to change; omitted fields keep their current values.
+	AdvancedSettings *PayloadsAdvancedPipelineSettingsPayload `json:"advancedSettings,omitempty"`
+
+	// ColumnHashingSaltUUID UUID of the salt used to hash columnsToHash; null hashes with plain SHA-256.
+	ColumnHashingSaltUUID *openapi_types.UUID `json:"columnHashingSaltUUID,omitempty"`
+
+	// DataPlaneName Name of the data plane that runs the pipeline. On create, empty uses the company's default data plane.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// DestinationUUID UUID of the destination connector, from the connector list.
+	DestinationUUID *openapi_types.UUID `json:"destinationUUID,omitempty"`
+
+	// EncryptionKeyUUID UUID of the encryption key used for columnsToEncrypt; null for none.
+	EncryptionKeyUUID *openapi_types.UUID `json:"encryptionKeyUUID,omitempty"`
+
+	// Name The pipeline's display name.
+	Name *string `json:"name,omitempty"`
+
+	// SnowflakeEcoScheduleUUID UUID of a Snowflake eco schedule for the pipeline; null for none.
+	SnowflakeEcoScheduleUUID *openapi_types.UUID `json:"snowflakeEcoScheduleUUID,omitempty"`
+
+	// SourceReaderUUID UUID of the source reader the pipeline reads from, from pipeline_detail or the source reader list.
+	SourceReaderUUID *openapi_types.UUID `json:"sourceReaderUUID,omitempty"`
+
+	// SpecificDestCfg Destination-specific settings, such as the database, schema or bucket to write to.
+	SpecificDestCfg *PayloadsSpecificConfig `json:"specificDestCfg,omitempty"`
+
+	// Tables The tables to replicate.
+	Tables *[]PayloadsTablePayload `json:"tables,omitempty"`
 }
 
 // PayloadsPostgresPublication defines model for PayloadsPostgresPublication.
@@ -2182,71 +3108,151 @@ type PayloadsPostgresPublication struct {
 
 // PayloadsPostgresReplicationSlot defines model for PayloadsPostgresReplicationSlot.
 type PayloadsPostgresReplicationSlot struct {
-	Active             bool    `json:"active"`
-	Database           *string `json:"database"`
-	HotStandbyFeedback string  `json:"hotStandbyFeedback"`
-	IsReplica          bool    `json:"isReplica"`
-	Name               string  `json:"name"`
-	NotFound           bool    `json:"notFound"`
-	RetainedWALBytes   int     `json:"retainedWALBytes"`
-	WalStatus          string  `json:"walStatus"`
+	// Active Whether a client is connected to the slot and consuming it.
+	Active bool `json:"active"`
+
+	// Database The database the slot belongs to. Null for a physical slot.
+	Database *string `json:"database"`
+
+	// HotStandbyFeedback The replica's hot_standby_feedback setting (on or off), which must be on to stream from a replica. Empty on a primary.
+	HotStandbyFeedback string `json:"hotStandbyFeedback"`
+
+	// IsReplica Whether the server is a read replica. Only detected on Postgres 16 and newer.
+	IsReplica bool `json:"isReplica"`
+
+	// Name The replication slot name, to pass as slotName to connector_drop_postgres_replication_slot.
+	Name string `json:"name"`
+
+	// NotFound Whether a looked-up slot doesn't exist. Always false in a list of slots.
+	NotFound bool `json:"notFound"`
+
+	// RetainedWALBytes Bytes of WAL the slot holds back: the distance from its restart_lsn to the current WAL position (the last replayed position on a replica).
+	RetainedWALBytes int `json:"retainedWALBytes"`
+
+	// WalStatus The slot's wal_status from pg_replication_slots, such as reserved, extended, unreserved or lost; N/A on Postgres 12 and older.
+	WalStatus string `json:"walStatus"`
 }
 
 // PayloadsPostgresSetting defines model for PayloadsPostgresSetting.
 type PayloadsPostgresSetting struct {
-	Category    string `json:"category"`
+	// Category The pg_settings category the setting belongs to.
+	Category string `json:"category"`
+
+	// Description Postgres's own explanation of the setting, from pg_settings.
 	Description string `json:"description"`
-	Name        string `json:"name"`
-	Unit        string `json:"unit"`
-	Value       string `json:"value"`
+
+	// Name The setting name, as in pg_settings.
+	Name string `json:"name"`
+
+	// Unit The value's unit, such as kB or ms. Empty for unitless settings.
+	Unit string `json:"unit"`
+
+	// Value The current value, in the unit given by unit.
+	Value string `json:"value"`
 }
+
+// PayloadsPostgresSettings The source's replication-relevant settings, one per pg_settings row.
+type PayloadsPostgresSettings = []PayloadsPostgresSetting
 
 // PayloadsPrivateLinkConnection defines model for PayloadsPrivateLinkConnection.
 type PayloadsPrivateLinkConnection struct {
-	ApprovedAt              *time.Time         `json:"approvedAt,omitempty"`
-	AvailabilityZoneIds     []string           `json:"availabilityZoneIds"`
-	CompanyUUID             openapi_types.UUID `json:"companyUUID"`
-	CreatedAt               time.Time          `json:"createdAt"`
-	CreatedBy               *string            `json:"createdBy,omitempty"`
-	DataPlaneName           *string            `json:"dataPlaneName,omitempty"`
-	DnsEntry                string             `json:"dnsEntry"`
-	EnvironmentUUID         openapi_types.UUID `json:"environmentUUID"`
-	Name                    string             `json:"name"`
-	PrivateLinkServiceAlias string             `json:"privateLinkServiceAlias"`
-	Provider                EnumsCloudProvider `json:"provider"`
-	ProvisioningError       *string            `json:"provisioningError,omitempty"`
-	Region                  string             `json:"region"`
-	Status                  string             `json:"status"`
-	UpdatedAt               time.Time          `json:"updatedAt"`
-	Uuid                    openapi_types.UUID `json:"uuid"`
-	VpcEndpointId           *string            `json:"vpcEndpointId,omitempty"`
-	VpcServiceName          string             `json:"vpcServiceName"`
+	// ApprovedAt When the connection was approved for provisioning. Left out while it awaits approval.
+	ApprovedAt *time.Time `json:"approvedAt,omitempty"`
+
+	// AvailabilityZoneIds AWS availability zone IDs, such as use1-az1, that the endpoint is placed in. Empty on Azure.
+	AvailabilityZoneIds []string `json:"availabilityZoneIds"`
+
+	// CompanyUUID The company that owns the connection.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// CreatedAt When the connection was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// CreatedBy Display name of who created the connection, or API key or Artie for non-account actors. Only set on the list response.
+	CreatedBy *string `json:"createdBy,omitempty"`
+
+	// DataPlaneName The data plane the connection is restricted to. Left out when it uses the company's default data plane.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// DnsEntry The address of Artie's endpoint that connectors use as their host: a DNS name on AWS, a private IP on Azure. Empty until provisioned.
+	DnsEntry string `json:"dnsEntry"`
+
+	// EnvironmentUUID The environment the connection belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// Name Display name for the connection.
+	Name string `json:"name"`
+
+	// PrivateLinkServiceAlias The Azure Private Link service alias Artie connects to. Empty on AWS.
+	PrivateLinkServiceAlias string `json:"privateLinkServiceAlias"`
+
+	// Provider The cloud the connection is in, set by its data plane.
+	Provider EnumsCloudProvider `json:"provider"`
+
+	// ProvisioningError The raw error that put the connection in errored status: a failed provisioning attempt, a health check that found the endpoint dead or gone, or a failed teardown. Only set while status is errored.
+	ProvisioningError *string `json:"provisioningError,omitempty"`
+
+	// Region The cloud region of the connection: parsed from the VPC service name on AWS, the data plane's region on Azure.
+	Region string `json:"region"`
+
+	// Status Where the connection is in review and provisioning.
+	Status string `json:"status"`
+
+	// UpdatedAt When the connection was last changed.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Uuid The PrivateLink connection's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
+
+	// VpcEndpointId The ID of Artie's endpoint: the VPC endpoint ID on AWS, the private endpoint resource ID on Azure. Empty until provisioned.
+	VpcEndpointId *string `json:"vpcEndpointId,omitempty"`
+
+	// VpcServiceName The AWS VPC endpoint service name Artie connects to, such as com.amazonaws.vpce.us-west-2.vpce-svc-<id>. Empty on Azure.
+	VpcServiceName string `json:"vpcServiceName"`
 }
 
 // PayloadsRangeSettings defines model for PayloadsRangeSettings.
 type PayloadsRangeSettings struct {
-	BatchSize      *int  `json:"batchSize,omitempty"`
-	ChunksSize     *int  `json:"chunksSize,omitempty"`
-	Enabled        *bool `json:"enabled,omitempty"`
-	MaxParallelism *int  `json:"maxParallelism,omitempty"`
+	// BatchSize Rows per backfill query; 0 uses the source reader's backfill batch size. Capped at 50,000 when enabled is true. Not used by partition range backfills.
+	BatchSize *int `json:"batchSize,omitempty"`
+
+	// ChunksSize Width of each primary-key range, at least 100,000; 0 uses the reader's default.
+	ChunksSize *int `json:"chunksSize,omitempty"`
+
+	// Enabled When true, the backfill splits the primary key into ranges and reads them in parallel.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// MaxParallelism How many ranges are read at once; 0 uses the reader's default.
+	MaxParallelism *int `json:"maxParallelism,omitempty"`
 }
 
 // PayloadsS3CSVParser defines model for PayloadsS3CSVParser.
 type PayloadsS3CSVParser struct {
-	CommentPrefix  *string   `json:"commentPrefix,omitempty"`
-	Delimiter      *string   `json:"delimiter,omitempty"`
-	Headers        *[]string `json:"headers,omitempty"`
-	NullValues     *[]string `json:"nullValues,omitempty"`
-	TrimWhitespace *bool     `json:"trimWhitespace,omitempty"`
+	// CommentPrefix A single character that marks a line as a comment to skip; empty means no comment lines. Can't be the delimiter.
+	CommentPrefix *string `json:"commentPrefix,omitempty"`
+
+	// Delimiter The single character between fields; empty means a comma.
+	Delimiter *string `json:"delimiter,omitempty"`
+
+	// Headers Column names for files without a header row, in field order. Empty means the first row of each file is the header.
+	Headers *[]string `json:"headers,omitempty"`
+
+	// NullValues Field values to write as null, such as NULL or an empty string.
+	NullValues *[]string `json:"nullValues,omitempty"`
+
+	// TrimWhitespace When true, leading and trailing whitespace is removed from each field.
+	TrimWhitespace *bool `json:"trimWhitespace,omitempty"`
 }
 
 // PayloadsS3Match defines model for PayloadsS3Match.
 type PayloadsS3Match struct {
+	// FileNameRegex Regex the object's file name, without its directory or compression suffix, must match. Empty matches every object under prefix.
 	FileNameRegex *string `json:"fileNameRegex,omitempty"`
 }
 
 // PayloadsS3MetadataColumns defines model for PayloadsS3MetadataColumns.
 type PayloadsS3MetadataColumns struct {
+	// Columns Metadata columns to add, such as artieSourcePath (the object key), artieSourceFileName or artieSourceRecordNumber (the record's position in the file).
 	Columns *[]PayloadsS3MetadataColumnsColumns `json:"columns,omitempty"`
 }
 
@@ -2255,169 +3261,385 @@ type PayloadsS3MetadataColumnsColumns string
 
 // PayloadsS3Parser defines model for PayloadsS3Parser.
 type PayloadsS3Parser struct {
-	ColumnOrder *[]string            `json:"columnOrder,omitempty"`
-	Csv         *PayloadsS3CSVParser `json:"csv,omitempty"`
-	Type        PayloadsS3ParserType `json:"type"`
+	// ColumnOrder The order of the parsed columns in the destination table, after the metadata columns; columns not listed follow in alphabetical order. Must include every primaryKey column that isn't a metadata column.
+	ColumnOrder *[]string `json:"columnOrder,omitempty"`
+
+	// Csv CSV options, for the csv type.
+	Csv *PayloadsS3CSVParser `json:"csv,omitempty"`
+
+	// Type The format of the objects.
+	Type PayloadsS3ParserType `json:"type"`
 }
 
-// PayloadsS3ParserType defines model for PayloadsS3Parser.Type.
+// PayloadsS3ParserType The format of the objects.
 type PayloadsS3ParserType string
 
 // PayloadsS3PathMapping defines model for PayloadsS3PathMapping.
 type PayloadsS3PathMapping struct {
-	Id          string                    `json:"id"`
-	Match       PayloadsS3Match           `json:"match"`
-	Metadata    PayloadsS3MetadataColumns `json:"metadata"`
-	Parser      PayloadsS3Parser          `json:"parser"`
-	Prefix      string                    `json:"prefix"`
-	PrimaryKey  *[]string                 `json:"primaryKey,omitempty"`
-	ReferenceID string                    `json:"referenceID"`
+	// Id The mapping's checkpoint ID. Leave it empty on a new mapping and Artie generates one; keep it unchanged afterwards, since a new ID re-reads every matching object from the start.
+	Id string `json:"id"`
+
+	// Match Narrows which objects under prefix the mapping reads.
+	Match PayloadsS3Match `json:"match"`
+
+	// Metadata Columns about the source object to add to each record.
+	Metadata PayloadsS3MetadataColumns `json:"metadata"`
+
+	// Parser How each object's contents are parsed into records.
+	Parser PayloadsS3Parser `json:"parser"`
+
+	// Prefix The object key prefix to read, such as exports/orders/.
+	Prefix string `json:"prefix"`
+
+	// PrimaryKey Columns that uniquely identify a record, used as its key. Left empty, the mapping needs the artieSourcePath and artieSourceRecordNumber metadata columns, which identify each record by file and position.
+	PrimaryKey *[]string `json:"primaryKey,omitempty"`
+
+	// ReferenceID The name of the destination table the matching objects' records go to.
+	ReferenceID string `json:"referenceID"`
 }
 
 // PayloadsSSHTunnel defines model for PayloadsSSHTunnel.
 type PayloadsSSHTunnel struct {
-	CompanyUUID     openapi_types.UUID `json:"companyUUID"`
-	CreatedAt       *time.Time         `json:"createdAt,omitempty"`
+	// CompanyUUID The company that owns the tunnel.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// CreatedAt When the tunnel was created.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// EnvironmentUUID The environment the tunnel belongs to.
 	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
-	Host            string             `json:"host"`
-	IsInUse         *bool              `json:"isInUse,omitempty"`
-	Name            string             `json:"name"`
-	Port            int                `json:"port"`
-	PublicKey       string             `json:"publicKey"`
-	UpdatedAt       *time.Time         `json:"updatedAt,omitempty"`
-	Username        string             `json:"username"`
-	Uuid            openapi_types.UUID `json:"uuid"`
+
+	// Host Hostname or IP address of the SSH bastion server Artie connects to.
+	Host string `json:"host"`
+
+	// IsInUse Whether any connector uses this tunnel. Only set on the detail response.
+	IsInUse *bool `json:"isInUse,omitempty"`
+
+	// Name Display name for the tunnel.
+	Name string `json:"name"`
+
+	// Port Port the SSH bastion server listens on.
+	Port int `json:"port"`
+
+	// PublicKey The public key Artie generated for this tunnel; add it to the bastion user's authorized_keys. The private key is never returned.
+	PublicKey string `json:"publicKey"`
+
+	// UpdatedAt When the tunnel was last changed.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Username The user Artie logs in to the bastion as. Empty for callers who can't edit connectors.
+	Username string `json:"username"`
+
+	// Uuid The SSH tunnel's UUID. Connectors reference it to connect through this tunnel.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsSchemaResponse defines model for PayloadsSchemaResponse.
 type PayloadsSchemaResponse struct {
-	Name             string  `json:"name"`
-	Unreadable       bool    `json:"unreadable"`
+	// Name The schema name, to pass as schemaName to connector_fetch_tables.
+	Name string `json:"name"`
+
+	// Unreadable True when the connector's user can't use the schema (for Postgres, no USAGE privilege), so its tables can't be read.
+	Unreadable bool `json:"unreadable"`
+
+	// UnreadableReason Why the schema is unreadable, when the source says.
 	UnreadableReason *string `json:"unreadableReason,omitempty"`
 }
 
 // PayloadsSeenTableColumn defines model for PayloadsSeenTableColumn.
 type PayloadsSeenTableColumn struct {
+	// Metadata The column's type and constraints.
 	Metadata PayloadsSeenTableColumnMetadata `json:"metadata"`
-	Name     string                          `json:"name"`
+
+	// Name The column's name in the source table.
+	Name string `json:"name"`
 }
 
 // PayloadsSeenTableColumnMetadata defines model for PayloadsSeenTableColumnMetadata.
 type PayloadsSeenTableColumnMetadata struct {
-	DataType     string  `json:"dataType"`
+	// DataType The column's data type as the source reports it.
+	DataType string `json:"dataType"`
+
+	// DefaultValue The column's default value expression; null when it has none.
 	DefaultValue *string `json:"defaultValue,omitempty"`
-	IsPrimaryKey *bool   `json:"isPrimaryKey,omitempty"`
-	NotNull      bool    `json:"notNull"`
+
+	// IsPrimaryKey True when the column is part of the primary key; null when unknown.
+	IsPrimaryKey *bool `json:"isPrimaryKey,omitempty"`
+
+	// NotNull True when the column is declared NOT NULL.
+	NotNull bool `json:"notNull"`
 }
 
 // PayloadsSnowflakeEcoSchedule defines model for PayloadsSnowflakeEcoSchedule.
 type PayloadsSnowflakeEcoSchedule struct {
-	Company         openapi_types.UUID                   `json:"company"`
-	CreatedAt       time.Time                            `json:"createdAt"`
-	EnvironmentUUID openapi_types.UUID                   `json:"environmentUUID"`
-	Name            string                               `json:"name"`
-	Settings        PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
-	UpdatedAt       time.Time                            `json:"updatedAt"`
-	Uuid            openapi_types.UUID                   `json:"uuid"`
+	// Company The UUID of the company that owns the schedule.
+	Company openapi_types.UUID `json:"company"`
+
+	// CreatedAt When the schedule was created.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// EnvironmentUUID The environment the schedule belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// Name Display name for the schedule.
+	Name string `json:"name"`
+
+	// Settings Peak hours and the flush rules used outside them.
+	Settings PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
+
+	// UpdatedAt When the schedule was last changed.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Uuid The Snowflake Eco Mode schedule's UUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsSnowflakeEcoScheduleSettings defines model for PayloadsSnowflakeEcoScheduleSettings.
 type PayloadsSnowflakeEcoScheduleSettings struct {
-	Days                        []string `json:"days"`
-	EndTimeOfDay                string   `json:"endTimeOfDay"`
-	OffPeakBufferRows           int      `json:"offPeakBufferRows"`
-	OffPeakFlushIntervalSeconds int      `json:"offPeakFlushIntervalSeconds"`
-	OffPeakFlushSizeKb          int      `json:"offPeakFlushSizeKb"`
-	StartTimeOfDay              string   `json:"startTimeOfDay"`
-	Timezone                    string   `json:"timezone"`
+	// Days Days with peak hours, as English weekday names such as Monday. Every hour of the other days is off-peak. At least one is required.
+	Days []string `json:"days"`
+
+	// EndTimeOfDay When peak hours end each peak day, as 24-hour HH:MM.
+	EndTimeOfDay string `json:"endTimeOfDay"`
+
+	// OffPeakBufferRows Rows to buffer before flushing during off-peak hours.
+	OffPeakBufferRows int `json:"offPeakBufferRows"`
+
+	// OffPeakFlushIntervalSeconds Seconds between flushes to Snowflake during off-peak hours.
+	OffPeakFlushIntervalSeconds int `json:"offPeakFlushIntervalSeconds"`
+
+	// OffPeakFlushSizeKb Buffered data size, in KB, that triggers a flush during off-peak hours; 1572864 KB is 1.5 GB.
+	OffPeakFlushSizeKb int `json:"offPeakFlushSizeKb"`
+
+	// StartTimeOfDay When peak hours start each peak day, as 24-hour HH:MM. Must not be after endTimeOfDay.
+	StartTimeOfDay string `json:"startTimeOfDay"`
+
+	// Timezone IANA time zone the peak hours are in, such as UTC or America/New_York. Only common zones are accepted.
+	Timezone string `json:"timezone"`
 }
 
 // PayloadsSoftPartitioning defines model for PayloadsSoftPartitioning.
 type PayloadsSoftPartitioning struct {
-	Enabled            *bool   `json:"enabled,omitempty"`
-	MaxPartitions      *int    `json:"maxPartitions,omitempty"`
-	PartitionColumn    *string `json:"partitionColumn,omitempty"`
+	// Enabled When true, Transfer writes rows into time-based partition tables.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// MaxPartitions How many partition tables to keep before older ones are merged into the compacted table; 0 keeps all of them.
+	MaxPartitions *int `json:"maxPartitions,omitempty"`
+
+	// PartitionColumn The timestamp column whose value picks each row's partition.
+	PartitionColumn *string `json:"partitionColumn,omitempty"`
+
+	// PartitionFrequency How often a new partition table starts: monthly, daily or hourly.
 	PartitionFrequency *string `json:"partitionFrequency,omitempty"`
-	PartitionSchema    *string `json:"partitionSchema,omitempty"`
+
+	// PartitionSchema Passed to Transfer, which does not use it.
+	PartitionSchema *string `json:"partitionSchema,omitempty"`
 }
 
 // PayloadsSourceReader defines model for PayloadsSourceReader.
 type PayloadsSourceReader struct {
-	ApiBaseURL           *string                             `json:"apiBaseURL,omitempty"`
-	ArchiveConnectorUUID *openapi_types.UUID                 `json:"archiveConnectorUUID,omitempty"`
-	CompanyUUID          openapi_types.UUID                  `json:"companyUUID"`
-	ConnectorUUID        openapi_types.UUID                  `json:"connectorUUID"`
-	ContainerName        string                              `json:"containerName"`
-	CreatedAt            *time.Time                          `json:"createdAt,omitempty"`
-	DataPlaneName        string                              `json:"dataPlaneName"`
-	Database             string                              `json:"database"`
-	EnvironmentUUID      openapi_types.UUID                  `json:"environmentUUID"`
-	IsShared             *bool                               `json:"isShared,omitempty"`
-	IsValid              bool                                `json:"isValid"`
-	Name                 string                              `json:"name"`
-	Settings             PayloadsSourceReaderSettingsPayload `json:"settings"`
-	Status               EnumsSourceReaderStatus             `json:"status"`
-	TablesConfig         *PayloadsSourceReaderTablesConfig   `json:"tablesConfig,omitempty"`
-	UpdatedAt            *time.Time                          `json:"updatedAt,omitempty"`
-	Uuid                 openapi_types.UUID                  `json:"uuid"`
+	// ApiBaseURL For API sources, the URL to send records to. Empty for other sources.
+	ApiBaseURL *string `json:"apiBaseURL,omitempty"`
+
+	// ArchiveConnectorUUID SQL Server trn_log_backup only: the SMB share connector holding the log backups, when settings.archiveLocationType is smb_share. Sending archiveLocationType without it clears it.
+	ArchiveConnectorUUID *openapi_types.UUID `json:"archiveConnectorUUID,omitempty"`
+
+	// CompanyUUID The company that owns the source reader.
+	CompanyUUID openapi_types.UUID `json:"companyUUID"`
+
+	// ConnectorUUID The source connector it reads from, from connector_list with includeSourceConnectors=true.
+	ConnectorUUID openapi_types.UUID `json:"connectorUUID"`
+
+	// ContainerName Oracle only: the container to connect to. Empty uses the connector's CDB.
+	ContainerName string `json:"containerName"`
+
+	// CreatedAt When the source reader was created.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// DataPlaneName The data plane the reader runs in. Empty on update keeps the current one.
+	DataPlaneName string `json:"dataPlaneName"`
+
+	// Database The database to read from: the service name for Oracle, the bucket for S3, the keyspace for Keyspaces.
+	Database string `json:"database"`
+
+	// EnvironmentUUID The environment the source reader belongs to.
+	EnvironmentUUID openapi_types.UUID `json:"environmentUUID"`
+
+	// IsShared Whether several pipelines can share this source reader.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// IsValid Whether the source reader and its connector pass validation.
+	IsValid bool `json:"isValid"`
+
+	// Name The source reader's display name.
+	Name string `json:"name"`
+
+	// Settings Source-specific reader settings.
+	Settings PayloadsSourceReaderSettingsPayload `json:"settings"`
+
+	// Status The source reader's lifecycle state.
+	Status EnumsSourceReaderStatus `json:"status"`
+
+	// TablesConfig Shared source readers only: the tables it reads, keyed by schema.table (or the collection name for MongoDB and DocumentDB), with their column filters.
+	TablesConfig *PayloadsSourceReaderTablesConfig `json:"tablesConfig,omitempty"`
+
+	// UpdatedAt When the source reader was last changed.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Uuid The source reader's UUID, from pipeline_detail.sourceReaderUUID.
+	Uuid openapi_types.UUID `json:"uuid"`
 }
 
 // PayloadsSourceReaderSettingsPayload defines model for PayloadsSourceReaderSettingsPayload.
 type PayloadsSourceReaderSettingsPayload struct {
+	// ArchiveLocationType SQL Server trn_log_backup only: where the transaction log backups are stored. Empty means a local directory on the reader.
 	ArchiveLocationType *EnumsMSSQLArchiveLocationType `json:"archiveLocationType,omitempty"`
-	ArchiveLogPassword  *string                        `json:"archiveLogPassword,omitempty"`
-	ArchiveLogPath      *string                        `json:"archiveLogPath,omitempty"`
+
+	// ArchiveLogPassword SQL Server trn_log_backup only: the SAS token for an Azure blob folder. Write-only: responses return a placeholder when one is saved, and sending the placeholder keeps it.
+	ArchiveLogPassword *string `json:"archiveLogPassword,omitempty"`
+
+	// ArchiveLogPath SQL Server trn_log_backup only: the folder holding the transaction log backups, such as an Azure blob folder URL. An SMB share's path is on its connector instead.
+	ArchiveLogPath *string `json:"archiveLogPath,omitempty"`
+
+	// ArchiveLogPrivateLinkUUID No longer used: an SMB share's PrivateLink is on its connector (archiveConnectorUUID).
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ArchiveLogPrivateLinkUUID *openapi_types.UUID `json:"archiveLogPrivateLinkUUID,omitempty"`
+
+	// ArchiveLogUsername No longer used: an SMB share's login is on its connector (archiveConnectorUUID).
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	ArchiveLogUsername                 *string                                                `json:"archiveLogUsername,omitempty"`
-	BackfillBatchSize                  *int                                                   `json:"backfillBatchSize,omitempty"`
-	BackfillDefaults                   *PayloadsBackfillDefaultsPayload                       `json:"backfillDefaults,omitempty"`
-	CollectionScopedMode               *bool                                                  `json:"collectionScopedMode,omitempty"`
-	CompositeTypesAsText               *bool                                                  `json:"compositeTypesAsText,omitempty"`
-	DatabasesToSync                    *[]string                                              `json:"databasesToSync,omitempty"`
-	DeploymentScopedMode               *bool                                                  `json:"deploymentScopedMode,omitempty"`
-	DisableAutoFetchTables             *bool                                                  `json:"disableAutoFetchTables,omitempty"`
-	DisableFullDocumentBeforeChange    *bool                                                  `json:"disableFullDocumentBeforeChange,omitempty"`
-	DisableNoCursorTimeout             *bool                                                  `json:"disableNoCursorTimeout,omitempty"`
-	EnableClientSideFullDocumentLookup *bool                                                  `json:"enableClientSideFullDocumentLookup,omitempty"`
-	EnableHeartbeats                   *bool                                                  `json:"enableHeartbeats,omitempty"`
-	EnableRelationMessageCaching       *bool                                                  `json:"enableRelationMessageCaching,omitempty"`
-	EnableSchemaHistoryCompaction      *bool                                                  `json:"enableSchemaHistoryCompaction,omitempty"`
-	MaxConnIdleTimeSeconds             *int                                                   `json:"maxConnIdleTimeSeconds,omitempty"`
-	MessageCompression                 *PayloadsSourceReaderSettingsPayloadMessageCompression `json:"messageCompression,omitempty"`
-	MssqlChangeTrackingConcurrency     *int                                                   `json:"mssqlChangeTrackingConcurrency,omitempty"`
-	MssqlChangeTrackingMaxIdleConns    *int                                                   `json:"mssqlChangeTrackingMaxIdleConns,omitempty"`
-	MssqlChangeTrackingPollIntervalMs  *int                                                   `json:"mssqlChangeTrackingPollIntervalMs,omitempty"`
-	MssqlReplicationMethod             *string                                                `json:"mssqlReplicationMethod,omitempty"`
-	OneTopicPerSchema                  *bool                                                  `json:"oneTopicPerSchema,omitempty"`
-	PublicationAutoCreateMode          *string                                                `json:"publicationAutoCreateMode,omitempty"`
-	PublicationNameOverride            *string                                                `json:"publicationNameOverride,omitempty"`
-	PublishViaPartitionRoot            *bool                                                  `json:"publishViaPartitionRoot,omitempty"`
-	ReplicationSlotOverride            *string                                                `json:"replicationSlotOverride,omitempty"`
-	S3PathMappings                     *[]PayloadsS3PathMapping                               `json:"s3PathMappings,omitempty"`
-	UnifyAcrossDatabases               *bool                                                  `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossDatabasesRegex          *string                                                `json:"unifyAcrossDatabasesRegex,omitempty"`
-	UnifyAcrossSchemas                 *bool                                                  `json:"unifyAcrossSchemas,omitempty"`
-	UnifyAcrossSchemasMaxParallelism   *int                                                   `json:"unifyAcrossSchemasMaxParallelism,omitempty"`
-	UnifyAcrossSchemasRegex            *string                                                `json:"unifyAcrossSchemasRegex,omitempty"`
-	UseAdvanceOnPrimaryKeepAlive       *bool                                                  `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
-	UseFailoverReplicationSlot         *bool                                                  `json:"useFailoverReplicationSlot,omitempty"`
-	UseNumericTypesForMoney            *bool                                                  `json:"useNumericTypesForMoney,omitempty"`
-	UseReaderForOracleStreaming        *bool                                                  `json:"useReaderForOracleStreaming,omitempty"`
+	ArchiveLogUsername *string `json:"archiveLogUsername,omitempty"`
+
+	// BackfillBatchSize Rows read per batch during backfills, also used as the Postgres streaming batch size. At most 50,000; new source readers start at 25,000.
+	BackfillBatchSize *int `json:"backfillBatchSize,omitempty"`
+
+	// BackfillDefaults Default backfill tuning for this source reader's tables; a table's own backfill settings take precedence.
+	BackfillDefaults *PayloadsBackfillDefaultsPayload `json:"backfillDefaults,omitempty"`
+
+	// CollectionScopedMode MongoDB only: open one change stream per collection. Order is kept within each collection but not across them.
+	CollectionScopedMode *bool `json:"collectionScopedMode,omitempty"`
+
+	// CompositeTypesAsText Postgres only: replicate composite (row) type columns as their text form, such as (book,abc123), instead of base64-encoded bytes.
+	CompositeTypesAsText *bool `json:"compositeTypesAsText,omitempty"`
+
+	// DatabasesToSync The databases to merge tables from when unifyAcrossDatabases is on.
+	DatabasesToSync *[]string `json:"databasesToSync,omitempty"`
+
+	// DeploymentScopedMode MongoDB only: stream every table from one change stream for the whole deployment; each table's schema holds its database, so one pipeline can cover several databases.
+	DeploymentScopedMode *bool `json:"deploymentScopedMode,omitempty"`
+
+	// DisableAutoFetchTables Dashboard only: require picking a schema before tables are listed, instead of listing every table up front.
+	DisableAutoFetchTables *bool `json:"disableAutoFetchTables,omitempty"`
+
+	// DisableFullDocumentBeforeChange MongoDB/DocumentDB only: don't request the pre-image (fullDocumentBeforeChange) on change streams, which DocumentDB doesn't support.
+	DisableFullDocumentBeforeChange *bool `json:"disableFullDocumentBeforeChange,omitempty"`
+
+	// DisableNoCursorTimeout MongoDB/DocumentDB only: don't set noCursorTimeout on the backfill cursor.
+	DisableNoCursorTimeout *bool `json:"disableNoCursorTimeout,omitempty"`
+
+	// EnableClientSideFullDocumentLookup MongoDB/DocumentDB only: look up the full document for update events with a separate query instead of updateLookup, avoiding BSONObjectTooLarge errors past 16 MB.
+	EnableClientSideFullDocumentLookup *bool `json:"enableClientSideFullDocumentLookup,omitempty"`
+
+	// EnableHeartbeats Postgres only: write to Artie's heartbeat table every 5 minutes so the replication slot keeps advancing when the captured tables are quiet.
+	EnableHeartbeats *bool `json:"enableHeartbeats,omitempty"`
+
+	// EnableRelationMessageCaching Postgres only: cache relation messages and skip the schema change check on each one.
+	EnableRelationMessageCaching *bool `json:"enableRelationMessageCaching,omitempty"`
+
+	// EnableSchemaHistoryCompaction MySQL only: on startup, rebuild the schema history from the source and replace the append-only history file with the compacted version.
+	EnableSchemaHistoryCompaction *bool `json:"enableSchemaHistoryCompaction,omitempty"`
+
+	// MaxConnIdleTimeSeconds Postgres only: close pooled connections idle this many seconds, up to 86400. 0 uses the driver default.
+	MaxConnIdleTimeSeconds *int `json:"maxConnIdleTimeSeconds,omitempty"`
+
+	// MessageCompression Set to gzip to gzip-compress each whole Kafka message value. Can't be combined with column-level compression.
+	MessageCompression *PayloadsSourceReaderSettingsPayloadMessageCompression `json:"messageCompression,omitempty"`
+
+	// MssqlChangeTrackingConcurrency SQL Server change tracking only: how many tables are processed in parallel. 0 uses the default of 10.
+	MssqlChangeTrackingConcurrency *int `json:"mssqlChangeTrackingConcurrency,omitempty"`
+
+	// MssqlChangeTrackingMaxIdleConns SQL Server change tracking only: the most idle database connections to keep. 0 uses the default of 10.
+	MssqlChangeTrackingMaxIdleConns *int `json:"mssqlChangeTrackingMaxIdleConns,omitempty"`
+
+	// MssqlChangeTrackingPollIntervalMs SQL Server change tracking only: milliseconds to wait before polling again when there are no new changes. 0 uses the default of 2500.
+	MssqlChangeTrackingPollIntervalMs *int `json:"mssqlChangeTrackingPollIntervalMs,omitempty"`
+
+	// MssqlReplicationMethod SQL Server only: how changes are captured. Empty uses CDC capture instances.
+	MssqlReplicationMethod *string `json:"mssqlReplicationMethod,omitempty"`
+
+	// OneTopicPerSchema Oracle only: send every table in a schema to a single Kafka topic.
+	OneTopicPerSchema *bool `json:"oneTopicPerSchema,omitempty"`
+
+	// PublicationAutoCreateMode Postgres only: empty lets Artie create the publication FOR ALL TABLES if it's missing; filtered means Artie won't create it, so you manage which tables it covers.
+	PublicationAutoCreateMode *string `json:"publicationAutoCreateMode,omitempty"`
+
+	// PublicationNameOverride Postgres only: the publication to read from. Empty uses dbz_publication.
+	PublicationNameOverride *string `json:"publicationNameOverride,omitempty"`
+
+	// PublishViaPartitionRoot Postgres only: create the publication with publish_via_partition_root, so changes to partitions are published as the parent table.
+	PublishViaPartitionRoot *bool `json:"publishViaPartitionRoot,omitempty"`
+
+	// ReplicationSlotOverride Postgres only: the replication slot to read from. Empty uses artie.
+	ReplicationSlotOverride *string `json:"replicationSlotOverride,omitempty"`
+
+	// RescaleTimestampsPastYear9999 Postgres only: read a timestamp (without time zone) past year 9999 as an epoch stored at 1000x precision and scale it back down.
+	RescaleTimestampsPastYear9999 *bool `json:"rescaleTimestampsPastYear9999,omitempty"`
+
+	// S3PathMappings S3 sources only: which objects in the bucket feed which destination table.
+	S3PathMappings *[]PayloadsS3PathMapping `json:"s3PathMappings,omitempty"`
+
+	// UnifyAcrossDatabases Merge tables with the same schema and name from several databases (databasesToSync or unifyAcrossDatabasesRegex) into one destination table.
+	UnifyAcrossDatabases *bool `json:"unifyAcrossDatabases,omitempty"`
+
+	// UnifyAcrossDatabasesRegex Regex matching the databases or keyspaces to merge tables from. Where supported it replaces databasesToSync.
+	UnifyAcrossDatabasesRegex *string `json:"unifyAcrossDatabasesRegex,omitempty"`
+
+	// UnifyAcrossSchemas Merge tables with the same name from every schema matching unifyAcrossSchemasRegex into one destination table. Applies to tables that also turn it on.
+	UnifyAcrossSchemas *bool `json:"unifyAcrossSchemas,omitempty"`
+
+	// UnifyAcrossSchemasMaxParallelism How many schemas a unified table backfills at once. 0 uses the default of 1 (serial).
+	UnifyAcrossSchemasMaxParallelism *int `json:"unifyAcrossSchemasMaxParallelism,omitempty"`
+
+	// UnifyAcrossSchemasRegex Regex matching the schemas whose same-named tables are merged when unifyAcrossSchemas is on.
+	UnifyAcrossSchemasRegex *string `json:"unifyAcrossSchemasRegex,omitempty"`
+
+	// UseAdvanceOnPrimaryKeepAlive Postgres only: advance the slot's position on primary keepalive messages. Suited to dev or staging, since long-running transactions can make the WAL position jump.
+	UseAdvanceOnPrimaryKeepAlive *bool `json:"useAdvanceOnPrimaryKeepAlive,omitempty"`
+
+	// UseFailoverReplicationSlot Postgres 17+ only: create the logical replication slot as a failover slot, synchronized to physical standbys.
+	UseFailoverReplicationSlot *bool `json:"useFailoverReplicationSlot,omitempty"`
+
+	// UseNumericTypesForMoney SQL Server only: read MONEY as NUMERIC(19,4) and SMALLMONEY as NUMERIC(10,4).
+	UseNumericTypesForMoney *bool `json:"useNumericTypesForMoney,omitempty"`
+
+	// UseOracleRowIDRanges Oracle only: backfill eligible tables in ROWID ranges, in storage order, instead of paging by primary key. Needs Oracle 19c+ and SELECT on V$DATABASE, DBA_EXTENTS, DBA_OBJECTS and DBA_SEGMENTS; without them backfills fail.
+	UseOracleRowIDRanges *bool `json:"useOracleRowIDRanges,omitempty"`
+
+	// UseReaderForOracleStreaming Oracle only: stream changes with Artie Reader (LogMiner) instead of Debezium.
+	UseReaderForOracleStreaming *bool `json:"useReaderForOracleStreaming,omitempty"`
 }
 
-// PayloadsSourceReaderSettingsPayloadMessageCompression defines model for PayloadsSourceReaderSettingsPayload.MessageCompression.
+// PayloadsSourceReaderSettingsPayloadMessageCompression Set to gzip to gzip-compress each whole Kafka message value. Can't be combined with column-level compression.
 type PayloadsSourceReaderSettingsPayloadMessageCompression string
 
 // PayloadsSourceReaderTable defines model for PayloadsSourceReaderTable.
 type PayloadsSourceReaderTable struct {
-	ExcludeColumns       *[]string `json:"excludeColumns,omitempty"`
-	IncludeColumns       *[]string `json:"includeColumns,omitempty"`
-	Name                 *string   `json:"name,omitempty"`
-	Schema               *string   `json:"schema,omitempty"`
-	UnifyAcrossDatabases *bool     `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas   *bool     `json:"unifyAcrossSchemas,omitempty"`
+	// ExcludeColumns Columns the reader drops at the source, overriding each pipeline table's own list when set.
+	ExcludeColumns *[]string `json:"excludeColumns,omitempty"`
+
+	// IncludeColumns The only columns to read, overriding each pipeline table's own list when set.
+	IncludeColumns *[]string `json:"includeColumns,omitempty"`
+
+	// Name The table (or collection) name in the source.
+	Name *string `json:"name,omitempty"`
+
+	// Schema The table's schema. For MongoDB in deploymentScopedMode, its database.
+	Schema *string `json:"schema,omitempty"`
+
+	// UnifyAcrossDatabases Merge this table across databases, when the source reader's unifyAcrossDatabases setting is on. Only PlanetScale checks it per table.
+	UnifyAcrossDatabases *bool `json:"unifyAcrossDatabases,omitempty"`
+
+	// UnifyAcrossSchemas Merge this table across schemas, when the source reader's unifyAcrossSchemas setting is on.
+	UnifyAcrossSchemas *bool `json:"unifyAcrossSchemas,omitempty"`
 }
 
 // PayloadsSourceReaderTablesConfig defines model for PayloadsSourceReaderTablesConfig.
@@ -2425,104 +3647,257 @@ type PayloadsSourceReaderTablesConfig map[string]PayloadsSourceReaderTable
 
 // PayloadsSpecificConfig defines model for PayloadsSpecificConfig.
 type PayloadsSpecificConfig struct {
-	BucketName                  *string                                     `json:"bucketName,omitempty"`
-	CheckpointInterval          *int                                        `json:"checkpointInterval,omitempty"`
-	Compaction                  *PayloadsCompactionConfig                   `json:"compaction,omitempty"`
-	ContainerName               *string                                     `json:"containerName,omitempty"`
-	Database                    *string                                     `json:"database,omitempty"`
-	DynamicallyCreateNamespaces *bool                                       `json:"dynamicallyCreateNamespaces,omitempty"`
-	ExternalStageName           *string                                     `json:"externalStageName,omitempty"`
-	ExternalStageS3Bucket       *string                                     `json:"externalStageS3Bucket,omitempty"`
-	ExternalStageS3Prefix       *string                                     `json:"externalStageS3Prefix,omitempty"`
-	FolderName                  *string                                     `json:"folderName,omitempty"`
-	IcebergFormatVersion        *PayloadsSpecificConfigIcebergFormatVersion `json:"icebergFormatVersion,omitempty"`
-	Schema                      *string                                     `json:"schema,omitempty"`
-	SchemaNamePrefix            *string                                     `json:"schemaNamePrefix,omitempty"`
-	TableNameSeparator          *string                                     `json:"tableNameSeparator,omitempty"`
-	UseSameSchemaAsSource       *bool                                       `json:"useSameSchemaAsSource,omitempty"`
+	// BucketName S3, GCS and Delta Lake only: the bucket to write to.
+	BucketName *string `json:"bucketName,omitempty"`
+
+	// CheckpointInterval Delta Lake only: commits per table between checkpoints. Defaults to 10; -1 turns checkpoints off.
+	CheckpointInterval *int `json:"checkpointInterval,omitempty"`
+
+	// Compaction Delta Lake only: Transfer's scheduled compaction settings.
+	Compaction *PayloadsCompactionConfig `json:"compaction,omitempty"`
+
+	// ContainerName Oracle only: the container name used to connect.
+	ContainerName *string `json:"containerName,omitempty"`
+
+	// Database The destination database; for BigQuery, the dataset, and for Oracle, the service name.
+	Database *string `json:"database,omitempty"`
+
+	// DynamicallyCreateNamespaces When true, deploys create missing destination schemas (databases in MySQL) and skip namespace validation. Ignored for Oracle.
+	DynamicallyCreateNamespaces *bool `json:"dynamicallyCreateNamespaces,omitempty"`
+
+	// ExternalStageName Snowflake only: the external stage to load data through; empty doesn't use one.
+	ExternalStageName *string `json:"externalStageName,omitempty"`
+
+	// ExternalStageS3Bucket Snowflake only: the S3 bucket behind the external stage.
+	ExternalStageS3Bucket *string `json:"externalStageS3Bucket,omitempty"`
+
+	// ExternalStageS3Prefix Snowflake only: the path prefix in the external stage's bucket.
+	ExternalStageS3Prefix *string `json:"externalStageS3Prefix,omitempty"`
+
+	// FolderName S3, GCS and Delta Lake only: the folder in the bucket to write under.
+	FolderName *string `json:"folderName,omitempty"`
+
+	// IcebergFormatVersion Iceberg only: the format new tables are created with on REST catalogs with the native engine; empty means v2. Tables can't be downgraded from v3.
+	IcebergFormatVersion *PayloadsSpecificConfigIcebergFormatVersion `json:"icebergFormatVersion,omitempty"`
+
+	// Schema Destination schema for every table when useSameSchemaAsSource is false.
+	Schema *string `json:"schema,omitempty"`
+
+	// SchemaNamePrefix Prefix added to source schema names when useSameSchemaAsSource is true.
+	SchemaNamePrefix *string `json:"schemaNamePrefix,omitempty"`
+
+	// TableNameSeparator S3, GCS and Delta Lake only: separator between the parts of a table's name in object paths; defaults to /.
+	TableNameSeparator *string `json:"tableNameSeparator,omitempty"`
+
+	// UseSameSchemaAsSource When true, each table goes to a destination schema named after its source schema, with schemaNamePrefix; otherwise every table goes to schema.
+	UseSameSchemaAsSource *bool `json:"useSameSchemaAsSource,omitempty"`
 }
 
-// PayloadsSpecificConfigIcebergFormatVersion defines model for PayloadsSpecificConfig.IcebergFormatVersion.
+// PayloadsSpecificConfigIcebergFormatVersion Iceberg only: the format new tables are created with on REST catalogs with the native engine; empty means v2. Tables can't be downgraded from v3.
 type PayloadsSpecificConfigIcebergFormatVersion string
 
 // PayloadsStaticColumn defines model for PayloadsStaticColumn.
 type PayloadsStaticColumn struct {
+	// Column Name of the column added to every destination table.
 	Column *string `json:"column,omitempty"`
-	Value  *string `json:"value,omitempty"`
+
+	// Value The value written to that column on every row.
+	Value *string `json:"value,omitempty"`
 }
 
 // PayloadsTable defines model for PayloadsTable.
 type PayloadsTable struct {
-	AdvancedSettings     *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
-	BackfillStages       *[]PayloadsBackfillStageEvent  `json:"backfillStages,omitempty"`
-	CreatedAt            *time.Time                     `json:"createdAt,omitempty"`
-	DestinationTableName *string                        `json:"destinationTableName,omitempty"`
+	// AdvancedSettings The table's advanced settings.
+	AdvancedSettings *PayloadsTableAdvancedSettings `json:"advancedSettings,omitempty"`
+
+	// BackfillStages Every stage the regular table's backfills reached, oldest first; the last entry is the current stage.
+	BackfillStages *[]PayloadsBackfillStageEvent `json:"backfillStages,omitempty"`
+
+	// CreatedAt When the table was added to the pipeline, in RFC 3339.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// DestinationTableName The table's name in the destination, after the alias and schema prefix rules. Empty when the pipeline has no destination.
+	DestinationTableName *string `json:"destinationTableName,omitempty"`
+
+	// DisableReplication Deprecated: true when the regular table is paused but its history table isn't.
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	DisableReplication    *bool                         `json:"disableReplication,omitempty"`
-	EnableHistoryMode     *bool                         `json:"enableHistoryMode,omitempty"`
+	DisableReplication *bool `json:"disableReplication,omitempty"`
+
+	// EnableHistoryMode True when every change is also written to a <table>__history table.
+	EnableHistoryMode *bool `json:"enableHistoryMode,omitempty"`
+
+	// HistoryBackfillStages Every stage the history table's backfills reached, oldest first; the last entry is the current stage.
 	HistoryBackfillStages *[]PayloadsBackfillStageEvent `json:"historyBackfillStages,omitempty"`
-	HistoryTableStatus    *string                       `json:"historyTableStatus,omitempty"`
-	IndividualDeployment  *bool                         `json:"individualDeployment,omitempty"`
-	Name                  *string                       `json:"name,omitempty"`
-	Schema                *string                       `json:"schema,omitempty"`
-	Status                *string                       `json:"status,omitempty"`
-	UpdatedAt             *time.Time                    `json:"updatedAt,omitempty"`
-	Uuid                  *openapi_types.UUID           `json:"uuid,omitempty"`
+
+	// HistoryTableStatus The history table's replication state. Use enableHistoryMode to tell whether the table has a history table: a paused table without history mode reports paused here, and a new history table reports nothing until it is deployed.
+	HistoryTableStatus *string `json:"historyTableStatus,omitempty"`
+
+	// IndividualDeployment True when the table runs in its own Transfer deployment.
+	IndividualDeployment *bool `json:"individualDeployment,omitempty"`
+
+	// Name The source table's name.
+	Name *string `json:"name,omitempty"`
+
+	// Schema The source table's schema; for MySQL, its database.
+	Schema *string `json:"schema,omitempty"`
+
+	// Status The regular table's replication state.
+	Status *string `json:"status,omitempty"`
+
+	// UpdatedAt When the table was last changed, in RFC 3339.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+
+	// Uuid The table's UUID, used for table updates and backfills.
+	Uuid *openapi_types.UUID `json:"uuid,omitempty"`
 }
 
 // PayloadsTableAdvancedSettings defines model for PayloadsTableAdvancedSettings.
 type PayloadsTableAdvancedSettings struct {
-	Alias                           *string                         `json:"alias,omitempty"`
-	BackfillFromDatabases           *[]string                       `json:"backfillFromDatabases,omitempty"`
-	BackfillFromSchemas             *[]string                       `json:"backfillFromSchemas,omitempty"`
-	BigQueryPartitionSettings       *PayloadsBigQuerySettings       `json:"bigQueryPartitionSettings,omitempty"`
-	BufferRows                      *int                            `json:"bufferRows,omitempty"`
-	ColumnsToCompress               *[]string                       `json:"columnsToCompress,omitempty"`
-	ColumnsToEncrypt                *[]string                       `json:"columnsToEncrypt,omitempty"`
-	ColumnsToHash                   *[]string                       `json:"columnsToHash,omitempty"`
-	ColumnsToTrim                   *[]string                       `json:"columnsToTrim,omitempty"`
-	CtidSettings                    *PayloadsCTIDSettings           `json:"ctidSettings,omitempty"`
-	EncryptJSONBColumns             *bool                           `json:"encryptJSONBColumns,omitempty"`
-	EndingPrimaryKey                *string                         `json:"endingPrimaryKey,omitempty"`
-	ExcludeColumns                  *[]string                       `json:"excludeColumns,omitempty"`
-	FlattenDocuments                *bool                           `json:"flattenDocuments,omitempty"`
-	FlattenDocumentsMaxDepth        *int                            `json:"flattenDocumentsMaxDepth,omitempty"`
-	FlushIntervalSeconds            *int                            `json:"flushIntervalSeconds,omitempty"`
-	FlushSizeKb                     *int                            `json:"flushSizeKb,omitempty"`
-	HistoryTableBackfillFromSchemas *[]string                       `json:"historyTableBackfillFromSchemas,omitempty"`
-	IncludeColumns                  *[]string                       `json:"includeColumns,omitempty"`
-	K8sRequestCPU                   *int                            `json:"k8sRequestCPU,omitempty"`
-	K8sRequestMemoryMB              *int                            `json:"k8sRequestMemoryMB,omitempty"`
-	KeepOldSwapTable                *bool                           `json:"keepOldSwapTable,omitempty"`
-	MergePredicates                 *[]PayloadsMergePredicates      `json:"mergePredicates,omitempty"`
-	MsmFlushCount                   *int                            `json:"msmFlushCount,omitempty"`
-	PartitionRangeSettings          *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
-	PreviousSwapTableSuffix         *string                         `json:"previousSwapTableSuffix,omitempty"`
-	PrimaryKeysOverride             *[]string                       `json:"primaryKeysOverride,omitempty"`
-	RangeSettings                   *PayloadsRangeSettings          `json:"rangeSettings,omitempty"`
-	ShouldBackfillHistoryTable      *bool                           `json:"shouldBackfillHistoryTable,omitempty"`
-	SkipBackfill                    *bool                           `json:"skipBackfill,omitempty"`
-	SkipDelete                      *bool                           `json:"skipDelete,omitempty"`
-	SkipNoOpUpdates                 *bool                           `json:"skipNoOpUpdates,omitempty"`
-	SoftPartitioning                *PayloadsSoftPartitioning       `json:"softPartitioning,omitempty"`
-	StartingPrimaryKey              *string                         `json:"startingPrimaryKey,omitempty"`
-	StreamARN                       *string                         `json:"streamARN,omitempty"`
-	SwapTableSuffix                 *string                         `json:"swapTableSuffix,omitempty"`
-	UnifyAcrossDatabases            *bool                           `json:"unifyAcrossDatabases,omitempty"`
-	UnifyAcrossSchemas              *bool                           `json:"unifyAcrossSchemas,omitempty"`
+	// Alias Destination table name to use instead of the source table name.
+	Alias *string `json:"alias,omitempty"`
+
+	// BackfillFromDatabases Source databases the table's next backfill reads from, set by the backfill request; empty reads every database.
+	BackfillFromDatabases *[]string `json:"backfillFromDatabases,omitempty"`
+
+	// BackfillFromSchemas Source schemas the table's next backfill reads from, set by the backfill request; empty reads every schema.
+	BackfillFromSchemas *[]string `json:"backfillFromSchemas,omitempty"`
+
+	// BigQueryPartitionSettings Deprecated: use mergePredicates.
+	BigQueryPartitionSettings *PayloadsBigQuerySettings `json:"bigQueryPartitionSettings,omitempty"`
+
+	// BufferRows Rows to buffer before flushing to the destination, at least 5.
+	BufferRows *int `json:"bufferRows,omitempty"`
+
+	// ColumnsToCompress Postgres sources only: columns the reader gzip-compresses in transit. Transfer decompresses them before writing.
+	ColumnsToCompress *[]string `json:"columnsToCompress,omitempty"`
+
+	// ColumnsToEncrypt Columns whose values are encrypted with the pipeline's encryption key before they're written.
+	ColumnsToEncrypt *[]string `json:"columnsToEncrypt,omitempty"`
+
+	// ColumnsToHash Columns whose values are hashed before they're written: HMAC-SHA256 with the pipeline's column hashing salt, or SHA-256 without one.
+	ColumnsToHash *[]string `json:"columnsToHash,omitempty"`
+
+	// ColumnsToTrim String columns whose leading and trailing whitespace is removed before they're written.
+	ColumnsToTrim *[]string `json:"columnsToTrim,omitempty"`
+
+	// CtidSettings Postgres CTID backfill settings for this table; omitted uses the source reader's backfill defaults.
+	CtidSettings *PayloadsCTIDSettings `json:"ctidSettings,omitempty"`
+
+	// DynamicTableTargetLag How often the latest rows refresh, such as 1 minute (Snowflake TARGET_LAG, Databricks TRIGGER ON UPDATE interval); empty uses Transfer's default. Only used with enableDynamicTable.
+	DynamicTableTargetLag *string `json:"dynamicTableTargetLag,omitempty"`
+
+	// EnableDynamicTable Snowflake and Databricks only: stream changes into <table>__artie_changes, keep the latest row per key in a Snowflake dynamic table or Databricks streaming table, and make <table> a view over it.
+	EnableDynamicTable *bool `json:"enableDynamicTable,omitempty"`
+
+	// EncryptJSONBColumns When true, the table's JSONB columns are encrypted with the pipeline's encryption key.
+	EncryptJSONBColumns *bool `json:"encryptJSONBColumns,omitempty"`
+
+	// EndingPrimaryKey Highest primary key value a restarted backfill reads; cleared once the backfill completes.
+	EndingPrimaryKey *string `json:"endingPrimaryKey,omitempty"`
+
+	// ExcludeColumns Source columns to leave out of the destination. Can't be combined with includeColumns.
+	ExcludeColumns *[]string `json:"excludeColumns,omitempty"`
+
+	// FlattenDocuments When true, nested document fields are flattened into their own columns.
+	FlattenDocuments *bool `json:"flattenDocuments,omitempty"`
+
+	// FlattenDocumentsMaxDepth How many levels of nesting flattenDocuments expands; 0 means no limit.
+	FlattenDocumentsMaxDepth *int `json:"flattenDocumentsMaxDepth,omitempty"`
+
+	// FlushIntervalSeconds Seconds between flushes to the destination, from 5 to 86400. Transfer flushes sooner when bufferRows or flushSizeKb is reached.
+	FlushIntervalSeconds *int `json:"flushIntervalSeconds,omitempty"`
+
+	// FlushSizeKb Buffered data, in KB, that triggers a flush to the destination, up to 1.5 GB.
+	FlushSizeKb                     *int      `json:"flushSizeKb,omitempty"`
+	HistoryTableBackfillFromSchemas *[]string `json:"historyTableBackfillFromSchemas,omitempty"`
+
+	// IncludeColumns The only source columns to write to the destination. Can't be combined with excludeColumns.
+	IncludeColumns *[]string `json:"includeColumns,omitempty"`
+
+	// K8sRequestCPU CPU request for the table's own Transfer pod, in millicores. Only used with individualDeployment.
+	K8sRequestCPU *int `json:"k8sRequestCPU,omitempty"`
+
+	// K8sRequestMemoryMB Memory request for the table's own Transfer pod, in MiB. Only used with individualDeployment.
+	K8sRequestMemoryMB *int `json:"k8sRequestMemoryMB,omitempty"`
+
+	// KeepOldSwapTable When true, a swap_table backfill keeps the destination table's old rows in a separate table after the swap.
+	KeepOldSwapTable *bool `json:"keepOldSwapTable,omitempty"`
+
+	// MergePredicates Partition columns Transfer adds to its MERGE condition.
+	MergePredicates *[]PayloadsMergePredicates `json:"mergePredicates,omitempty"`
+
+	// MsmFlushCount Multi-step merge: how many flushes Transfer stages before merging into the destination table; 0 turns it off.
+	MsmFlushCount *int `json:"msmFlushCount,omitempty"`
+
+	// PartitionRangeSettings Postgres sources only: backfill a partitioned table by reading each partition. Cannot be enabled together with rangeSettings or ctidSettings.
+	PartitionRangeSettings *PayloadsPartitionRangeSettings `json:"partitionRangeSettings,omitempty"`
+
+	// PreviousSwapTableSuffix Suffix of the previous swap_table backfill's table, dropped before the next one starts.
+	PreviousSwapTableSuffix *string `json:"previousSwapTableSuffix,omitempty"`
+
+	// PrimaryKeysOverride Columns to use as the destination primary key instead of the source table's primary key.
+	PrimaryKeysOverride *[]string `json:"primaryKeysOverride,omitempty"`
+
+	// RangeSettings Range backfill settings for this table; omitted uses the source reader's backfill defaults.
+	RangeSettings *PayloadsRangeSettings `json:"rangeSettings,omitempty"`
+
+	// ShouldBackfillHistoryTable When true, the history table is backfilled too; otherwise only the regular table is.
+	ShouldBackfillHistoryTable *bool `json:"shouldBackfillHistoryTable,omitempty"`
+
+	// SkipBackfill When true, the table skips its initial backfill and starts streaming when first deployed.
+	SkipBackfill *bool `json:"skipBackfill,omitempty"`
+
+	// SkipDelete When true, delete events are skipped, so rows deleted in the source stay in the destination.
+	SkipDelete *bool `json:"skipDelete,omitempty"`
+
+	// SkipNoOpUpdates Postgres sources only: skip update events whose before and after rows are identical after column filters. Requires REPLICA IDENTITY FULL.
+	SkipNoOpUpdates *bool `json:"skipNoOpUpdates,omitempty"`
+
+	// SoftPartitioning Splits the destination table into time-based partition tables.
+	SoftPartitioning *PayloadsSoftPartitioning `json:"softPartitioning,omitempty"`
+
+	// StartingPrimaryKey Lowest primary key value a restarted backfill reads; cleared once the backfill completes.
+	StartingPrimaryKey *string `json:"startingPrimaryKey,omitempty"`
+
+	// StreamARN Amazon Keyspaces only: the table's CDC stream ARN.
+	StreamARN *string `json:"streamARN,omitempty"`
+
+	// SwapTableSuffix Suffix of the table a swap_table backfill loads into. Kept after the backfill so the next one can drop that table.
+	SwapTableSuffix *string `json:"swapTableSuffix,omitempty"`
+
+	// UnifyAcrossDatabases When the source reader unifies across databases, this table is read from every matching database into one destination table. Only PlanetScale reads it per table.
+	UnifyAcrossDatabases *bool `json:"unifyAcrossDatabases,omitempty"`
+
+	// UnifyAcrossSchemas Postgres and MySQL: when the source reader unifies across schemas, this table is read from every matching schema into one destination table.
+	UnifyAcrossSchemas *bool `json:"unifyAcrossSchemas,omitempty"`
 }
 
 // PayloadsTablePayload defines model for PayloadsTablePayload.
 type PayloadsTablePayload struct {
+	// AdvancedSettings Table settings to change; omitted fields keep their current values. Nested objects (softPartitioning, rangeSettings, ctidSettings, partitionRangeSettings) replace the current value whole.
 	AdvancedSettings *PayloadsAdvancedTableSettingsPayload `json:"advancedSettings,omitempty"`
+
+	// DisableReplication Deprecated: use status instead. True pauses only the regular table and keeps its history table replicating; false resumes it.
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	DisableReplication   *bool               `json:"disableReplication,omitempty"`
-	EnableHistoryMode    *bool               `json:"enableHistoryMode,omitempty"`
-	IndividualDeployment *bool               `json:"individualDeployment,omitempty"`
-	Name                 *string             `json:"name,omitempty"`
-	Schema               *string             `json:"schema,omitempty"`
-	Status               *string             `json:"status,omitempty"`
-	Uuid                 *openapi_types.UUID `json:"uuid,omitempty"`
+	DisableReplication *bool `json:"disableReplication,omitempty"`
+
+	// EnableHistoryMode When true, every change is also written to a <table>__history table. Always applied: leaving it out of an update turns history mode off.
+	EnableHistoryMode *bool `json:"enableHistoryMode,omitempty"`
+
+	// IndividualDeployment When true, the table runs in its own Transfer deployment, which allows per-table resources and flush settings. Omitted keeps the current value.
+	IndividualDeployment *bool `json:"individualDeployment,omitempty"`
+
+	// Name The source table's name. Always applied on update.
+	Name *string `json:"name,omitempty"`
+
+	// Schema The source table's schema; for MySQL, its database. Always applied on update.
+	Schema *string `json:"schema,omitempty"`
+
+	// Status Set to paused to pause the table or streaming to resume it. Omitted keeps the current status; new tables start as draft.
+	Status *string `json:"status,omitempty"`
+
+	// Uuid The table's UUID from pipeline_detail, to update an existing table. Without it, the table with the same name and schema is updated (or the same name alone, for MongoDB and DocumentDB sources that match tables by name); a new table is added only when none matches.
+	Uuid *openapi_types.UUID `json:"uuid,omitempty"`
 }
 
 // PayloadsWebhookBackfillCompleted Backfill completed
@@ -2818,6 +4193,9 @@ type PayloadsWebhookDdlApplied struct {
 	Message    string                        `json:"message"`
 	Pipelines  []PayloadsWebhookPipelineInfo `json:"pipelines"`
 	Properties struct {
+		// DdlEvent The DDL operation: eventType (createTable, addColumns or dropColumns), schema, table, and columns with name, dataType and primaryKey.
+		DdlEvent *[]map[string]interface{} `json:"ddl_event,omitempty"`
+
 		// Queries SQL statements executed for this DDL operation.
 		Queries *[]string `json:"queries,omitempty"`
 
@@ -3294,6 +4672,81 @@ type PayloadsWebhookRowSkippedEvent string
 // PayloadsWebhookSeverity defines model for PayloadsWebhookSeverity.
 type PayloadsWebhookSeverity string
 
+// PayloadsWebhookTrnFileProcessed Transaction log backup processed
+type PayloadsWebhookTrnFileProcessed struct {
+	DeliveryMetadata PayloadsWebhookDeliveryMetadata `json:"delivery_metadata"`
+
+	// Destination Destination connector type (e.g. bigquery).
+	Destination string `json:"destination"`
+
+	// EnvironmentName Human-readable name of the environment. Omitted when the event has no environment.
+	EnvironmentName *string `json:"environment_name,omitempty"`
+
+	// EnvironmentUuid UUID of the environment the event belongs to. Omitted when the event has no environment.
+	EnvironmentUuid *openapi_types.UUID                  `json:"environment_uuid,omitempty"`
+	Event           PayloadsWebhookTrnFileProcessedEvent `json:"event"`
+
+	// Message Human-readable summary of the event.
+	Message    string                        `json:"message"`
+	Pipelines  []PayloadsWebhookPipelineInfo `json:"pipelines"`
+	Properties struct {
+		// LastProcessedFile Last SQL Server transaction log backup file read to its end. Omitted when Reader has no position yet.
+		LastProcessedFile *string `json:"last_processed_file,omitempty"`
+
+		// RestartFile First transaction log backup file a restart reads again, because a transaction in it is still open. Omitted when none is open.
+		RestartFile *string `json:"restart_file,omitempty"`
+	} `json:"properties"`
+
+	// Severity Severity of the event.
+	Severity PayloadsWebhookSeverity `json:"severity"`
+
+	// Source Source connector type (e.g. postgresql).
+	Source           string             `json:"source"`
+	SourceReaderUuid openapi_types.UUID `json:"source_reader_uuid"`
+
+	// Timestamp Time the event occurred (RFC 3339).
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// PayloadsWebhookTrnFileProcessedEvent defines model for PayloadsWebhookTrnFileProcessed.Event.
+type PayloadsWebhookTrnFileProcessedEvent string
+
+// PayloadsWebhookTrnFileStarted Transaction log backup started
+type PayloadsWebhookTrnFileStarted struct {
+	DeliveryMetadata PayloadsWebhookDeliveryMetadata `json:"delivery_metadata"`
+
+	// Destination Destination connector type (e.g. bigquery).
+	Destination string `json:"destination"`
+
+	// EnvironmentName Human-readable name of the environment. Omitted when the event has no environment.
+	EnvironmentName *string `json:"environment_name,omitempty"`
+
+	// EnvironmentUuid UUID of the environment the event belongs to. Omitted when the event has no environment.
+	EnvironmentUuid *openapi_types.UUID                `json:"environment_uuid,omitempty"`
+	Event           PayloadsWebhookTrnFileStartedEvent `json:"event"`
+
+	// Message Human-readable summary of the event.
+	Message    string                        `json:"message"`
+	Pipelines  []PayloadsWebhookPipelineInfo `json:"pipelines"`
+	Properties struct {
+		// File SQL Server transaction log backup file Reader started reading.
+		File string `json:"file"`
+	} `json:"properties"`
+
+	// Severity Severity of the event.
+	Severity PayloadsWebhookSeverity `json:"severity"`
+
+	// Source Source connector type (e.g. postgresql).
+	Source           string             `json:"source"`
+	SourceReaderUuid openapi_types.UUID `json:"source_reader_uuid"`
+
+	// Timestamp Time the event occurred (RFC 3339).
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// PayloadsWebhookTrnFileStartedEvent defines model for PayloadsWebhookTrnFileStarted.Event.
+type PayloadsWebhookTrnFileStartedEvent string
+
 // RouterAnalyticsDatasetData defines model for RouterAnalyticsDatasetData.
 type RouterAnalyticsDatasetData struct {
 	union json.RawMessage
@@ -3307,6 +4760,7 @@ type RouterAnalyticsDatasetData1 = []PayloadsAnalyticsTimeseries
 
 // RouterAnalyticsResponse defines model for RouterAnalyticsResponse.
 type RouterAnalyticsResponse struct {
+	// Datasets Results keyed by dataset name, one entry per requested dataset that exists; unknown names are left out.
 	Datasets map[string]RouterQueryResult `json:"datasets"`
 }
 
@@ -3335,6 +4789,7 @@ type RouterConnectorCreateSnowflakeWarehouseRequest struct {
 
 // RouterConnectorDropReplicationSlotRequest defines model for RouterConnectorDropReplicationSlotRequest.
 type RouterConnectorDropReplicationSlotRequest struct {
+	// SlotName Name of the replication slot to drop, from connector_fetch_postgres_replication_slots. Must be inactive or lost.
 	SlotName string `json:"slotName"`
 }
 
@@ -3361,31 +4816,56 @@ type RouterConnectorFetchTablesRequest struct {
 
 // RouterConnectorGenerateShadowScriptRequest defines model for RouterConnectorGenerateShadowScriptRequest.
 type RouterConnectorGenerateShadowScriptRequest struct {
-	Database string                             `json:"database"`
-	Tables   []RouterConnectorShadowScriptTable `json:"tables"`
+	// Database The Oracle database (service name) the tables are in. Must not be empty.
+	Database string `json:"database"`
+
+	// Tables The tables to create shadow tables for, 1 to 10 per request.
+	Tables []RouterConnectorShadowScriptTable `json:"tables"`
 }
 
 // RouterConnectorGenerateShadowScriptResponse defines model for RouterConnectorGenerateShadowScriptResponse.
 type RouterConnectorGenerateShadowScriptResponse struct {
+	// Script The SQL script, for the user to review and run on the Oracle database. Artie doesn't run it.
 	Script string `json:"script"`
 }
 
 // RouterConnectorPingRequest defines model for RouterConnectorPingRequest.
 type RouterConnectorPingRequest struct {
-	ConnectionRole  *RouterConnectorConnectionRole `json:"connectionRole,omitempty"`
-	DataPlaneName   *string                        `json:"dataPlaneName,omitempty"`
-	DefaultDatabase *string                        `json:"defaultDatabase,omitempty"`
+	// ConnectionRole Whether the connector is being set up as a source or a destination. Only labels the connection-test event; the test itself is the same. Omit if unknown.
+	ConnectionRole *RouterConnectorConnectionRole `json:"connectionRole,omitempty"`
+
+	// DataPlaneName The data plane to connect from. Empty uses the company's default data plane.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// DefaultDatabase The database to connect to when a request doesn't name one. Required to test a Postgres (database), Oracle (service name) or S3 (bucket) connection. Omit on update to keep the saved value.
+	DefaultDatabase *string `json:"defaultDatabase,omitempty"`
 
 	// DraftPipelineUUID On create only: the draft pipeline this connector is for.
-	DraftPipelineUUID       *openapi_types.UUID     `json:"draftPipelineUUID,omitempty"`
-	EnvironmentUUID         *openapi_types.UUID     `json:"environmentUUID,omitempty"`
-	Label                   *string                 `json:"label,omitempty"`
-	PrivateLinkUUID         *openapi_types.UUID     `json:"privateLinkUUID,omitempty"`
-	SharedConfig            *map[string]interface{} `json:"sharedConfig,omitempty"`
-	SnapshotPrivateLinkUUID *openapi_types.UUID     `json:"snapshotPrivateLinkUUID,omitempty"`
-	SshTunnelUUID           *openapi_types.UUID     `json:"sshTunnelUUID,omitempty"`
-	Type                    *string                 `json:"type,omitempty"`
-	Uuid                    *string                 `json:"uuid,omitempty"`
+	DraftPipelineUUID *openapi_types.UUID `json:"draftPipelineUUID,omitempty"`
+
+	// EnvironmentUUID On create only: the environment for the new connector. Required for company-wide API keys and MCP grants; ignored for environment-bound credentials.
+	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
+
+	// Label The connector's display name.
+	Label *string `json:"label,omitempty"`
+
+	// PrivateLinkUUID The PrivateLink connection to reach the database through; its DNS entry replaces the host. Omit or null for none.
+	PrivateLinkUUID *openapi_types.UUID `json:"privateLinkUUID,omitempty"`
+
+	// SharedConfig The type-specific connection settings. To keep a saved secret, send back the masked placeholder with the saved connector's uuid.
+	SharedConfig *map[string]interface{} `json:"sharedConfig,omitempty"`
+
+	// SnapshotPrivateLinkUUID The PrivateLink connection for the snapshot (read replica) host; its DNS entry replaces the snapshot host. Omit or null for none.
+	SnapshotPrivateLinkUUID *openapi_types.UUID `json:"snapshotPrivateLinkUUID,omitempty"`
+
+	// SshTunnelUUID The SSH tunnel to reach the database through. Omit or null for none.
+	SshTunnelUUID *openapi_types.UUID `json:"sshTunnelUUID,omitempty"`
+
+	// Type The connector type slug, matched case-insensitively.
+	Type *string `json:"type,omitempty"`
+
+	// Uuid The saved connector's UUID, from connector_list. Send it when testing or reusing a saved connector so masked secrets in sharedConfig are filled from it; omit for a new connector.
+	Uuid *string `json:"uuid,omitempty"`
 }
 
 // RouterConnectorPingResponse defines model for RouterConnectorPingResponse.
@@ -3395,86 +4875,138 @@ type RouterConnectorPingResponse struct {
 
 // RouterConnectorShadowScriptTable defines model for RouterConnectorShadowScriptTable.
 type RouterConnectorShadowScriptTable struct {
+	// Columns The table's columns, used to build the shadow table. Must not be empty.
 	Columns []PayloadsSeenTableColumn `json:"columns"`
-	Name    string                    `json:"name"`
-	Schema  string                    `json:"schema"`
+
+	// Name The table name.
+	Name string `json:"name"`
+
+	// Schema The Oracle schema (owner) of the table.
+	Schema string `json:"schema"`
 }
 
 // RouterConnectorStartDynamoDBExportRequest defines model for RouterConnectorStartDynamoDBExportRequest.
 type RouterConnectorStartDynamoDBExportRequest struct {
+	// S3Bucket Name of the S3 bucket DynamoDB exports the table to.
 	S3Bucket string `json:"s3Bucket"`
 
 	// S3BucketOwner AWS account ID that owns the S3 bucket. Required when the bucket is in a different account than the table.
 	S3BucketOwner *string `json:"s3BucketOwner,omitempty"`
-	S3Prefix      *string `json:"s3Prefix,omitempty"`
+
+	// S3Prefix Key prefix for the export files within the bucket. Null uses no prefix.
+	S3Prefix *string `json:"s3Prefix,omitempty"`
 }
 
 // RouterConnectorStartDynamoDBExportResponse defines model for RouterConnectorStartDynamoDBExportResponse.
 type RouterConnectorStartDynamoDBExportResponse struct {
+	// ExportARN The ARN of the export DynamoDB started, to track it in AWS. The export runs in AWS after this returns.
 	ExportARN string `json:"exportARN"`
 }
 
 // RouterConnectorTable defines model for RouterConnectorTable.
 type RouterConnectorTable struct {
-	ApproxDateAdded *time.Time                      `json:"approxDateAdded"`
-	Columns         *[]PayloadsConnectorColumn      `json:"columns,omitempty"`
-	CreatedAt       *time.Time                      `json:"createdAt"`
-	IsView          bool                            `json:"isView"`
-	Metadata        *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
-	ModifiedAt      *time.Time                      `json:"modifiedAt"`
-	Name            string                          `json:"name"`
-	Schema          string                          `json:"schema"`
-	Unreadable      bool                            `json:"unreadable"`
+	ApproxDateAdded *time.Time `json:"approxDateAdded"`
+
+	// Columns The table's columns. Only filled in by connector_fetch_table_detail, not when listing tables.
+	Columns *[]PayloadsConnectorColumn `json:"columns,omitempty"`
+
+	// CreatedAt When the table was created. Null when the source doesn't report it.
+	CreatedAt *time.Time `json:"createdAt"`
+
+	// IsView Whether this is a view rather than a table.
+	IsView bool `json:"isView"`
+
+	// Metadata Source-specific table properties, such as creation time or a Postgres table's internal ID.
+	Metadata *[]PayloadsCatalogTableProperty `json:"metadata,omitempty"`
+
+	// ModifiedAt When the table was last modified. Null when the source doesn't report it.
+	ModifiedAt *time.Time `json:"modifiedAt"`
+
+	// Name The table name, to pass as tableName to connector_fetch_table_detail.
+	Name string `json:"name"`
+
+	// Schema The table's schema (or namespace). Empty for sources without schemas.
+	Schema string `json:"schema"`
+
+	// Unreadable True when Artie can't read the table, such as a Postgres table the connector's user can't select from or a Keyspaces table without a stream.
+	Unreadable bool `json:"unreadable"`
 }
 
 // RouterCreateColumnHashingSaltRequest defines model for RouterCreateColumnHashingSaltRequest.
 type RouterCreateColumnHashingSaltRequest struct {
+	// Description Free-text notes about the salt.
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
-	Salt        *string `json:"salt,omitempty"`
+
+	// Name Display name for the salt.
+	Name string `json:"name"`
+
+	// Salt The salt to hash with. Left empty, Artie generates one: the 43-character base64url encoding of 32 random bytes. Hashes are keyed on the salt string as given, not on decoded bytes.
+	Salt *string `json:"salt,omitempty"`
 }
 
 // RouterCreateColumnHashingSaltResponse defines model for RouterCreateColumnHashingSaltResponse.
 type RouterCreateColumnHashingSaltResponse struct {
+	// ColumnHashingSalt The new salt.
 	ColumnHashingSalt PayloadsColumnHashingSalt `json:"columnHashingSalt"`
-	Salt              string                    `json:"salt"`
+
+	// Salt The salt value, given or generated. Only the detail endpoint returns it again.
+	Salt string `json:"salt"`
 }
 
 // RouterCreateEncryptionKeyRequest defines model for RouterCreateEncryptionKeyRequest.
 type RouterCreateEncryptionKeyRequest struct {
-	Description *string             `json:"description,omitempty"`
-	KmsKeyUUID  *openapi_types.UUID `json:"kmsKeyUUID,omitempty"`
-	Name        string              `json:"name"`
+	// Description Free-text notes about the key.
+	Description *string `json:"description,omitempty"`
+
+	// KmsKeyUUID A KMS key from the KMS key list to generate the data key with. Left out, Artie generates a passphrase.
+	KmsKeyUUID *openapi_types.UUID `json:"kmsKeyUUID,omitempty"`
+
+	// Name Display name for the key.
+	Name string `json:"name"`
 }
 
 // RouterCreateEncryptionKeyResponse defines model for RouterCreateEncryptionKeyResponse.
 type RouterCreateEncryptionKeyResponse struct {
+	// EncryptionKey The new key.
 	EncryptionKey PayloadsEncryptionKey `json:"encryptionKey"`
-	Key           string                `json:"key"`
+
+	// Key The secret key: the plaintext passphrase, or for kms keys the KMS-encrypted data key. Only the detail endpoint returns it again.
+	Key string `json:"key"`
 }
 
 // RouterCreateIngestionAPIKeyRequest defines model for RouterCreateIngestionAPIKeyRequest.
 type RouterCreateIngestionAPIKeyRequest struct {
-	Name             *string            `json:"name,omitempty"`
+	// Name Display name for the key.
+	Name *string `json:"name,omitempty"`
+
+	// SourceReaderUUID The source reader the key sends events to, from source_reader_list. Its pipelines are marked as having undeployed changes; a shared reader needs source_reader_deploy instead.
 	SourceReaderUUID openapi_types.UUID `json:"sourceReaderUUID"`
 }
 
 // RouterCreateIngestionAPIKeyResponse defines model for RouterCreateIngestionAPIKeyResponse.
 type RouterCreateIngestionAPIKeyResponse struct {
+	// IngestionAPIKey The new key.
 	IngestionAPIKey PayloadsIngestionAPIKey `json:"ingestionAPIKey"`
-	Secret          string                  `json:"secret"`
+
+	// Secret The full secret to send with events. Returned only here; it can't be fetched again.
+	Secret string `json:"secret"`
 }
 
 // RouterCreateKafkaAdminUserRequest defines model for RouterCreateKafkaAdminUserRequest.
 type RouterCreateKafkaAdminUserRequest struct {
+	// Username Lowercase letters, digits, '.' and '-', at most 64 characters. Each '.'-separated part starts and ends with a letter or digit. admin, artie and names starting with artie-kafka- are reserved.
 	Username string `json:"username"`
 }
 
 // RouterCreateKafkaClusterRequest defines model for RouterCreateKafkaClusterRequest.
 type RouterCreateKafkaClusterRequest struct {
 	// AllowedCIDRs Client IP ranges allowed to reach the cluster. Empty allows any IP; clients still need the password.
-	AllowedCIDRs []string                  `json:"allowedCIDRs"`
-	Brokers      int                       `json:"brokers"`
+	AllowedCIDRs []string `json:"allowedCIDRs"`
+
+	// Brokers How many brokers to run.
+	Brokers int `json:"brokers"`
+
+	// InstanceType The instance type each broker runs on.
 	InstanceType PayloadsKafkaInstanceType `json:"instanceType"`
 
 	// LocalRetentionBytes Disk cap per partition: the most broker disk each partition of a tiered topic keeps, in bytes, at least 1073741824 (1 GiB). Null is no cap.
@@ -3484,7 +5016,9 @@ type RouterCreateKafkaClusterRequest struct {
 	LocalRetentionMS *int `json:"localRetentionMS,omitempty"`
 
 	// Name The cluster's name, as customers see it. 3 to 100 characters. The cluster's ID, which its address and Kubernetes objects use, is generated.
-	Name   string `json:"name"`
+	Name string `json:"name"`
+
+	// Region The region to run the cluster in. Must be one Managed Kafka runs in, or the request gets a 400.
 	Region string `json:"region"`
 
 	// RetentionMS How long topics keep messages unless they set their own retention.ms, in ms (the brokers' log.retention.ms): at least 86400000 (one day), and at least the days on disk, or -1 to keep them forever. Left out is 14 days.
@@ -3502,39 +5036,62 @@ type RouterCreateKafkaClusterRequest struct {
 
 // RouterCreateKafkaTopicRequest defines model for RouterCreateKafkaTopicRequest.
 type RouterCreateKafkaTopicRequest struct {
-	ConfigEntries     *map[string]string `json:"configEntries,omitempty"`
-	PartitionCount    int                `json:"partitionCount"`
-	ReplicationFactor int                `json:"replicationFactor"`
-	Topic             string             `json:"topic"`
+	// ConfigEntries Kafka topic configs to set, keyed by config name with string values, such as retention.ms: "604800000". The accepted names are cleanup.policy, max.message.bytes, min.insync.replicas, retention.bytes and retention.ms.
+	ConfigEntries *map[string]string `json:"configEntries,omitempty"`
+
+	// PartitionCount How many partitions to create. Partitions can be added later but never removed.
+	PartitionCount int `json:"partitionCount"`
+
+	// ReplicationFactor How many copies of each partition the brokers keep.
+	ReplicationFactor int `json:"replicationFactor"`
+
+	// Topic The new topic's name; . and .. aren't allowed. See the tool description for the prefix a BYOC cluster requires.
+	Topic string `json:"topic"`
 }
 
 // RouterCreateKafkaUserRequest defines model for RouterCreateKafkaUserRequest.
 type RouterCreateKafkaUserRequest struct {
 	// AccessProfile Must be producer_consumer; create admin-profile users with POST /kafka-clusters/{uuid}/admin-users.
 	AccessProfile string `json:"accessProfile"`
-	Username      string `json:"username"`
+
+	// Username Lowercase letters, digits, '.' and '-', at most 64 characters. Each '.'-separated part starts and ends with a letter or digit. admin, artie and names starting with artie-kafka- are reserved.
+	Username string `json:"username"`
 }
 
 // RouterIncreaseKafkaTopicPartitionsRequest defines model for RouterIncreaseKafkaTopicPartitionsRequest.
 type RouterIncreaseKafkaTopicPartitionsRequest struct {
+	// CurrentPartitionCount The topic's partition count now, from the topic list.
 	CurrentPartitionCount int `json:"currentPartitionCount"`
-	NewPartitionCount     int `json:"newPartitionCount"`
+
+	// NewPartitionCount The total partition count wanted. Must be more than currentPartitionCount.
+	NewPartitionCount int `json:"newPartitionCount"`
 }
 
 // RouterKafkaClusterAdminCredentialsResponse defines model for RouterKafkaClusterAdminCredentialsResponse.
 type RouterKafkaClusterAdminCredentialsResponse struct {
+	// BootstrapServers Comma-separated host:port addresses clients connect to.
 	BootstrapServers string `json:"bootstrapServers"`
-	Password         string `json:"password"`
-	SaslMechanism    string `json:"saslMechanism"`
+
+	// Password The admin user's password.
+	Password string `json:"password"`
+
+	// SaslMechanism The Kafka sasl.mechanism clients use.
+	SaslMechanism string `json:"saslMechanism"`
+
+	// SecurityProtocol The Kafka security.protocol clients use.
 	SecurityProtocol string `json:"securityProtocol"`
-	Username         string `json:"username"`
+
+	// Username The admin user's Kafka username.
+	Username string `json:"username"`
 }
 
 // RouterKafkaClusterAdminPasswordRotateResponse defines model for RouterKafkaClusterAdminPasswordRotateResponse.
 type RouterKafkaClusterAdminPasswordRotateResponse struct {
 	// Password The new admin password. Shown once, unless the response has a warning.
 	Password *string `json:"password,omitempty"`
-	Warning  *string `json:"warning,omitempty"`
+
+	// Warning Set when the new password isn't live yet, so it's left out. Get it from the admin credentials in a few minutes.
+	Warning *string `json:"warning,omitempty"`
 }
 
 // RouterKafkaClusterEstimate defines model for RouterKafkaClusterEstimate.
@@ -3543,18 +5100,27 @@ type RouterKafkaClusterEstimate struct {
 	EgressRates []RouterKafkaClusterEstimateEgressRate `json:"egressRates"`
 
 	// FeeRate Artie's fee on compute, e.g. 0.25.
-	FeeRate   float64                              `json:"feeRate"`
-	FeeUSD    int                                  `json:"feeUSD"`
+	FeeRate float64 `json:"feeRate"`
+
+	// FeeUSD Artie's fee, in whole dollars a month.
+	FeeUSD int `json:"feeUSD"`
+
+	// LineItems The cost lines, which add up to totalUSD less feeUSD.
 	LineItems []RouterKafkaClusterEstimateLineItem `json:"lineItems"`
 
 	// PricesAsOf When the prices were last fetched from AWS; null before the first fetch.
 	PricesAsOf *time.Time `json:"pricesAsOf,omitempty"`
-	Region     string     `json:"region"`
-	TotalUSD   int        `json:"totalUSD"`
+
+	// Region The region priced.
+	Region string `json:"region"`
+
+	// TotalUSD The monthly total in whole dollars, fee included.
+	TotalUSD int `json:"totalUSD"`
 }
 
 // RouterKafkaClusterEstimateEgress defines model for RouterKafkaClusterEstimateEgress.
 type RouterKafkaClusterEstimateEgress struct {
+	// CrossAZ GiB a month to other availability zones in the region.
 	CrossAZ *float64 `json:"crossAZ,omitempty"`
 
 	// CrossRegion GiB a month to each other region, by region code.
@@ -3569,45 +5135,67 @@ type RouterKafkaClusterEstimateEgress struct {
 
 // RouterKafkaClusterEstimateEgressRate defines model for RouterKafkaClusterEstimateEgressRate.
 type RouterKafkaClusterEstimateEgressRate struct {
-	Label       string  `json:"label"`
+	// Label The kind of outbound traffic.
+	Label string `json:"label"`
+
+	// MaxUSDPerGB The highest price per GiB, in dollars.
 	MaxUSDPerGB float64 `json:"maxUSDPerGB"`
+
+	// MinUSDPerGB The lowest price per GiB, in dollars.
 	MinUSDPerGB float64 `json:"minUSDPerGB"`
 }
 
 // RouterKafkaClusterEstimateLineItem defines model for RouterKafkaClusterEstimateLineItem.
 type RouterKafkaClusterEstimateLineItem struct {
+	// Category The kind of cost.
 	Category RouterKafkaClusterEstimateLineItemCategory `json:"category"`
-	Label    string                                     `json:"label"`
-	Quantity float64                                    `json:"quantity"`
-	Unit     RouterKafkaClusterEstimateLineItemUnit     `json:"unit"`
+
+	// Label What the line prices, for display.
+	Label string `json:"label"`
+
+	// Quantity How many units the month uses.
+	Quantity float64 `json:"quantity"`
+
+	// Unit What quantity counts.
+	Unit RouterKafkaClusterEstimateLineItemUnit `json:"unit"`
 
 	// UnitUSD The first tier's price for a tiered one.
 	UnitUSD float64 `json:"unitUSD"`
-	Usd     int     `json:"usd"`
+
+	// Usd The line's monthly cost in whole dollars.
+	Usd int `json:"usd"`
 }
 
-// RouterKafkaClusterEstimateLineItemCategory defines model for RouterKafkaClusterEstimateLineItem.Category.
+// RouterKafkaClusterEstimateLineItemCategory The kind of cost.
 type RouterKafkaClusterEstimateLineItemCategory string
 
-// RouterKafkaClusterEstimateLineItemUnit defines model for RouterKafkaClusterEstimateLineItem.Unit.
+// RouterKafkaClusterEstimateLineItemUnit What quantity counts.
 type RouterKafkaClusterEstimateLineItemUnit string
 
 // RouterKafkaClusterEstimateRequest defines model for RouterKafkaClusterEstimateRequest.
 type RouterKafkaClusterEstimateRequest struct {
-	Brokers      int                       `json:"brokers"`
+	// Brokers How many brokers to price.
+	Brokers int `json:"brokers"`
+
+	// InstanceType The instance type each broker runs on.
 	InstanceType PayloadsKafkaInstanceType `json:"instanceType"`
 
 	// Region Region code; defaults to the region Managed Kafka runs in.
-	Region              *string `json:"region,omitempty"`
-	StorageGiBPerBroker int     `json:"storageGiBPerBroker"`
+	Region *string `json:"region,omitempty"`
+
+	// StorageGiBPerBroker Disk per broker in GiB, with the same sizes create accepts.
+	StorageGiBPerBroker int `json:"storageGiBPerBroker"`
 
 	// TieredStorageGiB Data in tiered storage, uncompressed. Billed on that size at the S3 price.
-	TieredStorageGiB *float64                           `json:"tieredStorageGiB,omitempty"`
-	Traffic          *RouterKafkaClusterEstimateTraffic `json:"traffic,omitempty"`
+	TieredStorageGiB *float64 `json:"tieredStorageGiB,omitempty"`
+
+	// Traffic Expected monthly traffic. Left out is no traffic.
+	Traffic *RouterKafkaClusterEstimateTraffic `json:"traffic,omitempty"`
 }
 
 // RouterKafkaClusterEstimateTraffic defines model for RouterKafkaClusterEstimateTraffic.
 type RouterKafkaClusterEstimateTraffic struct {
+	// EgressGiBPerMonth Outbound traffic in GiB a month, by destination.
 	EgressGiBPerMonth *RouterKafkaClusterEstimateEgress `json:"egressGiBPerMonth,omitempty"`
 
 	// IngressGiBPerMonth From the internet.
@@ -3616,23 +5204,32 @@ type RouterKafkaClusterEstimateTraffic struct {
 
 // RouterKafkaUserCreateResponse defines model for RouterKafkaUserCreateResponse.
 type RouterKafkaUserCreateResponse struct {
+	// KafkaUser The user created.
 	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
 
 	// Password The SCRAM-SHA-512 password Strimzi generated, returned when the user is already active. Otherwise get it from the credentials endpoint once the user is active.
 	Password *string `json:"password,omitempty"`
-	Warning  *string `json:"warning,omitempty"`
+
+	// Warning Set when the user isn't active yet, so there's no password in the response.
+	Warning *string `json:"warning,omitempty"`
 }
 
 // RouterKafkaUserCredentialsResponse defines model for RouterKafkaUserCredentialsResponse.
 type RouterKafkaUserCredentialsResponse struct {
+	// KafkaUser The user the password belongs to.
 	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
-	Password  string            `json:"password"`
+
+	// Password The user's SCRAM-SHA-512 password.
+	Password string `json:"password"`
 }
 
 // RouterKafkaUserDeleteResponse defines model for RouterKafkaUserDeleteResponse.
 type RouterKafkaUserDeleteResponse struct {
+	// KafkaUser The user being deleted.
 	KafkaUser PayloadsKafkaUser `json:"kafkaUser"`
-	Warning   *string           `json:"warning,omitempty"`
+
+	// Warning Says the deletion is still pending.
+	Warning *string `json:"warning,omitempty"`
 }
 
 // RouterManagedKafkaUserACLsRequest defines model for RouterManagedKafkaUserACLsRequest.
@@ -3653,9 +5250,13 @@ type RouterManagedKafkaUserRequest struct {
 // RouterManagedKafkaUserWithPasswordResponse defines model for RouterManagedKafkaUserWithPasswordResponse.
 type RouterManagedKafkaUserWithPasswordResponse struct {
 	// Password Left out while Strimzi hasn't made it live yet; get it from the credentials endpoint.
-	Password *string                  `json:"password,omitempty"`
-	User     PayloadsManagedKafkaUser `json:"user"`
-	Warning  *string                  `json:"warning,omitempty"`
+	Password *string `json:"password,omitempty"`
+
+	// User The user.
+	User PayloadsManagedKafkaUser `json:"user"`
+
+	// Warning Set when the password isn't live yet, so it's left out.
+	Warning *string `json:"warning,omitempty"`
 }
 
 // RouterPipelineBackfillRequest defines model for RouterPipelineBackfillRequest.
@@ -3672,7 +5273,7 @@ type RouterPipelineBackfillRequest struct {
 	// BackfillFromSchemas Optional source schemas to backfill for regular-table backfills. Requires beforeBackfill to be the empty-string do-nothing option.
 	BackfillFromSchemas *[]string `json:"backfillFromSchemas,omitempty"`
 
-	// BeforeBackfill Destination handling before the backfill: empty string leaves existing data unchanged, truncate_table truncates the destination table, and drop_table drops it.
+	// BeforeBackfill Destination handling before the backfill: empty string leaves existing data unchanged, truncate_table truncates the destination table, drop_table drops it, and swap_table rebuilds it on the side and swaps it in once the backfill finishes.
 	BeforeBackfill RouterPipelineBackfillRequestBeforeBackfill `json:"beforeBackfill"`
 
 	// HistoryMode When true, backfill the selected history tables instead of the regular tables.
@@ -3681,22 +5282,28 @@ type RouterPipelineBackfillRequest struct {
 	// KeepOldTable Only for swap_table: keep the destination table's old rows in a separate table after the swap, until the next swap_table backfill of this table.
 	KeepOldTable *bool `json:"keepOldTable,omitempty"`
 
-	// TableUUIDs UUIDs of the regular or history tables to backfill.
+	// TableUUIDs UUIDs of the tables to backfill, from tables[].uuid in pipeline_detail. With historyMode, the same table UUIDs select those tables' history tables.
 	TableUUIDs []openapi_types.UUID `json:"tableUUIDs"`
 }
 
-// RouterPipelineBackfillRequestBeforeBackfill Destination handling before the backfill: empty string leaves existing data unchanged, truncate_table truncates the destination table, and drop_table drops it.
+// RouterPipelineBackfillRequestBeforeBackfill Destination handling before the backfill: empty string leaves existing data unchanged, truncate_table truncates the destination table, drop_table drops it, and swap_table rebuilds it on the side and swaps it in once the backfill finishes.
 type RouterPipelineBackfillRequestBeforeBackfill string
 
 // RouterPipelineCancelBackfillRequest defines model for RouterPipelineCancelBackfillRequest.
 type RouterPipelineCancelBackfillRequest struct {
+	// HistoryTableUUIDs UUIDs of the tables whose history-table backfill to cancel. These are the regular tables' UUIDs from tables[].uuid in pipeline_detail, not separate history table IDs.
 	HistoryTableUUIDs []openapi_types.UUID `json:"historyTableUUIDs"`
-	OptionalReason    *string              `json:"optionalReason,omitempty"`
-	TableUUIDs        []openapi_types.UUID `json:"tableUUIDs"`
+
+	// OptionalReason Free-text reason for the cancel. Accepted but not stored or used; leave it out.
+	OptionalReason *string `json:"optionalReason,omitempty"`
+
+	// TableUUIDs UUIDs of the tables whose regular-table backfill to cancel, from tables[].uuid in pipeline_detail.
+	TableUUIDs []openapi_types.UUID `json:"tableUUIDs"`
 }
 
 // RouterPipelineCreateFromSourceRequest defines model for RouterPipelineCreateFromSourceRequest.
 type RouterPipelineCreateFromSourceRequest struct {
+	// DataPlaneName Data plane for the new pipeline; empty uses the company's default. With sourceReaderUUID, it must match the source reader's data plane.
 	DataPlaneName *string `json:"dataPlaneName,omitempty"`
 
 	// Database Database name written onto the new source reader. Postgres, Cockroach, and Oracle need this before start; discover with connector_fetch_databases. Optional — the dashboard wizard creates without it.
@@ -3708,8 +5315,14 @@ type RouterPipelineCreateFromSourceRequest struct {
 	// EnvironmentUUID Environment for a new stub connector. Used when sourceType is set; ignored when sourceConnectorUUID is set.
 	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
 
+	// ShareSourceReader Create the draft's source reader as shared, so other pipelines can read from it later. Requires shared source readers to be enabled for the account.
+	ShareSourceReader *bool `json:"shareSourceReader,omitempty"`
+
 	// SourceConnectorUUID UUID of an existing source connector. Creates a dedicated reader and draft pipeline against that source.
 	SourceConnectorUUID *openapi_types.UUID `json:"sourceConnectorUUID,omitempty"`
+
+	// SourceReaderUUID UUID of a shared source reader for the draft to read from. No source reader is created. Can't be combined with sourceType or sourceConnectorUUID. Requires shared source readers to be enabled for the account.
+	SourceReaderUUID *openapi_types.UUID `json:"sourceReaderUUID,omitempty"`
 
 	// SourceType Source type to bootstrap (e.g. postgresql). Creates a stub connector with empty credentials. Prefer sourceConnectorUUID when the source already exists.
 	SourceType *string `json:"sourceType,omitempty"`
@@ -3717,24 +5330,34 @@ type RouterPipelineCreateFromSourceRequest struct {
 
 // RouterPipelineCreateRequest defines model for RouterPipelineCreateRequest.
 type RouterPipelineCreateRequest struct {
+	// Pipeline The pipeline to create.
 	Pipeline PayloadsPipelinePayload `json:"pipeline"`
 }
 
 // RouterPipelineStartRequest defines model for RouterPipelineStartRequest.
 type RouterPipelineStartRequest struct {
+	// DisableBackFill When true, new tables skip their initial backfill and start streaming.
 	DisableBackFill *bool `json:"disableBackFill,omitempty"`
-	KeepPaused      *bool `json:"keepPaused,omitempty"`
+
+	// KeepPaused When true, deploys a paused pipeline's changes without resuming it. Ignored when the pipeline isn't paused.
+	KeepPaused *bool `json:"keepPaused,omitempty"`
 }
 
 // RouterPipelineTableStats defines model for RouterPipelineTableStats.
 type RouterPipelineTableStats struct {
-	Count     *int64   `json:"count,omitempty"`
-	Latency   *float32 `json:"latency,omitempty"`
-	TableName *string  `json:"tableName,omitempty"`
+	// Count Rows processed in the time window.
+	Count *int64 `json:"count,omitempty"`
+
+	// Latency Average ingestion lag over the time window, in seconds; null when there is no data.
+	Latency *float32 `json:"latency,omitempty"`
+
+	// TableName The table's name as reported in metrics.
+	TableName *string `json:"tableName,omitempty"`
 }
 
 // RouterPipelineUpdateRequest defines model for RouterPipelineUpdateRequest.
 type RouterPipelineUpdateRequest struct {
+	// Pipeline The pipeline to save. Start from the pipeline_detail response and change what you need.
 	Pipeline PayloadsPipelinePayload `json:"pipeline"`
 }
 
@@ -3780,6 +5403,8 @@ type RouterPipelineValidateUnsavedDestinationRequest struct {
 
 // RouterPipelineValidateUnsavedSourceRequest defines model for RouterPipelineValidateUnsavedSourceRequest.
 type RouterPipelineValidateUnsavedSourceRequest struct {
+	// AllowDroppedTables Set it for a pipeline with autoStopDroppedTables on: tables that no longer exist in the source pass validation, since the table changes check stops them. Every other check is unchanged. Only Postgres sources honor it.
+	AllowDroppedTables     *bool                           `json:"allowDroppedTables,omitempty"`
 	DataPlaneName          *string                         `json:"dataPlaneName,omitempty"`
 	DynamoDBBackfillConfig *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
 	SourceConnector        *PayloadsConnectorPayload       `json:"sourceConnector,omitempty"`
@@ -3791,38 +5416,65 @@ type RouterPipelineValidateUnsavedSourceRequest struct {
 
 // RouterPreviewColumnHashingSaltRequest defines model for RouterPreviewColumnHashingSaltRequest.
 type RouterPreviewColumnHashingSaltRequest struct {
+	// Value A sample column value to hash.
 	Value string `json:"value"`
 }
 
 // RouterPreviewColumnHashingSaltResponse defines model for RouterPreviewColumnHashingSaltResponse.
 type RouterPreviewColumnHashingSaltResponse struct {
+	// Hash The hex-encoded hash of the value, as a pipeline would write it.
 	Hash string `json:"hash"`
 }
 
 // RouterPrivateLinkConnectionCreateRequest defines model for RouterPrivateLinkConnectionCreateRequest.
 type RouterPrivateLinkConnectionCreateRequest struct {
-	AvailabilityZoneIds     *[]string           `json:"availabilityZoneIds,omitempty"`
-	DataPlaneName           *string             `json:"dataPlaneName,omitempty"`
-	EnvironmentUUID         *openapi_types.UUID `json:"environmentUUID,omitempty"`
-	Name                    *string             `json:"name,omitempty"`
-	PrivateLinkServiceAlias *string             `json:"privateLinkServiceAlias,omitempty"`
-	VpcServiceName          *string             `json:"vpcServiceName,omitempty"`
+	// AvailabilityZoneIds AWS availability zone IDs, such as use1-az1, to place the endpoint in. Required on AWS data planes.
+	AvailabilityZoneIds *[]string `json:"availabilityZoneIds,omitempty"`
+
+	// DataPlaneName The data plane to restrict the connection to. Left out, the company's default data plane is used.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// EnvironmentUUID The environment to create it in. Ignored when the API key or MCP grant is scoped to one environment. Otherwise required for company-wide API keys and MCP grants; for other callers it defaults to the company's first environment.
+	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
+
+	// Name A label to tell the connection apart in Artie, such as the database it reaches. On Azure it also appears in the connection request the service owner approves.
+	Name *string `json:"name,omitempty"`
+
+	// PrivateLinkServiceAlias The Azure Private Link service alias to connect to. Required on Azure data planes.
+	PrivateLinkServiceAlias *string `json:"privateLinkServiceAlias,omitempty"`
+
+	// VpcServiceName The AWS VPC endpoint service name to connect to, as com.amazonaws.vpce.<region>.vpce-svc-<id>. Required on AWS data planes.
+	VpcServiceName *string `json:"vpcServiceName,omitempty"`
 }
 
 // RouterPrivateLinkConnectionUpdateRequest defines model for RouterPrivateLinkConnectionUpdateRequest.
 type RouterPrivateLinkConnectionUpdateRequest struct {
-	AvailabilityZoneIds     *[]string `json:"availabilityZoneIds,omitempty"`
-	DataPlaneName           *string   `json:"dataPlaneName,omitempty"`
-	Name                    string    `json:"name"`
-	PrivateLinkServiceAlias *string   `json:"privateLinkServiceAlias,omitempty"`
-	VpcServiceName          *string   `json:"vpcServiceName,omitempty"`
+	// AvailabilityZoneIds AWS availability zone IDs, such as use1-az1, to place the endpoint in. Only read while the connection is under review or errored with no endpoint: then an AWS update must resend them, even unchanged, from private_link_connection_detail. Otherwise ignored.
+	AvailabilityZoneIds *[]string `json:"availabilityZoneIds,omitempty"`
+
+	// DataPlaneName The data plane to restrict the connection to; left out means the company's default. Only applied while the connection is under review or errored with no endpoint.
+	DataPlaneName *string `json:"dataPlaneName,omitempty"`
+
+	// Name New display name for the connection. Always editable.
+	Name string `json:"name"`
+
+	// PrivateLinkServiceAlias The alias of the Azure Private Link service to connect to, which the service's owner shares. Only read while the connection is under review or errored with no endpoint: then an Azure update must resend it, even unchanged, from private_link_connection_detail. Otherwise ignored.
+	PrivateLinkServiceAlias *string `json:"privateLinkServiceAlias,omitempty"`
+
+	// VpcServiceName The AWS VPC endpoint service name, as com.amazonaws.vpce.<region>.vpce-svc-<id>. Only read while the connection is under review or errored with no endpoint: then an AWS update must resend it, even unchanged, from private_link_connection_detail. Otherwise ignored.
+	VpcServiceName *string `json:"vpcServiceName,omitempty"`
 }
 
 // RouterQueryResult defines model for RouterQueryResult.
 type RouterQueryResult struct {
+	// Data The dataset's scalar or timeseries values. Null when err is set.
 	Data *RouterAnalyticsDatasetData `json:"data"`
-	Err  *string                     `json:"err"`
-	Unit PayloadsAnalyticsUnit       `json:"unit"`
+
+	// Err Why the query failed. Null on success.
+	Err *string `json:"err"`
+
+	// Unit The unit of the values in data.
+	Unit PayloadsAnalyticsUnit `json:"unit"`
 }
 
 // RouterRenameKafkaClusterRequest defines model for RouterRenameKafkaClusterRequest.
@@ -3833,31 +5485,55 @@ type RouterRenameKafkaClusterRequest struct {
 
 // RouterSSHTunnelCreateRequest defines model for RouterSSHTunnelCreateRequest.
 type RouterSSHTunnelCreateRequest struct {
+	// EnvironmentUUID The environment to create it in. Ignored when the API key or MCP grant is scoped to one environment. Otherwise required for company-wide API keys and MCP grants; for other callers it defaults to the company's first environment.
 	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
-	Host            string              `json:"host"`
-	Name            *string             `json:"name,omitempty"`
-	Port            int                 `json:"port"`
-	Username        string              `json:"username"`
+
+	// Host Public hostname or IP address of the SSH bastion server.
+	Host string `json:"host"`
+
+	// Name A label to tell the tunnel apart in Artie, such as the bastion or network it reaches. Not sent to the bastion.
+	Name *string `json:"name,omitempty"`
+
+	// Port Port the SSH bastion server listens on.
+	Port int `json:"port"`
+
+	// Username The bastion user Artie logs in as with the tunnel's generated key.
+	Username string `json:"username"`
 }
 
 // RouterSSHTunnelUpdateRequest defines model for RouterSSHTunnelUpdateRequest.
 type RouterSSHTunnelUpdateRequest struct {
-	Host     string `json:"host"`
-	Name     string `json:"name"`
-	Port     int    `json:"port"`
+	// Host Public hostname or IP address of the SSH bastion server.
+	Host string `json:"host"`
+
+	// Name New display name for the tunnel.
+	Name string `json:"name"`
+
+	// Port Port the SSH bastion server listens on.
+	Port int `json:"port"`
+
+	// Username The bastion user Artie logs in as. Empty keeps the saved username.
 	Username string `json:"username"`
 }
 
 // RouterSnowflakeEcoScheduleCreateRequest defines model for RouterSnowflakeEcoScheduleCreateRequest.
 type RouterSnowflakeEcoScheduleCreateRequest struct {
-	EnvironmentUUID *openapi_types.UUID                  `json:"environmentUUID,omitempty"`
-	Name            string                               `json:"name"`
-	Settings        PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
+	// EnvironmentUUID The environment to create it in. Ignored when the API key or MCP grant is scoped to one environment. Otherwise required for company-wide API keys and MCP grants; for other callers it defaults to the company's first environment.
+	EnvironmentUUID *openapi_types.UUID `json:"environmentUUID,omitempty"`
+
+	// Name Display name for the schedule.
+	Name string `json:"name"`
+
+	// Settings Peak hours and the flush rules used outside them.
+	Settings PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
 }
 
 // RouterSnowflakeEcoScheduleUpdateRequest defines model for RouterSnowflakeEcoScheduleUpdateRequest.
 type RouterSnowflakeEcoScheduleUpdateRequest struct {
-	Name     string                               `json:"name"`
+	// Name New display name for the schedule.
+	Name string `json:"name"`
+
+	// Settings The full new settings; they replace the old ones.
 	Settings PayloadsSnowflakeEcoScheduleSettings `json:"settings"`
 }
 
@@ -3892,20 +5568,29 @@ type RouterSourceReaderValidateUnsavedResponse struct {
 
 // RouterUpdateColumnHashingSaltRequest defines model for RouterUpdateColumnHashingSaltRequest.
 type RouterUpdateColumnHashingSaltRequest struct {
+	// Description New notes for the salt. Left empty, the notes are cleared.
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+
+	// Name New display name for the salt.
+	Name string `json:"name"`
 }
 
 // RouterUpdateEncryptionKeyRequest defines model for RouterUpdateEncryptionKeyRequest.
 type RouterUpdateEncryptionKeyRequest struct {
+	// Description New notes for the key. Left empty, the notes are cleared.
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+
+	// Name New display name for the key.
+	Name string `json:"name"`
 }
 
 // RouterUpdateIngestionAPIKeyRequest defines model for RouterUpdateIngestionAPIKeyRequest.
 type RouterUpdateIngestionAPIKeyRequest struct {
+	// ExpiresAt When the key stops working, as a future time. Null or left out removes the expiry. Ignored once the key has expired.
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
-	Name      *string    `json:"name,omitempty"`
+
+	// Name New display name for the key. Left empty, the name is cleared.
+	Name *string `json:"name,omitempty"`
 }
 
 // RouterUpdateKafkaClusterAllowedCIDRsRequest defines model for RouterUpdateKafkaClusterAllowedCIDRsRequest.
@@ -3988,11 +5673,11 @@ type RouterUpdateKafkaTopicSettingsRequest struct {
 	// RetentionMS New retention.ms: at least 86400000 (one day); or -1 to keep messages forever.
 	RetentionMS *int `json:"retentionMS,omitempty"`
 
-	// TieredStorage off, on or paused. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
+	// TieredStorage Whether old segments move to remote storage. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
 	TieredStorage *RouterUpdateKafkaTopicSettingsRequestTieredStorage `json:"tieredStorage,omitempty"`
 }
 
-// RouterUpdateKafkaTopicSettingsRequestTieredStorage off, on or paused. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
+// RouterUpdateKafkaTopicSettingsRequestTieredStorage Whether old segments move to remote storage. A topic that's on can only be paused, and only a paused topic can be turned off, which deletes its data in remote storage. Pausing keeps that data readable until retention expires it.
 type RouterUpdateKafkaTopicSettingsRequestTieredStorage string
 
 // RouterValidateErrorResponse defines model for RouterValidateErrorResponse.
@@ -4002,79 +5687,116 @@ type RouterValidateErrorResponse struct {
 
 // AnalyticsQueryParams defines parameters for AnalyticsQuery.
 type AnalyticsQueryParams struct {
-	From            string    `form:"from" json:"from"`
-	To              string    `form:"to" json:"to"`
-	Datasets        []string  `form:"datasets[]" json:"datasets[]"`
-	PipelineUUID    *string   `form:"pipelineUUID,omitempty" json:"pipelineUUID,omitempty"`
-	Tables          *[]string `form:"tables[],omitempty" json:"tables[],omitempty"`
-	BackfillOptions *string   `form:"backfillOptions,omitempty" json:"backfillOptions,omitempty"`
-	TransferMode    *string   `form:"transferMode,omitempty" json:"transferMode,omitempty"`
-	GroupBy         *string   `form:"groupBy,omitempty" json:"groupBy,omitempty"`
+	// From Start of the time window, in RFC 3339.
+	From string `form:"from" json:"from"`
+
+	// To End of the time window, in RFC 3339. Keep the window between 1 second and 15 months long, starting no later than now.
+	To string `form:"to" json:"to"`
+
+	// Datasets Datasets to return, such as rowsSyncedByTime, ingestionLag or rowLag; repeat the parameter for each. Unknown names are ignored.
+	Datasets []string `form:"datasets[]" json:"datasets[]"`
+
+	// PipelineUUID UUID of the pipeline to include, from pipeline_list; left out, metrics cover every pipeline in the company. Required for environment-scoped API keys.
+	PipelineUUID *string `form:"pipelineUUID,omitempty" json:"pipelineUUID,omitempty"`
+
+	// Tables Only include these table names; repeat the parameter for each.
+	Tables *[]string `form:"tables[],omitempty" json:"tables[],omitempty"`
+
+	// BackfillOptions exclude leaves out rows written by backfills, only keeps just those rows, and empty includes both.
+	BackfillOptions *string `form:"backfillOptions,omitempty" json:"backfillOptions,omitempty"`
+
+	// TransferMode replication or history to only count rows Transfer wrote in that mode; empty includes both.
+	TransferMode *string `form:"transferMode,omitempty" json:"transferMode,omitempty"`
+
+	// GroupBy pipeline or table to return one series per pipeline or table; empty returns one series per dataset.
+	GroupBy *string `form:"groupBy,omitempty" json:"groupBy,omitempty"`
 }
 
 // ConnectorListParams defines parameters for ConnectorList.
 type ConnectorListParams struct {
+	// IncludeSourceConnectors Set to true to list every connector, sources included. By default only destination connectors are listed.
 	IncludeSourceConnectors *bool `form:"includeSourceConnectors,omitempty" json:"includeSourceConnectors,omitempty"`
 }
 
 // ConnectorFetchDatabasesParams defines parameters for ConnectorFetchDatabases.
 type ConnectorFetchDatabasesParams struct {
+	// DatabaseName Database to connect to. Defaults to the connector's defaultDatabase.
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 }
 
 // ConnectorFetchTableDetailParams defines parameters for ConnectorFetchTableDetail.
 type ConnectorFetchTableDetailParams struct {
+	// DatabaseName Database to connect to. Defaults to the connector's defaultDatabase.
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
-	SchemaName   *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
-	TableName    string  `form:"tableName" json:"tableName"`
-	IsView       *bool   `form:"isView,omitempty" json:"isView,omitempty"`
+
+	// SchemaName The table's schema, from connector_fetch_schemas. Defaults to the connector type's default schema, such as public for Postgres.
+	SchemaName *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
+
+	// TableName The table name, from connector_fetch_tables.
+	TableName string `form:"tableName" json:"tableName"`
+
+	// IsView Set to true when the object is a view (isView in connector_fetch_tables).
+	IsView *bool `form:"isView,omitempty" json:"isView,omitempty"`
 }
 
 // ConnectorFetchPostgresReplicationSlotsParams defines parameters for ConnectorFetchPostgresReplicationSlots.
 type ConnectorFetchPostgresReplicationSlotsParams struct {
+	// DatabaseName Database to connect to. Defaults to the connector's defaultDatabase.
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 }
 
 // ConnectorFetchPostgresSettingsParams defines parameters for ConnectorFetchPostgresSettings.
 type ConnectorFetchPostgresSettingsParams struct {
+	// DatabaseName Database to connect to. Defaults to the connector's defaultDatabase.
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 }
 
 // ConnectorFetchSchemasParams defines parameters for ConnectorFetchSchemas.
 type ConnectorFetchSchemasParams struct {
+	// DatabaseName Database to connect to. Defaults to the connector's defaultDatabase.
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
 }
 
 // ConnectorFetchTablesParams defines parameters for ConnectorFetchTables.
 type ConnectorFetchTablesParams struct {
+	// DatabaseName Database to connect to. Defaults to the connector's defaultDatabase.
 	DatabaseName *string `form:"databaseName,omitempty" json:"databaseName,omitempty"`
-	SchemaName   *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
+
+	// SchemaName Schema to list tables from, from connector_fetch_schemas. Defaults to the connector type's default schema, such as public for Postgres. Ignored for PlanetScale, which lists the database's tables.
+	SchemaName *string `form:"schemaName,omitempty" json:"schemaName,omitempty"`
 }
 
 // KafkaClusterListParams defines parameters for KafkaClusterList.
 type KafkaClusterListParams struct {
+	// IncludeDeleted Also return deleted Managed Kafka clusters that can still be restored. Defaults to false.
 	IncludeDeleted *bool `form:"includeDeleted,omitempty" json:"includeDeleted,omitempty"`
 }
 
 // KafkaConsumerGroupDetailsParams defines parameters for KafkaConsumerGroupDetails.
 type KafkaConsumerGroupDetailsParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaConsumerGroupListParams defines parameters for KafkaConsumerGroupList.
 type KafkaConsumerGroupListParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaConsumerGroupDetailParams defines parameters for KafkaConsumerGroupDetail.
 type KafkaConsumerGroupDetailParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaClusterMetricsGraphParams defines parameters for KafkaClusterMetricsGraph.
 type KafkaClusterMetricsGraphParams struct {
+	// From Start of the time window, in RFC 3339.
 	From string `form:"from" json:"from"`
-	To   string `form:"to" json:"to"`
+
+	// To End of the time window, in RFC 3339. Keep the window between 1 second and 15 months long, starting no later than now.
+	To string `form:"to" json:"to"`
 }
 
 // KafkaClusterRatesParams defines parameters for KafkaClusterRates.
@@ -4088,32 +5810,40 @@ type KafkaClusterRatesParamsRange string
 
 // KafkaClusterSettingsParams defines parameters for KafkaClusterSettings.
 type KafkaClusterSettingsParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaClusterStorageGraphParams defines parameters for KafkaClusterStorageGraph.
 type KafkaClusterStorageGraphParams struct {
+	// From Start of the time window, in RFC 3339.
 	From string `form:"from" json:"from"`
-	To   string `form:"to" json:"to"`
+
+	// To End of the time window, in RFC 3339. Keep the window between 1 second and 15 months long, starting no later than now.
+	To string `form:"to" json:"to"`
 }
 
 // KafkaClusterSummaryParams defines parameters for KafkaClusterSummary.
 type KafkaClusterSummaryParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaTopicSizesParams defines parameters for KafkaTopicSizes.
 type KafkaTopicSizesParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaTopicListParams defines parameters for KafkaTopicList.
 type KafkaTopicListParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // KafkaTopicDetailParams defines parameters for KafkaTopicDetail.
 type KafkaTopicDetailParams struct {
+	// ForceRefresh Skip the cached result and read the cluster again. Defaults to false.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
@@ -4128,18 +5858,23 @@ type KafkaTopicMessagesParams struct {
 
 // PipelineDetailParams defines parameters for PipelineDetail.
 type PipelineDetailParams struct {
+	// IncludeRelatedObjects When true, the response also carries the source reader and connectors. MCP clients must leave it out.
 	IncludeRelatedObjects *bool `form:"includeRelatedObjects,omitempty" json:"includeRelatedObjects,omitempty"`
 }
 
 // PipelineTriggerAutomaticSchemaChangesParams defines parameters for PipelineTriggerAutomaticSchemaChanges.
 type PipelineTriggerAutomaticSchemaChangesParams struct {
+	// ForceRefresh When true, runs even if the pipeline's schema changes were checked in the last two hours.
 	ForceRefresh *bool `form:"forceRefresh,omitempty" json:"forceRefresh,omitempty"`
 }
 
 // PipelineUsageParams defines parameters for PipelineUsage.
 type PipelineUsageParams struct {
+	// From Start of the time window.
 	From time.Time `form:"from" json:"from"`
-	To   time.Time `form:"to" json:"to"`
+
+	// To End of the time window. Keep the window between 1 second and 15 months long, starting no later than now.
+	To time.Time `form:"to" json:"to"`
 
 	// ExcludeBackfills When true, rows processed by backfills are excluded from row counts so only CDC rows are counted. Latency is not affected. Defaults to false.
 	ExcludeBackfills *bool `form:"excludeBackfills,omitempty" json:"excludeBackfills,omitempty"`
@@ -4382,6 +6117,12 @@ type ReplicationStartedJSONRequestBody = PayloadsWebhookReplicationStarted
 
 // RowSkippedJSONRequestBody defines body for RowSkipped for application/json ContentType.
 type RowSkippedJSONRequestBody = PayloadsWebhookRowSkipped
+
+// TrnFileProcessedJSONRequestBody defines body for TrnFileProcessed for application/json ContentType.
+type TrnFileProcessedJSONRequestBody = PayloadsWebhookTrnFileProcessed
+
+// TrnFileStartedJSONRequestBody defines body for TrnFileStarted for application/json ContentType.
+type TrnFileStartedJSONRequestBody = PayloadsWebhookTrnFileStarted
 
 // AsPayloadsJsonValueString returns the union data inside the PayloadsJSONValue as a PayloadsJsonValueString
 func (t PayloadsJSONValue) AsPayloadsJsonValueString() (PayloadsJsonValueString, error) {
@@ -5249,6 +6990,74 @@ func (t *PayloadsWebhookOutgoingPayload) MergePayloadsWebhookRowSkipped(v Payloa
 	return err
 }
 
+// AsPayloadsWebhookTrnFileProcessed returns the union data inside the PayloadsWebhookOutgoingPayload as a PayloadsWebhookTrnFileProcessed
+func (t PayloadsWebhookOutgoingPayload) AsPayloadsWebhookTrnFileProcessed() (PayloadsWebhookTrnFileProcessed, error) {
+	var body PayloadsWebhookTrnFileProcessed
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPayloadsWebhookTrnFileProcessed overwrites any union data inside the PayloadsWebhookOutgoingPayload as the provided PayloadsWebhookTrnFileProcessed
+func (t *PayloadsWebhookOutgoingPayload) FromPayloadsWebhookTrnFileProcessed(v PayloadsWebhookTrnFileProcessed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"trn.file_processed"}`))
+	t.union = b
+	return err
+}
+
+// MergePayloadsWebhookTrnFileProcessed performs a merge with any union data inside the PayloadsWebhookOutgoingPayload, using the provided PayloadsWebhookTrnFileProcessed
+func (t *PayloadsWebhookOutgoingPayload) MergePayloadsWebhookTrnFileProcessed(v PayloadsWebhookTrnFileProcessed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"trn.file_processed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPayloadsWebhookTrnFileStarted returns the union data inside the PayloadsWebhookOutgoingPayload as a PayloadsWebhookTrnFileStarted
+func (t PayloadsWebhookOutgoingPayload) AsPayloadsWebhookTrnFileStarted() (PayloadsWebhookTrnFileStarted, error) {
+	var body PayloadsWebhookTrnFileStarted
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPayloadsWebhookTrnFileStarted overwrites any union data inside the PayloadsWebhookOutgoingPayload as the provided PayloadsWebhookTrnFileStarted
+func (t *PayloadsWebhookOutgoingPayload) FromPayloadsWebhookTrnFileStarted(v PayloadsWebhookTrnFileStarted) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"trn.file_started"}`))
+	t.union = b
+	return err
+}
+
+// MergePayloadsWebhookTrnFileStarted performs a merge with any union data inside the PayloadsWebhookOutgoingPayload, using the provided PayloadsWebhookTrnFileStarted
+func (t *PayloadsWebhookOutgoingPayload) MergePayloadsWebhookTrnFileStarted(v PayloadsWebhookTrnFileStarted) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"trn.file_started"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t PayloadsWebhookOutgoingPayload) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"event"`
@@ -5299,6 +7108,10 @@ func (t PayloadsWebhookOutgoingPayload) ValueByDiscriminator() (interface{}, err
 		return t.AsPayloadsWebhookReplicationStarted()
 	case "row.skipped":
 		return t.AsPayloadsWebhookRowSkipped()
+	case "trn.file_processed":
+		return t.AsPayloadsWebhookTrnFileProcessed()
+	case "trn.file_started":
+		return t.AsPayloadsWebhookTrnFileStarted()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
@@ -5638,7 +7451,7 @@ type ClientInterface interface {
 
 	// UnsavedConnectorPingWithBody Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -5647,7 +7460,7 @@ type ClientInterface interface {
 
 	// UnsavedConnectorPing Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6647,7 +8460,7 @@ type ClientInterface interface {
 
 	// PipelineBackfillTablesWithBody Backfill pipeline tables
 	//
-	// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+	// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6656,7 +8469,7 @@ type ClientInterface interface {
 
 	// PipelineBackfillTables Backfill pipeline tables
 	//
-	// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+	// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6945,6 +8758,13 @@ type ClientInterface interface {
 	// Corresponds with POST /source-readers/{uuid}/deploy (the `SourceReaderDeploy` operationId).
 	SourceReaderDeploy(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SourceReaderShare Share a source reader
+	//
+	// Turns a dedicated source reader into a shared one that other pipelines can use, without a backfill. Its tables are taken from its pipeline, and a running pipeline is redeployed, which restarts the reader once. The source reader can't be shared while its pipeline publishes to a Kafka destination, is deploying, is backfilling a table or is being migrated.
+	//
+	// Corresponds with POST /source-readers/{uuid}/share (the `SourceReaderShare` operationId).
+	SourceReaderShare(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SourceReaderUpdateStatusWithBody Update source reader status
 	//
 	// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
@@ -6983,7 +8803,7 @@ type ClientInterface interface {
 
 	// SshTunnelDelete Delete an SSH tunnel
 	//
-	// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors or pipelines before it can be deleted.
+	// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors before it can be deleted.
 	//
 	// Corresponds with DELETE /ssh-tunnels/{uuid} (the `SshTunnelDelete` operationId).
 	SshTunnelDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7422,7 +9242,7 @@ func (c *Client) UnsavedConnectorCreateSnowflakeWarehouse(ctx context.Context, b
 
 // UnsavedConnectorPingWithBody Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7441,7 +9261,7 @@ func (c *Client) UnsavedConnectorPingWithBody(ctx context.Context, contentType s
 
 // UnsavedConnectorPing Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9661,7 +11481,7 @@ func (c *Client) PipelineTriggerAutomaticSchemaChanges(ctx context.Context, uuid
 
 // PipelineBackfillTablesWithBody Backfill pipeline tables
 //
-// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 //
 // Takes any type of body and a specified content type.
 //
@@ -9680,7 +11500,7 @@ func (c *Client) PipelineBackfillTablesWithBody(ctx context.Context, uuid string
 
 // PipelineBackfillTables Backfill pipeline tables
 //
-// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10319,6 +12139,23 @@ func (c *Client) SourceReaderDeploy(ctx context.Context, uuid string, reqEditors
 	return c.Client.Do(req)
 }
 
+// SourceReaderShare Share a source reader
+//
+// Turns a dedicated source reader into a shared one that other pipelines can use, without a backfill. Its tables are taken from its pipeline, and a running pipeline is redeployed, which restarts the reader once. The source reader can't be shared while its pipeline publishes to a Kafka destination, is deploying, is backfilling a table or is being migrated.
+//
+// Corresponds with POST /source-readers/{uuid}/share (the `SourceReaderShare` operationId).
+func (c *Client) SourceReaderShare(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSourceReaderShareRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SourceReaderUpdateStatusWithBody Update source reader status
 //
 // Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
@@ -10397,7 +12234,7 @@ func (c *Client) SshTunnelCreate(ctx context.Context, body SshTunnelCreateJSONRe
 
 // SshTunnelDelete Delete an SSH tunnel
 //
-// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors or pipelines before it can be deleted.
+// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors before it can be deleted.
 //
 // Corresponds with DELETE /ssh-tunnels/{uuid} (the `SshTunnelDelete` operationId).
 func (c *Client) SshTunnelDelete(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -16123,6 +17960,40 @@ func NewSourceReaderDeployRequest(server string, uuid string) (*http.Request, er
 	return req, nil
 }
 
+// NewSourceReaderShareRequest constructs an http.Request for the SourceReaderShare method
+func NewSourceReaderShareRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/source-readers/%s/share", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewSourceReaderUpdateStatusRequest calls the generic SourceReaderUpdateStatus builder with application/json body
 func NewSourceReaderUpdateStatusRequest(server string, uuid string, body SourceReaderUpdateStatusJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -16569,7 +18440,7 @@ type ClientWithResponsesInterface interface {
 
 	// UnsavedConnectorPingWithBodyWithResponse Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16578,7 +18449,7 @@ type ClientWithResponsesInterface interface {
 
 	// UnsavedConnectorPingWithResponse Ping a connector
 	//
-	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+	// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -17676,7 +19547,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineBackfillTablesWithBodyWithResponse Backfill pipeline tables
 	//
-	// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+	// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -17685,7 +19556,7 @@ type ClientWithResponsesInterface interface {
 
 	// PipelineBackfillTablesWithResponse Backfill pipeline tables
 	//
-	// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+	// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -17998,6 +19869,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /source-readers/{uuid}/deploy (the `SourceReaderDeploy` operationId).
 	SourceReaderDeployWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SourceReaderDeployResponse, error)
 
+	// SourceReaderShareWithResponse Share a source reader
+	//
+	// Turns a dedicated source reader into a shared one that other pipelines can use, without a backfill. Its tables are taken from its pipeline, and a running pipeline is redeployed, which restarts the reader once. The source reader can't be shared while its pipeline publishes to a Kafka destination, is deploying, is backfilling a table or is being migrated.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /source-readers/{uuid}/share (the `SourceReaderShare` operationId).
+	SourceReaderShareWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SourceReaderShareResponse, error)
+
 	// SourceReaderUpdateStatusWithBodyWithResponse Update source reader status
 	//
 	// Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
@@ -18036,7 +19916,7 @@ type ClientWithResponsesInterface interface {
 
 	// SshTunnelDeleteWithResponse Delete an SSH tunnel
 	//
-	// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors or pipelines before it can be deleted.
+	// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors before it can be deleted.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18613,13 +20493,13 @@ func (r UnsavedConnectorCreateSnowflakeWarehouseResponse) ContentType() string {
 type UnsavedConnectorPingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *RouterConnectorPingResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *RouterConnectorPingResponse
 }
 
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r UnsavedConnectorPingResponse) GetJSON200() *RouterConnectorPingResponse {
-	return r.JSON200
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UnsavedConnectorPingResponse) GetJSON422() *RouterConnectorPingResponse {
+	return r.JSON422
 }
 
 // GetBody returns the raw response body bytes
@@ -19092,11 +20972,11 @@ type ConnectorFetchPostgresSettingsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *[]PayloadsPostgresSetting
+	JSON200 *PayloadsPostgresSettings
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ConnectorFetchPostgresSettingsResponse) GetJSON200() *[]PayloadsPostgresSetting {
+func (r ConnectorFetchPostgresSettingsResponse) GetJSON200() *PayloadsPostgresSettings {
 	return r.JSON200
 }
 
@@ -22973,6 +24853,47 @@ func (r SourceReaderDeployResponse) ContentType() string {
 	return ""
 }
 
+type SourceReaderShareResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsSourceReader
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SourceReaderShareResponse) GetJSON200() *PayloadsSourceReader {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SourceReaderShareResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SourceReaderShareResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SourceReaderShareResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SourceReaderShareResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SourceReaderUpdateStatusResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -23503,7 +25424,7 @@ func (c *ClientWithResponses) UnsavedConnectorCreateSnowflakeWarehouseWithRespon
 
 // UnsavedConnectorPingWithBodyWithResponse Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -23518,7 +25439,7 @@ func (c *ClientWithResponses) UnsavedConnectorPingWithBodyWithResponse(ctx conte
 
 // UnsavedConnectorPingWithResponse Ping a connector
 //
-// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; a failed connection attempt returns 200 with an error message.
+// Tests network connectivity and authentication for a connector configuration before saving it. Pass type, sharedConfig, and connectionRole. Success is 204; 422 means the connection attempt failed, with the reason in error; 400 means the request itself is invalid.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -25348,7 +27269,7 @@ func (c *ClientWithResponses) PipelineTriggerAutomaticSchemaChangesWithResponse(
 
 // PipelineBackfillTablesWithBodyWithResponse Backfill pipeline tables
 //
-// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -25363,7 +27284,7 @@ func (c *ClientWithResponses) PipelineBackfillTablesWithBodyWithResponse(ctx con
 
 // PipelineBackfillTablesWithResponse Backfill pipeline tables
 //
-// Triggers a backfill for specified tables in the pipeline. Supports options for pre-backfill behavior (drop, truncate, or do nothing) and schema/database filtering.
+// Triggers a backfill for the given tables in the pipeline and redeploys it. beforeBackfill sets what happens to the destination table first: the empty string keeps its rows, truncate_table empties it, drop_table drops it, and swap_table rebuilds the table on the side and swaps it in once the backfill finishes. swap_table must be enabled for the company, works only on Snowflake and Databricks destinations, and can't be used for history tables. keepOldTable, with swap_table only, keeps the old rows in a separate table until the next swap_table backfill of that table. backfillFromSchemas and backfillFromDatabases narrow a regular-table backfill and need the empty-string option. A Kafka destination only accepts the empty-string option. backfillBatchSize and backfillDefaults set the backfill speed and are saved on the pipeline's source reader before the backfill starts, so later backfills use them too; a shared source reader rejects them.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -25886,6 +27807,21 @@ func (c *ClientWithResponses) SourceReaderDeployWithResponse(ctx context.Context
 	return ParseSourceReaderDeployResponse(rsp)
 }
 
+// SourceReaderShareWithResponse Share a source reader
+//
+// Turns a dedicated source reader into a shared one that other pipelines can use, without a backfill. Its tables are taken from its pipeline, and a running pipeline is redeployed, which restarts the reader once. The source reader can't be shared while its pipeline publishes to a Kafka destination, is deploying, is backfilling a table or is being migrated.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /source-readers/{uuid}/share (the `SourceReaderShare` operationId).
+func (c *ClientWithResponses) SourceReaderShareWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*SourceReaderShareResponse, error) {
+	rsp, err := c.SourceReaderShare(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSourceReaderShareResponse(rsp)
+}
+
 // SourceReaderUpdateStatusWithBodyWithResponse Update source reader status
 //
 // Changes the status of a shared source reader (e.g. running, paused). Pausing it stops every pipeline that reads from it. Resuming any of those pipelines through the pipeline status endpoint also resumes the source reader. Only shared source readers are supported; for non-shared source readers, use the pipeline status endpoint instead.
@@ -25948,7 +27884,7 @@ func (c *ClientWithResponses) SshTunnelCreateWithResponse(ctx context.Context, b
 
 // SshTunnelDeleteWithResponse Delete an SSH tunnel
 //
-// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors or pipelines before it can be deleted.
+// Permanently deletes an SSH tunnel by UUID. The tunnel must not be in use by any connectors before it can be deleted.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -26385,18 +28321,18 @@ func ParseUnsavedConnectorPingResponse(rsp *http.Response) (*UnsavedConnectorPin
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RouterConnectorPingResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
 	case rsp.StatusCode == 204:
 		break // No content-type
 
 	case rsp.StatusCode == 400:
 		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest RouterConnectorPingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -26741,7 +28677,7 @@ func ParseConnectorFetchPostgresSettingsResponse(rsp *http.Response) (*Connector
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []PayloadsPostgresSetting
+		var dest PayloadsPostgresSettings
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -26874,6 +28810,9 @@ func ParseDataCatalogSearchResponse(rsp *http.Response) (*DataCatalogSearchRespo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
 
 	case rsp.StatusCode == 500:
 		break // No content-type
@@ -29786,6 +31725,41 @@ func ParseSourceReaderDeployResponse(rsp *http.Response) (*SourceReaderDeployRes
 	return response, nil
 }
 
+// ParseSourceReaderShareResponse parses an HTTP response from a SourceReaderShareWithResponse call
+func ParseSourceReaderShareResponse(rsp *http.Response) (*SourceReaderShareResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SourceReaderShareResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsSourceReader
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
 // ParseSourceReaderUpdateStatusResponse parses an HTTP response from a SourceReaderUpdateStatusWithResponse call
 func ParseSourceReaderUpdateStatusResponse(rsp *http.Response) (*SourceReaderUpdateStatusResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -30088,6 +32062,16 @@ type WebhookInitiatorInterface interface {
 	RowSkippedWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	RowSkipped(ctx context.Context, targetURL string, body RowSkippedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TrnFileProcessedWithBody fires the trn.file_processed webhook with any body
+	TrnFileProcessedWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	TrnFileProcessed(ctx context.Context, targetURL string, body TrnFileProcessedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TrnFileStartedWithBody fires the trn.file_started webhook with any body
+	TrnFileStartedWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	TrnFileStarted(ctx context.Context, targetURL string, body TrnFileStartedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (p *WebhookInitiator) BackfillCompletedWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -30512,6 +32496,54 @@ func (p *WebhookInitiator) RowSkippedWithBody(ctx context.Context, targetURL str
 
 func (p *WebhookInitiator) RowSkipped(ctx context.Context, targetURL string, body RowSkippedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRowSkippedWebhookRequest(targetURL, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := p.applyWebhookEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+func (p *WebhookInitiator) TrnFileProcessedWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTrnFileProcessedWebhookRequestWithBody(targetURL, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := p.applyWebhookEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+func (p *WebhookInitiator) TrnFileProcessed(ctx context.Context, targetURL string, body TrnFileProcessedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTrnFileProcessedWebhookRequest(targetURL, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := p.applyWebhookEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+func (p *WebhookInitiator) TrnFileStartedWithBody(ctx context.Context, targetURL string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTrnFileStartedWebhookRequestWithBody(targetURL, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := p.applyWebhookEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+func (p *WebhookInitiator) TrnFileStarted(ctx context.Context, targetURL string, body TrnFileStartedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTrnFileStartedWebhookRequest(targetURL, body)
 	if err != nil {
 		return nil, err
 	}
@@ -31062,6 +33094,68 @@ func NewRowSkippedWebhookRequest(targetURL string, body RowSkippedJSONRequestBod
 
 // NewRowSkippedWebhookRequestWithBody builds a POST request for the row.skipped webhook with any body
 func NewRowSkippedWebhookRequestWithBody(targetURL string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+	_ = err
+
+	reqURL, err := url.Parse(targetURL)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, reqURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTrnFileProcessedWebhookRequest builds a application/json POST request for the trn.file_processed webhook
+func NewTrnFileProcessedWebhookRequest(targetURL string, body TrnFileProcessedJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTrnFileProcessedWebhookRequestWithBody(targetURL, "application/json", bodyReader)
+}
+
+// NewTrnFileProcessedWebhookRequestWithBody builds a POST request for the trn.file_processed webhook with any body
+func NewTrnFileProcessedWebhookRequestWithBody(targetURL string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+	_ = err
+
+	reqURL, err := url.Parse(targetURL)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, reqURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTrnFileStartedWebhookRequest builds a application/json POST request for the trn.file_started webhook
+func NewTrnFileStartedWebhookRequest(targetURL string, body TrnFileStartedJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTrnFileStartedWebhookRequestWithBody(targetURL, "application/json", bodyReader)
+}
+
+// NewTrnFileStartedWebhookRequestWithBody builds a POST request for the trn.file_started webhook with any body
+func NewTrnFileStartedWebhookRequestWithBody(targetURL string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 	_ = err
 

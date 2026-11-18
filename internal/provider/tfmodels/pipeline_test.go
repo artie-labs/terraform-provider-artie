@@ -557,3 +557,21 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 		assert.ErrorContains(t, PipelineDestinationConfig{Dataset: types.StringValue("analytics")}.Validate(), "`database`")
 	}
 }
+
+func TestPipelineFromAPIModel_AutoStopDroppedTables(t *testing.T) {
+	// The dashboard saves false by omitting the key, so omitted must read back as false, never null, or Terraform's
+	// post-apply consistency check fails.
+	base := openapi.PayloadsFullPipeline{Uuid: uuid.New(), Name: "test", Tables: []openapi.PayloadsTable{}}
+	{
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.False(t, pipeline.AutoStopDroppedTables.IsNull())
+		assert.False(t, pipeline.AutoStopDroppedTables.ValueBool())
+	}
+	{
+		base.AdvancedSettings.AutoStopDroppedTables = ptr(true)
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.True(t, pipeline.AutoStopDroppedTables.ValueBool())
+	}
+}
