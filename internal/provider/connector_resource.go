@@ -259,7 +259,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"oracle_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `oracle`.",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Oracle database. This can point to an Active Data Guard physical standby that is open read-only (contact Artie to enable streaming from a standby); otherwise it must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"port": schema.Int32Attribute{
@@ -271,7 +271,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the Oracle database."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"postgresql_config": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -435,6 +435,50 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 	}
 }
 
+// withWriteOnlySecrets adds a write-only `<secret>_wo` and its `<secret>_wo_version` next to each named secret, so the
+// secret can be kept out of plan and state. A required secret becomes optional, with exactly one of it and its `_wo`
+// required; an optional one conflicts with its `_wo`.
+func withWriteOnlySecrets(secrets []string, attributes map[string]schema.Attribute) map[string]schema.Attribute {
+	for _, name := range secrets {
+		writeOnlyName := name + "_wo"
+		versionName := writeOnlyName + "_version"
+		writeOnlyPath := path.MatchRelative().AtParent().AtName(writeOnlyName)
+
+		secret, ok := attributes[name].(schema.StringAttribute)
+		if !ok {
+			panic(fmt.Sprintf("withWriteOnlySecrets: %q is not a string attribute", name))
+		}
+		if secret.Required {
+			// Computed with a "" default, so a config that uses the `_wo` reads back "" here rather than null.
+			secret.Required = false
+			secret.Optional = true
+			secret.Computed = true
+			secret.Default = stringdefault.StaticString("")
+			secret.Validators = append(secret.Validators, stringvalidator.ExactlyOneOf(writeOnlyPath))
+		} else {
+			secret.Validators = append(secret.Validators, stringvalidator.ConflictsWith(writeOnlyPath))
+		}
+		secret.MarkdownDescription += fmt.Sprintf(" To keep it out of Terraform state, use `%s` instead.", writeOnlyName)
+		attributes[name] = secret
+
+		attributes[writeOnlyName] = schema.StringAttribute{
+			Optional:            true,
+			Sensitive:           true,
+			WriteOnly:           true,
+			Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
+			MarkdownDescription: fmt.Sprintf("A write-only alternative to `%s` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `%s` to send a new value; otherwise a new value is only sent with the next update made for another reason.", name, versionName),
+		}
+		attributes[versionName] = schema.Int64Attribute{
+			Optional: true,
+			// Removing the `_wo` but keeping its version is an error, rather than a plan with no diff whose next unrelated
+			// update quietly sends an empty secret. A `_wo` set without a version can still be removed without a diff.
+			Validators:          []validator.Int64{int64validator.AlsoRequires(writeOnlyPath)},
+			MarkdownDescription: fmt.Sprintf("Change this (for example, increment it) to send a new `%s`. Requires `%s`.", writeOnlyName, writeOnlyName),
+		}
+	}
+	return attributes
+}
+
 func (r *ConnectorResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -466,6 +510,22 @@ func (r *ConnectorResource) GetPlanData(ctx context.Context, plan tfsdk.Plan, di
 	var planData tfmodels.Connector
 	diagnostics.Append(plan.Get(ctx, &planData)...)
 	return planData, diagnostics.HasError()
+}
+
+// apiModel builds the API request from the plan, with each `_wo` secret filled in from config since Terraform leaves
+// those out of the plan. It reads the plan again so the caller's plan data, which feeds state, never holds them.
+func (r *ConnectorResource) apiModel(ctx context.Context, plan tfsdk.Plan, config tfsdk.Config) (openapi.PayloadsConnectorPayload, diag.Diagnostics) {
+	var apiData, configData tfmodels.Connector
+	diags := plan.Get(ctx, &apiData)
+	diags.Append(config.Get(ctx, &configData)...)
+	if diags.HasError() {
+		return openapi.PayloadsConnectorPayload{}, diags
+	}
+
+	tfmodels.CopyWriteOnlySecrets(&apiData, configData)
+	body, toAPIDiags := apiData.ToAPIModel()
+	diags.Append(toAPIDiags...)
+	return body, diags
 }
 
 func (r *ConnectorResource) SetStateData(ctx context.Context, state *tfsdk.State, diagnostics *diag.Diagnostics, apiConnector openapi.PayloadsFullConnector, prior tfmodels.Connector) {
@@ -746,7 +806,7 @@ func (r *ConnectorResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	body, diags := planData.ToAPIModel()
+	body, diags := r.apiModel(ctx, req.Plan, req.Config)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
@@ -783,7 +843,7 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	body, diags := planData.ToAPIModel()
+	body, diags := r.apiModel(ctx, req.Plan, req.Config)
 	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return

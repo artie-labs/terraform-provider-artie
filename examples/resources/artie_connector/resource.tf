@@ -14,6 +14,27 @@ resource "artie_connector" "postgres_dev" {
   }
 }
 
+# With Terraform 1.11 or later, password_wo keeps the password out of plan and state. An ephemeral variable keeps it out
+# of the plan file too. Terraform can't see changes to password_wo, so increment password_wo_version to send a new one.
+# Moving an existing connector from password to password_wo only clears the current state, so rotate the password too.
+variable "oracle_password" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+}
+
+resource "artie_connector" "oracle" {
+  name = "Oracle"
+  type = "oracle"
+  oracle_config = {
+    host                = "oracle.example.com"
+    port                = 1521
+    username            = "artie"
+    password_wo         = var.oracle_password
+    password_wo_version = 1
+  }
+}
+
 variable "cockroach_password" {
   type      = string
   sensitive = true
