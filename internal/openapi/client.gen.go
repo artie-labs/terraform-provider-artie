@@ -1287,7 +1287,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	// AutoReplicateNewTables When true, new tables found in the source are added to the pipeline automatically.
 	AutoReplicateNewTables *bool `json:"autoReplicateNewTables,omitempty"`
 
-	// AutoStopDroppedTables When true, tables that no longer exist in the source stop streaming automatically. Destination tables and their data are kept.
+	// AutoStopDroppedTables When true, tables that no longer exist in the source stop streaming automatically. Destination tables and their data are kept. On sources other than Postgres, a table Artie lost access to also counts as dropped.
 	AutoStopDroppedTables *bool `json:"autoStopDroppedTables,omitempty"`
 
 	// BackfillMySQLFloatsAsShortestDecimal MySQL and PlanetScale sources only: backfills write FLOAT columns as their shortest decimal, as replication does, instead of the exact float32.
@@ -2882,7 +2882,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	// AutoReplicateNewTables When true, new tables found in the source are added to the pipeline automatically.
 	AutoReplicateNewTables *bool `json:"autoReplicateNewTables,omitempty"`
 
-	// AutoStopDroppedTables When true, tables that no longer exist in the source stop streaming automatically. Destination tables and their data are kept.
+	// AutoStopDroppedTables When true, tables that no longer exist in the source stop streaming automatically. Destination tables and their data are kept. On sources other than Postgres, a table Artie lost access to also counts as dropped.
 	AutoStopDroppedTables *bool `json:"autoStopDroppedTables,omitempty"`
 
 	// BackfillMySQLFloatsAsShortestDecimal MySQL and PlanetScale sources only: backfills write FLOAT columns as their shortest decimal, as replication does, instead of the exact float32.
@@ -5403,15 +5403,15 @@ type RouterPipelineValidateUnsavedDestinationRequest struct {
 
 // RouterPipelineValidateUnsavedSourceRequest defines model for RouterPipelineValidateUnsavedSourceRequest.
 type RouterPipelineValidateUnsavedSourceRequest struct {
-	// AllowDroppedTables Set it for a pipeline with autoStopDroppedTables on: tables that no longer exist in the source pass validation, since the table changes check stops them. Every other check is unchanged. Only Postgres sources honor it.
-	AllowDroppedTables     *bool                           `json:"allowDroppedTables,omitempty"`
-	DataPlaneName          *string                         `json:"dataPlaneName,omitempty"`
-	DynamoDBBackfillConfig *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
-	SourceConnector        *PayloadsConnectorPayload       `json:"sourceConnector,omitempty"`
-	SourceReader           *PayloadsSourceReader           `json:"sourceReader,omitempty"`
-	SourceReaderUUID       *openapi_types.UUID             `json:"sourceReaderUUID,omitempty"`
-	Tables                 []PayloadsTable                 `json:"tables"`
-	ValidateTables         bool                            `json:"validateTables"`
+	// AllowDroppedTablesPipelineUUID Set it to a pipeline with autoStopDroppedTables on: that pipeline's already deployed tables pass validation if they no longer exist in the source, since the table changes check stops them. Every other table and check is validated as usual. Only Postgres sources honor it.
+	AllowDroppedTablesPipelineUUID *openapi_types.UUID             `json:"allowDroppedTablesPipelineUUID,omitempty"`
+	DataPlaneName                  *string                         `json:"dataPlaneName,omitempty"`
+	DynamoDBBackfillConfig         *PayloadsDynamoDBSnapshotConfig `json:"dynamoDBBackfillConfig,omitempty"`
+	SourceConnector                *PayloadsConnectorPayload       `json:"sourceConnector,omitempty"`
+	SourceReader                   *PayloadsSourceReader           `json:"sourceReader,omitempty"`
+	SourceReaderUUID               *openapi_types.UUID             `json:"sourceReaderUUID,omitempty"`
+	Tables                         []PayloadsTable                 `json:"tables"`
+	ValidateTables                 bool                            `json:"validateTables"`
 }
 
 // RouterPreviewColumnHashingSaltRequest defines model for RouterPreviewColumnHashingSaltRequest.

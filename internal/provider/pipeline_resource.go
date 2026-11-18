@@ -9,6 +9,7 @@ import (
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -518,7 +519,8 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	if err := r.validate(ctx, pipeline); err != nil {
+	// A new pipeline has no deployed tables, so none of its tables may be missing.
+	if err := r.validate(ctx, pipeline, nil); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
@@ -563,7 +565,13 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	if err := r.validate(ctx, pipeline); err != nil {
+	pipelineUUID, err := uuid.Parse(planData.UUID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
+		return
+	}
+
+	if err := r.validate(ctx, pipeline, &pipelineUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
@@ -600,26 +608,26 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 }
 
-// validate runs the API's source and destination checks against an unsaved pipeline.
-func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.PayloadsPipelinePayload) error {
+// validate runs the API's source and destination checks against an unsaved pipeline. existingUUID is nil for a new one.
+func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.PayloadsPipelinePayload, existingUUID *uuid.UUID) error {
 	tables, err := tfmodels.ValidationTables(pipeline.Tables)
 	if err != nil {
 		return err
 	}
 
-	// With auto_stop_dropped_tables on, a table dropped from the source passes until Artie's next table changes check
-	// stops it. The API can't read the setting here because the pipeline isn't saved yet.
-	var allowDroppedTables *bool
-	if pipeline.AdvancedSettings != nil {
-		allowDroppedTables = pipeline.AdvancedSettings.AutoStopDroppedTables
+	// With auto_stop_dropped_tables on, this pipeline's deployed tables pass if they were dropped from the source, until
+	// Artie's next table changes check stops them. The API can't read the setting here because it isn't saved yet.
+	var allowDroppedTablesPipelineUUID *uuid.UUID
+	if pipeline.AdvancedSettings != nil && lib.RemovePtr(pipeline.AdvancedSettings.AutoStopDroppedTables) {
+		allowDroppedTablesPipelineUUID = existingUUID
 	}
 
 	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedSourceWithResponse(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
-		SourceReaderUUID:   pipeline.SourceReaderUUID,
-		ValidateTables:     true,
-		Tables:             tables,
-		DataPlaneName:      pipeline.DataPlaneName,
-		AllowDroppedTables: allowDroppedTables,
+		SourceReaderUUID:               pipeline.SourceReaderUUID,
+		ValidateTables:                 true,
+		Tables:                         tables,
+		DataPlaneName:                  pipeline.DataPlaneName,
+		AllowDroppedTablesPipelineUUID: allowDroppedTablesPipelineUUID,
 	})); err != nil {
 		return fmt.Errorf("source validation failed: %w", err)
 	}
