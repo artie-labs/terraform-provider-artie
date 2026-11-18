@@ -32,8 +32,7 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 		}
 	}
 	{
-		// The API request gets password_wo from config, while the plan it was built from keeps "" for state
-		plan := postgres("", types.Int64Value(1))
+		// The API request gets password_wo from config
 		apiData := postgres("", types.Int64Value(1))
 		config := postgres("", types.Int64Value(1))
 		config.PostgresConfig.PasswordWO = types.StringValue("from-config")
@@ -42,7 +41,6 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 		body, diags := apiData.ToAPIModel()
 		require.False(t, diags.HasError(), diags)
 		assert.Equal(t, "from-config", (*body.SharedConfig)["password"])
-		assert.True(t, plan.PostgresConfig.PasswordWO.IsNull())
 	}
 	{
 		// Reading back a connector that uses password_wo keeps the secret out of state and keeps the version
@@ -51,6 +49,23 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 		assert.Equal(t, "", connector.PostgresConfig.Password.ValueString())
 		assert.True(t, connector.PostgresConfig.PasswordWO.IsNull())
 		assert.Equal(t, int64(3), connector.PostgresConfig.PasswordWOVersion.ValueInt64())
+	}
+	{
+		// The API returns plaintext secrets to Terraform API keys that can edit connectors, and they stay out of state too
+		var plaintext openapi.PayloadsFullConnector
+		require.NoError(t, json.Unmarshal([]byte(`{
+			"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
+			"type": "postgresql",
+			"sharedConfig": {"host": "db.example.com", "port": 5432, "user": "artie", "password": "from-config"}
+		}`), &plaintext))
+		connector, diags := ConnectorFromAPIModel(plaintext, postgres("", types.Int64Value(3)))
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "", connector.PostgresConfig.Password.ValueString())
+
+		// A connector that still uses password reads back the API's value
+		connector, diags = ConnectorFromAPIModel(plaintext, postgres("secret", types.Int64Null()))
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "from-config", connector.PostgresConfig.Password.ValueString())
 	}
 	{
 		// A connector that still uses password reads back as before, with no version

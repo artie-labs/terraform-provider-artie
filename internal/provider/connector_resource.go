@@ -470,8 +470,8 @@ func withWriteOnlySecrets(secrets []string, attributes map[string]schema.Attribu
 		}
 		attributes[versionName] = schema.Int64Attribute{
 			Optional: true,
-			// Without this, removing the `_wo` alone wouldn't change the plan, and the next unrelated update would quietly
-			// send an empty secret.
+			// Removing the `_wo` but keeping its version is an error, rather than a plan with no diff whose next unrelated
+			// update quietly sends an empty secret. A `_wo` set without a version can still be removed without a diff.
 			Validators:          []validator.Int64{int64validator.AlsoRequires(writeOnlyPath)},
 			MarkdownDescription: fmt.Sprintf("Change this (for example, increment it) to send a new `%s`. Requires `%s`.", writeOnlyName, writeOnlyName),
 		}
