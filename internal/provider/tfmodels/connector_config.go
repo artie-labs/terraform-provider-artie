@@ -108,7 +108,9 @@ func (d *redisDatabase) UnmarshalJSON(data []byte) error {
 // maskedSecret is what the API returns in place of a secret when it masks it.
 const maskedSecret = "********"
 
-// keepMaskedSecrets replaces each masked secret with its value from prior, since the API won't return the real one.
+// keepMaskedSecrets replaces each masked secret with its value from prior, since the API won't return the real one. It
+// also keeps a secret that prior left empty: that's how state looks when the secret comes from its `_wo` attribute,
+// and the API returns plaintext secrets to some Terraform callers, which would put the secret back into state.
 func (c *ConnectorConfig) keepMaskedSecrets(prior ConnectorConfig) {
 	secrets := []struct {
 		value *string
@@ -127,6 +129,9 @@ func (c *ConnectorConfig) keepMaskedSecrets(prior ConnectorConfig) {
 	for _, secret := range secrets {
 		if *secret.value == maskedSecret {
 			*secret.value = secret.prior
+		}
+		if secret.prior == "" {
+			*secret.value = ""
 		}
 	}
 }

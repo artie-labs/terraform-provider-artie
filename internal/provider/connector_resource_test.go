@@ -1,15 +1,18 @@
 package provider
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -81,7 +84,8 @@ func TestConnectorValidateConfigUnknownClickHouseAddresses(t *testing.T) {
 	assert.False(t, resp.Diagnostics.HasError(), resp.Diagnostics)
 }
 
-// connectorConfig builds a connector config from the resource schema with the given attributes set; everything else is null.
+// connectorConfig builds a connector config from the resource schema with the given attributes set; everything else is
+// null. A name like "oracle_config.password" sets a nested attribute.
 func connectorConfig(t *testing.T, attributes map[string]attr.Value) tfsdk.Config {
 	ctx := t.Context()
 	var schemaResp resource.SchemaResponse
@@ -89,7 +93,12 @@ func connectorConfig(t *testing.T, attributes map[string]attr.Value) tfsdk.Confi
 	// tfsdk.Config has no setter, so build its value as a State.
 	state := tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(schemaResp.Schema.Type().TerraformType(ctx), nil)}
 	for name, value := range attributes {
-		require.False(t, state.SetAttribute(ctx, path.Root(name), value).HasError(), name)
+		parts := strings.Split(name, ".")
+		attributePath := path.Root(parts[0])
+		for _, part := range parts[1:] {
+			attributePath = attributePath.AtName(part)
+		}
+		require.False(t, state.SetAttribute(ctx, attributePath, value).HasError(), name)
 	}
 	return tfsdk.Config{Schema: schemaResp.Schema, Raw: state.Raw}
 }
@@ -273,5 +282,69 @@ func TestSSHTunnelPrivateLinkPlan(t *testing.T) {
 		// No tunnel (left out or removed): the link from state is kept
 		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringNull(), types.StringValue(link)))
 		assert.Equal(t, types.StringValue(link), sshTunnelPrivateLinkPlan(types.StringValue(""), types.StringValue(link)))
+	}
+}
+
+// validateConnectorThroughServer runs the provider server's config validation, which unlike [validateConnectorConfig]
+// includes attribute validators.
+func validateConnectorThroughServer(t *testing.T, attributes map[string]attr.Value, writeOnlyAllowed bool) []*tfprotov6.Diagnostic {
+	server := providerserver.NewProtocol6(New("test")())()
+	raw := connectorConfig(t, attributes).Raw
+	config, err := tfprotov6.NewDynamicValue(raw.Type(), raw)
+	require.NoError(t, err)
+	resp, err := server.ValidateResourceConfig(t.Context(), &tfprotov6.ValidateResourceConfigRequest{
+		TypeName:           "artie_connector",
+		Config:             &config,
+		ClientCapabilities: &tfprotov6.ValidateResourceConfigClientCapabilities{WriteOnlyAttributesAllowed: writeOnlyAllowed},
+	})
+	require.NoError(t, err)
+	return resp.Diagnostics
+}
+
+func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
+	oracle := func(password, passwordWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                      types.StringValue("oracle"),
+			"oracle_config.host":        types.StringValue("oracle.example.com"),
+			"oracle_config.port":        types.Int32Value(1521),
+			"oracle_config.username":    types.StringValue("artie"),
+			"oracle_config.password":    password,
+			"oracle_config.password_wo": passwordWO,
+		}
+	}
+	{
+		// A config from before write-only secrets still validates
+		assert.Empty(t, validateConnectorThroughServer(t, oracle(types.StringValue("secret"), types.StringNull()), true))
+	}
+	{
+		// password_wo alone validates
+		assert.Empty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringValue("secret")), true))
+	}
+	{
+		// Both is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringValue("secret"), types.StringValue("secret")), true))
+	}
+	{
+		// Neither is an error, as when password was required
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringNull()), true))
+	}
+	{
+		// An empty write-only secret is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringValue("")), true))
+	}
+	{
+		// Terraform before 1.11 can't send write-only values
+		assert.NotEmpty(t, validateConnectorThroughServer(t, oracle(types.StringNull(), types.StringValue("secret")), false))
+	}
+	{
+		// A version left behind after moving back to password is an error, so the change shows in the plan
+		config := oracle(types.StringValue("secret"), types.StringNull())
+		config["oracle_config.password_wo_version"] = types.Int64Value(1)
+		assert.NotEmpty(t, validateConnectorThroughServer(t, config, true))
+	}
+	{
+		config := oracle(types.StringNull(), types.StringValue("secret"))
+		config["oracle_config.password_wo_version"] = types.Int64Value(1)
+		assert.Empty(t, validateConnectorThroughServer(t, config, true))
 	}
 }

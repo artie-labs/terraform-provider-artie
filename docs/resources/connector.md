@@ -29,6 +29,27 @@ resource "artie_connector" "postgres_dev" {
   }
 }
 
+# With Terraform 1.11 or later, password_wo keeps the password out of plan and state. An ephemeral variable keeps it out
+# of the plan file too. Terraform can't see changes to password_wo, so increment password_wo_version to send a new one.
+# Moving an existing connector from password to password_wo only clears the current state, so rotate the password too.
+variable "oracle_password" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+}
+
+resource "artie_connector" "oracle" {
+  name = "Oracle"
+  type = "oracle"
+  oracle_config = {
+    host                = "oracle.example.com"
+    port                = 1521
+    username            = "artie"
+    password_wo         = var.oracle_password
+    password_wo_version = 1
+  }
+}
+
 variable "cockroach_password" {
   type      = string
   sensitive = true
@@ -420,12 +441,14 @@ Optional:
 Required:
 
 - `host` (String) The hostname of the Oracle database. This can point to an Active Data Guard physical standby that is open read-only (contact Artie to enable streaming from a standby); otherwise it must point to the primary host, not a read replica. This database must also have `ARCHIVELOG` mode and supplemental logging enabled.
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
 - `port` (Number) The default port for Oracle is 1521.
 - `username` (String) The username of the service account we will use to connect to the Oracle database.
 
 Optional:
 
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
 
 

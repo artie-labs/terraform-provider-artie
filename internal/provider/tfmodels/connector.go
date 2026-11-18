@@ -289,6 +289,8 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 		)}
 	}
 
+	// The API doesn't know about `_wo_version`s, so they come from prior.
+	copyConfigFields(&connector, prior, "_wo_version")
 	return connector, nil
 }
 
@@ -458,11 +460,13 @@ func MSSQLSharedConfigFromAPIModel(apiModel ConnectorConfig) *MSSQLSharedConfig 
 }
 
 type OracleSharedConfig struct {
-	Host         types.String `tfsdk:"host"`
-	SnapshotHost types.String `tfsdk:"snapshot_host"`
-	Port         types.Int32  `tfsdk:"port"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
+	Host              types.String `tfsdk:"host"`
+	SnapshotHost      types.String `tfsdk:"snapshot_host"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (o OracleSharedConfig) ToAPIModel() ConnectorConfig {
@@ -471,7 +475,7 @@ func (o OracleSharedConfig) ToAPIModel() ConnectorConfig {
 		SnapshotHost: o.SnapshotHost.ValueString(),
 		Port:         o.Port.ValueInt32(),
 		User:         o.Username.ValueString(),
-		Password:     o.Password.ValueString(),
+		Password:     writeOnlyOr(o.PasswordWO, o.Password),
 	}
 }
 
