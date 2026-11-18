@@ -163,6 +163,7 @@ type Pipeline struct {
 	AutoReplicateIgnoreRegex                     types.String `tfsdk:"auto_replicate_ignore_regex"`
 	AutoReplicateIncludeRegex                    types.String `tfsdk:"auto_replicate_include_regex"`
 	AutoReplicateNewTables                       types.Bool   `tfsdk:"auto_replicate_new_tables"`
+	AutoStopDroppedTables                        types.Bool   `tfsdk:"auto_stop_dropped_tables"`
 	AppendOnly                                   types.Bool   `tfsdk:"append_only"`
 	StaticColumns                                types.List   `tfsdk:"static_columns"`
 	StagingSchema                                types.String `tfsdk:"staging_schema"`
@@ -254,6 +255,7 @@ func (p Pipeline) ToAPIModel(ctx context.Context) (openapi.PayloadsPipelinePaylo
 		AutoReplicateIgnoreRegex:                     stringPointer(p.AutoReplicateIgnoreRegex),
 		AutoReplicateIncludeRegex:                    stringPointer(p.AutoReplicateIncludeRegex),
 		AutoReplicateNewTables:                       boolPointer(p.AutoReplicateNewTables),
+		AutoStopDroppedTables:                        boolPointer(p.AutoStopDroppedTables),
 		AppendOnly:                                   boolPointer(p.AppendOnly),
 		StaticColumns:                                staticColumns,
 		StagingSchema:                                stringPointer(p.StagingSchema),
@@ -326,6 +328,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	var turboLatencyThresholdMinutes types.Int64
 
 	autoReplicateNewTables := types.BoolValue(false)
+	autoStopDroppedTables := types.BoolValue(false)
 
 	settings := apiModel.AdvancedSettings
 	if settings.DropDeletedColumns != nil {
@@ -363,6 +366,9 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 	}
 	if settings.AutoReplicateNewTables != nil {
 		autoReplicateNewTables = types.BoolValue(*settings.AutoReplicateNewTables)
+	}
+	if settings.AutoStopDroppedTables != nil {
+		autoStopDroppedTables = types.BoolValue(*settings.AutoStopDroppedTables)
 	}
 	if settings.AppendOnly != nil {
 		appendOnly = types.BoolValue(*settings.AppendOnly)
@@ -447,6 +453,7 @@ func PipelineFromAPIModel(ctx context.Context, apiModel openapi.PayloadsFullPipe
 		AutoReplicateIgnoreRegex:          types.StringValue(lib.RemovePtr(settings.AutoReplicateIgnoreRegex)),
 		AutoReplicateIncludeRegex:         types.StringValue(lib.RemovePtr(settings.AutoReplicateIncludeRegex)),
 		AutoReplicateNewTables:            autoReplicateNewTables,
+		AutoStopDroppedTables:             autoStopDroppedTables,
 		AppendOnly:                        appendOnly,
 		StaticColumns:                     staticColumns,
 		StagingSchema:                     stagingSchema,

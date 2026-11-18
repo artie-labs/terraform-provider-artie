@@ -9,6 +9,7 @@ import (
 	"terraform-provider-artie/internal/openapi"
 	"terraform-provider-artie/internal/provider/tfmodels"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -249,6 +250,7 @@ func (r *PipelineResource) Schema(ctx context.Context, req resource.SchemaReques
 			"default_source_schema":                                schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set, tables from this schema will not be prefixed with this schema name in the destination. Tables from other schemas will be prefixed with their source schema name to avoid table name collisions (unless `use_same_schema_as_source` is set to true)."},
 			"split_events_by_type":                                 schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will split events by type and store them in separate tables. This is only applicable if the source is API."},
 			"auto_replicate_new_tables":                            schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically start replicating any new tables that are created in the source database."},
+			"auto_stop_dropped_tables":                             schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically stop streaming tables that no longer exist in the source database, when it next checks the source for table changes. The destination table and its data are kept. On sources other than Postgres, a table Artie lost access to also counts as dropped. Pairs with `auto_replicate_new_tables`, and works best when Artie manages the table list (`lifecycle { ignore_changes = [tables] }`)."},
 			"auto_replicate_ignore_regex":                          schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for excluding newly discovered tables from auto-replication."},
 			"auto_replicate_include_regex":                         schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "An optional regular expression for only auto-replicating newly discovered tables that match it. Cannot be combined with `auto_replicate_ignore_regex`; set either one to `\"\"` to clear it."},
 			"auto_enable_history_for_new_tables":                   schema.BoolAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}, MarkdownDescription: "If set to true, Artie will automatically enable history mode for new tables that are created in the source database."},
@@ -517,7 +519,8 @@ func (r *PipelineResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	if err := r.validate(ctx, pipeline); err != nil {
+	// A new pipeline has no deployed tables, so none of its tables may be missing.
+	if err := r.validate(ctx, pipeline, nil); err != nil {
 		resp.Diagnostics.AddError("Unable to create Pipeline", err.Error())
 		return
 	}
@@ -562,7 +565,13 @@ func (r *PipelineResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	if err := r.validate(ctx, pipeline); err != nil {
+	pipelineUUID, err := uuid.Parse(planData.UUID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
+		return
+	}
+
+	if err := r.validate(ctx, pipeline, &pipelineUUID); err != nil {
 		resp.Diagnostics.AddError("Unable to update Pipeline", err.Error())
 		return
 	}
@@ -599,18 +608,26 @@ func (r *PipelineResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 }
 
-// validate runs the API's source and destination checks against an unsaved pipeline.
-func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.PayloadsPipelinePayload) error {
+// validate runs the API's source and destination checks against an unsaved pipeline. existingUUID is nil for a new one.
+func (r *PipelineResource) validate(ctx context.Context, pipeline openapi.PayloadsPipelinePayload, existingUUID *uuid.UUID) error {
 	tables, err := tfmodels.ValidationTables(pipeline.Tables)
 	if err != nil {
 		return err
 	}
 
+	// With auto_stop_dropped_tables on, this pipeline's deployed tables pass if they were dropped from the source, until
+	// Artie's next table changes check stops them. The API can't read the setting here because it isn't saved yet.
+	var allowDroppedTablesPipelineUUID *uuid.UUID
+	if pipeline.AdvancedSettings != nil && lib.RemovePtr(pipeline.AdvancedSettings.AutoStopDroppedTables) {
+		allowDroppedTablesPipelineUUID = existingUUID
+	}
+
 	if err := artieclient.ValidationError(r.client.PipelineValidateUnsavedSourceWithResponse(ctx, openapi.RouterPipelineValidateUnsavedSourceRequest{
-		SourceReaderUUID: pipeline.SourceReaderUUID,
-		ValidateTables:   true,
-		Tables:           tables,
-		DataPlaneName:    pipeline.DataPlaneName,
+		SourceReaderUUID:               pipeline.SourceReaderUUID,
+		ValidateTables:                 true,
+		Tables:                         tables,
+		DataPlaneName:                  pipeline.DataPlaneName,
+		AllowDroppedTablesPipelineUUID: allowDroppedTablesPipelineUUID,
 	})); err != nil {
 		return fmt.Errorf("source validation failed: %w", err)
 	}
