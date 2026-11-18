@@ -558,6 +558,36 @@ func TestPipelineDestinationConfigValidate(t *testing.T) {
 	}
 }
 
+func TestPipelineArtieUpdatedAtColumnName(t *testing.T) {
+	base := openapi.PayloadsFullPipeline{Uuid: uuid.New(), Name: "test", Tables: []openapi.PayloadsTable{}}
+	{
+		// The API omits the default name, so it must read back as "", never null, to match a config that resets it.
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.False(t, pipeline.ArtieUpdatedAtColumnName.IsNull())
+		assert.Equal(t, "", pipeline.ArtieUpdatedAtColumnName.ValueString())
+	}
+	{
+		base.AdvancedSettings.ArtieUpdatedAtColumnName = ptr("synced_at")
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, "synced_at", pipeline.ArtieUpdatedAtColumnName.ValueString())
+
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Equal(t, "synced_at", *apiModel.AdvancedSettings.ArtieUpdatedAtColumnName)
+	}
+	{
+		// Left out of the config on create, it's unknown and must be omitted so the API keeps its default.
+		pipeline, diags := PipelineFromAPIModel(t.Context(), base)
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		pipeline.ArtieUpdatedAtColumnName = types.StringUnknown()
+		apiModel, diags := pipeline.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
+		assert.Nil(t, apiModel.AdvancedSettings.ArtieUpdatedAtColumnName)
+	}
+}
+
 func TestPipelineFromAPIModel_AutoStopDroppedTables(t *testing.T) {
 	// The dashboard saves false by omitting the key, so omitted must read back as false, never null, or Terraform's
 	// post-apply consistency check fails.
