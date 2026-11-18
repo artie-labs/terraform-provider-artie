@@ -15,16 +15,16 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 	var apiConnector openapi.PayloadsFullConnector
 	require.NoError(t, json.Unmarshal([]byte(`{
 		"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
-		"type": "postgresql",
-		"sharedConfig": {"host": "db.example.com", "port": 5432, "user": "artie", "password": "********"}
+		"type": "oracle",
+		"sharedConfig": {"host": "db.example.com", "port": 1521, "user": "artie", "password": "********"}
 	}`), &apiConnector))
-	postgres := func(password string, version types.Int64) Connector {
+	oracle := func(password string, version types.Int64) Connector {
 		return Connector{
 			UUID: types.StringValue("0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01"),
-			Type: types.StringValue("postgresql"),
-			PostgresConfig: &PostgresSharedConfig{
+			Type: types.StringValue("oracle"),
+			OracleConfig: &OracleSharedConfig{
 				Host:              types.StringValue("db.example.com"),
-				Port:              types.Int32Value(5432),
+				Port:              types.Int32Value(1521),
 				Username:          types.StringValue("artie"),
 				Password:          types.StringValue(password),
 				PasswordWOVersion: version,
@@ -33,9 +33,9 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 	}
 	{
 		// The API request gets password_wo from config
-		apiData := postgres("", types.Int64Value(1))
-		config := postgres("", types.Int64Value(1))
-		config.PostgresConfig.PasswordWO = types.StringValue("from-config")
+		apiData := oracle("", types.Int64Value(1))
+		config := oracle("", types.Int64Value(1))
+		config.OracleConfig.PasswordWO = types.StringValue("from-config")
 
 		CopyWriteOnlySecrets(&apiData, config)
 		body, diags := apiData.ToAPIModel()
@@ -44,40 +44,40 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 	}
 	{
 		// Reading back a connector that uses password_wo keeps the secret out of state and keeps the version
-		connector, diags := ConnectorFromAPIModel(apiConnector, postgres("", types.Int64Value(3)))
+		connector, diags := ConnectorFromAPIModel(apiConnector, oracle("", types.Int64Value(3)))
 		require.False(t, diags.HasError(), diags)
-		assert.Equal(t, "", connector.PostgresConfig.Password.ValueString())
-		assert.True(t, connector.PostgresConfig.PasswordWO.IsNull())
-		assert.Equal(t, int64(3), connector.PostgresConfig.PasswordWOVersion.ValueInt64())
+		assert.Equal(t, "", connector.OracleConfig.Password.ValueString())
+		assert.True(t, connector.OracleConfig.PasswordWO.IsNull())
+		assert.Equal(t, int64(3), connector.OracleConfig.PasswordWOVersion.ValueInt64())
 	}
 	{
 		// The API returns plaintext secrets to Terraform API keys that can edit connectors, and they stay out of state too
 		var plaintext openapi.PayloadsFullConnector
 		require.NoError(t, json.Unmarshal([]byte(`{
 			"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a01",
-			"type": "postgresql",
-			"sharedConfig": {"host": "db.example.com", "port": 5432, "user": "artie", "password": "from-config"}
+			"type": "oracle",
+			"sharedConfig": {"host": "db.example.com", "port": 1521, "user": "artie", "password": "from-config"}
 		}`), &plaintext))
-		connector, diags := ConnectorFromAPIModel(plaintext, postgres("", types.Int64Value(3)))
+		connector, diags := ConnectorFromAPIModel(plaintext, oracle("", types.Int64Value(3)))
 		require.False(t, diags.HasError(), diags)
-		assert.Equal(t, "", connector.PostgresConfig.Password.ValueString())
+		assert.Equal(t, "", connector.OracleConfig.Password.ValueString())
 
 		// A connector that still uses password reads back the API's value
-		connector, diags = ConnectorFromAPIModel(plaintext, postgres("secret", types.Int64Null()))
+		connector, diags = ConnectorFromAPIModel(plaintext, oracle("secret", types.Int64Null()))
 		require.False(t, diags.HasError(), diags)
-		assert.Equal(t, "from-config", connector.PostgresConfig.Password.ValueString())
+		assert.Equal(t, "from-config", connector.OracleConfig.Password.ValueString())
 	}
 	{
 		// A connector that still uses password reads back as before, with no version
-		connector, diags := ConnectorFromAPIModel(apiConnector, postgres("secret", types.Int64Null()))
+		connector, diags := ConnectorFromAPIModel(apiConnector, oracle("secret", types.Int64Null()))
 		require.False(t, diags.HasError(), diags)
-		assert.Equal(t, "secret", connector.PostgresConfig.Password.ValueString())
-		assert.True(t, connector.PostgresConfig.PasswordWO.IsNull())
-		assert.True(t, connector.PostgresConfig.PasswordWOVersion.IsNull())
+		assert.Equal(t, "secret", connector.OracleConfig.Password.ValueString())
+		assert.True(t, connector.OracleConfig.PasswordWO.IsNull())
+		assert.True(t, connector.OracleConfig.PasswordWOVersion.IsNull())
 	}
 	{
 		// Without password_wo, the request sends password as before
-		body, diags := postgres("secret", types.Int64Null()).ToAPIModel()
+		body, diags := oracle("secret", types.Int64Null()).ToAPIModel()
 		require.False(t, diags.HasError(), diags)
 		assert.Equal(t, "secret", (*body.SharedConfig)["password"])
 	}
