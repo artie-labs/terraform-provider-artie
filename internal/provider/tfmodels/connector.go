@@ -913,10 +913,12 @@ func DocumentDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *DocumentDBSha
 }
 
 type ClickHouseSharedConfig struct {
-	Addresses  types.List   `tfsdk:"addresses"`
-	Username   types.String `tfsdk:"username"`
-	Password   types.String `tfsdk:"password"`
-	IsInsecure types.Bool   `tfsdk:"is_insecure"`
+	Addresses         types.List   `tfsdk:"addresses"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
+	IsInsecure        types.Bool   `tfsdk:"is_insecure"`
 }
 
 func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
@@ -930,7 +932,7 @@ func (c ClickHouseSharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		ClickHouseAddresses:  addresses,
 		Username:             c.Username.ValueString(),
-		Password:             c.Password.ValueString(),
+		Password:             writeOnlyOr(c.PasswordWO, c.Password),
 		ClickHouseIsInsecure: c.IsInsecure.ValueBool(),
 	}
 }
