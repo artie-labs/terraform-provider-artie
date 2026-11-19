@@ -48,3 +48,19 @@ func copyConfigFields(dst *Connector, src Connector, suffix string) {
 		}
 	}
 }
+
+// SecretMissing reports whether neither a secret nor its write-only alternative is set. Unknown counts as set.
+func SecretMissing(plain, writeOnly types.String) bool {
+	if !IsKnownAndEmpty(plain) {
+		return false
+	}
+	return IsKnownAndEmpty(writeOnly)
+}
+
+// SecretSet reports whether a secret or its write-only alternative is set to a known, non-empty value.
+func SecretSet(plain, writeOnly types.String) bool {
+	if IsKnownAndNonEmpty(plain) {
+		return true
+	}
+	return IsKnownAndNonEmpty(writeOnly)
+}

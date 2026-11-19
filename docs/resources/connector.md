@@ -338,12 +338,18 @@ Optional:
 - `access_key_id` (String) The AWS Access Key ID for connecting to S3 Tables. Required if `provider` is `s3tables`.
 - `auth_uri` (String) The OAuth2 token endpoint URL. Required when using `credential` authentication (without `token`).
 - `bucket_arn` (String) The ARN of the S3 Tables table bucket (e.g. `arn:aws:s3tables:us-east-1:123456789012:bucket/my-bucket`). Required if `provider` is `s3tables`.
-- `credential` (String, Sensitive) OAuth2 client credentials in the format `client_id:client_secret` for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`.
+- `credential` (String, Sensitive) OAuth2 client credentials in the format `client_id:client_secret` for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`. To keep it out of Terraform state, use `credential_wo` instead.
+- `credential_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `credential` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `credential_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `credential_wo_version` (Number) Change this (for example, increment it) to send a new `credential_wo`. Requires `credential_wo`.
 - `prefix` (String) An optional catalog prefix for namespacing in the REST catalog.
 - `region` (String) The AWS region for S3 Tables. Optional; can be parsed from the `bucket_arn`.
 - `scope` (String) The OAuth2 scope. Optional; defaults to `catalog` on the server side.
-- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for connecting to S3 Tables. Required if `provider` is `s3tables`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable.
-- `token` (String, Sensitive) A bearer token for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`.
+- `secret_access_key` (String, Sensitive) The AWS Secret Access Key for connecting to S3 Tables. Required if `provider` is `s3tables`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable. To keep it out of Terraform state, use `secret_access_key_wo` instead.
+- `secret_access_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `secret_access_key` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `secret_access_key_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `secret_access_key_wo_version` (Number) Change this (for example, increment it) to send a new `secret_access_key_wo`. Requires `secret_access_key_wo`.
+- `token` (String, Sensitive) A bearer token for authenticating with the REST catalog. Either `token` or `credential` must be provided if `provider` is `rest`. To keep it out of Terraform state, use `token_wo` instead.
+- `token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `token` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `token_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `token_wo_version` (Number) Change this (for example, increment it) to send a new `token_wo`. Requires `token_wo`.
 - `uri` (String) The REST catalog endpoint URL. Required if `provider` is `rest`.
 - `warehouse` (String) The warehouse identifier for the REST catalog. Required if `provider` is `rest`.
 

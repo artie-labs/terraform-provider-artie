@@ -677,31 +677,37 @@ type IcebergSharedConfig struct {
 	Provider types.String `tfsdk:"provider"`
 
 	// S3 Tables fields:
-	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
-	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
-	BucketARN          types.String `tfsdk:"bucket_arn"`
-	Region             types.String `tfsdk:"region"`
+	AwsAccessKeyID              types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey          types.String `tfsdk:"secret_access_key"`
+	AwsSecretAccessKeyWO        types.String `tfsdk:"secret_access_key_wo"`
+	AwsSecretAccessKeyWOVersion types.Int64  `tfsdk:"secret_access_key_wo_version"`
+	BucketARN                   types.String `tfsdk:"bucket_arn"`
+	Region                      types.String `tfsdk:"region"`
 
 	// REST Catalog fields:
-	URI        types.String `tfsdk:"uri"`
-	Token      types.String `tfsdk:"token"`
-	Credential types.String `tfsdk:"credential"`
-	AuthURI    types.String `tfsdk:"auth_uri"`
-	Scope      types.String `tfsdk:"scope"`
-	Warehouse  types.String `tfsdk:"warehouse"`
-	Prefix     types.String `tfsdk:"prefix"`
+	URI                 types.String `tfsdk:"uri"`
+	Token               types.String `tfsdk:"token"`
+	TokenWO             types.String `tfsdk:"token_wo"`
+	TokenWOVersion      types.Int64  `tfsdk:"token_wo_version"`
+	Credential          types.String `tfsdk:"credential"`
+	CredentialWO        types.String `tfsdk:"credential_wo"`
+	CredentialWOVersion types.Int64  `tfsdk:"credential_wo_version"`
+	AuthURI             types.String `tfsdk:"auth_uri"`
+	Scope               types.String `tfsdk:"scope"`
+	Warehouse           types.String `tfsdk:"warehouse"`
+	Prefix              types.String `tfsdk:"prefix"`
 }
 
 func (i IcebergSharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		IcebergProvider:    i.Provider.ValueString(),
 		AWSAccessKeyID:     i.AwsAccessKeyID.ValueString(),
-		AWSSecretAccessKey: i.AwsSecretAccessKey.ValueString(),
+		AWSSecretAccessKey: writeOnlyOr(i.AwsSecretAccessKeyWO, i.AwsSecretAccessKey),
 		IcebergBucketARN:   i.BucketARN.ValueString(),
 		IcebergRegion:      i.Region.ValueString(),
 		IcebergURI:         i.URI.ValueString(),
-		Token:              i.Token.ValueString(),
-		IcebergCredential:  i.Credential.ValueString(),
+		Token:              writeOnlyOr(i.TokenWO, i.Token),
+		IcebergCredential:  writeOnlyOr(i.CredentialWO, i.Credential),
 		IcebergAuthURI:     i.AuthURI.ValueString(),
 		IcebergScope:       i.Scope.ValueString(),
 		IcebergWarehouse:   i.Warehouse.ValueString(),
