@@ -184,7 +184,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"iceberg_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"secret_access_key", "token", "credential"}, map[string]schema.Attribute{
 					"provider": schema.StringAttribute{Required: true, MarkdownDescription: "The Iceberg provider type. Must be `s3tables` or `rest`.", Validators: []validator.String{stringvalidator.OneOf("s3tables", "rest")}},
 
 					// S3 Tables fields:
@@ -201,7 +201,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"scope":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth2 scope. Optional; defaults to `catalog` on the server side."},
 					"warehouse":  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The warehouse identifier for the REST catalog. Required if `provider` is `rest`."},
 					"prefix":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "An optional catalog prefix for namespacing in the REST catalog."},
-				},
+				}),
 			},
 			"mongodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -596,7 +596,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AwsAccessKeyID) {
 				resp.Diagnostics.AddError("access_key_id is required for s3tables", "Please provide `access_key_id` inside `iceberg_config` when using `s3tables` provider.")
 			}
-			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AwsSecretAccessKey) {
+			if tfmodels.SecretMissing(configData.IcebergConfig.AwsSecretAccessKey, configData.IcebergConfig.AwsSecretAccessKeyWO) {
 				resp.Diagnostics.AddError("secret_access_key is required for s3tables", "Please provide `secret_access_key` inside `iceberg_config` when using `s3tables` provider.")
 			}
 			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.BucketARN) {
@@ -609,11 +609,15 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Warehouse) {
 				resp.Diagnostics.AddError("warehouse is required for rest catalog", "Please provide `warehouse` inside `iceberg_config` when using `rest` provider.")
 			}
-			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Token) && tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Credential) {
-				resp.Diagnostics.AddError("token or credential is required for rest catalog", "Please provide either `token` or `credential` inside `iceberg_config` when using `rest` provider.")
-			}
-			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Token) && tfmodels.IsKnownAndNonEmpty(configData.IcebergConfig.Credential) && tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AuthURI) {
-				resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
+			if tfmodels.SecretMissing(configData.IcebergConfig.Token, configData.IcebergConfig.TokenWO) {
+				if tfmodels.SecretMissing(configData.IcebergConfig.Credential, configData.IcebergConfig.CredentialWO) {
+					resp.Diagnostics.AddError("token or credential is required for rest catalog", "Please provide either `token` or `credential` inside `iceberg_config` when using `rest` provider.")
+				}
+				if tfmodels.SecretSet(configData.IcebergConfig.Credential, configData.IcebergConfig.CredentialWO) {
+					if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AuthURI) {
+						resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
+					}
+				}
 			}
 		}
 	case string(openapi.EnumsConnectorSlugKeyspaces):

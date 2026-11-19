@@ -381,3 +381,52 @@ func TestConnectorValidateConfigWriteOnlyOptionalSecret(t *testing.T) {
 		assert.NotEmpty(t, validateConnectorThroughServer(t, config, true))
 	}
 }
+
+func TestConnectorValidateConfigWriteOnlyIceberg(t *testing.T) {
+	s3Tables := func(secret, secretWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                                types.StringValue("iceberg"),
+			"iceberg_config.provider":             types.StringValue("s3tables"),
+			"iceberg_config.access_key_id":        types.StringValue("AKIA"),
+			"iceberg_config.secret_access_key":    secret,
+			"iceberg_config.secret_access_key_wo": secretWO,
+			"iceberg_config.bucket_arn":           types.StringValue("arn:aws:s3tables:us-east-1:123456789012:bucket/b"),
+			"iceberg_config.region":               types.StringValue("us-east-1"),
+		}
+	}
+	rest := func(attributes map[string]attr.Value) map[string]attr.Value {
+		config := map[string]attr.Value{
+			"type":                     types.StringValue("iceberg"),
+			"iceberg_config.provider":  types.StringValue("rest"),
+			"iceberg_config.uri":       types.StringValue("https://catalog.example.com"),
+			"iceberg_config.warehouse": types.StringValue("wh"),
+		}
+		for name, value := range attributes {
+			config[name] = value
+		}
+		return config
+	}
+	{
+		// S3 Tables: the secret key or its write-only alternative is required
+		assert.Empty(t, validateConnectorThroughServer(t, s3Tables(types.StringValue("secret"), types.StringNull()), true))
+		assert.Empty(t, validateConnectorThroughServer(t, s3Tables(types.StringNull(), types.StringValue("secret")), true))
+		assert.NotEmpty(t, validateConnectorThroughServer(t, s3Tables(types.StringNull(), types.StringNull()), true))
+		assert.NotEmpty(t, validateConnectorThroughServer(t, s3Tables(types.StringValue("secret"), types.StringValue("secret")), true))
+	}
+	{
+		// REST: token_wo counts as a token
+		assert.Empty(t, validateConnectorThroughServer(t, rest(map[string]attr.Value{"iceberg_config.token_wo": types.StringValue("t")}), true))
+	}
+	{
+		// REST: neither a token nor a credential is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, rest(nil), true))
+	}
+	{
+		// REST: credential_wo counts as a credential, so it needs auth_uri without a token
+		assert.NotEmpty(t, validateConnectorThroughServer(t, rest(map[string]attr.Value{"iceberg_config.credential_wo": types.StringValue("c")}), true))
+		assert.Empty(t, validateConnectorThroughServer(t, rest(map[string]attr.Value{
+			"iceberg_config.credential_wo": types.StringValue("c"),
+			"iceberg_config.auth_uri":      types.StringValue("https://auth.example.com"),
+		}), true))
+	}
+}

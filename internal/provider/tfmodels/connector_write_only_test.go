@@ -122,3 +122,18 @@ func TestConnectorWriteOnlyOptionalSecret(t *testing.T) {
 		assert.Equal(t, int64(1), connector.ClickHouseConfig.PasswordWOVersion.ValueInt64())
 	}
 }
+
+func TestSecretMissingAndSet(t *testing.T) {
+	{
+		// With no write-only value, both match the checks they replaced
+		for _, plain := range []types.String{types.StringNull(), types.StringValue(""), types.StringValue("x"), types.StringUnknown()} {
+			assert.Equal(t, IsKnownAndEmpty(plain), SecretMissing(plain, types.StringNull()), plain)
+			assert.Equal(t, IsKnownAndNonEmpty(plain), SecretSet(plain, types.StringNull()), plain)
+		}
+	}
+	{
+		// A write-only value counts
+		assert.False(t, SecretMissing(types.StringValue(""), types.StringValue("x")))
+		assert.True(t, SecretSet(types.StringValue(""), types.StringValue("x")))
+	}
+}
