@@ -424,12 +424,12 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"clickhouse_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `clickhouse`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"addresses":   schema.ListAttribute{Required: true, ElementType: types.StringType, Validators: []validator.List{listvalidator.SizeAtLeast(1)}, MarkdownDescription: "The `host:port` addresses of the ClickHouse server."},
 					"username":    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The username of the service account we should use to connect to ClickHouse."},
 					"password":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"is_insecure": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without TLS."},
-				},
+				}),
 			},
 		},
 	}

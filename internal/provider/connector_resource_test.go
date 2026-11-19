@@ -348,3 +348,36 @@ func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
 		assert.Empty(t, validateConnectorThroughServer(t, config, true))
 	}
 }
+
+func TestConnectorValidateConfigWriteOnlyOptionalSecret(t *testing.T) {
+	clickHouse := func(password, passwordWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                          types.StringValue("clickhouse"),
+			"clickhouse_config.addresses":   types.ListValueMust(types.StringType, []attr.Value{types.StringValue("ch.example.com:9440")}),
+			"clickhouse_config.password":    password,
+			"clickhouse_config.password_wo": passwordWO,
+		}
+	}
+	{
+		// A config from before write-only secrets still validates
+		assert.Empty(t, validateConnectorThroughServer(t, clickHouse(types.StringValue("secret"), types.StringNull()), true))
+	}
+	{
+		// password_wo alone validates
+		assert.Empty(t, validateConnectorThroughServer(t, clickHouse(types.StringNull(), types.StringValue("secret")), true))
+	}
+	{
+		// The password stays optional, so neither validates
+		assert.Empty(t, validateConnectorThroughServer(t, clickHouse(types.StringNull(), types.StringNull()), true))
+	}
+	{
+		// Both is an error
+		assert.NotEmpty(t, validateConnectorThroughServer(t, clickHouse(types.StringValue("secret"), types.StringValue("secret")), true))
+	}
+	{
+		// A version left behind after removing password_wo is an error, so the removal shows in the plan
+		config := clickHouse(types.StringNull(), types.StringNull())
+		config["clickhouse_config.password_wo_version"] = types.Int64Value(1)
+		assert.NotEmpty(t, validateConnectorThroughServer(t, config, true))
+	}
+}

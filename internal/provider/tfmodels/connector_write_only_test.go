@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -80,5 +81,44 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 		body, diags := oracle("secret", types.Int64Null()).ToAPIModel()
 		require.False(t, diags.HasError(), diags)
 		assert.Equal(t, "secret", (*body.SharedConfig)["password"])
+	}
+}
+
+func TestConnectorWriteOnlyOptionalSecret(t *testing.T) {
+	clickHouse := func(password string) Connector {
+		return Connector{
+			UUID: types.StringValue("0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a02"),
+			Type: types.StringValue("clickhouse"),
+			ClickHouseConfig: &ClickHouseSharedConfig{
+				Addresses:         types.ListValueMust(types.StringType, []attr.Value{types.StringValue("ch.example.com:9440")}),
+				Username:          types.StringValue("artie"),
+				Password:          types.StringValue(password),
+				PasswordWOVersion: types.Int64Value(1),
+				IsInsecure:        types.BoolValue(false),
+			},
+		}
+	}
+	{
+		// The API request gets password_wo from config
+		apiData := clickHouse("")
+		config := clickHouse("")
+		config.ClickHouseConfig.PasswordWO = types.StringValue("from-config")
+		CopyWriteOnlySecrets(&apiData, config)
+		body, diags := apiData.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "from-config", (*body.SharedConfig)["password"])
+	}
+	{
+		// A plaintext readback stays out of state, and the version is kept
+		var apiConnector openapi.PayloadsFullConnector
+		require.NoError(t, json.Unmarshal([]byte(`{
+			"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a02",
+			"type": "clickhouse",
+			"sharedConfig": {"addresses": ["ch.example.com:9440"], "username": "artie", "password": "from-config"}
+		}`), &apiConnector))
+		connector, diags := ConnectorFromAPIModel(apiConnector, clickHouse(""))
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "", connector.ClickHouseConfig.Password.ValueString())
+		assert.Equal(t, int64(1), connector.ClickHouseConfig.PasswordWOVersion.ValueInt64())
 	}
 }
