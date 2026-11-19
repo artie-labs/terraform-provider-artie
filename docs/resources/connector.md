@@ -235,7 +235,7 @@ Optional:
 
 - `is_insecure` (Boolean) Set to `true` to connect without TLS.
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
-- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `password_wo` (String, Sensitive) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `username` (String) The username of the service account we should use to connect to ClickHouse.
 
@@ -449,7 +449,7 @@ Required:
 Optional:
 
 - `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
-- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `password_wo` (String, Sensitive) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
 
