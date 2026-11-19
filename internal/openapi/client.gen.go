@@ -1506,7 +1506,7 @@ type PayloadsAdvancedTableSettingsPayload struct {
 	// UnifyAcrossDatabases When the source reader unifies across databases, this table is read from every matching database into one destination table. Only PlanetScale reads it per table.
 	UnifyAcrossDatabases *bool `json:"unifyAcrossDatabases,omitempty"`
 
-	// UnifyAcrossSchemas Postgres and MySQL: when the source reader unifies across schemas, this table is read from every matching schema into one destination table.
+	// UnifyAcrossSchemas Postgres, MySQL and Oracle: when the source reader unifies across schemas, this table is read from every matching schema into one destination table.
 	UnifyAcrossSchemas *bool `json:"unifyAcrossSchemas,omitempty"`
 }
 
@@ -2158,6 +2158,12 @@ type PayloadsKafkaBrokerConfig struct {
 
 	// Value The config's value, as a string.
 	Value string `json:"value"`
+}
+
+// PayloadsKafkaBrokerDefaults defines model for PayloadsKafkaBrokerDefaults.
+type PayloadsKafkaBrokerDefaults struct {
+	// Configs Each config the brokers leave at Kafka's default, with that default, sorted by name.
+	Configs []PayloadsKafkaBrokerConfig `json:"configs"`
 }
 
 // PayloadsKafkaCluster defines model for PayloadsKafkaCluster.
@@ -3868,7 +3874,7 @@ type PayloadsTableAdvancedSettings struct {
 	// UnifyAcrossDatabases When the source reader unifies across databases, this table is read from every matching database into one destination table. Only PlanetScale reads it per table.
 	UnifyAcrossDatabases *bool `json:"unifyAcrossDatabases,omitempty"`
 
-	// UnifyAcrossSchemas Postgres and MySQL: when the source reader unifies across schemas, this table is read from every matching schema into one destination table.
+	// UnifyAcrossSchemas Postgres, MySQL and Oracle: when the source reader unifies across schemas, this table is read from every matching schema into one destination table.
 	UnifyAcrossSchemas *bool `json:"unifyAcrossSchemas,omitempty"`
 }
 
@@ -4690,10 +4696,13 @@ type PayloadsWebhookTrnFileProcessed struct {
 	Message    string                        `json:"message"`
 	Pipelines  []PayloadsWebhookPipelineInfo `json:"pipelines"`
 	Properties struct {
-		// LastProcessedFile Last SQL Server transaction log backup file read to its end. Omitted when Reader has no position yet.
+		// File Transaction log backup file Reader is reading. Omitted when it isn't reading one.
+		File *string `json:"file,omitempty"`
+
+		// LastProcessedFile Last SQL Server transaction log backup file read to its end. Omitted until Reader finishes its first file after a start.
 		LastProcessedFile *string `json:"last_processed_file,omitempty"`
 
-		// RestartFile First transaction log backup file a restart reads again, because a transaction in it is still open. Omitted when none is open.
+		// RestartFile Sent by older Readers only: first transaction log backup file a restart reads again, because a transaction in it is still open.
 		RestartFile *string `json:"restart_file,omitempty"`
 	} `json:"properties"`
 
@@ -7913,6 +7922,13 @@ type ClientInterface interface {
 	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
 	KafkaClusterAllowedCidrsUpdate(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KafkaClusterBrokerDefaults List the Kafka defaults a Managed Kafka cluster runs with
+	//
+	// Retrieves the broker configs an active Managed Kafka cluster leaves at Kafka's default, each with that default, sorted by name. The configs Artie sets are in the cluster's own payload. Returns 400 for other clusters, and 409 if the cluster isn't active or is still being set up.
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/broker-defaults (the `KafkaClusterBrokerDefaults` operationId).
+	KafkaClusterBrokerDefaults(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// KafkaClusterBrokerSettingsUpdateWithBody Change a Managed Kafka cluster's broker settings
 	//
 	// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -10254,6 +10270,23 @@ func (c *Client) KafkaClusterAllowedCidrsUpdateWithBody(ctx context.Context, uui
 // Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
 func (c *Client) KafkaClusterAllowedCidrsUpdate(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewKafkaClusterAllowedCidrsUpdateRequest(c.Server, uuid, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// KafkaClusterBrokerDefaults List the Kafka defaults a Managed Kafka cluster runs with
+//
+// Retrieves the broker configs an active Managed Kafka cluster leaves at Kafka's default, each with that default, sorted by name. The configs Artie sets are in the cluster's own payload. Returns 400 for other clusters, and 409 if the cluster isn't active or is still being set up.
+//
+// Corresponds with GET /kafka-clusters/{uuid}/broker-defaults (the `KafkaClusterBrokerDefaults` operationId).
+func (c *Client) KafkaClusterBrokerDefaults(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKafkaClusterBrokerDefaultsRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -14647,6 +14680,40 @@ func NewKafkaClusterAllowedCidrsUpdateRequestWithBody(server string, uuid string
 	return req, nil
 }
 
+// NewKafkaClusterBrokerDefaultsRequest constructs an http.Request for the KafkaClusterBrokerDefaults method
+func NewKafkaClusterBrokerDefaultsRequest(server string, uuid string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "uuid", uuid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/kafka-clusters/%s/broker-defaults", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewKafkaClusterBrokerSettingsUpdateRequest calls the generic KafkaClusterBrokerSettingsUpdate builder with application/json body
 func NewKafkaClusterBrokerSettingsUpdateRequest(server string, uuid string, body KafkaClusterBrokerSettingsUpdateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -18942,6 +19009,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /kafka-clusters/{uuid}/allowed-cidrs (the `KafkaClusterAllowedCidrsUpdate` operationId).
 	KafkaClusterAllowedCidrsUpdateWithResponse(ctx context.Context, uuid string, body KafkaClusterAllowedCidrsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*KafkaClusterAllowedCidrsUpdateResponse, error)
 
+	// KafkaClusterBrokerDefaultsWithResponse List the Kafka defaults a Managed Kafka cluster runs with
+	//
+	// Retrieves the broker configs an active Managed Kafka cluster leaves at Kafka's default, each with that default, sorted by name. The configs Artie sets are in the cluster's own payload. Returns 400 for other clusters, and 409 if the cluster isn't active or is still being set up.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /kafka-clusters/{uuid}/broker-defaults (the `KafkaClusterBrokerDefaults` operationId).
+	KafkaClusterBrokerDefaultsWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterBrokerDefaultsResponse, error)
+
 	// KafkaClusterBrokerSettingsUpdateWithBodyWithResponse Change a Managed Kafka cluster's broker settings
 	//
 	// Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -22007,6 +22083,47 @@ func (r KafkaClusterAllowedCidrsUpdateResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r KafkaClusterAllowedCidrsUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type KafkaClusterBrokerDefaultsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PayloadsKafkaBrokerDefaults
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r KafkaClusterBrokerDefaultsResponse) GetJSON200() *PayloadsKafkaBrokerDefaults {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r KafkaClusterBrokerDefaultsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r KafkaClusterBrokerDefaultsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KafkaClusterBrokerDefaultsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r KafkaClusterBrokerDefaultsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -26262,6 +26379,21 @@ func (c *ClientWithResponses) KafkaClusterAllowedCidrsUpdateWithResponse(ctx con
 	return ParseKafkaClusterAllowedCidrsUpdateResponse(rsp)
 }
 
+// KafkaClusterBrokerDefaultsWithResponse List the Kafka defaults a Managed Kafka cluster runs with
+//
+// Retrieves the broker configs an active Managed Kafka cluster leaves at Kafka's default, each with that default, sorted by name. The configs Artie sets are in the cluster's own payload. Returns 400 for other clusters, and 409 if the cluster isn't active or is still being set up.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /kafka-clusters/{uuid}/broker-defaults (the `KafkaClusterBrokerDefaults` operationId).
+func (c *ClientWithResponses) KafkaClusterBrokerDefaultsWithResponse(ctx context.Context, uuid string, reqEditors ...RequestEditorFn) (*KafkaClusterBrokerDefaultsResponse, error) {
+	rsp, err := c.KafkaClusterBrokerDefaults(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKafkaClusterBrokerDefaultsResponse(rsp)
+}
+
 // KafkaClusterBrokerSettingsUpdateWithBodyWithResponse Change a Managed Kafka cluster's broker settings
 //
 // Changes an active Managed Kafka cluster's broker settings: only the ones in the request. Retention (log.retention.ms) is how long topics keep messages unless they set their own retention.ms; -1 keeps them forever, and it can't be shorter than days on disk. Consumer offsets retention follows it (retention plus two days), so a retention change restarts the brokers one at a time. Returns 409 while any change to the cluster is still being applied. Company admins only.
@@ -29487,6 +29619,44 @@ func ParseKafkaClusterAllowedCidrsUpdateResponse(rsp *http.Response) (*KafkaClus
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PayloadsKafkaCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case rsp.StatusCode == 500:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseKafkaClusterBrokerDefaultsResponse parses an HTTP response from a KafkaClusterBrokerDefaultsWithResponse call
+func ParseKafkaClusterBrokerDefaultsResponse(rsp *http.Response) (*KafkaClusterBrokerDefaultsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KafkaClusterBrokerDefaultsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PayloadsKafkaBrokerDefaults
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
