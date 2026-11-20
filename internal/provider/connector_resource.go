@@ -358,9 +358,9 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"motherduck_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `motherduck`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"token"}, map[string]schema.Attribute{
 					"token": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"planetscale_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS.",
@@ -399,7 +399,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"redis_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `redis`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":              schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Redis server. With `cluster_mode`, any node of the cluster."},
 					"port":              schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for Redis is 6379."},
 					"username":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The username to connect with, if your server uses ACL users."},
@@ -408,7 +408,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"tls":               schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect over TLS."},
 					"cluster_mode":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect to a Redis Cluster."},
 					"max_stream_length": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), Validators: []validator.Int64{int64validator.AtLeast(0)}, MarkdownDescription: "Trims each stream to approximately this many entries. `0` never trims."},
-				},
+				}),
 			},
 			"documentdb_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `documentdb`.",

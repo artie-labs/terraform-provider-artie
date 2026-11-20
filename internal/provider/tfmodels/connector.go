@@ -767,11 +767,13 @@ func KeyspacesSharedConfigFromAPIModel(apiModel ConnectorConfig) *KeyspacesShare
 }
 
 type MotherDuckSharedConfig struct {
-	Token types.String `tfsdk:"token"`
+	Token          types.String `tfsdk:"token"`
+	TokenWO        types.String `tfsdk:"token_wo"`
+	TokenWOVersion types.Int64  `tfsdk:"token_wo_version"`
 }
 
 func (m MotherDuckSharedConfig) ToAPIModel() ConnectorConfig {
-	return ConnectorConfig{Token: m.Token.ValueString()}
+	return ConnectorConfig{Token: writeOnlyOr(m.TokenWO, m.Token)}
 }
 
 func MotherDuckSharedConfigFromAPIModel(apiModel ConnectorConfig) *MotherDuckSharedConfig {
@@ -854,14 +856,16 @@ func KafkaSharedConfigFromAPIModel(apiModel ConnectorConfig) *KafkaSharedConfig 
 }
 
 type RedisSharedConfig struct {
-	Host            types.String `tfsdk:"host"`
-	Port            types.Int32  `tfsdk:"port"`
-	Username        types.String `tfsdk:"username"`
-	Password        types.String `tfsdk:"password"`
-	Database        types.Int32  `tfsdk:"database"`
-	TLS             types.Bool   `tfsdk:"tls"`
-	ClusterMode     types.Bool   `tfsdk:"cluster_mode"`
-	MaxStreamLength types.Int64  `tfsdk:"max_stream_length"`
+	Host              types.String `tfsdk:"host"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
+	Database          types.Int32  `tfsdk:"database"`
+	TLS               types.Bool   `tfsdk:"tls"`
+	ClusterMode       types.Bool   `tfsdk:"cluster_mode"`
+	MaxStreamLength   types.Int64  `tfsdk:"max_stream_length"`
 }
 
 func (r RedisSharedConfig) ToAPIModel() ConnectorConfig {
@@ -869,7 +873,7 @@ func (r RedisSharedConfig) ToAPIModel() ConnectorConfig {
 		Host:                 r.Host.ValueString(),
 		Port:                 r.Port.ValueInt32(),
 		Username:             r.Username.ValueString(),
-		Password:             r.Password.ValueString(),
+		Password:             writeOnlyOr(r.PasswordWO, r.Password),
 		RedisDatabase:        redisDatabase(r.Database.ValueInt32()),
 		RedisTLS:             r.TLS.ValueBool(),
 		RedisClusterMode:     r.ClusterMode.ValueBool(),

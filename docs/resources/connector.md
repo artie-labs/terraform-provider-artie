@@ -406,9 +406,11 @@ Required:
 <a id="nestedatt--motherduck_config"></a>
 ### Nested Schema for `motherduck_config`
 
-Required:
+Optional:
 
-- `token` (String, Sensitive) The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `token` (String, Sensitive) The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `token_wo` instead.
+- `token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `token` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `token_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `token_wo_version` (Number) Change this (for example, increment it) to send a new `token_wo`. Requires `token_wo`.
 
 
 <a id="nestedatt--mssql_config"></a>
@@ -499,7 +501,9 @@ Optional:
 - `cluster_mode` (Boolean) Set to `true` to connect to a Redis Cluster.
 - `database` (Number) The database index. Redis Cluster only supports `0`.
 - `max_stream_length` (Number) Trims each stream to approximately this many entries. `0` never trims.
-- `password` (String, Sensitive) The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `password` (String, Sensitive) The password to connect with. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
+- `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `tls` (Boolean) Set to `true` to connect over TLS.
 - `username` (String) The username to connect with, if your server uses ACL users.
 
