@@ -64,3 +64,13 @@ func SecretSet(plain, writeOnly types.String) bool {
 	}
 	return IsKnownAndNonEmpty(writeOnly)
 }
+
+// AllNull reports whether every value is null.
+func AllNull(values []types.String) bool {
+	for _, value := range values {
+		if !value.IsNull() {
+			return false
+		}
+	}
+	return true
+}

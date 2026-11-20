@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -109,20 +110,22 @@ func validateConnectorConfig(t *testing.T, attributes map[string]attr.Value) dia
 	return resp.Diagnostics
 }
 
-var smbShareConfigAttrTypes = map[string]attr.Type{"path": types.StringType, "username": types.StringType, "password": types.StringType, "private_link_uuid": types.StringType}
+var smbShareConfigAttrTypes = map[string]attr.Type{"path": types.StringType, "username": types.StringType, "password": types.StringType, "password_wo": types.StringType, "password_wo_version": types.Int64Type, "private_link_uuid": types.StringType}
 
 func smbShareConfigValue(privateLinkUUID types.String) types.Object {
 	return types.ObjectValueMust(smbShareConfigAttrTypes, map[string]attr.Value{
-		"path":              types.StringValue(`\\share.example.com\data`),
-		"username":          types.StringValue("artie"),
-		"password":          types.StringValue("secret"),
-		"private_link_uuid": privateLinkUUID,
+		"path":                types.StringValue(`\\share.example.com\data`),
+		"username":            types.StringValue("artie"),
+		"password":            types.StringValue("secret"),
+		"password_wo":         types.StringNull(),
+		"password_wo_version": types.Int64Null(),
+		"private_link_uuid":   privateLinkUUID,
 	})
 }
 
 var mongoDBConfig = types.ObjectValueMust(
-	map[string]attr.Type{"host": types.StringType, "username": types.StringType, "password": types.StringType},
-	map[string]attr.Value{"host": types.StringValue("mongodb+srv://cluster.example.com"), "username": types.StringValue("artie"), "password": types.StringValue("secret")},
+	map[string]attr.Type{"host": types.StringType, "username": types.StringType, "password": types.StringType, "password_wo": types.StringType, "password_wo_version": types.Int64Type},
+	map[string]attr.Value{"host": types.StringValue("mongodb+srv://cluster.example.com"), "username": types.StringValue("artie"), "password": types.StringValue("secret"), "password_wo": types.StringNull(), "password_wo_version": types.Int64Null()},
 )
 
 func TestConnectorValidateConfigPrivateLinks(t *testing.T) {
@@ -349,6 +352,66 @@ func TestConnectorValidateConfigWriteOnlySecrets(t *testing.T) {
 	}
 }
 
+func TestConnectorSchemaWriteOnlySecrets(t *testing.T) {
+	var schemaResp resource.SchemaResponse
+	(&ConnectorResource{}).Schema(t.Context(), resource.SchemaRequest{}, &schemaResp)
+	for blockName, block := range schemaResp.Schema.Attributes {
+		nested, ok := block.(schema.SingleNestedAttribute)
+		if !ok {
+			continue
+		}
+		for name, attribute := range nested.Attributes {
+			if !attribute.IsSensitive() {
+				continue
+			}
+			if strings.HasSuffix(name, "_wo") {
+				assert.True(t, attribute.IsWriteOnly(), "%s.%s", blockName, name)
+				continue
+			}
+			// Every secret has a write-only alternative
+			assert.Contains(t, nested.Attributes, name+"_wo", blockName)
+			assert.Contains(t, nested.Attributes, name+"_wo_version", blockName)
+		}
+	}
+}
+
+func TestConnectorValidateConfigWriteOnlyAuthChecks(t *testing.T) {
+	{
+		// Snowflake and Databricks auth checks count write-only secrets
+		snowflake := map[string]attr.Value{
+			"type":                                types.StringValue("snowflake"),
+			"snowflake_config.account_identifier": types.StringValue("acme"),
+			"snowflake_config.virtual_dwh":        types.StringValue("wh"),
+			"snowflake_config.username":           types.StringValue("artie"),
+			"snowflake_config.private_key_wo":     types.StringValue("key"),
+		}
+		assert.Empty(t, validateConnectorThroughServer(t, snowflake, true))
+		databricks := map[string]attr.Value{
+			"type":                               types.StringValue("databricks"),
+			"databricks_config.host":             types.StringValue("h"),
+			"databricks_config.http_path":        types.StringValue("p"),
+			"databricks_config.volume":           types.StringValue("v"),
+			"databricks_config.client_id":        types.StringValue("id"),
+			"databricks_config.client_secret_wo": types.StringValue("secret"),
+		}
+		assert.Empty(t, validateConnectorThroughServer(t, databricks, true))
+	}
+	{
+		// An optional secret's version left behind after removing its write-only secret is an error
+		kafka := map[string]attr.Value{
+			"type":                             types.StringValue("kafka"),
+			"kafka_config.bootstrap_servers":   types.StringValue("b:9092"),
+			"kafka_config.topic_prefix":        types.StringValue("artie"),
+			"kafka_config.sasl_mechanism":      types.StringValue("SCRAM-SHA-512"),
+			"kafka_config.username":            types.StringValue("artie"),
+			"kafka_config.password_wo_version": types.Int64Value(1),
+		}
+		assert.NotEmpty(t, validateConnectorThroughServer(t, kafka, true))
+		kafka["kafka_config.password_wo"] = types.StringValue("secret")
+		assert.Empty(t, validateConnectorThroughServer(t, kafka, true))
+	}
+}
+
 func TestConnectorValidateConfigWriteOnlyOptionalSecret(t *testing.T) {
 	clickHouse := func(password, passwordWO types.String) map[string]attr.Value {
 		return map[string]attr.Value{
@@ -461,5 +524,33 @@ func TestConnectorValidateConfigWriteOnlyMotherDuckAndRedis(t *testing.T) {
 		assert.Empty(t, validateConnectorThroughServer(t, redis(types.StringNull(), types.StringValue("p")), true))
 		assert.Empty(t, validateConnectorThroughServer(t, redis(types.StringNull(), types.StringNull()), true))
 		assert.NotEmpty(t, validateConnectorThroughServer(t, redis(types.StringValue("p"), types.StringValue("p")), true))
+	}
+}
+
+func TestConnectorValidateConfigWriteOnlyAWSKeys(t *testing.T) {
+	// Without role_arn, the static-credential checks count secret_access_key_wo.
+	check := func(connectorType string, attributes map[string]attr.Value) {
+		block := connectorType + "_config."
+		attributes["type"] = types.StringValue(connectorType)
+		attributes[block+"access_key_id"] = types.StringValue("AKIA")
+		assert.NotEmpty(t, validateConnectorThroughServer(t, attributes, true), connectorType)
+		attributes[block+"secret_access_key_wo"] = types.StringValue("secret")
+		assert.Empty(t, validateConnectorThroughServer(t, attributes, true), connectorType)
+	}
+	{
+		check("dynamodb", map[string]attr.Value{"dynamodb_config.stream_arn": types.StringValue("arn:aws:dynamodb:us-east-1:1:table/t/stream/s")})
+	}
+	{
+		check("keyspaces", map[string]attr.Value{
+			"keyspaces_config.host":   types.StringValue("cassandra.us-east-1.amazonaws.com"),
+			"keyspaces_config.port":   types.Int32Value(9142),
+			"keyspaces_config.region": types.StringValue("us-east-1"),
+		})
+	}
+	{
+		check("s3", map[string]attr.Value{"s3_config.region": types.StringValue("us-east-1")})
+	}
+	{
+		check("delta", map[string]attr.Value{"delta_config.region": types.StringValue("us-east-1")})
 	}
 }
