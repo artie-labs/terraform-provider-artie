@@ -224,7 +224,7 @@ Required:
 
 Optional:
 
-- `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `credentials_data_wo` instead.
+- `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `credentials_data` or `credentials_data_wo` is required. To keep it out of Terraform state, use `credentials_data_wo` instead.
 - `credentials_data_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `credentials_data` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `credentials_data_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `credentials_data_wo_version` (Number) Change this (for example, increment it) to send a new `credentials_data_wo`. Requires `credentials_data_wo`.
 
@@ -256,7 +256,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the CockroachDB database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
@@ -312,7 +312,7 @@ Required:
 Optional:
 
 - `disable_ssl` (Boolean) Set to `true` to connect without SSL. Leave it `false` (the default) to require SSL.
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 
@@ -343,7 +343,7 @@ Required:
 
 Optional:
 
-- `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `credentials_data_wo` instead.
+- `credentials_data` (String, Sensitive) The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `credentials_data` or `credentials_data_wo` is required. To keep it out of Terraform state, use `credentials_data_wo` instead.
 - `credentials_data_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `credentials_data` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `credentials_data_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `credentials_data_wo_version` (Number) Change this (for example, increment it) to send a new `credentials_data_wo`. Requires `credentials_data_wo`.
 
@@ -431,7 +431,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 
@@ -441,7 +441,7 @@ Optional:
 
 Optional:
 
-- `token` (String, Sensitive) The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `token_wo` instead.
+- `token` (String, Sensitive) The MotherDuck access token. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `token` or `token_wo` is required. To keep it out of Terraform state, use `token_wo` instead.
 - `token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `token` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `token_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `token_wo_version` (Number) Change this (for example, increment it) to send a new `token_wo`. Requires `token_wo`.
 
@@ -457,7 +457,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the Microsoft SQL Server that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
@@ -474,7 +474,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
@@ -493,7 +493,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the Oracle database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
@@ -510,7 +510,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 
@@ -526,7 +526,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `snapshot_host` (String) The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value.
@@ -562,7 +562,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password for the service account we should use to connect to Redshift. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password for the service account we should use to connect to Redshift. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 
@@ -594,7 +594,7 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The password for the share login. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. To keep it out of Terraform state, use `password_wo` instead.
+- `password` (String, Sensitive) The password for the share login. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Exactly one of `password` or `password_wo` is required. To keep it out of Terraform state, use `password_wo` instead.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A write-only alternative to `password` that Terraform never stores in plan or state. Requires Terraform 1.11 or later. Terraform can't see changes to it, so change `password_wo_version` to send a new value; otherwise a new value is only sent with the next update made for another reason.
 - `password_wo_version` (Number) Change this (for example, increment it) to send a new `password_wo`. Requires `password_wo`.
 - `private_link_uuid` (String) This can point to an `artie_private_link` resource if we should reach the share through AWS PrivateLink. Its DNS entry is dialed in place of the path's host.

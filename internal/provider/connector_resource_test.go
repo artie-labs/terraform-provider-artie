@@ -526,3 +526,31 @@ func TestConnectorValidateConfigWriteOnlyMotherDuckAndRedis(t *testing.T) {
 		assert.NotEmpty(t, validateConnectorThroughServer(t, redis(types.StringValue("p"), types.StringValue("p")), true))
 	}
 }
+
+func TestConnectorValidateConfigWriteOnlyAWSKeys(t *testing.T) {
+	// Without role_arn, the static-credential checks count secret_access_key_wo.
+	check := func(connectorType string, attributes map[string]attr.Value) {
+		block := connectorType + "_config."
+		attributes["type"] = types.StringValue(connectorType)
+		attributes[block+"access_key_id"] = types.StringValue("AKIA")
+		assert.NotEmpty(t, validateConnectorThroughServer(t, attributes, true), connectorType)
+		attributes[block+"secret_access_key_wo"] = types.StringValue("secret")
+		assert.Empty(t, validateConnectorThroughServer(t, attributes, true), connectorType)
+	}
+	{
+		check("dynamodb", map[string]attr.Value{"dynamodb_config.stream_arn": types.StringValue("arn:aws:dynamodb:us-east-1:1:table/t/stream/s")})
+	}
+	{
+		check("keyspaces", map[string]attr.Value{
+			"keyspaces_config.host":   types.StringValue("cassandra.us-east-1.amazonaws.com"),
+			"keyspaces_config.port":   types.Int32Value(9142),
+			"keyspaces_config.region": types.StringValue("us-east-1"),
+		})
+	}
+	{
+		check("s3", map[string]attr.Value{"s3_config.region": types.StringValue("us-east-1")})
+	}
+	{
+		check("delta", map[string]attr.Value{"delta_config.region": types.StringValue("us-east-1")})
+	}
+}

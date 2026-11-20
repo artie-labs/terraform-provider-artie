@@ -2,6 +2,8 @@ package tfmodels
 
 import (
 	"encoding/json"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -172,4 +174,56 @@ func TestConnectorWriteOnlyMotherDuckToken(t *testing.T) {
 		assert.Equal(t, "", connector.MotherDuckConfig.Token.ValueString())
 		assert.Equal(t, int64(1), connector.MotherDuckConfig.TokenWOVersion.ValueInt64())
 	}
+}
+
+// TestConnectorWriteOnlySecretsReachAPIField checks, for every `_wo` secret, that setting it builds the same API config
+// as setting its plain secret, so each one is sent in its plain secret's field.
+func TestConnectorWriteOnlySecretsReachAPIField(t *testing.T) {
+	sharedConfig := func(blockIndex int, block reflect.Value) map[string]any {
+		var connector Connector
+		connectorValue := reflect.ValueOf(&connector).Elem()
+		connectorValue.Field(blockIndex).Set(block)
+		blockTag := connectorValue.Type().Field(blockIndex).Tag.Get("tfsdk")
+		connector.Type = types.StringValue(strings.TrimSuffix(blockTag, "_config"))
+		body, diags := connector.ToAPIModel()
+		require.False(t, diags.HasError(), "%s: %v", blockTag, diags)
+		return *body.SharedConfig
+	}
+
+	checked := 0
+	connectorType := reflect.TypeOf(Connector{})
+	for i := range connectorType.NumField() {
+		field := connectorType.Field(i)
+		if field.Type.Kind() != reflect.Pointer {
+			continue
+		}
+		blockType := field.Type.Elem()
+		for j := range blockType.NumField() {
+			writeOnlyTag := blockType.Field(j).Tag.Get("tfsdk")
+			if !strings.HasSuffix(writeOnlyTag, "_wo") {
+				continue
+			}
+			plainField, ok := fieldByTag(blockType, strings.TrimSuffix(writeOnlyTag, "_wo"))
+			require.True(t, ok, "%s.%s has no plain secret", field.Name, writeOnlyTag)
+
+			plain := reflect.New(blockType)
+			plain.Elem().FieldByIndex(plainField.Index).Set(reflect.ValueOf(types.StringValue("secret")))
+			writeOnly := reflect.New(blockType)
+			writeOnly.Elem().Field(j).Set(reflect.ValueOf(types.StringValue("secret")))
+
+			assert.Equal(t, sharedConfig(i, plain), sharedConfig(i, writeOnly), "%s.%s", field.Name, writeOnlyTag)
+			checked++
+		}
+	}
+	// Every `_wo` secret (S3SharedConfig counts twice, for s3 and delta), so the loop can't pass by finding nothing.
+	assert.Equal(t, 28, checked)
+}
+
+func fieldByTag(structType reflect.Type, tag string) (reflect.StructField, bool) {
+	for i := range structType.NumField() {
+		if structType.Field(i).Tag.Get("tfsdk") == tag {
+			return structType.Field(i), true
+		}
+	}
+	return reflect.StructField{}, false
 }

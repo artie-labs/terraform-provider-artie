@@ -455,6 +455,7 @@ func withWriteOnlySecrets(secrets []string, attributes map[string]schema.Attribu
 			secret.Computed = true
 			secret.Default = stringdefault.StaticString("")
 			secret.Validators = append(secret.Validators, stringvalidator.ExactlyOneOf(writeOnlyPath))
+			secret.MarkdownDescription += fmt.Sprintf(" Exactly one of `%s` or `%s` is required.", name, writeOnlyName)
 		} else {
 			secret.Validators = append(secret.Validators, stringvalidator.ConflictsWith(writeOnlyPath))
 		}
