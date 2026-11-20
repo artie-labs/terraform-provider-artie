@@ -137,3 +137,39 @@ func TestSecretMissingAndSet(t *testing.T) {
 		assert.True(t, SecretSet(types.StringValue(""), types.StringValue("x")))
 	}
 }
+
+func TestConnectorWriteOnlyMotherDuckToken(t *testing.T) {
+	motherDuck := func(token string) Connector {
+		return Connector{
+			UUID: types.StringValue("0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a03"),
+			Type: types.StringValue("motherduck"),
+			MotherDuckConfig: &MotherDuckSharedConfig{
+				Token:          types.StringValue(token),
+				TokenWOVersion: types.Int64Value(1),
+			},
+		}
+	}
+	{
+		// The API request gets token_wo from config
+		apiData := motherDuck("")
+		config := motherDuck("")
+		config.MotherDuckConfig.TokenWO = types.StringValue("from-config")
+		CopyWriteOnlySecrets(&apiData, config)
+		body, diags := apiData.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "from-config", (*body.SharedConfig)["token"])
+	}
+	{
+		// A plaintext readback stays out of state, and the version is kept
+		var apiConnector openapi.PayloadsFullConnector
+		require.NoError(t, json.Unmarshal([]byte(`{
+			"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a03",
+			"type": "motherduck",
+			"sharedConfig": {"token": "from-config"}
+		}`), &apiConnector))
+		connector, diags := ConnectorFromAPIModel(apiConnector, motherDuck(""))
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, int64(1), connector.MotherDuckConfig.TokenWOVersion.ValueInt64())
+	}
+}

@@ -430,3 +430,36 @@ func TestConnectorValidateConfigWriteOnlyIceberg(t *testing.T) {
 		}), true))
 	}
 }
+
+func TestConnectorValidateConfigWriteOnlyMotherDuckAndRedis(t *testing.T) {
+	motherDuck := func(token, tokenWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                       types.StringValue("motherduck"),
+			"motherduck_config.token":    token,
+			"motherduck_config.token_wo": tokenWO,
+		}
+	}
+	redis := func(password, passwordWO types.String) map[string]attr.Value {
+		return map[string]attr.Value{
+			"type":                     types.StringValue("redis"),
+			"redis_config.host":        types.StringValue("redis.example.com"),
+			"redis_config.port":        types.Int32Value(6379),
+			"redis_config.password":    password,
+			"redis_config.password_wo": passwordWO,
+		}
+	}
+	{
+		// MotherDuck: the token was required, so exactly one of token and token_wo is
+		assert.Empty(t, validateConnectorThroughServer(t, motherDuck(types.StringValue("t"), types.StringNull()), true))
+		assert.Empty(t, validateConnectorThroughServer(t, motherDuck(types.StringNull(), types.StringValue("t")), true))
+		assert.NotEmpty(t, validateConnectorThroughServer(t, motherDuck(types.StringNull(), types.StringNull()), true))
+		assert.NotEmpty(t, validateConnectorThroughServer(t, motherDuck(types.StringValue("t"), types.StringValue("t")), true))
+	}
+	{
+		// Redis: the password stays optional, and conflicts with password_wo
+		assert.Empty(t, validateConnectorThroughServer(t, redis(types.StringValue("p"), types.StringNull()), true))
+		assert.Empty(t, validateConnectorThroughServer(t, redis(types.StringNull(), types.StringValue("p")), true))
+		assert.Empty(t, validateConnectorThroughServer(t, redis(types.StringNull(), types.StringNull()), true))
+		assert.NotEmpty(t, validateConnectorThroughServer(t, redis(types.StringValue("p"), types.StringValue("p")), true))
+	}
+}
