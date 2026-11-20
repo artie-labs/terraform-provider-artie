@@ -609,14 +609,15 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.Warehouse) {
 				resp.Diagnostics.AddError("warehouse is required for rest catalog", "Please provide `warehouse` inside `iceberg_config` when using `rest` provider.")
 			}
-			tokenMissing := tfmodels.SecretMissing(configData.IcebergConfig.Token, configData.IcebergConfig.TokenWO)
-			credentialMissing := tfmodels.SecretMissing(configData.IcebergConfig.Credential, configData.IcebergConfig.CredentialWO)
-			if tokenMissing && credentialMissing {
-				resp.Diagnostics.AddError("token or credential is required for rest catalog", "Please provide either `token` or `credential` inside `iceberg_config` when using `rest` provider.")
-			}
-			credentialSet := tfmodels.SecretSet(configData.IcebergConfig.Credential, configData.IcebergConfig.CredentialWO)
-			if tokenMissing && credentialSet && tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AuthURI) {
-				resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
+			if tfmodels.SecretMissing(configData.IcebergConfig.Token, configData.IcebergConfig.TokenWO) {
+				if tfmodels.SecretMissing(configData.IcebergConfig.Credential, configData.IcebergConfig.CredentialWO) {
+					resp.Diagnostics.AddError("token or credential is required for rest catalog", "Please provide either `token` or `credential` inside `iceberg_config` when using `rest` provider.")
+				}
+				if tfmodels.SecretSet(configData.IcebergConfig.Credential, configData.IcebergConfig.CredentialWO) {
+					if tfmodels.IsKnownAndEmpty(configData.IcebergConfig.AuthURI) {
+						resp.Diagnostics.AddError("auth_uri is required when using credential", "Please provide `auth_uri` inside `iceberg_config` when using `credential` authentication without `token`.")
+					}
+				}
 			}
 		}
 	case string(openapi.EnumsConnectorSlugKeyspaces):

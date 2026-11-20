@@ -84,21 +84,6 @@ func TestConnectorWriteOnlySecrets(t *testing.T) {
 	}
 }
 
-func TestSecretMissingAndSet(t *testing.T) {
-	{
-		// With no write-only value, both match the checks they replaced
-		for _, plain := range []types.String{types.StringNull(), types.StringValue(""), types.StringValue("x"), types.StringUnknown()} {
-			assert.Equal(t, IsKnownAndEmpty(plain), SecretMissing(plain, types.StringNull()), plain)
-			assert.Equal(t, IsKnownAndNonEmpty(plain), SecretSet(plain, types.StringNull()), plain)
-		}
-	}
-	{
-		// A write-only value counts
-		assert.False(t, SecretMissing(types.StringValue(""), types.StringValue("x")))
-		assert.True(t, SecretSet(types.StringValue(""), types.StringValue("x")))
-	}
-}
-
 func TestConnectorWriteOnlyOptionalSecret(t *testing.T) {
 	clickHouse := func(password string) Connector {
 		return Connector{
@@ -135,5 +120,56 @@ func TestConnectorWriteOnlyOptionalSecret(t *testing.T) {
 		require.False(t, diags.HasError(), diags)
 		assert.Equal(t, "", connector.ClickHouseConfig.Password.ValueString())
 		assert.Equal(t, int64(1), connector.ClickHouseConfig.PasswordWOVersion.ValueInt64())
+	}
+}
+
+func TestSecretMissingAndSet(t *testing.T) {
+	{
+		// With no write-only value, both match the checks they replaced
+		for _, plain := range []types.String{types.StringNull(), types.StringValue(""), types.StringValue("x"), types.StringUnknown()} {
+			assert.Equal(t, IsKnownAndEmpty(plain), SecretMissing(plain, types.StringNull()), plain)
+			assert.Equal(t, IsKnownAndNonEmpty(plain), SecretSet(plain, types.StringNull()), plain)
+		}
+	}
+	{
+		// A write-only value counts
+		assert.False(t, SecretMissing(types.StringValue(""), types.StringValue("x")))
+		assert.True(t, SecretSet(types.StringValue(""), types.StringValue("x")))
+	}
+}
+
+func TestConnectorWriteOnlyMotherDuckToken(t *testing.T) {
+	motherDuck := func(token string) Connector {
+		return Connector{
+			UUID: types.StringValue("0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a03"),
+			Type: types.StringValue("motherduck"),
+			MotherDuckConfig: &MotherDuckSharedConfig{
+				Token:          types.StringValue(token),
+				TokenWOVersion: types.Int64Value(1),
+			},
+		}
+	}
+	{
+		// The API request gets token_wo from config
+		apiData := motherDuck("")
+		config := motherDuck("")
+		config.MotherDuckConfig.TokenWO = types.StringValue("from-config")
+		CopyWriteOnlySecrets(&apiData, config)
+		body, diags := apiData.ToAPIModel()
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "from-config", (*body.SharedConfig)["token"])
+	}
+	{
+		// A plaintext readback stays out of state, and the version is kept
+		var apiConnector openapi.PayloadsFullConnector
+		require.NoError(t, json.Unmarshal([]byte(`{
+			"uuid": "0b9e1c55-6a4f-4a8e-9c35-6d5f2f1b6a03",
+			"type": "motherduck",
+			"sharedConfig": {"token": "from-config"}
+		}`), &apiConnector))
+		connector, diags := ConnectorFromAPIModel(apiConnector, motherDuck(""))
+		require.False(t, diags.HasError(), diags)
+		assert.Equal(t, "", connector.MotherDuckConfig.Token.ValueString())
+		assert.Equal(t, int64(1), connector.MotherDuckConfig.TokenWOVersion.ValueInt64())
 	}
 }
