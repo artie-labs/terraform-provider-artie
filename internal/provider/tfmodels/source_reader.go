@@ -159,7 +159,7 @@ func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSource
 }
 
 func (s SourceReader) toAPITablesConfig(ctx context.Context) (*openapi.PayloadsSourceReaderTablesConfig, diag.Diagnostics) {
-	if s.Tables.IsNull() || s.Tables.IsUnknown() {
+	if !s.IsShared.ValueBool() || s.Tables.IsNull() || s.Tables.IsUnknown() {
 		return nil, nil
 	}
 

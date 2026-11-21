@@ -7,8 +7,38 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
+	"terraform-provider-artie/internal/lib"
 	"terraform-provider-artie/internal/openapi"
 )
+
+func TestSourceReaderToAPIModelOmitsPipelineOwnedTables(t *testing.T) {
+	for _, shared := range []bool{false, true} {
+		t.Run(map[bool]string{false: "pipeline-owned", true: "shared"}[shared], func(t *testing.T) {
+			tables := openapi.PayloadsSourceReaderTablesConfig{
+				"public.dropped_table": {
+					Name:   lib.ToPtr("dropped_table"),
+					Schema: lib.ToPtr("public"),
+				},
+			}
+			model, diags := SourceReaderFromAPIModel(t.Context(), openapi.PayloadsSourceReader{
+				Uuid:          uuid.New(),
+				ConnectorUUID: uuid.New(),
+				IsShared:      &shared,
+				TablesConfig:  &tables,
+			})
+			assert.False(t, diags.HasError())
+			payload, diags := model.ToAPIModel(t.Context())
+			assert.False(t, diags.HasError())
+			if shared {
+				if assert.NotNil(t, payload.TablesConfig) {
+					assert.Contains(t, *payload.TablesConfig, "public.dropped_table")
+				}
+			} else {
+				assert.Nil(t, payload.TablesConfig)
+			}
+		})
+	}
+}
 
 func TestSourceReaderFailoverReplicationSlotRoundTrip(t *testing.T) {
 	model := SourceReader{
