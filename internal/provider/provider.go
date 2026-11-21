@@ -1,8 +1,11 @@
 package provider
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"terraform-provider-artie/internal/openapi"
@@ -51,10 +54,47 @@ func (a ArtieProviderData) NewOpenAPIClient() (*openapi.ClientWithResponses, err
 		func(ctx context.Context, req *http.Request) error {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", a.APIKey))
 			req.Header.Set("User-Agent", "terraform-provider-artie/"+a.version)
+			if err := gzipLargeBody(req); err != nil {
+				return err
+			}
 			tflog.Info(ctx, fmt.Sprintf("Making API request: %s %s", req.Method, req.URL))
 			return nil
 		},
 	))
+}
+
+// gzipThresholdBytes is the ingress's request body limit. Bodies past it (a pipeline with many tables) are gzipped
+// to fit; smaller ones are sent as is, so they work against any API version.
+const gzipThresholdBytes = 1 << 20
+
+func gzipLargeBody(req *http.Request) error {
+	if req.Body == nil || req.ContentLength <= gzipThresholdBytes {
+		return nil
+	}
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read request body: %w", err)
+	}
+	if err := req.Body.Close(); err != nil {
+		return fmt.Errorf("failed to close request body: %w", err)
+	}
+
+	var buf bytes.Buffer
+	gzipWriter := gzip.NewWriter(&buf)
+	if _, err := gzipWriter.Write(body); err != nil {
+		return fmt.Errorf("failed to gzip request body: %w", err)
+	}
+	if err := gzipWriter.Close(); err != nil {
+		return fmt.Errorf("failed to gzip request body: %w", err)
+	}
+
+	compressed := buf.Bytes()
+	req.Body = io.NopCloser(bytes.NewReader(compressed))
+	req.GetBody = func() (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader(compressed)), nil }
+	req.ContentLength = int64(len(compressed))
+	req.Header.Set("Content-Encoding", "gzip")
+	return nil
 }
 
 func (p *ArtieProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
