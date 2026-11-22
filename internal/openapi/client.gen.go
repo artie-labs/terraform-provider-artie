@@ -444,6 +444,7 @@ const (
 	PayloadsBackfillDefaultsPayloadReadModeCtid       PayloadsBackfillDefaultsPayloadReadMode = "ctid"
 	PayloadsBackfillDefaultsPayloadReadModePrimaryKey PayloadsBackfillDefaultsPayloadReadMode = "primaryKey"
 	PayloadsBackfillDefaultsPayloadReadModeRange      PayloadsBackfillDefaultsPayloadReadMode = "range"
+	PayloadsBackfillDefaultsPayloadReadModeRowID      PayloadsBackfillDefaultsPayloadReadMode = "rowID"
 )
 
 // Valid indicates whether the value is a known member of the PayloadsBackfillDefaultsPayloadReadMode enum.
@@ -454,6 +455,8 @@ func (e PayloadsBackfillDefaultsPayloadReadMode) Valid() bool {
 	case PayloadsBackfillDefaultsPayloadReadModePrimaryKey:
 		return true
 	case PayloadsBackfillDefaultsPayloadReadModeRange:
+		return true
+	case PayloadsBackfillDefaultsPayloadReadModeRowID:
 		return true
 	default:
 		return false
@@ -1404,7 +1407,7 @@ type PayloadsAdvancedPipelineSettingsPayload struct {
 	// UseDoubleForVariableNumeric MotherDuck only: write variable-precision numeric columns as DOUBLE.
 	UseDoubleForVariableNumeric *bool `json:"useDoubleForVariableNumeric,omitempty"`
 
-	// UseNewStringMethod Databricks only: use Transfer's newer string conversion; omitted uses the company setting.
+	// UseNewStringMethod Snowflake only: use Transfer's newer string conversion; omitted uses the company setting.
 	UseNewStringMethod *bool `json:"useNewStringMethod,omitempty"`
 
 	// UseSnowpipeStreaming Snowflake only: load data with Snowpipe Streaming.
@@ -1484,6 +1487,9 @@ type PayloadsAdvancedTableSettingsPayload struct {
 
 	// RangeSettings Range backfill settings for this table; omitted uses the source reader's backfill defaults.
 	RangeSettings *PayloadsRangeSettings `json:"rangeSettings,omitempty"`
+
+	// RowIDSettings Oracle ROWID backfill settings for this table; omitted uses the source reader's backfill defaults.
+	RowIDSettings *PayloadsRowIDSettings `json:"rowIDSettings,omitempty"`
 
 	// ShouldBackfillHistoryTable When true, the history table is backfilled too; otherwise only the regular table is.
 	ShouldBackfillHistoryTable *bool `json:"shouldBackfillHistoryTable,omitempty"`
@@ -1608,7 +1614,7 @@ type PayloadsBackfillDefaultsPayload struct {
 	// Preset Backfill speed preset. Range reads only use chunkSize and parallelism with the performance preset.
 	Preset *PayloadsBackfillDefaultsPayloadPreset `json:"preset,omitempty"`
 
-	// ReadMode How backfills read each table; range and ctid split it into chunks read in parallel.
+	// ReadMode How backfills read each table; range and ctid split it into chunks read in parallel, and rowID (Oracle only) reads it in ROWID ranges, in storage order.
 	ReadMode *PayloadsBackfillDefaultsPayloadReadMode `json:"readMode,omitempty"`
 }
 
@@ -1618,7 +1624,7 @@ type PayloadsBackfillDefaultsPayloadPagination string
 // PayloadsBackfillDefaultsPayloadPreset Backfill speed preset. Range reads only use chunkSize and parallelism with the performance preset.
 type PayloadsBackfillDefaultsPayloadPreset string
 
-// PayloadsBackfillDefaultsPayloadReadMode How backfills read each table; range and ctid split it into chunks read in parallel.
+// PayloadsBackfillDefaultsPayloadReadMode How backfills read each table; range and ctid split it into chunks read in parallel, and rowID (Oracle only) reads it in ROWID ranges, in storage order.
 type PayloadsBackfillDefaultsPayloadReadMode string
 
 // PayloadsBackfillStageEvent defines model for PayloadsBackfillStageEvent.
@@ -3011,7 +3017,7 @@ type PayloadsPipelineAdvancedSettings struct {
 	// UseDoubleForVariableNumeric MotherDuck only: write variable-precision numeric columns as DOUBLE.
 	UseDoubleForVariableNumeric *bool `json:"useDoubleForVariableNumeric,omitempty"`
 
-	// UseNewStringMethod Databricks only: use Transfer's newer string conversion; omitted uses the company setting.
+	// UseNewStringMethod Snowflake only: use Transfer's newer string conversion; omitted uses the company setting.
 	UseNewStringMethod *bool `json:"useNewStringMethod,omitempty"`
 
 	// UseSnowpipeStreaming Snowflake only: load data with Snowpipe Streaming.
@@ -3232,6 +3238,12 @@ type PayloadsRangeSettings struct {
 	MaxParallelism *int `json:"maxParallelism,omitempty"`
 }
 
+// PayloadsRowIDSettings defines model for PayloadsRowIDSettings.
+type PayloadsRowIDSettings struct {
+	// Enabled When true, the backfill reads the table in ROWID ranges, in storage order, instead of paging by primary key. Needs Oracle 19c+ and SELECT on V$DATABASE, DBA_EXTENTS, DBA_OBJECTS and DBA_SEGMENTS; without them the backfill fails. Tables that can't be read by ROWID (index-organized, row movement, a standby, ...) are still paged by key.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
 // PayloadsS3CSVParser defines model for PayloadsS3CSVParser.
 type PayloadsS3CSVParser struct {
 	// CommentPrefix A single character that marks a line as a comment to skip; empty means no comment lines. Can't be the delimiter.
@@ -3302,6 +3314,9 @@ type PayloadsS3PathMapping struct {
 
 	// ReferenceID The name of the destination table the matching objects' records go to.
 	ReferenceID string `json:"referenceID"`
+
+	// SkipUnparseableObjects When true, an object that fails to parse is skipped instead of stopping the consumer. Rows buffered from that object are dropped.
+	SkipUnparseableObjects *bool `json:"skipUnparseableObjects,omitempty"`
 }
 
 // PayloadsSSHTunnel defines model for PayloadsSSHTunnel.
@@ -3551,9 +3566,6 @@ type PayloadsSourceReaderSettingsPayload struct {
 	// EnableRelationMessageCaching Postgres only: cache relation messages and skip the schema change check on each one.
 	EnableRelationMessageCaching *bool `json:"enableRelationMessageCaching,omitempty"`
 
-	// EnableSchemaHistoryCompaction MySQL only: on startup, rebuild the schema history from the source and replace the append-only history file with the compacted version.
-	EnableSchemaHistoryCompaction *bool `json:"enableSchemaHistoryCompaction,omitempty"`
-
 	// MaxConnIdleTimeSeconds Postgres only: close pooled connections idle this many seconds, up to 86400. 0 uses the driver default.
 	MaxConnIdleTimeSeconds *int `json:"maxConnIdleTimeSeconds,omitempty"`
 
@@ -3616,9 +3628,6 @@ type PayloadsSourceReaderSettingsPayload struct {
 
 	// UseNumericTypesForMoney SQL Server only: read MONEY as NUMERIC(19,4) and SMALLMONEY as NUMERIC(10,4).
 	UseNumericTypesForMoney *bool `json:"useNumericTypesForMoney,omitempty"`
-
-	// UseOracleRowIDRanges Oracle only: backfill eligible tables in ROWID ranges, in storage order, instead of paging by primary key. Needs Oracle 19c+ and SELECT on V$DATABASE, DBA_EXTENTS, DBA_OBJECTS and DBA_SEGMENTS; without them backfills fail.
-	UseOracleRowIDRanges *bool `json:"useOracleRowIDRanges,omitempty"`
 
 	// UseReaderForOracleStreaming Oracle only: stream changes with Artie Reader (LogMiner) instead of Debezium.
 	UseReaderForOracleStreaming *bool `json:"useReaderForOracleStreaming,omitempty"`
@@ -3846,6 +3855,9 @@ type PayloadsTableAdvancedSettings struct {
 
 	// RangeSettings Range backfill settings for this table; omitted uses the source reader's backfill defaults.
 	RangeSettings *PayloadsRangeSettings `json:"rangeSettings,omitempty"`
+
+	// RowIDSettings Oracle ROWID backfill settings for this table; omitted uses the source reader's backfill defaults.
+	RowIDSettings *PayloadsRowIDSettings `json:"rowIDSettings,omitempty"`
 
 	// ShouldBackfillHistoryTable When true, the history table is backfilled too; otherwise only the regular table is.
 	ShouldBackfillHistoryTable *bool `json:"shouldBackfillHistoryTable,omitempty"`
@@ -5703,13 +5715,13 @@ type AnalyticsQueryParams struct {
 	To string `form:"to" json:"to"`
 
 	// Datasets Datasets to return, such as rowsSyncedByTime, ingestionLag or rowLag; repeat the parameter for each. Unknown names are ignored.
-	Datasets []string `form:"datasets[]" json:"datasets[]"`
+	Datasets []string `form:"datasets" json:"datasets"`
 
 	// PipelineUUID UUID of the pipeline to include, from pipeline_list; left out, metrics cover every pipeline in the company. Required for environment-scoped API keys.
 	PipelineUUID *string `form:"pipelineUUID,omitempty" json:"pipelineUUID,omitempty"`
 
 	// Tables Only include these table names; repeat the parameter for each.
-	Tables *[]string `form:"tables[],omitempty" json:"tables[],omitempty"`
+	Tables *[]string `form:"tables,omitempty" json:"tables,omitempty"`
 
 	// BackfillOptions exclude leaves out rows written by backfills, only keeps just those rows, and empty includes both.
 	BackfillOptions *string `form:"backfillOptions,omitempty" json:"backfillOptions,omitempty"`
@@ -12383,7 +12395,7 @@ func NewAnalyticsQueryRequest(server string, params *AnalyticsQueryParams) (*htt
 
 		if params.Datasets != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "datasets[]", params.Datasets, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "datasets", params.Datasets, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -12407,7 +12419,7 @@ func NewAnalyticsQueryRequest(server string, params *AnalyticsQueryParams) (*htt
 
 		if params.Tables != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "tables[]", *params.Tables, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "tables", *params.Tables, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
