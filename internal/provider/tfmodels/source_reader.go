@@ -106,6 +106,8 @@ type SourceReader struct {
 	CompositeTypesAsText            types.Bool   `tfsdk:"composite_types_as_text"`
 	EnableRelationMessageCaching    types.Bool   `tfsdk:"enable_relation_message_caching"`
 	UseFailoverReplicationSlot      types.Bool   `tfsdk:"use_failover_replication_slot"`
+	RescaleTimestampsPastYear9999   types.Bool   `tfsdk:"rescale_timestamps_past_year_9999"`
+	UseOracleRowIDRanges            types.Bool   `tfsdk:"use_oracle_row_id_ranges"`
 	UseAdvanceOnPrimaryKeepAlive    types.Bool   `tfsdk:"use_advance_on_primary_keep_alive"`
 	EnableUnifyAcrossSchemas        types.Bool   `tfsdk:"enable_unify_across_schemas"`
 	UnifyAcrossSchemasRegex         types.String `tfsdk:"unify_across_schemas_regex"`
@@ -122,23 +124,25 @@ type SourceReader struct {
 func (s SourceReader) toAPISettings(ctx context.Context) (openapi.PayloadsSourceReaderSettingsPayload, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	settings := openapi.PayloadsSourceReaderSettingsPayload{
-		BackfillBatchSize:            int64ToIntPointer(s.BackfillBatchSize),
-		EnableHeartbeats:             boolPointer(s.EnableHeartbeats),
-		OneTopicPerSchema:            boolPointer(s.OneTopicPerSchema),
-		PublicationNameOverride:      stringPointer(s.PostgresPublicationNameOverride),
-		PublicationAutoCreateMode:    stringPointer(s.PostgresPublicationMode),
-		ReplicationSlotOverride:      stringPointer(s.PostgresReplicationSlotOverride),
-		PublishViaPartitionRoot:      boolPointer(s.PublishViaPartitionRoot),
-		CompositeTypesAsText:         boolPointer(s.CompositeTypesAsText),
-		EnableRelationMessageCaching: boolPointer(s.EnableRelationMessageCaching),
-		UseFailoverReplicationSlot:   boolPointer(s.UseFailoverReplicationSlot),
-		UseAdvanceOnPrimaryKeepAlive: boolPointer(s.UseAdvanceOnPrimaryKeepAlive),
-		UnifyAcrossSchemas:           boolPointer(s.EnableUnifyAcrossSchemas),
-		UnifyAcrossSchemasRegex:      stringPointer(s.UnifyAcrossSchemasRegex),
-		MssqlReplicationMethod:       stringPointer(s.MSSQLReplicationMethod),
-		UnifyAcrossDatabases:         boolPointer(s.EnableUnifyAcrossDatabases),
-		DisableAutoFetchTables:       boolPointer(s.DisableAutoFetchTables),
-		DeploymentScopedMode:         boolPointer(s.MongoDBDeploymentScopedMode),
+		BackfillBatchSize:             int64ToIntPointer(s.BackfillBatchSize),
+		EnableHeartbeats:              boolPointer(s.EnableHeartbeats),
+		OneTopicPerSchema:             boolPointer(s.OneTopicPerSchema),
+		PublicationNameOverride:       stringPointer(s.PostgresPublicationNameOverride),
+		PublicationAutoCreateMode:     stringPointer(s.PostgresPublicationMode),
+		ReplicationSlotOverride:       stringPointer(s.PostgresReplicationSlotOverride),
+		PublishViaPartitionRoot:       boolPointer(s.PublishViaPartitionRoot),
+		CompositeTypesAsText:          boolPointer(s.CompositeTypesAsText),
+		EnableRelationMessageCaching:  boolPointer(s.EnableRelationMessageCaching),
+		UseFailoverReplicationSlot:    boolPointer(s.UseFailoverReplicationSlot),
+		RescaleTimestampsPastYear9999: boolPointer(s.RescaleTimestampsPastYear9999),
+		UseOracleRowIDRanges:          boolPointer(s.UseOracleRowIDRanges),
+		UseAdvanceOnPrimaryKeepAlive:  boolPointer(s.UseAdvanceOnPrimaryKeepAlive),
+		UnifyAcrossSchemas:            boolPointer(s.EnableUnifyAcrossSchemas),
+		UnifyAcrossSchemasRegex:       stringPointer(s.UnifyAcrossSchemasRegex),
+		MssqlReplicationMethod:        stringPointer(s.MSSQLReplicationMethod),
+		UnifyAcrossDatabases:          boolPointer(s.EnableUnifyAcrossDatabases),
+		DisableAutoFetchTables:        boolPointer(s.DisableAutoFetchTables),
+		DeploymentScopedMode:          boolPointer(s.MongoDBDeploymentScopedMode),
 	}
 
 	if IsKnown(s.MessageCompression) {
@@ -280,16 +284,19 @@ func SourceReaderFromAPIModel(ctx context.Context, apiModel openapi.PayloadsSour
 		CompositeTypesAsText:            types.BoolPointerValue(apiModel.Settings.CompositeTypesAsText),
 		EnableRelationMessageCaching:    types.BoolPointerValue(apiModel.Settings.EnableRelationMessageCaching),
 		UseFailoverReplicationSlot:      types.BoolPointerValue(apiModel.Settings.UseFailoverReplicationSlot),
-		UseAdvanceOnPrimaryKeepAlive:    types.BoolPointerValue(apiModel.Settings.UseAdvanceOnPrimaryKeepAlive),
-		EnableUnifyAcrossSchemas:        types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
-		UnifyAcrossSchemasRegex:         types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
-		MSSQLReplicationMethod:          types.StringValue(lib.RemovePtr(apiModel.Settings.MssqlReplicationMethod)),
-		ArchiveConnectorUUID:            optionalUUIDToStringValue(apiModel.ArchiveConnectorUUID),
-		EnableUnifyAcrossDatabases:      types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossDatabases)),
-		DatabasesToUnify:                databasesToUnify,
-		DisableAutoFetchTables:          types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),
-		MongoDBDeploymentScopedMode:     types.BoolValue(lib.RemovePtr(apiModel.Settings.DeploymentScopedMode)),
-		Tables:                          tablesMap,
+		// The API omits these when false, so they read back as false (not null) to match a config that sets false.
+		RescaleTimestampsPastYear9999: boolPointerValueOrFalse(apiModel.Settings.RescaleTimestampsPastYear9999),
+		UseOracleRowIDRanges:          boolPointerValueOrFalse(apiModel.Settings.UseOracleRowIDRanges),
+		UseAdvanceOnPrimaryKeepAlive:  types.BoolPointerValue(apiModel.Settings.UseAdvanceOnPrimaryKeepAlive),
+		EnableUnifyAcrossSchemas:      types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossSchemas)),
+		UnifyAcrossSchemasRegex:       types.StringPointerValue(apiModel.Settings.UnifyAcrossSchemasRegex),
+		MSSQLReplicationMethod:        types.StringValue(lib.RemovePtr(apiModel.Settings.MssqlReplicationMethod)),
+		ArchiveConnectorUUID:          optionalUUIDToStringValue(apiModel.ArchiveConnectorUUID),
+		EnableUnifyAcrossDatabases:    types.BoolValue(lib.RemovePtr(apiModel.Settings.UnifyAcrossDatabases)),
+		DatabasesToUnify:              databasesToUnify,
+		DisableAutoFetchTables:        types.BoolValue(lib.RemovePtr(apiModel.Settings.DisableAutoFetchTables)),
+		MongoDBDeploymentScopedMode:   types.BoolValue(lib.RemovePtr(apiModel.Settings.DeploymentScopedMode)),
+		Tables:                        tablesMap,
 	}
 
 	if apiModel.Settings.MessageCompression != nil {
