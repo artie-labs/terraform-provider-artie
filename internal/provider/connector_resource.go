@@ -119,16 +119,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"bigquery_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `bigquery`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"credentials_data"}, map[string]schema.Attribute{
 					"project_id":       schema.StringAttribute{Required: true, MarkdownDescription: "The ID of the Google Cloud project."},
 					"location":         schema.StringAttribute{Required: true, MarkdownDescription: "The location of the BigQuery dataset. This must be either `US` or `EU`."},
 					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to BigQuery. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"cockroach_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `cockroach`.",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the CockroachDB database."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the CockroachDB database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"snapshot_port": schema.Int32Attribute{Optional: true, Computed: true, MarkdownDescription: "The port of the CockroachDB database that we should use to snapshot the database. If not provided, we will use the `port` value."},
@@ -141,31 +141,31 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the CockroachDB database."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"dynamodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `dynamodb`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"secret_access_key"}, map[string]schema.Attribute{
 					"stream_arn":        schema.StringAttribute{Required: true, MarkdownDescription: "The ARN (Amazon Resource Name) of the DynamoDB Stream."},
 					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to DynamoDB. Required if `role_arn` is not set."},
 					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to DynamoDB. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to DynamoDB. If set, `access_key_id` and `secret_access_key` are not required."},
 					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
-				},
+				}),
 			},
 			"gcs_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `gcs`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"credentials_data"}, map[string]schema.Attribute{
 					"project_id":       schema.StringAttribute{Required: true, MarkdownDescription: "The ID of the Google Cloud project."},
 					"credentials_data": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The credentials data for the Google Cloud service account that we should use to connect to GCS. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"keyspaces_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `keyspaces`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"secret_access_key"}, map[string]schema.Attribute{
 					"host": schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Amazon Keyspaces endpoint."},
 					"port": schema.Int32Attribute{
 						Required:            true,
@@ -179,7 +179,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for connecting to Amazon Keyspaces. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to Amazon Keyspaces. If set, `access_key_id` and `secret_access_key` are not required."},
 					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
-				},
+				}),
 			},
 			"iceberg_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `iceberg`. The `provider` field determines which additional fields are required: for `s3tables`, provide AWS credentials and bucket ARN; for `rest`, provide the catalog URI, warehouse, and authentication credentials.",
@@ -206,16 +206,16 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"mongodb_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `mongodb`.",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":     schema.StringAttribute{Required: true, MarkdownDescription: "The connection string for the MongoDB server. This can be either SRV or standard format."},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the MongoDB database."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account we will use to connect to the MongoDB database. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"mysql_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `mysql`.",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the MySQL database. This must point to the primary host, not a read replica."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the MySQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"snapshot_port": schema.Int32Attribute{Optional: true, Computed: true, MarkdownDescription: "The port of the MySQL database that we should use to snapshot the database. If not provided, we will use the `port` value."},
@@ -237,12 +237,12 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 							stringvalidator.OneOf("", "preferred"),
 						},
 					},
-				},
+				}),
 			},
 			"mssql_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `mssql`.",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Microsoft SQL Server. This must point to the primary host, not a read replica."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the Microsoft SQL Server that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"port": schema.Int32Attribute{
@@ -254,7 +254,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the database."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"oracle_config": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -276,7 +276,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"postgresql_config": schema.SingleNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "This should be filled out if the connector type is `postgresql`.",
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":          schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PostgreSQL database. This can point to a read replica if you are using PostgreSQL 16 or higher, not on Amazon Aurora, and `hot_standby_feedback` is enabled; otherwise it must point to the primary host. This database must also have its `WAL_LEVEL` set to `logical`."},
 					"snapshot_host": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The hostname of the PostgreSQL database that we should use to snapshot the database. This can be a read replica and will only be used if this connector is being used as a source. If not provided, we will use the `host` value."},
 					"port": schema.Int32Attribute{
@@ -288,72 +288,72 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to the PostgreSQL database. This service account needs enough permissions to create and read from the replication slot."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"redshift_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `redshift`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{Required: true, MarkdownDescription: "The endpoint URL of your Redshift cluster. This should include both the host and port."},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Redshift."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the service account we should use to connect to Redshift. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"s3_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `s3`. You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"secret_access_key"}, map[string]schema.Attribute{
 					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set."},
 					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your data in S3."},
 					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required."},
 					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
-				},
+				}),
 			},
 			"smb_share_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `smb_share`. An SMB share connector is a folder of an SMB share (such as one on Amazon FSx for Windows File Server) that a Microsoft SQL Server source reader using `trn_log_backup` reads its transaction log backup files from. Link it to the source reader with `archive_connector_uuid`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"path":              schema.StringAttribute{Required: true, MarkdownDescription: "The UNC path of the folder that holds the log backup files, for example `\\\\fs-0123.corp.example.com\\share\\backups`."},
 					"username":          schema.StringAttribute{Required: true, MarkdownDescription: "The login for the share, as `DOMAIN\\user` or `user@domain`."},
 					"password":          schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password for the share login. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"private_link_uuid": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "This can point to an `artie_private_link` resource if we should reach the share through AWS PrivateLink. Its DNS entry is dialed in place of the path's host."},
-				},
+				}),
 			},
 			"snowflake_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `snowflake`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password", "private_key"}, map[string]schema.Attribute{
 					"account_identifier": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "The [account identifier](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using this instead of `account_url`."},
 					"account_url":        schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "(Legacy) The [URL](https://docs.snowflake.com/user-guide/admin-account-identifier) of your Snowflake account. We recommend using `account_identifier` instead."},
 					"virtual_dwh":        schema.StringAttribute{Required: true, MarkdownDescription: "The name of your Snowflake virtual data warehouse."},
 					"username":           schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we should use to connect to Snowflake."},
 					"password":           schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "(Legacy) The password for the service account we should use to connect to Snowflake. We recommend using `private_key` instead."},
 					"private_key":        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The private key for the service account we should use to connect to Snowflake. We recommend using this instead of `password`."},
-				},
+				}),
 			},
 			"databricks_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `databricks`. Exactly one authentication method must be configured: either `personal_access_token` alone, or both `client_id` and `client_secret` together (OAuth M2M).",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"personal_access_token", "client_secret"}, map[string]schema.Attribute{
 					"host":                  schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Databricks cluster."},
 					"http_path":             schema.StringAttribute{Required: true, MarkdownDescription: "The HTTP path of the Databricks cluster."},
 					"personal_access_token": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The personal access token for the service account we should use to connect to Databricks. Conflicts with `client_id` and `client_secret`."},
 					"client_id":             schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth M2M client ID for authenticating with Databricks. Must be provided together with `client_secret`. Conflicts with `personal_access_token`."},
 					"client_secret":         schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The OAuth M2M client secret for authenticating with Databricks. Must be provided together with `client_id`. Conflicts with `personal_access_token`."},
 					"volume":                schema.StringAttribute{Required: true, MarkdownDescription: "The volume of the Databricks cluster."},
-				},
+				}),
 			},
 			"delta_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `delta` (Delta Lake on S3). You must provide either `role_arn` (for IAM role assumption) or both `access_key_id` and `secret_access_key` (for static credentials).",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"secret_access_key"}, map[string]schema.Attribute{
 					"access_key_id":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Access Key ID for the service account we should use to connect to S3. Required if `role_arn` is not set."},
 					"secret_access_key": schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The AWS Secret Access Key for the service account we should use to connect to S3. Required if `role_arn` is not set. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"region":            schema.StringAttribute{Required: true, MarkdownDescription: "The AWS region where we should store your Delta tables in S3."},
 					"role_arn":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The ARN of the IAM role to assume for connecting to S3. If set, `access_key_id` and `secret_access_key` are not required."},
 					"external_id":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The external ID to use when assuming the IAM role. Only applicable when `role_arn` is set."},
-				},
+				}),
 			},
 			"motherduck_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `motherduck`.",
@@ -365,17 +365,17 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"planetscale_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `planetscale`. We always connect to PlanetScale over TLS.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":     schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the PlanetScale database."},
 					"port":     schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for PlanetScale is 3306."},
 					"username": schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to PlanetScale."},
 					"password": schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
-				},
+				}),
 			},
 			"kafka_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `kafka` (your own Kafka cluster, which we publish change events to). Kafka destinations must be enabled for your account.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password", "client_key"}, map[string]schema.Attribute{
 					"bootstrap_servers": schema.StringAttribute{Required: true, MarkdownDescription: "A comma-separated list of `host:port` brokers."},
 					"topic_prefix":      schema.StringAttribute{Required: true, MarkdownDescription: "The prefix of every topic name, which is `<prefix>.<schema>.<table>`. This can only contain letters, digits, `.`, `_` and `-`."},
 					"sasl_mechanism": schema.StringAttribute{
@@ -394,7 +394,7 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 					"client_cert":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "A PEM client certificate presented to the brokers for mutual TLS. Requires `client_key`."},
 					"client_key":    schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "The PEM private key for `client_cert`. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"create_topics": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to have us create a missing topic, with the cluster's default settings, for clusters that don't create topics automatically. This needs the CREATE permission."},
-				},
+				}),
 			},
 			"redis_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `redis`.",
@@ -413,13 +413,13 @@ func (r *ConnectorResource) Schema(ctx context.Context, req resource.SchemaReque
 			"documentdb_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `documentdb`.",
 				Optional:            true,
-				Attributes: map[string]schema.Attribute{
+				Attributes: withWriteOnlySecrets([]string{"password"}, map[string]schema.Attribute{
 					"host":        schema.StringAttribute{Required: true, MarkdownDescription: "The hostname of the Amazon DocumentDB cluster."},
 					"port":        schema.Int32Attribute{Required: true, Validators: []validator.Int32{int32validator.Between(1, math.MaxUint16)}, MarkdownDescription: "The default port for DocumentDB is 27017."},
 					"username":    schema.StringAttribute{Required: true, MarkdownDescription: "The username of the service account we will use to connect to DocumentDB."},
 					"password":    schema.StringAttribute{Required: true, Sensitive: true, MarkdownDescription: "The password of the service account. We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file."},
 					"disable_ssl": schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Set to `true` to connect without SSL. Leave it `false` (the default) to require SSL."},
-				},
+				}),
 			},
 			"clickhouse_config": schema.SingleNestedAttribute{
 				MarkdownDescription: "This should be filled out if the connector type is `clickhouse`.",
@@ -455,6 +455,7 @@ func withWriteOnlySecrets(secrets []string, attributes map[string]schema.Attribu
 			secret.Computed = true
 			secret.Default = stringdefault.StaticString("")
 			secret.Validators = append(secret.Validators, stringvalidator.ExactlyOneOf(writeOnlyPath))
+			secret.MarkdownDescription += fmt.Sprintf(" Exactly one of `%s` or `%s` is required.", name, writeOnlyName)
 		} else {
 			secret.Validators = append(secret.Validators, stringvalidator.ConflictsWith(writeOnlyPath))
 		}
@@ -576,7 +577,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.DynamoDBConfig.AwsAccessKeyID) {
 				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `dynamodb_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
-			if tfmodels.IsKnownAndEmpty(configData.DynamoDBConfig.AwsSecretAccessKey) {
+			if tfmodels.SecretMissing(configData.DynamoDBConfig.AwsSecretAccessKey, configData.DynamoDBConfig.AwsSecretAccessKeyWO) {
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `dynamodb_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
@@ -630,7 +631,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.KeyspacesConfig.AwsAccessKeyID) {
 				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `keyspaces_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
-			if tfmodels.IsKnownAndEmpty(configData.KeyspacesConfig.AwsSecretAccessKey) {
+			if tfmodels.SecretMissing(configData.KeyspacesConfig.AwsSecretAccessKey, configData.KeyspacesConfig.AwsSecretAccessKeyWO) {
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `keyspaces_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
@@ -680,7 +681,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.S3Config.AccessKeyID) {
 				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `s3_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
-			if tfmodels.IsKnownAndEmpty(configData.S3Config.SecretAccessKey) {
+			if tfmodels.SecretMissing(configData.S3Config.SecretAccessKey, configData.S3Config.SecretAccessKeyWO) {
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `s3_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
@@ -704,7 +705,8 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 		}
 
 		// Either password or private_key must be provided
-		if configData.SnowflakeConfig.Password.IsNull() && configData.SnowflakeConfig.PrivateKey.IsNull() {
+		snowflake := configData.SnowflakeConfig
+		if tfmodels.AllNull([]types.String{snowflake.Password, snowflake.PasswordWO, snowflake.PrivateKey, snowflake.PrivateKeyWO}) {
 			resp.Diagnostics.AddError("Either password or private_key must be provided", "Please provide either `password` or `private_key` inside `snowflake_config`. We recommend using `private_key`.")
 		}
 	case string(openapi.EnumsConnectorSlugDatabricks):
@@ -713,9 +715,10 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			return
 		}
 
-		patSet := !configData.DatabricksConfig.PersonalAccessToken.IsNull()
-		clientIDSet := !configData.DatabricksConfig.ClientID.IsNull()
-		clientSecretSet := !configData.DatabricksConfig.ClientSecret.IsNull()
+		databricks := configData.DatabricksConfig
+		patSet := !tfmodels.AllNull([]types.String{databricks.PersonalAccessToken, databricks.PersonalAccessTokenWO})
+		clientIDSet := !databricks.ClientID.IsNull()
+		clientSecretSet := !tfmodels.AllNull([]types.String{databricks.ClientSecret, databricks.ClientSecretWO})
 
 		if patSet && (clientIDSet || clientSecretSet) {
 			resp.Diagnostics.AddError("Conflicting authentication methods", "`personal_access_token` conflicts with `client_id` and `client_secret`. Please provide either `personal_access_token` or both `client_id` and `client_secret`, not both.")
@@ -736,7 +739,7 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.AccessKeyID) {
 				resp.Diagnostics.AddError("access_key_id is required", "Please provide `access_key_id` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
-			if tfmodels.IsKnownAndEmpty(configData.DeltaConfig.SecretAccessKey) {
+			if tfmodels.SecretMissing(configData.DeltaConfig.SecretAccessKey, configData.DeltaConfig.SecretAccessKeyWO) {
 				resp.Diagnostics.AddError("secret_access_key is required", "Please provide `secret_access_key` inside `delta_config`, or set `role_arn` to use IAM role assumption instead.")
 			}
 		}
@@ -784,19 +787,19 @@ func validateKafkaConfig(config tfmodels.KafkaSharedConfig) diag.Diagnostics {
 		if tfmodels.IsKnownAndNonEmpty(config.Username) {
 			diags.AddError("sasl_mechanism is required with a username", "Please set `sasl_mechanism` inside `kafka_config` to `PLAIN`, `SCRAM-SHA-256` or `SCRAM-SHA-512`, or remove `username`.")
 		}
-		if tfmodels.IsKnownAndNonEmpty(config.Password) {
+		if tfmodels.SecretSet(config.Password, config.PasswordWO) {
 			diags.AddError("sasl_mechanism is required with a password", "Please set `sasl_mechanism` inside `kafka_config` to `PLAIN`, `SCRAM-SHA-256` or `SCRAM-SHA-512`, or remove `password`.")
 		}
 	default:
 		if tfmodels.IsKnownAndNonEmpty(config.Username) {
 			diags.AddError("username is not used with this sasl_mechanism", "`username` inside `kafka_config` is only used with `PLAIN`, `SCRAM-SHA-256` and `SCRAM-SHA-512`.")
 		}
-		if tfmodels.IsKnownAndNonEmpty(config.Password) {
+		if tfmodels.SecretSet(config.Password, config.PasswordWO) {
 			diags.AddError("password is not used with this sasl_mechanism", "`password` inside `kafka_config` is only used with `PLAIN`, `SCRAM-SHA-256` and `SCRAM-SHA-512`.")
 		}
 	}
 
-	if tfmodels.IsKnownAndNonEmpty(config.ClientKey) {
+	if tfmodels.SecretSet(config.ClientKey, config.ClientKeyWO) {
 		if tfmodels.IsKnownAndEmpty(config.ClientCert) {
 			diags.AddError("client_cert is required with a client_key", "Please provide `client_cert` inside `kafka_config`, or remove `client_key`.")
 		}

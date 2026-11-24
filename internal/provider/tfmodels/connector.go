@@ -295,16 +295,18 @@ func ConnectorFromAPIModel(apiModel openapi.PayloadsFullConnector, prior Connect
 }
 
 type BigQuerySharedConfig struct {
-	ProjectID       types.String `tfsdk:"project_id"`
-	Location        types.String `tfsdk:"location"`
-	CredentialsData types.String `tfsdk:"credentials_data"`
+	ProjectID                types.String `tfsdk:"project_id"`
+	Location                 types.String `tfsdk:"location"`
+	CredentialsData          types.String `tfsdk:"credentials_data"`
+	CredentialsDataWO        types.String `tfsdk:"credentials_data_wo"`
+	CredentialsDataWOVersion types.Int64  `tfsdk:"credentials_data_wo_version"`
 }
 
 func (b BigQuerySharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		GCPProjectID:       b.ProjectID.ValueString(),
 		GCPLocation:        b.Location.ValueString(),
-		GCPCredentialsData: b.CredentialsData.ValueString(),
+		GCPCredentialsData: writeOnlyOr(b.CredentialsDataWO, b.CredentialsData),
 	}
 }
 
@@ -317,18 +319,20 @@ func BigQuerySharedConfigFromAPIModel(apiModel ConnectorConfig) *BigQuerySharedC
 }
 
 type DynamoDBConfig struct {
-	StreamArn          types.String `tfsdk:"stream_arn"`
-	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
-	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
-	RoleARN            types.String `tfsdk:"role_arn"`
-	ExternalID         types.String `tfsdk:"external_id"`
+	StreamArn                   types.String `tfsdk:"stream_arn"`
+	AwsAccessKeyID              types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey          types.String `tfsdk:"secret_access_key"`
+	AwsSecretAccessKeyWO        types.String `tfsdk:"secret_access_key_wo"`
+	AwsSecretAccessKeyWOVersion types.Int64  `tfsdk:"secret_access_key_wo_version"`
+	RoleARN                     types.String `tfsdk:"role_arn"`
+	ExternalID                  types.String `tfsdk:"external_id"`
 }
 
 func (d DynamoDBConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		DynamoStreamArn:    d.StreamArn.ValueString(),
 		AWSAccessKeyID:     d.AwsAccessKeyID.ValueString(),
-		AWSSecretAccessKey: d.AwsSecretAccessKey.ValueString(),
+		AWSSecretAccessKey: writeOnlyOr(d.AwsSecretAccessKeyWO, d.AwsSecretAccessKey),
 		AWSRoleARN:         d.RoleARN.ValueString(),
 		AWSExternalID:      d.ExternalID.ValueString(),
 	}
@@ -345,12 +349,14 @@ func DynamoDBConfigFromAPIModel(apiDynamoCfg ConnectorConfig) *DynamoDBConfig {
 }
 
 type CockroachDBSharedConfig struct {
-	Host         types.String `tfsdk:"host"`
-	SnapshotHost types.String `tfsdk:"snapshot_host"`
-	SnapshotPort types.Int32  `tfsdk:"snapshot_port"`
-	Port         types.Int32  `tfsdk:"port"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
+	Host              types.String `tfsdk:"host"`
+	SnapshotHost      types.String `tfsdk:"snapshot_host"`
+	SnapshotPort      types.Int32  `tfsdk:"snapshot_port"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (c CockroachDBSharedConfig) ToAPIModel() ConnectorConfig {
@@ -360,7 +366,7 @@ func (c CockroachDBSharedConfig) ToAPIModel() ConnectorConfig {
 		SnapshotPort: c.SnapshotPort.ValueInt32(),
 		Port:         c.Port.ValueInt32(),
 		User:         c.Username.ValueString(),
-		Password:     c.Password.ValueString(),
+		Password:     writeOnlyOr(c.PasswordWO, c.Password),
 	}
 }
 
@@ -376,16 +382,18 @@ func CockroachDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *CockroachDBS
 }
 
 type MongoDBSharedConfig struct {
-	Host     types.String `tfsdk:"host"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
+	Host              types.String `tfsdk:"host"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (m MongoDBSharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		Host:     m.Host.ValueString(),
 		User:     m.Username.ValueString(),
-		Password: m.Password.ValueString(),
+		Password: writeOnlyOr(m.PasswordWO, m.Password),
 	}
 }
 
@@ -398,13 +406,15 @@ func MongoDBSharedConfigFromAPIModel(apiModel ConnectorConfig) *MongoDBSharedCon
 }
 
 type MySQLSharedConfig struct {
-	Host         types.String `tfsdk:"host"`
-	SnapshotHost types.String `tfsdk:"snapshot_host"`
-	SnapshotPort types.Int32  `tfsdk:"snapshot_port"`
-	Port         types.Int32  `tfsdk:"port"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
-	TLSMode      types.String `tfsdk:"tls_mode"`
+	Host              types.String `tfsdk:"host"`
+	SnapshotHost      types.String `tfsdk:"snapshot_host"`
+	SnapshotPort      types.Int32  `tfsdk:"snapshot_port"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
+	TLSMode           types.String `tfsdk:"tls_mode"`
 }
 
 func (m MySQLSharedConfig) ToAPIModel() ConnectorConfig {
@@ -414,7 +424,7 @@ func (m MySQLSharedConfig) ToAPIModel() ConnectorConfig {
 		SnapshotPort: m.SnapshotPort.ValueInt32(),
 		Port:         m.Port.ValueInt32(),
 		User:         m.Username.ValueString(),
-		Password:     m.Password.ValueString(),
+		Password:     writeOnlyOr(m.PasswordWO, m.Password),
 		MySQLTLSMode: m.TLSMode.ValueString(),
 	}
 }
@@ -432,11 +442,13 @@ func MySQLSharedConfigFromAPIModel(apiModel ConnectorConfig) *MySQLSharedConfig 
 }
 
 type MSSQLSharedConfig struct {
-	Host         types.String `tfsdk:"host"`
-	SnapshotHost types.String `tfsdk:"snapshot_host"`
-	Port         types.Int32  `tfsdk:"port"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
+	Host              types.String `tfsdk:"host"`
+	SnapshotHost      types.String `tfsdk:"snapshot_host"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (r MSSQLSharedConfig) ToAPIModel() ConnectorConfig {
@@ -445,7 +457,7 @@ func (r MSSQLSharedConfig) ToAPIModel() ConnectorConfig {
 		SnapshotHost: r.SnapshotHost.ValueString(),
 		Port:         r.Port.ValueInt32(),
 		Username:     r.Username.ValueString(),
-		Password:     r.Password.ValueString(),
+		Password:     writeOnlyOr(r.PasswordWO, r.Password),
 	}
 }
 
@@ -490,11 +502,13 @@ func OracleSharedConfigFromAPIModel(apiModel ConnectorConfig) *OracleSharedConfi
 }
 
 type PostgresSharedConfig struct {
-	Host         types.String `tfsdk:"host"`
-	SnapshotHost types.String `tfsdk:"snapshot_host"`
-	Port         types.Int32  `tfsdk:"port"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
+	Host              types.String `tfsdk:"host"`
+	SnapshotHost      types.String `tfsdk:"snapshot_host"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (p PostgresSharedConfig) ToAPIModel() ConnectorConfig {
@@ -503,7 +517,7 @@ func (p PostgresSharedConfig) ToAPIModel() ConnectorConfig {
 		SnapshotHost: p.SnapshotHost.ValueString(),
 		Port:         p.Port.ValueInt32(),
 		User:         p.Username.ValueString(),
-		Password:     p.Password.ValueString(),
+		Password:     writeOnlyOr(p.PasswordWO, p.Password),
 	}
 }
 
@@ -518,16 +532,18 @@ func PostgresSharedConfigFromAPIModel(apiModel ConnectorConfig) *PostgresSharedC
 }
 
 type RedshiftSharedConfig struct {
-	Endpoint types.String `tfsdk:"endpoint"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
+	Endpoint          types.String `tfsdk:"endpoint"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (r RedshiftSharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		Endpoint: r.Endpoint.ValueString(),
 		Username: r.Username.ValueString(),
-		Password: r.Password.ValueString(),
+		Password: writeOnlyOr(r.PasswordWO, r.Password),
 	}
 }
 
@@ -540,17 +556,19 @@ func RedshiftSharedConfigFromAPIModel(apiModel ConnectorConfig) *RedshiftSharedC
 }
 
 type S3SharedConfig struct {
-	AccessKeyID     types.String `tfsdk:"access_key_id"`
-	SecretAccessKey types.String `tfsdk:"secret_access_key"`
-	Region          types.String `tfsdk:"region"`
-	RoleARN         types.String `tfsdk:"role_arn"`
-	ExternalID      types.String `tfsdk:"external_id"`
+	AccessKeyID              types.String `tfsdk:"access_key_id"`
+	SecretAccessKey          types.String `tfsdk:"secret_access_key"`
+	SecretAccessKeyWO        types.String `tfsdk:"secret_access_key_wo"`
+	SecretAccessKeyWOVersion types.Int64  `tfsdk:"secret_access_key_wo_version"`
+	Region                   types.String `tfsdk:"region"`
+	RoleARN                  types.String `tfsdk:"role_arn"`
+	ExternalID               types.String `tfsdk:"external_id"`
 }
 
 func (s S3SharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		AWSAccessKeyID:     s.AccessKeyID.ValueString(),
-		AWSSecretAccessKey: s.SecretAccessKey.ValueString(),
+		AWSSecretAccessKey: writeOnlyOr(s.SecretAccessKeyWO, s.SecretAccessKey),
 		AWSRegion:          s.Region.ValueString(),
 		AWSRoleARN:         s.RoleARN.ValueString(),
 		AWSExternalID:      s.ExternalID.ValueString(),
@@ -568,10 +586,12 @@ func S3SharedConfigFromAPIModel(apiModel ConnectorConfig) *S3SharedConfig {
 }
 
 type SMBShareConfig struct {
-	Path            types.String `tfsdk:"path"`
-	Username        types.String `tfsdk:"username"`
-	Password        types.String `tfsdk:"password"`
-	PrivateLinkUUID types.String `tfsdk:"private_link_uuid"`
+	Path              types.String `tfsdk:"path"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
+	PrivateLinkUUID   types.String `tfsdk:"private_link_uuid"`
 }
 
 // ToAPIModel leaves out PrivateLinkUUID, which the API takes on the connector rather than in its sharedConfig.
@@ -579,7 +599,7 @@ func (s SMBShareConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		SMBPath:  s.Path.ValueString(),
 		Username: s.Username.ValueString(),
-		Password: s.Password.ValueString(),
+		Password: writeOnlyOr(s.PasswordWO, s.Password),
 	}
 }
 
@@ -593,12 +613,16 @@ func SMBShareConfigFromAPIModel(apiModel ConnectorConfig, privateLinkUUID *uuid.
 }
 
 type SnowflakeSharedConfig struct {
-	AccountIdentifier types.String `tfsdk:"account_identifier"`
-	AccountURL        types.String `tfsdk:"account_url"`
-	VirtualDWH        types.String `tfsdk:"virtual_dwh"`
-	Username          types.String `tfsdk:"username"`
-	Password          types.String `tfsdk:"password"`
-	PrivateKey        types.String `tfsdk:"private_key"`
+	AccountIdentifier   types.String `tfsdk:"account_identifier"`
+	AccountURL          types.String `tfsdk:"account_url"`
+	VirtualDWH          types.String `tfsdk:"virtual_dwh"`
+	Username            types.String `tfsdk:"username"`
+	Password            types.String `tfsdk:"password"`
+	PasswordWO          types.String `tfsdk:"password_wo"`
+	PasswordWOVersion   types.Int64  `tfsdk:"password_wo_version"`
+	PrivateKey          types.String `tfsdk:"private_key"`
+	PrivateKeyWO        types.String `tfsdk:"private_key_wo"`
+	PrivateKeyWOVersion types.Int64  `tfsdk:"private_key_wo_version"`
 }
 
 func (s SnowflakeSharedConfig) ToAPIModel() ConnectorConfig {
@@ -606,9 +630,9 @@ func (s SnowflakeSharedConfig) ToAPIModel() ConnectorConfig {
 		SnowflakeAccountIdentifier: s.AccountIdentifier.ValueString(),
 		SnowflakeAccountURL:        s.AccountURL.ValueString(),
 		SnowflakeVirtualDWH:        s.VirtualDWH.ValueString(),
-		SnowflakePrivateKey:        s.PrivateKey.ValueString(),
+		SnowflakePrivateKey:        writeOnlyOr(s.PrivateKeyWO, s.PrivateKey),
 		Username:                   s.Username.ValueString(),
-		Password:                   s.Password.ValueString(),
+		Password:                   writeOnlyOr(s.PasswordWO, s.Password),
 	}
 }
 
@@ -624,21 +648,25 @@ func SnowflakeSharedConfigFromAPIModel(apiModel ConnectorConfig) *SnowflakeShare
 }
 
 type DatabricksSharedConfig struct {
-	Host                types.String `tfsdk:"host"`
-	HttpPath            types.String `tfsdk:"http_path"`
-	PersonalAccessToken types.String `tfsdk:"personal_access_token"`
-	ClientID            types.String `tfsdk:"client_id"`
-	ClientSecret        types.String `tfsdk:"client_secret"`
-	Volume              types.String `tfsdk:"volume"`
+	Host                         types.String `tfsdk:"host"`
+	HttpPath                     types.String `tfsdk:"http_path"`
+	PersonalAccessToken          types.String `tfsdk:"personal_access_token"`
+	PersonalAccessTokenWO        types.String `tfsdk:"personal_access_token_wo"`
+	PersonalAccessTokenWOVersion types.Int64  `tfsdk:"personal_access_token_wo_version"`
+	ClientID                     types.String `tfsdk:"client_id"`
+	ClientSecret                 types.String `tfsdk:"client_secret"`
+	ClientSecretWO               types.String `tfsdk:"client_secret_wo"`
+	ClientSecretWOVersion        types.Int64  `tfsdk:"client_secret_wo_version"`
+	Volume                       types.String `tfsdk:"volume"`
 }
 
 func (d DatabricksSharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		Host:                          d.Host.ValueString(),
 		DatabricksHttpPath:            d.HttpPath.ValueString(),
-		DatabricksPersonalAccessToken: d.PersonalAccessToken.ValueString(),
+		DatabricksPersonalAccessToken: writeOnlyOr(d.PersonalAccessTokenWO, d.PersonalAccessToken),
 		DatabricksClientID:            d.ClientID.ValueString(),
-		DatabricksClientSecret:        d.ClientSecret.ValueString(),
+		DatabricksClientSecret:        writeOnlyOr(d.ClientSecretWO, d.ClientSecret),
 		DatabricksVolume:              d.Volume.ValueString(),
 	}
 }
@@ -655,14 +683,16 @@ func DatabricksSharedConfigFromAPIModel(apiModel ConnectorConfig) *DatabricksSha
 }
 
 type GCSSharedConfig struct {
-	ProjectID       types.String `tfsdk:"project_id"`
-	CredentialsData types.String `tfsdk:"credentials_data"`
+	ProjectID                types.String `tfsdk:"project_id"`
+	CredentialsData          types.String `tfsdk:"credentials_data"`
+	CredentialsDataWO        types.String `tfsdk:"credentials_data_wo"`
+	CredentialsDataWOVersion types.Int64  `tfsdk:"credentials_data_wo_version"`
 }
 
 func (g GCSSharedConfig) ToAPIModel() ConnectorConfig {
 	return ConnectorConfig{
 		GCPProjectID:       g.ProjectID.ValueString(),
-		GCPCredentialsData: g.CredentialsData.ValueString(),
+		GCPCredentialsData: writeOnlyOr(g.CredentialsDataWO, g.CredentialsData),
 	}
 }
 
@@ -733,13 +763,15 @@ func IcebergSharedConfigFromAPIModel(apiModel ConnectorConfig) *IcebergSharedCon
 }
 
 type KeyspacesSharedConfig struct {
-	Host               types.String `tfsdk:"host"`
-	Port               types.Int32  `tfsdk:"port"`
-	Region             types.String `tfsdk:"region"`
-	AwsAccessKeyID     types.String `tfsdk:"access_key_id"`
-	AwsSecretAccessKey types.String `tfsdk:"secret_access_key"`
-	RoleARN            types.String `tfsdk:"role_arn"`
-	ExternalID         types.String `tfsdk:"external_id"`
+	Host                        types.String `tfsdk:"host"`
+	Port                        types.Int32  `tfsdk:"port"`
+	Region                      types.String `tfsdk:"region"`
+	AwsAccessKeyID              types.String `tfsdk:"access_key_id"`
+	AwsSecretAccessKey          types.String `tfsdk:"secret_access_key"`
+	AwsSecretAccessKeyWO        types.String `tfsdk:"secret_access_key_wo"`
+	AwsSecretAccessKeyWOVersion types.Int64  `tfsdk:"secret_access_key_wo_version"`
+	RoleARN                     types.String `tfsdk:"role_arn"`
+	ExternalID                  types.String `tfsdk:"external_id"`
 }
 
 func (k KeyspacesSharedConfig) ToAPIModel() ConnectorConfig {
@@ -748,7 +780,7 @@ func (k KeyspacesSharedConfig) ToAPIModel() ConnectorConfig {
 		Port:               k.Port.ValueInt32(),
 		AWSRegion:          k.Region.ValueString(),
 		AWSAccessKeyID:     k.AwsAccessKeyID.ValueString(),
-		AWSSecretAccessKey: k.AwsSecretAccessKey.ValueString(),
+		AWSSecretAccessKey: writeOnlyOr(k.AwsSecretAccessKeyWO, k.AwsSecretAccessKey),
 		AWSRoleARN:         k.RoleARN.ValueString(),
 		AWSExternalID:      k.ExternalID.ValueString(),
 	}
@@ -782,10 +814,12 @@ func MotherDuckSharedConfigFromAPIModel(apiModel ConnectorConfig) *MotherDuckSha
 
 // PlanetScaleSharedConfig leaves out the TLS mode, which the API always sets to required for PlanetScale.
 type PlanetScaleSharedConfig struct {
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int32  `tfsdk:"port"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
+	Host              types.String `tfsdk:"host"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 }
 
 func (p PlanetScaleSharedConfig) ToAPIModel() ConnectorConfig {
@@ -793,7 +827,7 @@ func (p PlanetScaleSharedConfig) ToAPIModel() ConnectorConfig {
 		Host:     p.Host.ValueString(),
 		Port:     p.Port.ValueInt32(),
 		User:     p.Username.ValueString(),
-		Password: p.Password.ValueString(),
+		Password: writeOnlyOr(p.PasswordWO, p.Password),
 	}
 }
 
@@ -807,18 +841,22 @@ func PlanetScaleSharedConfigFromAPIModel(apiModel ConnectorConfig) *PlanetScaleS
 }
 
 type KafkaSharedConfig struct {
-	BootstrapServers types.String `tfsdk:"bootstrap_servers"`
-	TopicPrefix      types.String `tfsdk:"topic_prefix"`
-	SASLMechanism    types.String `tfsdk:"sasl_mechanism"`
-	Username         types.String `tfsdk:"username"`
-	Password         types.String `tfsdk:"password"`
-	RoleARN          types.String `tfsdk:"role_arn"`
-	ExternalID       types.String `tfsdk:"external_id"`
-	DisableTLS       types.Bool   `tfsdk:"disable_tls"`
-	CACert           types.String `tfsdk:"ca_cert"`
-	ClientCert       types.String `tfsdk:"client_cert"`
-	ClientKey        types.String `tfsdk:"client_key"`
-	CreateTopics     types.Bool   `tfsdk:"create_topics"`
+	BootstrapServers   types.String `tfsdk:"bootstrap_servers"`
+	TopicPrefix        types.String `tfsdk:"topic_prefix"`
+	SASLMechanism      types.String `tfsdk:"sasl_mechanism"`
+	Username           types.String `tfsdk:"username"`
+	Password           types.String `tfsdk:"password"`
+	PasswordWO         types.String `tfsdk:"password_wo"`
+	PasswordWOVersion  types.Int64  `tfsdk:"password_wo_version"`
+	RoleARN            types.String `tfsdk:"role_arn"`
+	ExternalID         types.String `tfsdk:"external_id"`
+	DisableTLS         types.Bool   `tfsdk:"disable_tls"`
+	CACert             types.String `tfsdk:"ca_cert"`
+	ClientCert         types.String `tfsdk:"client_cert"`
+	ClientKey          types.String `tfsdk:"client_key"`
+	ClientKeyWO        types.String `tfsdk:"client_key_wo"`
+	ClientKeyWOVersion types.Int64  `tfsdk:"client_key_wo_version"`
+	CreateTopics       types.Bool   `tfsdk:"create_topics"`
 }
 
 func (k KafkaSharedConfig) ToAPIModel() ConnectorConfig {
@@ -827,13 +865,13 @@ func (k KafkaSharedConfig) ToAPIModel() ConnectorConfig {
 		KafkaTopicPrefix:      k.TopicPrefix.ValueString(),
 		KafkaSASLMechanism:    k.SASLMechanism.ValueString(),
 		Username:              k.Username.ValueString(),
-		Password:              k.Password.ValueString(),
+		Password:              writeOnlyOr(k.PasswordWO, k.Password),
 		AWSRoleARN:            k.RoleARN.ValueString(),
 		AWSExternalID:         k.ExternalID.ValueString(),
 		KafkaDisableTLS:       k.DisableTLS.ValueBool(),
 		CACert:                k.CACert.ValueString(),
 		ClientCert:            k.ClientCert.ValueString(),
-		ClientKey:             k.ClientKey.ValueString(),
+		ClientKey:             writeOnlyOr(k.ClientKeyWO, k.ClientKey),
 		KafkaCreateTopics:     k.CreateTopics.ValueBool(),
 	}
 }
@@ -895,11 +933,13 @@ func RedisSharedConfigFromAPIModel(apiModel ConnectorConfig) *RedisSharedConfig 
 }
 
 type DocumentDBSharedConfig struct {
-	Host       types.String `tfsdk:"host"`
-	Port       types.Int32  `tfsdk:"port"`
-	Username   types.String `tfsdk:"username"`
-	Password   types.String `tfsdk:"password"`
-	DisableSSL types.Bool   `tfsdk:"disable_ssl"`
+	Host              types.String `tfsdk:"host"`
+	Port              types.Int32  `tfsdk:"port"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
+	DisableSSL        types.Bool   `tfsdk:"disable_ssl"`
 }
 
 func (d DocumentDBSharedConfig) ToAPIModel() ConnectorConfig {
@@ -907,7 +947,7 @@ func (d DocumentDBSharedConfig) ToAPIModel() ConnectorConfig {
 		Host:                 d.Host.ValueString(),
 		Port:                 d.Port.ValueInt32(),
 		User:                 d.Username.ValueString(),
-		Password:             d.Password.ValueString(),
+		Password:             writeOnlyOr(d.PasswordWO, d.Password),
 		DocumentDBDisableSSL: d.DisableSSL.ValueBool(),
 	}
 }
