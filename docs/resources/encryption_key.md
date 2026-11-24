@@ -16,8 +16,7 @@ Encryption keys belong to the whole company, so this resource needs an API key w
 ## Example Usage
 
 ```terraform
-# Encryption keys belong to the whole company, so manage them with a key that has access to All environments
-# (full access, or the encryption_keys scopes).
+# Encryption keys belong to the whole company, so manage them with a key that has access to all environments.
 variable "artie_workspace_api_key" {
   type      = string
   sensitive = true
