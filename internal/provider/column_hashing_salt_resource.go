@@ -35,7 +35,7 @@ func (r *ColumnHashingSaltResource) Metadata(ctx context.Context, req resource.M
 
 func (r *ColumnHashingSaltResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Artie Column Hashing Salt resource. This resource manages salts used when hashing column values in pipelines. Reference a salt's `uuid` from an `artie_pipeline`'s `column_hashing_salt_uuid` to apply it to any table that has `columns_to_hash` set.",
+		MarkdownDescription: "Artie Column Hashing Salt resource. This resource manages salts used when hashing column values in pipelines. Reference a salt's `uuid` from an `artie_pipeline`'s `column_hashing_salt_uuid` to apply it to any table that has `columns_to_hash` set.\n\nSalts belong to the whole company, so this resource needs an API key with access to **All environments**: either full access, or the `column_hashing_salts:read`, `column_hashing_salts:write` and `column_hashing_salts:delete` scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage salts through a second, aliased provider, as in the example below. Pipelines can keep using the environment-bound key to reference the salt's `uuid`.",
 		Attributes: map[string]schema.Attribute{
 			"uuid": schema.StringAttribute{
 				Computed:      true,
