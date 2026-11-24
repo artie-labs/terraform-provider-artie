@@ -4,20 +4,25 @@ page_title: "artie_encryption_key Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
   Artie Encryption Key resource. This resource manages encryption keys used for column-level encryption in pipelines. Keys can be passphrase-based (default) or KMS-backed. Reference a key's uuid from an artie_pipeline's encryption_key_uuid to apply it to any table that has columns_to_encrypt set.
-  Encryption keys belong to the whole company, so this resource needs an API key with access to All environments: either full access, or the encryption_keys:read, encryption_keys:write and encryption_keys:delete scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage encryption keys through a second, aliased provider, as in the example below. Pipelines can keep using the environment-bound key to reference the key's uuid.
+  Encryption keys belong to the whole company, so this resource needs an API key with access to All environments: either full access, or the encryption_keys:read, encryption_keys:write and encryption_keys:delete scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage encryption keys through a second provider block with an alias. Pipelines can keep using the environment-bound key to reference the key's uuid.
 ---
 
 # artie_encryption_key (Resource)
 
 Artie Encryption Key resource. This resource manages encryption keys used for column-level encryption in pipelines. Keys can be passphrase-based (default) or KMS-backed. Reference a key's `uuid` from an `artie_pipeline`'s `encryption_key_uuid` to apply it to any table that has `columns_to_encrypt` set.
 
-Encryption keys belong to the whole company, so this resource needs an API key with access to **All environments**: either full access, or the `encryption_keys:read`, `encryption_keys:write` and `encryption_keys:delete` scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage encryption keys through a second, aliased provider, as in the example below. Pipelines can keep using the environment-bound key to reference the key's `uuid`.
+Encryption keys belong to the whole company, so this resource needs an API key with access to **All environments**: either full access, or the `encryption_keys:read`, `encryption_keys:write` and `encryption_keys:delete` scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage encryption keys through a second `provider` block with an `alias`. Pipelines can keep using the environment-bound key to reference the key's `uuid`.
 
 ## Example Usage
 
 ```terraform
 # Encryption keys belong to the whole company, so manage them with a key that has access to All environments
 # (full access, or the encryption_keys scopes).
+variable "artie_workspace_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "artie" {
   alias   = "workspace"
   api_key = var.artie_workspace_api_key

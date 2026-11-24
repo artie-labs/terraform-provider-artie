@@ -1,5 +1,10 @@
 # Salts belong to the whole company, so manage them with a key that has access to All environments
 # (full access, or the column_hashing_salts scopes).
+variable "artie_workspace_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "artie" {
   alias   = "workspace"
   api_key = var.artie_workspace_api_key

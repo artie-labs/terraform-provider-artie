@@ -4,20 +4,25 @@ page_title: "artie_column_hashing_salt Resource - terraform-provider-artie"
 subcategory: ""
 description: |-
   Artie Column Hashing Salt resource. This resource manages salts used when hashing column values in pipelines. Reference a salt's uuid from an artie_pipeline's column_hashing_salt_uuid to apply it to any table that has columns_to_hash set.
-  Salts belong to the whole company, so this resource needs an API key with access to All environments: either full access, or the column_hashing_salts:read, column_hashing_salts:write and column_hashing_salts:delete scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage salts through a second, aliased provider, as in the example below. Pipelines can keep using the environment-bound key to reference the salt's uuid.
+  Salts belong to the whole company, so this resource needs an API key with access to All environments: either full access, or the column_hashing_salts:read, column_hashing_salts:write and column_hashing_salts:delete scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage salts through a second provider block with an alias. Pipelines can keep using the environment-bound key to reference the salt's uuid.
 ---
 
 # artie_column_hashing_salt (Resource)
 
 Artie Column Hashing Salt resource. This resource manages salts used when hashing column values in pipelines. Reference a salt's `uuid` from an `artie_pipeline`'s `column_hashing_salt_uuid` to apply it to any table that has `columns_to_hash` set.
 
-Salts belong to the whole company, so this resource needs an API key with access to **All environments**: either full access, or the `column_hashing_salts:read`, `column_hashing_salts:write` and `column_hashing_salts:delete` scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage salts through a second, aliased provider, as in the example below. Pipelines can keep using the environment-bound key to reference the salt's `uuid`.
+Salts belong to the whole company, so this resource needs an API key with access to **All environments**: either full access, or the `column_hashing_salts:read`, `column_hashing_salts:write` and `column_hashing_salts:delete` scopes. An environment-bound key gets a 403. If your main key is bound to one environment, manage salts through a second `provider` block with an `alias`. Pipelines can keep using the environment-bound key to reference the salt's `uuid`.
 
 ## Example Usage
 
 ```terraform
 # Salts belong to the whole company, so manage them with a key that has access to All environments
 # (full access, or the column_hashing_salts scopes).
+variable "artie_workspace_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "artie" {
   alias   = "workspace"
   api_key = var.artie_workspace_api_key
