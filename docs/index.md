@@ -128,7 +128,7 @@ resource "artie_pipeline" "postgres_to_snowflake" {
 
 ### Required
 
-- `api_key` (String, Sensitive) Artie API key to authenticate requests to the Artie API. Generate an API key in the Artie web app at https://app.artie.com/settings?tab=apiKeys (only company admins can create API keys). We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file.
+- `api_key` (String, Sensitive) Artie API key to authenticate requests to the Artie API. Generate an API key in the Artie web app at https://app.artie.com/settings?tab=apiKeys (only company admins can create API keys). We recommend storing this in a secret manager and referencing it via a *sensitive* Terraform variable, instead of putting it in plaintext in your Terraform config file. Encryption keys, column hashing salts and Kafka resources need a key with access to All environments. If this key is bound to one environment, manage those resources through a second, aliased provider.
 
 ### Optional
 
