@@ -125,6 +125,7 @@ type Table struct {
 	CTIDBackfill         types.Bool   `tfsdk:"ctid_backfill"`
 	CTIDChunkSize        types.Int64  `tfsdk:"ctid_chunk_size"`
 	CTIDMaxParallelism   types.Int64  `tfsdk:"ctid_max_parallelism"`
+	CTIDPagesPerRange    types.Int64  `tfsdk:"ctid_pages_per_range"`
 	RangeBackfill        types.Bool   `tfsdk:"range_backfill"`
 	RangeChunkSize       types.Int64  `tfsdk:"range_chunk_size"`
 	RangeMaxParallelism  types.Int64  `tfsdk:"range_max_parallelism"`
@@ -156,6 +157,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"ctid_backfill":          types.BoolType,
 	"ctid_chunk_size":        types.Int64Type,
 	"ctid_max_parallelism":   types.Int64Type,
+	"ctid_pages_per_range":   types.Int64Type,
 	"range_backfill":         types.BoolType,
 	"range_chunk_size":       types.Int64Type,
 	"range_max_parallelism":  types.Int64Type,
@@ -214,6 +216,12 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 			Enabled:        lib.ToPtr(t.CTIDBackfill.ValueBool()),
 			ChunkSize:      lib.ToPtr(int(t.CTIDChunkSize.ValueInt64())),
 			MaxParallelism: lib.ToPtr(int(t.CTIDMaxParallelism.ValueInt64())),
+		}
+		// The API replaces ctidSettings whole, so physicalRanges must be sent back or a value set in the dashboard is lost.
+		if IsKnown(t.CTIDPagesPerRange) {
+			clientCTIDSettings.PhysicalRanges = &openapi.PayloadsPhysicalCTIDRangeSettings{
+				PagesPerRange: lib.ToPtr(int(t.CTIDPagesPerRange.ValueInt64())),
+			}
 		}
 	}
 
@@ -302,10 +310,14 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 		ctidBackfill := types.BoolValue(false)
 		ctidChunkSize := types.Int64Value(0)
 		ctidMaxParallelism := types.Int64Value(0)
+		ctidPagesPerRange := types.Int64Value(0)
 		if settings.CtidSettings != nil {
 			ctidBackfill = types.BoolValue(lib.RemovePtr(settings.CtidSettings.Enabled))
 			ctidChunkSize = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.ChunkSize)))
 			ctidMaxParallelism = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.MaxParallelism)))
+			if settings.CtidSettings.PhysicalRanges != nil {
+				ctidPagesPerRange = types.Int64Value(int64(lib.RemovePtr(settings.CtidSettings.PhysicalRanges.PagesPerRange)))
+			}
 		}
 
 		rangeBackfill := types.BoolValue(false)
@@ -344,6 +356,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			CTIDBackfill:         ctidBackfill,
 			CTIDChunkSize:        ctidChunkSize,
 			CTIDMaxParallelism:   ctidMaxParallelism,
+			CTIDPagesPerRange:    ctidPagesPerRange,
 			RangeBackfill:        rangeBackfill,
 			RangeChunkSize:       rangeChunkSize,
 			RangeMaxParallelism:  rangeMaxParallelism,

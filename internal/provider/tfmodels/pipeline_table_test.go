@@ -161,6 +161,48 @@ func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
 	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
 }
 
+func TestTableCTIDPagesPerRange(t *testing.T) {
+	{
+		// physicalRanges set in the dashboard survives a read and is sent back on apply
+		apiTables := []openapi.PayloadsTable{{
+			Uuid: ptr(uuid.New()),
+			Name: ptr("events"),
+			AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{
+				CtidSettings: &openapi.PayloadsCTIDSettings{
+					Enabled:        ptr(true),
+					ChunkSize:      ptr(500000),
+					MaxParallelism: ptr(10),
+					PhysicalRanges: &openapi.PayloadsPhysicalCTIDRangeSettings{PagesPerRange: ptr(2048)},
+				},
+			},
+		}}
+		tables, diags := TablesFromAPIModel(t.Context(), apiTables)
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		table := tables["events"]
+		assert.Equal(t, int64(2048), table.CTIDPagesPerRange.ValueInt64())
+
+		apiTable, diags := table.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Equal(t, &openapi.PayloadsPhysicalCTIDRangeSettings{PagesPerRange: ptr(2048)}, apiTable.AdvancedSettings.CtidSettings.PhysicalRanges)
+	}
+	{
+		// No CTID settings, or none for physical ranges, reads back as 0
+		tables, diags := TablesFromAPIModel(t.Context(), []openapi.PayloadsTable{
+			{Uuid: ptr(uuid.New()), Name: ptr("a"), AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{}},
+			{Uuid: ptr(uuid.New()), Name: ptr("b"), AdvancedSettings: &openapi.PayloadsTableAdvancedSettings{CtidSettings: &openapi.PayloadsCTIDSettings{Enabled: ptr(true)}}},
+		})
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Equal(t, types.Int64Value(0), tables["a"].CTIDPagesPerRange)
+		assert.Equal(t, types.Int64Value(0), tables["b"].CTIDPagesPerRange)
+	}
+	{
+		// Unknown pages per range leaves physicalRanges out
+		apiTable, diags := Table{Name: types.StringValue("events"), CTIDBackfill: types.BoolValue(true), CTIDPagesPerRange: types.Int64Unknown()}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Nil(t, apiTable.AdvancedSettings.CtidSettings.PhysicalRanges)
+	}
+}
+
 func TestTablePrimaryKeysOverrideRoundTrip(t *testing.T) {
 	primaryKeysOverride, primaryKeysOverrideDiags := types.ListValueFrom(t.Context(), types.StringType, []string{"account_id", "region"})
 	assert.False(t, primaryKeysOverrideDiags.HasError(), "unexpected diagnostics: %v", primaryKeysOverrideDiags)
