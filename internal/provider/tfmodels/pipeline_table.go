@@ -129,6 +129,7 @@ type Table struct {
 	RangeChunkSize       types.Int64  `tfsdk:"range_chunk_size"`
 	RangeMaxParallelism  types.Int64  `tfsdk:"range_max_parallelism"`
 	RangeBatchSize       types.Int64  `tfsdk:"range_batch_size"`
+	RowIDBackfill        types.Bool   `tfsdk:"rowid_backfill"`
 	SkipBackfill         types.Bool   `tfsdk:"skip_backfill"`
 	SkipNoOpUpdates      types.Bool   `tfsdk:"skip_no_op_updates"`
 }
@@ -160,6 +161,7 @@ var TableAttrTypes = map[string]attr.Type{
 	"range_chunk_size":       types.Int64Type,
 	"range_max_parallelism":  types.Int64Type,
 	"range_batch_size":       types.Int64Type,
+	"rowid_backfill":         types.BoolType,
 	"skip_backfill":          types.BoolType,
 	"skip_no_op_updates":     types.BoolType,
 }
@@ -227,6 +229,13 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 		}
 	}
 
+	// Unlike the CTID and range settings, a null here is sent as nil rather than false: an omitted rowIDSettings means
+	// "use the source reader's backfill defaults", which may themselves read by ROWID.
+	var clientRowIDSettings *openapi.PayloadsRowIDSettings
+	if IsKnown(t.RowIDBackfill) {
+		clientRowIDSettings = &openapi.PayloadsRowIDSettings{Enabled: lib.ToPtr(t.RowIDBackfill.ValueBool())}
+	}
+
 	if diags.HasError() {
 		return openapi.PayloadsTablePayload{}, diags
 	}
@@ -255,6 +264,7 @@ func (t Table) ToAPIModel(ctx context.Context) (openapi.PayloadsTablePayload, di
 			ShouldBackfillHistoryTable: boolPointer(t.BackfillHistoryTable),
 			CtidSettings:               clientCTIDSettings,
 			RangeSettings:              clientRangeSettings,
+			RowIDSettings:              clientRowIDSettings,
 			SkipBackfill:               boolPointer(t.SkipBackfill),
 			SkipNoOpUpdates:            boolPointer(t.SkipNoOpUpdates),
 		},
@@ -319,6 +329,11 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			rangeBatchSize = types.Int64Value(int64(lib.RemovePtr(settings.RangeSettings.BatchSize)))
 		}
 
+		rowIDBackfill := types.BoolNull()
+		if settings.RowIDSettings != nil {
+			rowIDBackfill = types.BoolPointerValue(settings.RowIDSettings.Enabled)
+		}
+
 		tables[tableKey] = Table{
 			UUID:                types.StringValue(lib.RemovePtr(apiTable.Uuid).String()),
 			Name:                types.StringValue(name),
@@ -348,6 +363,7 @@ func TablesFromAPIModel(ctx context.Context, apiModelTables []openapi.PayloadsTa
 			RangeChunkSize:       rangeChunkSize,
 			RangeMaxParallelism:  rangeMaxParallelism,
 			RangeBatchSize:       rangeBatchSize,
+			RowIDBackfill:        rowIDBackfill,
 			SkipBackfill:         boolPointerValueOrFalse(settings.SkipBackfill),
 			SkipNoOpUpdates:      boolPointerValueOrFalse(settings.SkipNoOpUpdates),
 		}
