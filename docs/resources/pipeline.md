@@ -130,6 +130,7 @@ Optional:
 - `ctid_backfill` (Boolean) If set to true, enables CTID backfill for this table. This is only applicable if the source type is `postgres`.
 - `ctid_chunk_size` (Number) The chunk size to use for CTID backfill. This should be between 100,000 and 1,000,000. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `ctid_max_parallelism` (Number) The maximum parallelism for CTID backfill. This should be between 5 and 20. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
+- `ctid_pages_per_range` (Number) The number of heap pages in each CTID range. Set to 0 to derive the range width from `ctid_chunk_size`. This is only applicable if the source type is `postgres` and `ctid_backfill` is set to true.
 - `disable_replication` (Boolean) If set to true along with `enable_history_mode`, this table will only replicate to the history table and not the main destination table.
 - `enable_history_mode` (Boolean) If set to true, we will create an additional table in the destination (suffixed with `__history`) to store all changes to the source table over time.
 - `encrypt_jsonb_columns` (Boolean) If set to true, all JSONB (struct) columns will be automatically encrypted before writing to the destination. Requires `encryption_key_uuid` to be set on the pipeline.
