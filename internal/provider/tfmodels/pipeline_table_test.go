@@ -161,6 +161,33 @@ func TestTablesFromAPIModel_RangeSettings(t *testing.T) {
 	assert.Equal(t, int64(0), table.RangeBatchSize.ValueInt64())
 }
 
+func TestTableRowIDBackfill(t *testing.T) {
+	{
+		// Null is omitted, so the table uses the source reader's backfill defaults, and nil reads back as null
+		apiTable, diags := Table{Name: types.StringValue("orders")}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Nil(t, apiTable.AdvancedSettings.RowIDSettings)
+
+		apiTables, err := ValidationTables(&[]openapi.PayloadsTablePayload{apiTable})
+		assert.NoError(t, err)
+		tables, diags := TablesFromAPIModel(t.Context(), apiTables)
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.True(t, tables["orders"].RowIDBackfill.IsNull())
+	}
+	for _, enabled := range []bool{true, false} {
+		// An explicit true or false is sent and round-trips
+		apiTable, diags := Table{Name: types.StringValue("orders"), RowIDBackfill: types.BoolValue(enabled)}.ToAPIModel(t.Context())
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Equal(t, &openapi.PayloadsRowIDSettings{Enabled: ptr(enabled)}, apiTable.AdvancedSettings.RowIDSettings)
+
+		apiTables, err := ValidationTables(&[]openapi.PayloadsTablePayload{apiTable})
+		assert.NoError(t, err)
+		tables, diags := TablesFromAPIModel(t.Context(), apiTables)
+		assert.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+		assert.Equal(t, types.BoolValue(enabled), tables["orders"].RowIDBackfill)
+	}
+}
+
 func TestTablePrimaryKeysOverrideRoundTrip(t *testing.T) {
 	primaryKeysOverride, primaryKeysOverrideDiags := types.ListValueFrom(t.Context(), types.StringType, []string{"account_id", "region"})
 	assert.False(t, primaryKeysOverrideDiags.HasError(), "unexpected diagnostics: %v", primaryKeysOverrideDiags)
